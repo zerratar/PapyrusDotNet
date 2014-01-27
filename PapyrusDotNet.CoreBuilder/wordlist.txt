@@ -1,4 +1,5 @@
 blackreach
+util
 bsg
 skse
 aardvark

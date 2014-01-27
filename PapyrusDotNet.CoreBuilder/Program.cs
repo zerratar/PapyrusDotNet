@@ -499,7 +499,8 @@
 						if (!Char.IsUpper(obj.Name[0]))
 						{
 							var usedWords = new List<string>();
-							foreach (var word in WordList)
+							var ordered = WordList.OrderByDescending(o => o.Length);
+							foreach (var word in ordered)
 							{
 								if (string.IsNullOrEmpty(word) || word.Length < 4) continue;
 								if (obj.Name.ToLower().Contains(word) && !usedWords.Any(s => s.Contains(word)))
