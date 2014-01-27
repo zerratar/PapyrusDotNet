@@ -65,11 +65,16 @@
     <Compile Include="PapyrusFunctionWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
+      <Project>{6b35b6ab-ea3b-42b0-b40f-66e490e59a15}</Project>
+      <Name>PapyrusDotNet.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

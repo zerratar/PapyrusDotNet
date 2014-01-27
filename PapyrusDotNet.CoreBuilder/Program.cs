@@ -8,7 +8,10 @@
 	using Mono.Cecil;
 	using Mono.Cecil.Cil;
 
+	using PapyrusDotNet.Common;
 	using PapyrusDotNet.CoreBuilder.CoreExtensions;
+
+	using PowerArgs;
 
 	public enum PapyrusParseType
 	{
@@ -18,29 +21,65 @@
 
 	class Program
 	{
-		public static ModuleDefinition MainModule;
+		internal static ModuleDefinition MainModule;
 
-		public static AssemblyDefinition Core;
+		internal static AssemblyDefinition Core;
 
-		public static string[] WordList;
+		internal static string[] WordList;
 
-		public static PapyrusParseType ParseType { get; set; }
+		internal static PapyrusParseType ParseType { get; set; }
+
+		internal static List<string> PreservedTypeNames = new List<string>();
+
+		internal static string OutputFileName = "PapyrusDotNet.Core.dll";
+
+		internal static string CoreNamespace = "PapyrusDotNet.Core";
 
 		static void Main(string[] args)
 		{
-			var CompileScriptsEnabled = false;
-			var DisassembleScriptsEnabled = false;
+			ParseType = PapyrusParseType.Assembly;
 
-			ParseType = PapyrusParseType.Script;
+			string inputDirectory = @"C:\The Elder Scrolls V Skyrim\Papyrus Compiler";
+			string searchFor = "*.pas";
+			string typeName = "assembly";
 
-			Console.WriteLine("Getting scripts...");
-			var scripts = Directory.GetFiles(
-				@"C:\The Elder Scrolls V Skyrim\Data\scripts\Source", "*.psc", SearchOption.AllDirectories);
+			try
+			{
+				var parsed = Args.Parse<PapyrusDotNetArgs>(args);
+				if (parsed.InputFolder != null)
+				{
+					// Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
+					if (parsed.InputType.ToLower().Contains("script") || parsed.InputType.ToLower().Contains("psc"))
+					{
+						ParseType = PapyrusParseType.Script;
+						searchFor = "*.psc";
+						typeName = "script";
+					}
 
-			var compiledScripts = Directory.GetFiles(
-				@"C:\The Elder Scrolls V Skyrim\Data\scripts", "*.pex", SearchOption.AllDirectories);
+					inputDirectory = parsed.InputFolder;
+					if (inputDirectory.Contains("\""))
+					{
+						inputDirectory = inputDirectory.Replace("\"", "");
+					}
+					// Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.InputFile, parsed.OutputFolder);
+				}
+			}
+			catch (ArgException ex)
+			{
+				Console.WriteLine(ex.Message);
+				Console.WriteLine(ArgUsage.GetUsage<PapyrusDotNetArgs>());
+				// return;
+			}
 
-			var pasFiles = System.IO.Directory.GetFiles(@"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\", "*.disassemble.pas");
+
+
+
+
+			Console.WriteLine("Loading all " + typeName + " files...");
+
+			// @"C:\The Elder Scrolls V Skyrim\Data\scripts\Source"
+			var files = Directory.GetFiles(
+				inputDirectory, searchFor, SearchOption.AllDirectories);
 
 			if (File.Exists("wordlist.txt"))
 			{
@@ -49,106 +88,25 @@
 			}
 			else
 			{
-				Console.WriteLine("Warning: Wordlist was not found! Make sure that wordlist.txt exists!");
+				Console.WriteLine("Wordlist was not found, skipping...");
 				WordList = new string[0];
 			}
 
-			if (CompileScriptsEnabled)
-			{
-				List<string> scriptsToCompile = new List<string>();
-				Console.WriteLine("Getting scripts to compile...");
-				foreach (var script in scripts)
-				{
-					var we = Path.GetFileNameWithoutExtension(script);
-					if (!compiledScripts.Any(fi => fi.ToLower().Contains(we.ToLower() + ".pex")))
-					{
-						scriptsToCompile.Add(script);
-					}
-				}
-
-				int compiled = 0;
-				Console.WriteLine("Compiling " + scriptsToCompile.Count + " scripts...");
-				var top = Console.CursorTop;
-				var left = Console.CursorLeft;
-				foreach (var script in scriptsToCompile)
-				{
-
-					CompilePapyrusSourceScript(script);
-					compiled++;
-
-					Console.CursorLeft = left;
-					Console.CursorTop = top;
-					Console.WriteLine((scriptsToCompile.Count - compiled) + " scripts left.              ");
-				}
-			}
-			// scripts
-			if (DisassembleScriptsEnabled)
-			{
-				int dissed = 0;
-				Console.WriteLine("Dissassambling " + compiledScripts.Length + " scripts...");
-				var top = Console.CursorTop;
-				var left = Console.CursorLeft;
-				foreach (var script in compiledScripts)
-				{
-					var we = Path.GetFileNameWithoutExtension(script);
-
-
-					if (pasFiles.Any(fi => fi.ToLower().Contains(we.ToLower() + ".disassemble.pas")))
-					{
-						var preserved = pasFiles.FirstOrDefault(fi => fi.ToLower().Contains(we.ToLower() + ".disassemble.pas"));
-						preserved = Path.GetFileNameWithoutExtension(preserved);
-						if (preserved.Contains("."))
-						{
-							preserved = preserved.Split('.')[0];
-						}
-						PreservedTypeNames.Add(preserved);
-
-						dissed++;
-						Console.CursorLeft = left;
-						Console.CursorTop = top;
-						Console.WriteLine((compiledScripts.Length - dissed) + " scripts left.              ");
-						continue;
-					}
-
-					DissassemblePapyrusScript(script);
-					dissed++;
-					Console.CursorLeft = left;
-					Console.CursorTop = top;
-					Console.WriteLine((compiledScripts.Length - dissed) + " scripts left.              ");
-				}
-
-			}
-
-			var coreNamespace = "PapyrusDotNet.Core";
-
-			Core = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition(coreNamespace, new Version(1, 0)),
-				coreNamespace, ModuleKind.Dll);
+			Core = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition(CoreNamespace, new Version(1, 0)),
+				CoreNamespace, ModuleKind.Dll);
 
 			MainModule = Core.MainModule;
 
-			pasFiles = System.IO.Directory.GetFiles(@"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\", "*.disassemble.pas");
-
-
 			var papyrusObjects = new List<PapyrusAsmObject>();
-			if (ParseType == PapyrusParseType.Assembly)
-			{
-				papyrusObjects.AddRange(pasFiles.Select(Parse));
-			}
-			else
-			{
-				papyrusObjects.AddRange(scripts.Select(Parse));
-			}
+
+			papyrusObjects.AddRange(files.Select(Parse));
 
 			foreach (var pasObj in papyrusObjects)
-			{
-				var newRef = GetTypeReference(null, pasObj.Name);
-				AddedTypeReferences.Add(newRef);
-			}
+				AddedTypeReferences.Add(GetTypeReference(null, pasObj.Name));
 
 			foreach (var pas in papyrusObjects)
-			{
 				MainModule.Types.Add(TypeDefinitionFromPapyrus(pas));
-			}
+
 
 			foreach (var t in MainModule.Types)
 			{
@@ -168,79 +126,33 @@
 				}
 			}
 
-
-			//	ModuleDefinition module = ...;
-			// MethodDefinition targetMethod = ...;
-			var attributeConstructor = MainModule.Import(
+			MainModule.Import(
 				typeof(AutoAttribute));
 
-			attributeConstructor = MainModule.Import(
-				typeof(AutoReadOnlyAttribute));
+			MainModule.Import(
+			   typeof(AutoReadOnlyAttribute));
 
-			attributeConstructor = MainModule.Import(
+			MainModule.Import(
 				typeof(ConditionalAttribute));
 
-			attributeConstructor = MainModule.Import(
-				typeof(HiddenAttribute)); //GetConstructor(Type.EmptyTypes)
+			MainModule.Import(
+				typeof(HiddenAttribute));
 
 
-			// targetMethod.CustomAttributes.Add(new CustomAttribute(attributeConstructor));
-
-
-			// TypeReference typeRef = GetTypeReference(newType);
-
-
-			Core.Write("PapyrusDotNet.Core.dll");
-			Console.WriteLine("PapyrusDotNet.Core.dll successefully generated.");
-		}
-
-		public static List<string> PreservedTypeNames = new List<string>();
-
-		private static void DissassemblePapyrusScript(string script)
-		{
-			var batch = @"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\disasm.bat";
-			var st = new System.Diagnostics.ProcessStartInfo(batch, String.Format("{0}", Path.GetFileNameWithoutExtension(script)));
-			st.CreateNoWindow = true;
-			st.UseShellExecute = false;
-			var proc = System.Diagnostics.Process.Start(st);
-			proc.WaitForExit();
-		}
-		private static void CompilePapyrusSourceScript(string script)
-		{
-			var batch = @"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\ScriptCompile.bat";
-			var st = new System.Diagnostics.ProcessStartInfo(batch, String.Format("\"{0}\"", script));
-			st.CreateNoWindow = true;
-			st.UseShellExecute = false;
-			var proc = System.Diagnostics.Process.Start(st);
-			proc.WaitForExit();
-		}
-
-		private static TypeDefinition CreatePapyrusScriptType(string pasOrPsc)
-		{
-			if (pasOrPsc.EndsWith(".pas"))
-			{
-
-			}
-			else if (pasOrPsc.EndsWith(".psc"))
-			{
-
-			}
-
-			var papyrus = Parse(pasOrPsc);
-
-			return TypeDefinitionFromPapyrus(papyrus);
+			Core.Write(OutputFileName);
+			Console.WriteLine(OutputFileName + " successefully generated.");
 		}
 
 		public static TypeDefinition TypeDefinitionFromPapyrus(PapyrusAsmObject input)
 		{
-			var newType = new TypeDefinition("PapyrusDotNet.Core", input.Name, TypeAttributes.Class);
+			var newType = new TypeDefinition(CoreNamespace, input.Name, TypeAttributes.Class);
 
 
 			newType.IsPublic = true;
 			// newType.DeclaringType = newType;
 			if (!string.IsNullOrEmpty(input.ExtendsName))
 			{
-				newType.BaseType = new TypeReference("PapyrusDotNet.Core", input.ExtendsName, MainModule, MainModule);
+				newType.BaseType = new TypeReference(CoreNamespace, input.ExtendsName, MainModule, MainModule);
 				// newType.DeclaringType = MainModule.Types.FirstOrDefault(t => t.FullName == newType.BaseType.FullName);
 				newType.Scope = MainModule;
 			}
@@ -250,7 +162,7 @@
 				newType.Scope = MainModule;
 			}
 
-			Console.WriteLine("Generating Type '" + "PapyrusDotNet.Core." + input.Name + "'...");
+			Console.WriteLine("Generating Type '" + CoreNamespace + "." + input.Name + "'...");
 
 			foreach (var prop in input.PropertyTable)
 			{
@@ -312,23 +224,6 @@
 
 		private static void CreateEmptyFunctionBody(ref MethodDefinition function)
 		{
-
-			/*if (function.IsStatic)
-			{
-				function.Attributes = MethodAttributes.Public | Mono.Cecil.MethodAttributes.FamANDAssem | Mono.Cecil.MethodAttributes.Family
-									| Mono.Cecil.MethodAttributes.Static | Mono.Cecil.MethodAttributes.HideBySig;
-			}
-			else if (function.IsVirtual)
-			{
-				function.Attributes = MethodAttributes.Public | Mono.Cecil.MethodAttributes.FamANDAssem | Mono.Cecil.MethodAttributes.Family
-									| Mono.Cecil.MethodAttributes.Virtual | Mono.Cecil.MethodAttributes.HideBySig;
-			}
-			else
-			{
-				function.Attributes = MethodAttributes.Public | Mono.Cecil.MethodAttributes.FamANDAssem | Mono.Cecil.MethodAttributes.Family 
-									| Mono.Cecil.MethodAttributes.HideBySig;
-			}*/
-
 			var fnl = function.ReturnType.FullName.ToLower();
 			if (fnl.Equals("system.void"))
 			{
@@ -340,7 +235,7 @@
 				function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
 			}
 
-			else if (fnl.StartsWith("system.string") || fnl.StartsWith("system.object") || fnl.StartsWith("papyrusdotnet.core"))
+			else if (fnl.StartsWith("system.string") || fnl.StartsWith("system.object") || fnl.StartsWith(CoreNamespace.ToLower()))
 				function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
 
 			else if (fnl.StartsWith("system.int") || fnl.StartsWith("system.bool") || fnl.StartsWith("system.long") || fnl.StartsWith("system.byte") || fnl.StartsWith("system.short"))
@@ -453,11 +348,8 @@
 				}
 
 			}
-			else
-			{
-				return existing;
-			}
 
+			return existing;
 		}
 
 		public static List<TypeReference> AddedTypeReferences = new List<TypeReference>();
@@ -467,7 +359,7 @@
 			var methodAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
 			var method = new MethodDefinition(".ctor", methodAttributes, MainModule.TypeSystem.Void);
 
-
+#warning might need to fix this later so that PEVERIFY can verify the outputted library properly.
 			// var baseEmptyConstructor = new MethodReference(".ctor", MainModule.TypeSystem.Void, MainModule.TypeSystem.Object);// MainModule.TypeSystem.Object
 			// method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
 			// method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, baseEmptyConstructor));
@@ -515,26 +407,8 @@
 			{
 				return "System";
 			}
-			return "PapyrusDotNet.Core";
+			return CoreNamespace;
 		}
-
-		/*
-
-				var fl = newType.FullName;
-				if (!fl.ToLower().Contains("system.void") && !fl.ToLower().Contains("void"))
-					typeRef = MainModule.TypeSystem.Object;
-
-
-				if (fl.ToLower().Contains("system.void") || fl.ToLower().Contains("void"))
-				{
-					function.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-				}
-				else
-				{
-					function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
-					function.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-				}		 
-		 */
 
 		public static PapyrusAsmObject Parse(string file)
 		{
@@ -552,8 +426,10 @@
 
 		private static PapyrusAsmObject ParseScript(string file)
 		{
-			var inputScript = System.IO.File.ReadAllLines(file);
+			var inputScript = File.ReadAllLines(file);
 			var obj = new PapyrusAsmObject();
+
+			throw new NotImplementedException("Parsing from .psc/ Skyrim Papyrus Scripts are not yet supported.");
 
 			//	TypeDefinition def = new TypeDefinition("","", TypeAttributes.);
 
@@ -617,15 +493,16 @@
 					}
 
 					string before = obj.Name;
-					WordList = null;
+
 					if (WordList != null && WordList.Length > 0)
 					{
 						if (!Char.IsUpper(obj.Name[0]))
 						{
+							var usedWords = new List<string>();
 							foreach (var word in WordList)
 							{
 								if (string.IsNullOrEmpty(word) || word.Length < 4) continue;
-								if (obj.Name.ToLower().Contains(word))
+								if (obj.Name.ToLower().Contains(word) && !usedWords.Any(s => s.Contains(word)))
 								{
 									var i = obj.Name.ToLower().IndexOf(word);
 
@@ -639,6 +516,7 @@
 
 									var w = Char.ToUpper(word[0]) + word.Substring(1);
 									obj.Name = obj.Name.Replace(word, w);
+									usedWords.Add(word);
 								}
 							}
 						}

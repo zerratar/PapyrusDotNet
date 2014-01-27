@@ -8,6 +8,8 @@ using Mono.Cecil.Cil;
 
 namespace PapyrusDotNet
 {
+	using PapyrusDotNet.Common;
+
 	using PowerArgs;
 
 	public class PapyrusDotNetArgs
@@ -29,9 +31,8 @@ namespace PapyrusDotNet
 		static void Main(string[] args)
 		{
 
-			string outputFolder = @"C:\Users\Karlj\Dropbox\Projects\Active\PapyrusDotNet\PapyrusDotNet\bin\Debug\output";
-			string inputFile = @"C:\Users\Karlj\Dropbox\Projects\Active\PapyrusDotNet\TestDll\bin\Debug\TestDll.dll";
-			// inputFile = @"C:\Users\Karlj\Dropbox\HYSEDE\Projects\Passive\AionX Workshop\Binaries\AionX.exe";
+			string outputFolder = @".\output";
+			string inputFile = @"..\..\..\TestDll\bin\Debug\TestDll.dll";
 			try
 			{
 				var parsed = Args.Parse<PapyrusDotNetArgs>(args);
@@ -58,6 +59,7 @@ namespace PapyrusDotNet
 			{
 				Console.WriteLine(ex.Message);
 				Console.WriteLine(ArgUsage.GetUsage<PapyrusDotNetArgs>());
+				// return;
 			}
 
 

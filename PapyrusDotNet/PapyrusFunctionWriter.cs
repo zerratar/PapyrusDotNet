@@ -8,6 +8,8 @@ namespace PapyrusDotNet
 	using Mono.Cecil;
 	using Mono.Cecil.Cil;
 
+	using PapyrusDotNet.Common;
+
 	public class PapyrusFunctionWriter
 	{
 		private AssemblyDefinition Assembly;
@@ -883,31 +885,5 @@ namespace PapyrusDotNet
 			return index;
 		}
 	}
-	public class VarReference
-	{
-		public VarReference(string name, string type)
-		{
-			// TODO: Complete member initialization
-			this.Name = name;
-			this.TypeName = type;
-		}
-		public VarReference(string name, string type, string definition)
-		{
-			// TODO: Complete member initialization
-			this.Name = name;
-			this.TypeName = type;
-			this.Definition = definition;
-		}
-		public string Definition { get; set; }
-		public object Value { get; set; }
-		public string Name { get; set; }
-		public string TypeName { get; set; }
-	}
-	public class EvaluationStackItem
-	{
-		public bool IsMethodCall { get; set; }
-		public bool IsThis { get; set; }
-		public object Value { get; set; }
-		public string TypeName { get; set; }
-	}
+	
 }

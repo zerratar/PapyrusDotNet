@@ -35,6 +35,9 @@
     <Reference Include="PapyrusDotNet.Core">
       <HintPath>..\PapyrusDotNet.Importer\bin\Debug\PapyrusDotNet.Core.dll</HintPath>
     </Reference>
+    <Reference Include="PowerArgs">
+      <HintPath>..\packages\PowerArgs.2.0.3.0\lib\net40\PowerArgs.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -52,6 +55,9 @@
       <Project>{f6519960-8599-42a4-a817-c69af065e8f9}</Project>
       <Name>PapyrusDotNet.Core.Collections</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

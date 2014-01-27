@@ -3,13 +3,87 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PapyrusDotNet
+namespace PapyrusDotNet.Common
 {
+	using Microsoft.Win32;
+
 	using Mono.Cecil;
 	using Mono.Cecil.Cil;
 
+	public class InstallationPath
+	{
+		public bool SkyrimPathExists
+		{
+			get
+			{
+				return !string.IsNullOrEmpty(Skyrim) && System.IO.File.Exists(Skyrim);
+			}
+		}
+
+		public bool CreationKitPathExists
+		{
+			get
+			{
+				return !string.IsNullOrEmpty(CreationKit) && System.IO.File.Exists(CreationKit);
+			}
+		}
+
+		public string Skyrim { get; set; }
+		public string CreationKit { get; set; }
+		public InstallationPath(string sp, string ckp)
+		{
+			if (System.IO.Directory.Exists(sp))
+				Skyrim = sp;
+
+			if (System.IO.Directory.Exists(ckp))
+				CreationKit = ckp;
+		}
+	}
+
 	public class Utility
 	{
+
+
+		/*[HKEY_CLASSES_ROOT\Local Settings\Software\Microsoft\Windows\Shell\MuiCache]
+		"D:\\The Elder Scrolls V Skyrim\\CreationKit.exe"="Creation Kit"
+		"D:\\The Elder Scrolls V Skyrim\\TESV.exe"="Skyrim"
+		"D:\\The Elder Scrolls V Skyrim\\SkyrimLauncher.exe"="Skyrim Launcher"
+		"D:\\The Elder Scrolls V Skyrim\\unins000.exe"="Setup/Uninstall"*/
+
+
+		public static InstallationPath GetInstallationFolder()
+		{
+			try
+			{
+				var subLocalSettings = Registry.ClassesRoot.OpenSubKey("Local Settings");
+				var subSoftware = subLocalSettings.OpenSubKey("Software");
+				var subMicrosoft = subSoftware.OpenSubKey("Microsoft");
+				var subWindows = subMicrosoft.OpenSubKey("Windows");
+				var subShell = subWindows.OpenSubKey("Shell");
+				var subMuiCache = subShell.OpenSubKey("MuiCache");
+				var test = subMuiCache.GetValueNames();
+
+				var installationFolder = test.FirstOrDefault(s => s.ToLower().Contains("tesv.exe") || s.ToLower().Contains("skyrimlauncher.exe"));
+				var creationkitFolder = test.FirstOrDefault(s => s.ToLower().Contains("creationkit.exe"));
+
+				var ifo = "";
+				var ckfo = "";
+
+				if (!string.IsNullOrEmpty(installationFolder))
+					ifo = System.IO.Path.GetDirectoryName(installationFolder);
+
+				if (!string.IsNullOrEmpty(creationkitFolder))
+					ckfo = System.IO.Path.GetDirectoryName(creationkitFolder);
+
+				return new InstallationPath(ifo, ckfo);
+			}
+			catch
+			{
+
+			}
+			return null;
+		}
+
 		public static string GetString(object p)
 		{
 			if (p is string) return (string)p;
@@ -31,6 +105,7 @@ namespace PapyrusDotNet
 		{
 			return GetPapyrusReturnType(reference.Name, reference.Namespace);
 		}
+
 		public static string GetPapyrusReturnType(string type, string Namespace)
 		{
 
@@ -96,8 +171,7 @@ namespace PapyrusDotNet
 			for (int j = 0; j < indents; j++) output += '\t';
 			output += line;
 
-			if (newLine)
-				output += Environment.NewLine;
+			if (newLine) output += Environment.NewLine;
 
 			return output;
 		}
@@ -106,8 +180,8 @@ namespace PapyrusDotNet
 		{
 			return code == Code.Beq || code == Code.Beq_S || code == Code.Bgt || code == Code.Bgt_S || code == Code.Bgt_Un
 					|| code == Code.Bgt_Un_S || code == Code.Blt || code == Code.Blt_Un || code == Code.Blt_S || code == Code.Blt_Un_S
-					|| code == Code.Ble || code == Code.Ble_Un || code == Code.Ble_S || code == Code.Ble_Un_S
-					|| code == Code.Bge || code == Code.Bge_Un || code == Code.Bge_S || code == Code.Bge_Un_S;
+					|| code == Code.Ble || code == Code.Ble_Un || code == Code.Ble_S || code == Code.Ble_Un_S || code == Code.Bge
+					|| code == Code.Bge_Un || code == Code.Bge_S || code == Code.Bge_Un_S;
 		}
 
 		public static object TypeValueConvert(string typeName, object op)
@@ -115,8 +189,7 @@ namespace PapyrusDotNet
 			if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))
 			{
 
-				if (op is int || op is float || op is short || op is double || op is long || op is byte)
-					return ((int)double.Parse(op.ToString()) == 1);
+				if (op is int || op is float || op is short || op is double || op is long || op is byte) return ((int)double.Parse(op.ToString()) == 1);
 				if (op is bool) return (bool)op;
 				if (op is string) return (string)op == "1" || op.ToString().ToLower() == "true";
 			}
@@ -143,8 +216,7 @@ namespace PapyrusDotNet
 
 		public static bool IsLoadArgs(Code code)
 		{
-			return code == Code.Ldarg || code == Code.Ldarg_0
-					|| code == Code.Ldarg_1 || code == Code.Ldarg_2
+			return code == Code.Ldarg || code == Code.Ldarg_0 || code == Code.Ldarg_1 || code == Code.Ldarg_2
 					|| code == Code.Ldarg_3 || code == Code.Ldarg_S;
 		}
 
@@ -209,12 +281,9 @@ namespace PapyrusDotNet
 
 		public static bool IsLoadInteger(Code code)
 		{
-			return code == Code.Ldc_I4 || code == Code.Ldc_I4_0
-					|| code == Code.Ldc_I4_1 || code == Code.Ldc_I4_2
-					|| code == Code.Ldc_I4_3 || code == Code.Ldc_I4_4
-					|| code == Code.Ldc_I4_5 || code == Code.Ldc_I4_6
-					|| code == Code.Ldc_I4_7 || code == Code.Ldc_I4_8
-					|| code == Code.Ldc_I4_S || code == Code.Ldc_I8
+			return code == Code.Ldc_I4 || code == Code.Ldc_I4_0 || code == Code.Ldc_I4_1 || code == Code.Ldc_I4_2
+					|| code == Code.Ldc_I4_3 || code == Code.Ldc_I4_4 || code == Code.Ldc_I4_5 || code == Code.Ldc_I4_6
+					|| code == Code.Ldc_I4_7 || code == Code.Ldc_I4_8 || code == Code.Ldc_I4_S || code == Code.Ldc_I8
 					|| code == Code.Ldc_R4 || code == Code.Ldc_R8;
 		}
 
@@ -225,8 +294,7 @@ namespace PapyrusDotNet
 
 		public static bool IsLoadLocalVariable(Code code)
 		{
-			return code == Code.Ldloc_0 || code == Code.Ldloc
-					|| code == Code.Ldloc_1 || code == Code.Ldloc_2
+			return code == Code.Ldloc_0 || code == Code.Ldloc || code == Code.Ldloc_1 || code == Code.Ldloc_2
 					|| code == Code.Ldloc_3 || code == Code.Ldloc_S;
 		}
 
@@ -242,33 +310,32 @@ namespace PapyrusDotNet
 
 		public static bool IsStoreLocalVariable(Code code)
 		{
-			return code == Code.Stloc || code == Code.Stloc_0
-					|| code == Code.Stloc_1 || code == Code.Stloc_2
+			return code == Code.Stloc || code == Code.Stloc_0 || code == Code.Stloc_1 || code == Code.Stloc_2
 					|| code == Code.Stloc_3 || code == Code.Stloc_S;
 		}
 
-		internal static bool IsGreaterThan(Code code)
+		public static bool IsGreaterThan(Code code)
 		{
 			return code == Code.Cgt || code == Code.Cgt_Un;
 		}
 
-		internal static bool IsLessThan(Code code)
+		public static bool IsLessThan(Code code)
 		{
 			return code == Code.Clt || code == Code.Clt_Un;
 		}
 
-		internal static bool IsEqualTo(Code code)
+		public static bool IsEqualTo(Code code)
 		{
 			return code == Code.Ceq;
 		}
 
-		internal static bool IsMath(Code code)
+		public static bool IsMath(Code code)
 		{
 			return code == Code.Add || code == Code.Sub || code == Code.Div || code == Code.Mul;
 		}
 
 
-		internal static bool IsLoadElement(Code code)
+		public static bool IsLoadElement(Code code)
 		{
 			return code == Code.Ldelem_Any || code == Code.Ldelem_I || code == Code.Ldelem_I1 || code == Code.Ldelem_I2
 					|| code == Code.Ldelem_I4 || code == Code.Ldelem_I8 || code == Code.Ldelem_R4 || code == Code.Ldelem_R8
@@ -276,45 +343,50 @@ namespace PapyrusDotNet
 					|| code == Code.Ldelema;
 		}
 
-		internal static bool IsStoreElement(Code code)
+		public static bool IsStoreElement(Code code)
 		{
 			return code == Code.Stelem_Any || code == Code.Stelem_I || code == Code.Stelem_I1 || code == Code.Stelem_I2
 					|| code == Code.Stelem_I4 || code == Code.Stelem_I8 || code == Code.Stelem_R4 || code == Code.Stelem_R8
 					|| code == Code.Stelem_Ref;
 		}
 
-		internal static bool IsNewInstance(Code code)
+		public static bool IsNewInstance(Code code)
 		{
 			return IsNewArrayInstance(code) || IsNewObjectInstance(code);
 		}
 
-		internal static bool IsNewArrayInstance(Code code)
+		public static bool IsNewArrayInstance(Code code)
 		{
 			return code == Code.Newarr;
 		}
 
-		internal static bool IsNewObjectInstance(Code code)
+		public static bool IsNewObjectInstance(Code code)
 		{
 			return code == Code.Newobj;
 		}
 
-		internal static bool IsLoadNull(Code code)
+		public static bool IsLoadNull(Code code)
 		{
 			return code == Code.Ldnull;
 		}
+
 		public class CodeBlock
 		{
 			public int StartRow { get; set; }
+
 			public int EndRow { get; set; }
+
 			public List<LabelReference> UsedLabels = new List<LabelReference>();
+
 			public List<LabelDefinition> Labels = new List<LabelDefinition>();
+
 			public LabelDefinition GetLabelDefinition(int row)
 			{
 				return Labels.FirstOrDefault(r => r.Row == row);
 			}
 		}
 
-		internal static string RemoveUnusedLabels(string output)
+		public static string RemoveUnusedLabels(string output)
 		{
 			var rows = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.None).ToList();
 
@@ -351,7 +423,7 @@ namespace PapyrusDotNet
 			return String.Join(Environment.NewLine, rows.ToArray());
 		}
 
-		private static List<CodeBlock> ParseCodeBlocks(List<string> rows)
+		public static List<CodeBlock> ParseCodeBlocks(List<string> rows)
 		{
 			var codeBlocks = new List<CodeBlock>();
 			CodeBlock latestCodeBlock = null;
@@ -390,7 +462,7 @@ namespace PapyrusDotNet
 
 
 
-		internal static string RemoveUnnecessaryLabels(string output)
+		public static string RemoveUnnecessaryLabels(string output)
 		{
 			var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
 			var labelReplacements = new List<ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>>();
@@ -414,8 +486,7 @@ namespace PapyrusDotNet
 						var label = codeBlock.GetLabelDefinition(lastRowIndex + 1);
 						if (label != null)
 						{
-							if (lastReplacement.Replacement == null)
-								lastReplacement.Replacement = currentLabel;
+							if (lastReplacement.Replacement == null) lastReplacement.Replacement = currentLabel;
 
 							lastReplacement.ToReplace.Add(label);
 
@@ -457,8 +528,7 @@ namespace PapyrusDotNet
 				foreach (var old in replacer.ToReplaceSecondary)
 				{
 					rows[old.RowReference] = rows[old.RowReference].Replace(
-						old.Name.Remove(old.Name.Length - 1),
-						replacer.Replacement.Name.Remove(replacer.Replacement.Name.Length - 1));
+						old.Name.Remove(old.Name.Length - 1), replacer.Replacement.Name.Remove(replacer.Replacement.Name.Length - 1));
 				}
 			}
 
@@ -470,7 +540,7 @@ namespace PapyrusDotNet
 			return String.Join(Environment.NewLine, rows.ToArray());
 		}
 
-		internal static string InjectTempVariables(string output, int indentDepth, List<VarReference> TempVariables)
+		public static string InjectTempVariables(string output, int indentDepth, List<VarReference> TempVariables)
 		{
 			var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
 
@@ -487,7 +557,7 @@ namespace PapyrusDotNet
 			return String.Join(Environment.NewLine, rows.ToArray());
 		}
 
-		internal static int GetStackPopCount(StackBehaviour stackBehaviour)
+		public static int GetStackPopCount(StackBehaviour stackBehaviour)
 		{
 			switch (stackBehaviour)
 			{
@@ -519,7 +589,7 @@ namespace PapyrusDotNet
 		}
 
 
-		internal static string GetPapyrusMathOp(Code code)
+		public static string GetPapyrusMathOp(Code code)
 		{
 			switch (code)
 			{
@@ -544,12 +614,16 @@ namespace PapyrusDotNet
 		}
 
 
-		internal static bool IsLoadLength(Code code)
+		public static bool IsLoadLength(Code code)
 		{
 			//throw new NotImplementedException();
 			return code == Code.Ldlen;
 		}
+
+
+
 	}
+
 
 	public class ObjectReplacementHolder<T, T2, T3>
 	{
@@ -587,5 +661,32 @@ namespace PapyrusDotNet
 			this.Name = name;
 			this.RowReference = row;
 		}
+	}
+	public class VarReference
+	{
+		public VarReference(string name, string type)
+		{
+			// TODO: Complete member initialization
+			this.Name = name;
+			this.TypeName = type;
+		}
+		public VarReference(string name, string type, string definition)
+		{
+			// TODO: Complete member initialization
+			this.Name = name;
+			this.TypeName = type;
+			this.Definition = definition;
+		}
+		public string Definition { get; set; }
+		public object Value { get; set; }
+		public string Name { get; set; }
+		public string TypeName { get; set; }
+	}
+	public class EvaluationStackItem
+	{
+		public bool IsMethodCall { get; set; }
+		public bool IsThis { get; set; }
+		public object Value { get; set; }
+		public string TypeName { get; set; }
 	}
 }
