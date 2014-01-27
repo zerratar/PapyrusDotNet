@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet", "PapyrusDotNet\PapyrusDotNet.csproj", "{328A4BC6-9157-4581-B695-C7A51C3D965F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDll", "TestDll\TestDll.csproj", "{58CA8F82-6071-4212-A745-51C4B4FA0544}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.CoreBuilder", "PapyrusDotNet.CoreBuilder\PapyrusDotNet.CoreBuilder.csproj", "{54B3F2D8-7510-4445-8A4C-420A73994D03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Core.Collections", "PapyrusDotNet.Core.Collections\PapyrusDotNet.Core.Collections.csproj", "{F6519960-8599-42A4-A817-C69AF065E8F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Tester", "PapyrusDotNet.Tester\PapyrusDotNet.Tester.csproj", "{24C2B02F-807A-481F-AEEA-AEA440223FA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Launcher", "PapyrusDotNet.Launcher\PapyrusDotNet.Launcher.csproj", "{8C86E85B-BF61-4C6B-861B-4BC277808A6E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Bridge", "PapyrusDotNet.Bridge\PapyrusDotNet.Bridge.csproj", "{6FEF9E0D-447E-442F-B951-405A6628FB4D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{328A4BC6-9157-4581-B695-C7A51C3D965F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{328A4BC6-9157-4581-B695-C7A51C3D965F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{328A4BC6-9157-4581-B695-C7A51C3D965F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{328A4BC6-9157-4581-B695-C7A51C3D965F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58CA8F82-6071-4212-A745-51C4B4FA0544}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58CA8F82-6071-4212-A745-51C4B4FA0544}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58CA8F82-6071-4212-A745-51C4B4FA0544}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58CA8F82-6071-4212-A745-51C4B4FA0544}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54B3F2D8-7510-4445-8A4C-420A73994D03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54B3F2D8-7510-4445-8A4C-420A73994D03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54B3F2D8-7510-4445-8A4C-420A73994D03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54B3F2D8-7510-4445-8A4C-420A73994D03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6519960-8599-42A4-A817-C69AF065E8F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6519960-8599-42A4-A817-C69AF065E8F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6519960-8599-42A4-A817-C69AF065E8F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6519960-8599-42A4-A817-C69AF065E8F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24C2B02F-807A-481F-AEEA-AEA440223FA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24C2B02F-807A-481F-AEEA-AEA440223FA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24C2B02F-807A-481F-AEEA-AEA440223FA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24C2B02F-807A-481F-AEEA-AEA440223FA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C86E85B-BF61-4C6B-861B-4BC277808A6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C86E85B-BF61-4C6B-861B-4BC277808A6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C86E85B-BF61-4C6B-861B-4BC277808A6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C86E85B-BF61-4C6B-861B-4BC277808A6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FEF9E0D-447E-442F-B951-405A6628FB4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FEF9E0D-447E-442F-B951-405A6628FB4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FEF9E0D-447E-442F-B951-405A6628FB4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FEF9E0D-447E-442F-B951-405A6628FB4D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
