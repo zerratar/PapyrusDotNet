@@ -5,18 +5,22 @@ using System.Text;
 
 namespace PapyrusDotNet.Core.Collections
 {
-	public class List<T> where T : class
+	/// <summary>
+	/// Example List<ValueType> converted class.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public class ListBool : Form
 	{
-		private T[] ArrayHolder_0 = new T[128];
-		private T[] ArrayHolder_1 = new T[128];
-		private T[] ArrayHolder_2 = new T[128];
-		private T[] ArrayHolder_3 = new T[128];
-		private T[] ArrayHolder_4 = new T[128];
-		private T[] ArrayHolder_5 = new T[128];
-		private T[] ArrayHolder_6 = new T[128];
-		private T[] ArrayHolder_7 = new T[128];
-		private T[] ArrayHolder_8 = new T[128];
-		private T[] ArrayHolder_9 = new T[128];
+		private bool[] ArrayHolder_0 = new bool[128];
+		private bool[] ArrayHolder_1 = new bool[128];
+		private bool[] ArrayHolder_2 = new bool[128];
+		private bool[] ArrayHolder_3 = new bool[128];
+		private bool[] ArrayHolder_4 = new bool[128];
+		private bool[] ArrayHolder_5 = new bool[128];
+		private bool[] ArrayHolder_6 = new bool[128];
+		private bool[] ArrayHolder_7 = new bool[128];
+		private bool[] ArrayHolder_8 = new bool[128];
+		private bool[] ArrayHolder_9 = new bool[128];
 
 		private int ItemIndex;
 
@@ -29,7 +33,7 @@ namespace PapyrusDotNet.Core.Collections
 			return bigIndex / 128;
 		}
 
-		private T[] ArrayFromIndex(int index)
+		private bool[] ArrayFromIndex(int index)
 		{
 			if (index == 0) return ArrayHolder_0;
 			if (index == 1) return ArrayHolder_1;
@@ -45,7 +49,7 @@ namespace PapyrusDotNet.Core.Collections
 		}
 		public int Count()
 		{
-			
+
 			return ItemCount;
 		}
 
@@ -54,7 +58,7 @@ namespace PapyrusDotNet.Core.Collections
 			return ItemIndex;
 		}
 
-		public void Add(T obj)
+		public void Add(bool obj)
 		{
 			int iArray = ArrayIndex(ItemIndex);
 			int offset = iArray * 128;
@@ -64,7 +68,8 @@ namespace PapyrusDotNet.Core.Collections
 			ItemIndex++;
 			ItemCount++;
 		}
-		public T Get(int index)
+
+		public bool Get(int index)
 		{
 			int iArray = ArrayIndex(index);
 			int offset = iArray * 128;
@@ -79,38 +84,37 @@ namespace PapyrusDotNet.Core.Collections
 			int offset = iArray * 128;
 			int i = index - offset;
 			var array = ArrayFromIndex(iArray);
-			
-			array[i] = null;
+
+			array[i] = false;
+
 			ItemCount--;
 		}
 
-		public void Remove(T form)
+		/// <summary>
+		/// Obviously you shouldnt use this function in a List<bool>.
+		/// </summary>
+		/// <param name="form"></param>
+		public void Remove(bool form)
 		{
 
 			//int f1Id = 0;
-			
+
 			for (int iArray = 0; iArray < 10; iArray++)
 			{
 				var arrayToCheck = ArrayFromIndex(iArray);
 				for (int i = 0; i < 128; i++)
 				{
-					if (arrayToCheck[i] != null)
-					{
-						//var formId = arrayToCheck[i].GetFormID();
-						//if (f1Id == formId)
-						//{
-						//	arrayToCheck[i] = null;
-						//	ItemCount--;
-						//	return;
-						//}
+					int x = 0;
 
-						if (form == arrayToCheck[i])
-						{
-							arrayToCheck[i] = null;
-							ItemCount--;
-							return;
-						}
+					//if (arrayToCheck[i] != null)
+					//{
+					if (form == arrayToCheck[i])
+					{
+						arrayToCheck[i] = false;
+						ItemCount--;
+						return;
 					}
+					//}
 				}
 			}
 		}
