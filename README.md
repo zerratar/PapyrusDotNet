@@ -141,6 +141,37 @@ A3.1. First off, make sure that you are using the same functions and/or types th
 A3.2. Check http://www.creationkit.com/Category:Papyrus so that you're following their coding behaviour.<br/><br/>
 A3.3. If you are still not sure, you can e-mail me your code, see contact at bottom of this page.
 
+Known Issues
+======
+1. Papyrus Attributes: Auto, AutoReadOnly, Conditional, Hidden. Not yet supported<br/>
+2. Papyrus Properties are not supported yet<br/>
+3. No Documentation<br/>
+4. Poorly or non- commented code<br/>
+5. Knowing what kind of code that will work or not<br/>
+6. No support for switch cases yet<br/>
+7. No support for anything from the .NET framework<br/>
+8. No support for generics and generic types/classes 'yet'<br/>
+9. No support for linq 'yet'<br/>
+10. No support for extension functions 'yet'<br/>
+11. No support for the type value Object 'yet'<br/>
+12. Unfortenately, a lot more...
+
+<br/>
+yet : Will be supported in the future<br/>
+'yet' : May or may not be supported in the future.<br/>
+
+Planned
+=======
+(Not listed in a specified order)<br/>
+1. Papyrus Properties, Prio 1. Will be fixed as soon as possible.<br/>
+2. Papyrus Attributes, Prio 2. Will be fixed as soon as possible.<br/>
+3. Switch cases, not properly tested yet.<br/>
+4. Generics, getting generics to work at compile time instead of runtime.<br/>
+5. Extended functionality of the PapyrusDotNet.Core Framework<br/>
+6. Better and more code comments<br/>
+7. Documentation<br/>
+8. More Examples<br/>
+9. And a lot more! Things can only get better from here!<br/>
 
 ## Contact
 If you got any questions, please don't hesitate to e-mail me at zerratar@gmail.com !
