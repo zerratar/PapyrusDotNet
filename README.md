@@ -17,7 +17,6 @@ hardcoded to work on my own system. I'm working on making it more configurable f
 
 
 ##NOTE:
-
 __ACTUAL .NET FRAMEWORK IS NOT SUPPORTED AT ALL! THIS IS DUE TO THE LIMITATIONS IN PAPYRUS ITSELF. THEREFOR
 YOU CANNOT USE ANY .NET SPECIFIC CODE IN YOUR SCRIPTS. FUTURE UPDATES MAY ENABLE SOME OR A FEW OF THE .NET FUNCTIONS
 BUT RIGHT NOW NONE IS WORKING.__
@@ -55,13 +54,11 @@ See http://www.creationkit.com/Category:Papyrus
 
 
 ### What is Papyrus.NET (PapyrusDotNet)?
-
 Papyrus.NET is a library/tool that I created to translate (mainly C#) CIL into Papyrus Assembly Code.
 
 The project currently contains:
 
 ### PapyrusDotNet
-
 A .NET -> Papyrus Assembly Code Generator.
 This is the main Project and tool used for generating the Skyrim scripts.
 
@@ -77,7 +74,6 @@ PapyrusDotNet.exe  -i "MyDotNetSkyrimScripts.dll" -o "c:\skyrim\data\scripts\asm
 > yourself. I'm currently working on getting this to work automatically for you.
 
 ### PapyrusDotNet.CoreBuilder
-
 A Papyrus Assembly Code -> .NET Library Generator.
 It is used for generating a core.dll that can be used
 to reference to your already existing Papyrus scripts in your C# Skyrim Script.
@@ -102,6 +98,9 @@ Keep in mind that the generated PapyrusDotNet.Core.dll does __not__ contain any 
 Which means you can't (absolutely should not) use PapyrusDotNet.Core.dll with PapyrusDotNet.exe to re-generate .pas files.<br/>
 As these .pas files can completely break your scripts, worst case scenario you WILL have to reinstall skyrim completely.
 
+### PapyrusDotNet.Common
+A shared library between PapyrusDotNet and PapyrusDotNet.CoreBuilder<br/>
+just to make sure I don't have to reinvent the wheel too many times over and over again.
 
 Other Projects
 ==============
@@ -109,18 +108,15 @@ Other Projects
 Most of the other projects are just different tests or planned features, so don't get sad if they don't work.
 
 ### PapyrusDotNet.Launcher
-
 A test to see if it is possible in the future to inject PapyrusDotNet.Bridge
 directly into skyrim to get a better control over the scripting, a possibility for opening up more functionality
 of the .NET framework.
 
 ### PapyrusDotNet.Tester
-
 Just a test project to see if the extended library works.
 
 
 ### PapyrusDotNet.Core.Collections - Incomplete and may change name in the future.
-
 Extending the PapyrusDotNet.Core.dll Framework with different Skyrim 'optimized' / 'working' scripts.
 Not yet complete, and should not be used just yet.
 
@@ -128,7 +124,24 @@ The idea for this project later is to be automatically used with PapyrusDotNet.e
 
 
 
+FAQ
+======
+This section was just added, dont be sad if you don't find a solution for your problem here.
 
+Q1. Can I use SKSE with the scripts I generate here?<br/>
+A1. Yes you can! Just make sure that when you're generating a PapyrusDotNet.Core.dll you will need to have dissassembled</br>
+all of SKSE's scripts into .pas files, then they will be included automatically.
+
+<br/>
+Q2. The solution does not seem to build. I'm getting a Metadata file 'xxx' could not be found.<br/>
+A2. Try building one project at a time, always start with PapyrusDotNet.Common, then PapyrusDotNet, then the rest should work just fine!
+
+<br/>
+Q3. How do I know that my code will work in Skyrim?<br/>
+A3.1. First off, make sure that you are using the same functions and/or types that are available in Papyrus. Using anything else just doesnt work.<br/>
+(Excluding your own already written scripts, be it Papyrus or C#)<br/>
+A3.2. Check http://www.creationkit.com/Category:Papyrus so that you're following their coding behaviour.<br/>
+A3.3. If you are still not sure, you can e-mail me your code, see contact at bottom of this page.
 
 
 ## Contact
