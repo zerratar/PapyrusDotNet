@@ -128,19 +128,17 @@ FAQ
 ======
 This section was just added, dont be sad if you don't find a solution for your problem here.
 
-Q1. Can I use SKSE with the scripts I generate here?<br/>
+__Q1. Can I use SKSE with the scripts I generate here?__<br/>
 A1. Yes you can! Just make sure that when you're generating a PapyrusDotNet.Core.dll you will need to have dissassembled</br>
 all of SKSE's scripts into .pas files, then they will be included automatically.
-
-<br/>
-Q2. The solution does not seem to build. I'm getting a Metadata file 'xxx' could not be found.<br/>
+<br/><br/>
+__Q2. The solution does not seem to build. I'm getting a Metadata file 'xxx' could not be found.__<br/>
 A2. Try building one project at a time, always start with PapyrusDotNet.Common, then PapyrusDotNet, then the rest should work just fine!
-
-<br/>
-Q3. How do I know that my code will work in Skyrim?<br/>
-A3.1. First off, make sure that you are using the same functions and/or types that are available in Papyrus. Using anything else just doesnt work.<br/>
-(Excluding your own already written scripts, be it Papyrus or C#)<br/>
-A3.2. Check http://www.creationkit.com/Category:Papyrus so that you're following their coding behaviour.<br/>
+<br/><br/>
+__Q3. How do I know that my code will work in Skyrim?__<br/>
+A3.1. First off, make sure that you are using the same functions and/or types that are available in Papyrus. Using anything else just doesnt work. 
+(Excluding your own already written scripts, be it Papyrus or C#)<br/><br/>
+A3.2. Check http://www.creationkit.com/Category:Papyrus so that you're following their coding behaviour.<br/><br/>
 A3.3. If you are still not sure, you can e-mail me your code, see contact at bottom of this page.
 
 
