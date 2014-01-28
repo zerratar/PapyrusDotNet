@@ -39,6 +39,7 @@ Ex: int.Parse(val) does not work.
 int x = 0; 
 
 string hello = x.ToString(); 
+
 // Does not work, use: hello =  x + ""; Instead.
 
 
@@ -84,9 +85,9 @@ to reference to your already existing Papyrus scripts in your C# Skyrim Script.
 Possible usage:
 PapyrusDotNet.CoreBuilder.exe -i "c:\skyrim\data\scripts\asm\"
 
-...-i : Input directory containing .pas or .psc files
+   -i : Input directory containing .pas or .psc files
 
-...-t : (Optional) Input type, __pas__ or __psc__ can be used. if none are defined, __pas__ will be used.
+   -t : (Optional) Input type, __pas__ or __psc__ can be used. if none are defined, __pas__ will be used.
 
 
 This will generate PapyrusDotNet.Core.dll in the same folder as PapyrusDotNet.CoreBuilder.exe relies,
