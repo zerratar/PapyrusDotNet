@@ -53,7 +53,8 @@ of their basic tutorials.<br/>
 See http://www.creationkit.com/Category:Papyrus
 
 
-### What is Papyrus.NET (PapyrusDotNet)?
+What is Papyrus.NET (PapyrusDotNet)?
+=========
 Papyrus.NET is a library/tool that I created to translate (mainly C#) CIL into Papyrus Assembly Code.
 
 The project currently contains:
