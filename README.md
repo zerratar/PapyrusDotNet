@@ -16,31 +16,30 @@ There are currently no 'How To Use' as its just a first initial upload to github
 hardcoded to work on my own system. I'm working on making it more configurable for everyone to use a lot easier.
 
 
-HUGE NOTE:
+##NOTE:
 
-ACTUAL .NET FRAMEWORK IS NOT SUPPORTED AT ALL! THIS IS DUE TO THE LIMITATIONS IN PAPYRUS ITSELF. THEREFOR
+__ACTUAL .NET FRAMEWORK IS NOT SUPPORTED AT ALL! THIS IS DUE TO THE LIMITATIONS IN PAPYRUS ITSELF. THEREFOR
 YOU CANNOT USE ANY .NET SPECIFIC CODE IN YOUR SCRIPTS. FUTURE UPDATES MAY ENABLE SOME OR A FEW OF THE .NET FUNCTIONS
-BUT RIGHT NOW NONE IS WORKING.
+BUT RIGHT NOW NONE IS WORKING.__
 
-You CANNOT use any of the types, methods, functions from any existing .NET library as it wont work in Papyrus.
+__You CANNOT use any of the types, methods, functions from any existing .NET library as it wont work in Papyrus.
 Even if it builds, and are able to generate some sort of Papyrus Assembly Code, the papyrus code wont compile
-as it does not have these types, methods, functions defined.
+as it does not have these types, methods, functions defined.__
 
-So Generics does NOT work, dynamics does not work, linq does not work, extensions does not work, not even the System.Object
-ValueType does not work. 
+__So Generics does NOT work, dynamics does not work, linq does not work, extensions does not work, not even the System.Object
+ValueType does not work.__
 
 However:
 
 string, bool, int, byte, short, long, float, double: works.
 Extensions or functions of those TypeValues does NOT work so:
 
-Ex: int.Parse(val) does not work.
+Ex: int.Parse(val) __does not work.__
 
-int x = 0; 
+    int x = 0; 
 
-string hello = x.ToString(); 
-
-// Does not work, use: hello =  x + ""; Instead.
+    // Does not work, use: hello =  x + ""; Instead.    
+    string hello = x.ToString(); 
 
 
 So for now, if you want to make a C# Skyrim Script, you will have to follow the original limitations of Papyrus
@@ -50,8 +49,9 @@ PapyrusDotNet.Core.Collections
 See TestDLL for example of usage.
 
 
-See ref:
-http://www.creationkit.com/Category:Papyrus
+If you're not familiar with Papyrus, i highly recommend you read some<br/>
+of their basic tutorials.<br/>
+See http://www.creationkit.com/Category:Papyrus
 
 
 ### What is Papyrus.NET (PapyrusDotNet)?
@@ -66,15 +66,15 @@ A .NET -> Papyrus Assembly Code Generator.
 This is the main Project and tool used for generating the Skyrim scripts.
 
 Example usage: 
+
 PapyrusDotNet.exe  -i "MyDotNetSkyrimScripts.dll" -o "c:\skyrim\data\scripts\asm\"
 
-...-i : Input DLL file, containing your .NET built skyrim scripts
+    -i : Input DLL file, containing your .NET built skyrim scripts
+    -o : output directory, where your generated .pas files will be put.
 
-...-o : output directory, where your generated .pas files will be put.
-
-###### Note: This will generate a .pas file for each class defined inside the .dll
-###### And does not currently compile it into a .pex for you. You will have to do this
-###### yourself. I'm currently working on getting this to work automatically for you.
+> Note: This will generate a .pas file for each class defined inside the .dll <br/>
+> And does not currently compile it into a .pex for you. You will have to do this  <br/>
+> yourself. I'm currently working on getting this to work automatically for you.
 
 ### PapyrusDotNet.CoreBuilder
 
@@ -82,19 +82,20 @@ A Papyrus Assembly Code -> .NET Library Generator.
 It is used for generating a core.dll that can be used
 to reference to your already existing Papyrus scripts in your C# Skyrim Script.
 
-Possible usage:
+Example usage:
+
 PapyrusDotNet.CoreBuilder.exe -i "c:\skyrim\data\scripts\asm\"
 
-   -i : Input directory containing .pas or .psc files
-
-   -t : (Optional) Input type, __pas__ or __psc__ can be used. if none are defined, __pas__ will be used.
+    -i : Input directory containing .pas or .psc files
+    -t : (Optional) Input type, 'pas' or 'psc' can be used. if none are defined, 'pas' will be used.
+         (don't include the single quoutes)
 
 
 This will generate PapyrusDotNet.Core.dll in the same folder as PapyrusDotNet.CoreBuilder.exe relies,
 this is a dll that can be used in your projects, enabling references to previously created scripts.
 
-###### Note: Only .pas files are supported as input ( disassembled .pex files )
-###### I'm still working on parsing .psc (script source files).
+> Note: Only .pas files are supported as input ( disassembled .pex files ) <br/>
+> I'm still working on parsing .psc (script source files).
 
 
 Other Projects
