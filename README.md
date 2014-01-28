@@ -53,13 +53,13 @@ See ref:
 http://www.creationkit.com/Category:Papyrus
 
 
-## What is Papyrus.NET (PapyrusDotNet)?
+### What is Papyrus.NET (PapyrusDotNet)?
 
 Papyrus.NET is a library/tool that I created to translate (mainly C#) CIL into Papyrus Assembly Code.
 
 The project currently contains:
 
-## PapyrusDotNet
+### PapyrusDotNet
 
 A .NET -> Papyrus Assembly Code Generator.
 This is the main Project and tool used for generating the Skyrim scripts.
@@ -67,14 +67,15 @@ This is the main Project and tool used for generating the Skyrim scripts.
 Example usage: 
 PapyrusDotNet.exe  -i "MyDotNetSkyrimScripts.dll" -o "c:\skyrim\data\scripts\asm\"
 
-···-i : Input DLL file, containing your .NET built skyrim scripts
-···-o : output directory, where your generated .pas files will be put.
+...-i : Input DLL file, containing your .NET built skyrim scripts
+
+...-o : output directory, where your generated .pas files will be put.
 
 ###### Note: This will generate a .pas file for each class defined inside the .dll
 ###### And does not currently compile it into a .pex for you. You will have to do this
 ###### yourself. I'm currently working on getting this to work automatically for you.
 
-## PapyrusDotNet.CoreBuilder
+### PapyrusDotNet.CoreBuilder
 
 A Papyrus Assembly Code -> .NET Library Generator.
 It is used for generating a core.dll that can be used
@@ -83,6 +84,9 @@ to reference to your already existing Papyrus scripts in your C# Skyrim Script.
 Possible usage:
 PapyrusDotNet.CoreBuilder.exe -i "c:\skyrim\data\scripts\asm\"
 
+...-i : Input directory containing .pas or .psc files
+
+...-t : (Optional) Input type, __pas__ or __psc__ can be used. if none are defined, __pas__ will be used.
 
 
 This will generate PapyrusDotNet.Core.dll in the same folder as PapyrusDotNet.CoreBuilder.exe relies,
@@ -97,24 +101,24 @@ Other Projects
 
 Most of the other projects are just different tests or planned features.
 
-## PapyrusDotNet.Launcher
+### PapyrusDotNet.Launcher
 
 A test to see if it is possible in the future to inject PapyrusDotNet.Bridge
 directly into skyrim to get a better control over the scripting, a possibility for opening up more functionality
 of the .NET framework.
 
 
-## TestDll
+### TestDll
 
 Contains a few test C# Skyrim Scripts
 This .dll can be used directly with PapyrusDotNet
 
-## PapyrusDotNet.Tester
+### PapyrusDotNet.Tester
 
 Just a test project to see if the extended library works.
 
 
-## PapyrusDotNet.Core.Collections
+### PapyrusDotNet.Core.Collections
 
 Extending the PapyrusDotNet.Core.dll Framework with different Skyrim 'optimized' / 'working' scripts.
 Not yet complete, and should not be used just yet.
@@ -124,5 +128,5 @@ Not yet complete, and should not be used just yet.
 
 
 
-
+## Contact
 If you got any questions, please don't hesitate to e-mail me at zerratar@gmail.com !
