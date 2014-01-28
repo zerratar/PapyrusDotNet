@@ -5,7 +5,14 @@ Papyrus.NET, enables you to write C# or any CLR enabled languages to be used in 
 
 
 
-This project is built using Visual Studio 2012, .NET Framework 4.0.
+This project is built using Visual Studio 2012, .NET Framework 4.0, and is licensed with GPL v3
+
+Please see http://www.gnu.org/licenses/gpl.txt
+
+Copyright © Karl Patrik Johansson 2014
+
+
+
 
 There are currently no 'How To Use' as its just a first initial upload to github and its still pretty much
 hardcoded to work on my own system. I'm working on making it more configurable for everyone to use a lot easier.
