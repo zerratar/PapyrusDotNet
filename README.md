@@ -95,13 +95,18 @@ This will generate PapyrusDotNet.Core.dll in the same folder as PapyrusDotNet.Co
 this is a dll that can be used in your projects, enabling references to previously created scripts.
 
 > Note: Only .pas files are supported as input ( disassembled .pex files ) <br/>
-> I'm still working on parsing .psc (script source files).
+> I'm still working on parsing .psc (script source files). <br/>
+
+### Warning
+Keep in mind that the generated PapyrusDotNet.Core.dll does __not__ contain any logic.<br/>
+Which means you can't (absolutely should not) use PapyrusDotNet.Core.dll with PapyrusDotNet.exe to re-generate .pas files.<br/>
+As these .pas files can completely break your scripts, worst case scenario you WILL have to reinstall skyrim completely.
 
 
 Other Projects
 ==============
 
-Most of the other projects are just different tests or planned features.
+Most of the other projects are just different tests or planned features, so don't get sad if they don't work.
 
 ### PapyrusDotNet.Launcher
 
@@ -120,10 +125,12 @@ This .dll can be used directly with PapyrusDotNet
 Just a test project to see if the extended library works.
 
 
-### PapyrusDotNet.Core.Collections
+### PapyrusDotNet.Core.Collections - Incomplete and may change name in the future.
 
 Extending the PapyrusDotNet.Core.dll Framework with different Skyrim 'optimized' / 'working' scripts.
 Not yet complete, and should not be used just yet.
+
+The idea for this project later is to be automatically used with PapyrusDotNet.exe when generating<br/>Papyrus code for your C# Script, IF you have referenced to this library that is.
 
 
 
