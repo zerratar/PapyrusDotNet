@@ -46,7 +46,7 @@ So for now, if you want to make a C# Skyrim Script, you will have to follow the 
 and only use classes from the PapyrusDotNet.Core.dll and/or any PapyrusDotNet.Core extended libraries, e.g. 
 PapyrusDotNet.Core.Collections
 
-See TestDLL for example of usage.
+See Examples folder for usable examples.
 
 
 If you're not familiar with Papyrus, i highly recommend you read some<br/>
@@ -113,12 +113,6 @@ Most of the other projects are just different tests or planned features, so don'
 A test to see if it is possible in the future to inject PapyrusDotNet.Bridge
 directly into skyrim to get a better control over the scripting, a possibility for opening up more functionality
 of the .NET framework.
-
-
-### TestDll
-
-Contains a few test C# Skyrim Scripts
-This .dll can be used directly with PapyrusDotNet
 
 ### PapyrusDotNet.Tester
 

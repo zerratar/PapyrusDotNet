@@ -17,10 +17,9 @@
 	Copyright 2014, Karl Patrik Johansson, zerratar@gmail.com
  */
 
-namespace TestDll
+namespace Example1
 {
-
-	public class Class2 : GodMode
+	public class GodModeExtended : GodMode
 	{
 
 	}

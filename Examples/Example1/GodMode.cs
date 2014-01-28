@@ -17,7 +17,7 @@
 	Copyright 2014, Karl Patrik Johansson, zerratar@gmail.com
  */
 
-namespace TestDll
+namespace Example1
 {
 	using PapyrusDotNet.Core;
 

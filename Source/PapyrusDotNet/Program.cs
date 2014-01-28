@@ -51,7 +51,7 @@ namespace PapyrusDotNet
 		{
 
 			string outputFolder = @".\output";
-			string inputFile = @"..\..\..\TestDll\bin\Debug\TestDll.dll";
+			string inputFile = @"..\..\..\..\Examples\Example1\bin\Debug\Example1.dll";
 			try
 			{
 				var parsed = Args.Parse<PapyrusDotNetArgs>(args);
