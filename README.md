@@ -12,7 +12,7 @@ Please see http://www.gnu.org/licenses/gpl.txt
 Copyright © Karl Patrik Johansson 2014
 
 ###Readme Overview
-* [What is Papyrus.NET (PapyrusDotNet)?](#what-is-PapyrusNET-PapyrusDotNet)
+* [What is Papyrus.NET (PapyrusDotNet)?](#what-is-papyrusnet-papyrusdotnet)
 * [Other Projects](#other-projects)
 * [FAQ](#faq)
 * [Known Issues](#known-issues)
