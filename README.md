@@ -176,17 +176,24 @@ Ready for Test
 2. Properties<br/>
 
 Properties Example: <br/>
+
     [Property, Auto]
     public Actor MyPlayerRef;
 
 Attributes Example: <br/>
+
     [Hidden, Conditional]
-	public class MyScriptName : ObjectReference
+    public class MyScriptName : ObjectReference
 	
 Changelog
 ========
-v0.02 - Added support for Properties and Atttributes aswell for fixing a few bugs regarding string concating. Aaaand added a new example for how to use attributes.<br/>
-v0.01 - Initial Release to github<br/>
+###v0.02
++ Added support for Properties and Atttributes.
++ Fixed a bug when concating strings
++ Added nex example on how to use Attributes and Properties.<br/>
+
+###v0.01
++ Initial Release to github<br/>
 
 
 ## Contact
