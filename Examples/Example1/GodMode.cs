@@ -40,12 +40,21 @@ namespace Example1
 		public override void OnInit()
 		{
 
-			object hej = 123;
+			float hej = 123;
 			int hej2 = (int)hej;
+
+			if (hej2 == 0)
+			{
+				Debug.MessageBox("HELLOOO 2");
+			}
 
 			switch (hej2)
 			{
-				case 0:
+
+				case 123:
+					Debug.MessageBox("123");
+					return;
+				case 77:
 					Debug.MessageBox("HELLOOO");
 					break;
 			}

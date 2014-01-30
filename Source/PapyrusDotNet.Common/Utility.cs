@@ -335,6 +335,13 @@ namespace PapyrusDotNet.Common
 			{
 				if (!op.ToString().Contains("\"")) return "\"" + op.ToString() + "\"";
 			}
+			else if (op is float || op is decimal || op is double)
+			{
+				if (op.ToString().Contains(","))
+				{
+					return op.ToString().Replace(',', '.');
+				}
+			}
 
 			return op;
 		}

@@ -199,6 +199,11 @@ Attributes Example: <br/>
 	
 Changelog
 ========
+###v0.1.3f2
++ Improved support for type casting
++ Fixed a type casting bug
++ Fixed a bug with Conditional Jumps making 'switch' select wrong cases.
+
 ###v0.1.3f1
 + Added support for foreach statements
 

@@ -304,7 +304,7 @@ namespace PapyrusDotNet
 									skipNextInstruction = false;
 									SkipToOffset = 0;
 
-									var targetVariable = GetTargetVariable(instruction, null, "Int",true);
+									var targetVariable = GetTargetVariable(instruction, null, "Int", true);
 
 									var vari = AllVariables.FirstOrDefault(va => va.Name == targetVariable);
 
@@ -484,9 +484,10 @@ namespace PapyrusDotNet
 
 					// Equiviliant Papyrus: StrCat <output> <val1> <val2>
 
-					var value = GetConditional(instruction);
+					string cast;
+					var value = GetConditional(instruction, out cast);
 					var retVal = Utility.GetPapyrusMathOp(instruction.OpCode.Code) + " " + value;
-
+					if (!string.IsNullOrEmpty(cast)) return cast + Environment.NewLine + retVal;
 					return retVal;
 				}
 			}
@@ -510,7 +511,14 @@ namespace PapyrusDotNet
 						var para = methodRef.Parameters;
 						var popCount = para.Count;
 
-						var targetVariable = EvaluationStack.Pop();
+						var targetVariable = EvaluationStack.Peek();
+						//	var val=EvaluationStack.Peek()
+						if (targetVariable.Value is PapyrusVariableReference)
+						{
+							targetVariable = EvaluationStack.Pop();
+						}
+						else targetVariable = null;
+
 						var concatValues = new List<EvaluationStackItem>();
 						for (int idx = 0; idx < popCount; idx++)
 						{
@@ -545,7 +553,12 @@ namespace PapyrusDotNet
 						}
 						if (possibleMethodCall != null && Utility.IsCallMethod(possibleMethodCall.OpCode.Code))
 						{
-							EvaluationStack.Push(targetVariable);
+							if (targetVariable != null)
+							{
+								EvaluationStack.Push(new EvaluationStackItem() { TypeName = targetVariable.TypeName, Value = targetVariable });
+							}
+							else
+								EvaluationStack.Push(new EvaluationStackItem() { TypeName = AllVariables.FirstOrDefault(n => n.Name == concatTargetVar).TypeName, Value = AllVariables.FirstOrDefault(n => n.Name == concatTargetVar) });
 						}
 
 						return string.Join(Environment.NewLine, strCats.ToArray());
@@ -703,25 +716,34 @@ namespace PapyrusDotNet
 			{
 				if (Utility.IsGreaterThan(instruction.OpCode.Code))
 				{
-					var outputVal = GetConditional(instruction);
+					string cast;
+					var outputVal = GetConditional(instruction, out cast);
 					if (!string.IsNullOrEmpty(outputVal))
 					{
+						if (!string.IsNullOrEmpty(cast)) 
+							return cast + Environment.NewLine + "CompareGT " + outputVal;
 						return "CompareGT " + outputVal;
 					}
 				}
 				else if (Utility.IsLessThan(instruction.OpCode.Code))
 				{
-					var outputVal = GetConditional(instruction);
+					string cast;
+					var outputVal = GetConditional(instruction, out cast);
 					if (!string.IsNullOrEmpty(outputVal))
 					{
+						if (!string.IsNullOrEmpty(cast))
+							return cast + Environment.NewLine + "CompareLT " + outputVal;
 						return "CompareLT " + outputVal;
 					}
 				}
 				else if (Utility.IsEqualTo(instruction.OpCode.Code))
 				{
-					var outputVal = GetConditional(instruction);
+					string cast;
+					var outputVal = GetConditional(instruction, out cast);
 					if (!string.IsNullOrEmpty(outputVal))
 					{
+						if (!string.IsNullOrEmpty(cast))
+							return cast + Environment.NewLine + "CompareEQ " + outputVal;
 						return "CompareEQ " + outputVal;
 					}
 				}
@@ -756,29 +778,35 @@ namespace PapyrusDotNet
 
 					skipNextInstruction = false;
 					var output = new List<string>();
-					if (Utility.IsBranchConditionalEQ(instruction.OpCode.Code))
+					var target = instruction.Operand;
+					var targetVal = "";
+					if (target is Instruction)
 					{
-						var target = instruction.Operand;
-						var targetVal = "";
-						if (target is Instruction)
-						{
-							targetVal = "_label" + (target as Instruction).Offset;
-						}
-						else if (target != null)
-						{
-							targetVal = target.ToString();
-						}
-
-						output.Add("CompareEQ " + temp + " " + value1 + " " + value2);
-
-						if (InvertedBranch)
-							output.Add("JumpT " + temp + " " + targetVal);
-						else
-						{
-							output.Add("JumpF " + temp + " " + targetVal);
-						}
-						return string.Join(Environment.NewLine, output.ToArray());
+						targetVal = "_label" + (target as Instruction).Offset;
 					}
+					else if (target != null)
+					{
+						targetVal = target.ToString();
+					}
+
+
+					if (Utility.IsBranchConditionalEQ(instruction.OpCode.Code))
+						output.Add("CompareEQ " + temp + " " + value1 + " " + value2);
+					else if (Utility.IsBranchConditionalLT(instruction.OpCode.Code))
+						output.Add("CompareLT " + temp + " " + value1 + " " + value2);
+					else if (Utility.IsBranchConditionalGT(instruction.OpCode.Code))
+						output.Add("CompareGT " + temp + " " + value1 + " " + value2);
+					else if (Utility.IsBranchConditionalGE(instruction.OpCode.Code))
+						output.Add("CompareGE " + temp + " " + value1 + " " + value2);
+					else if (Utility.IsBranchConditionalGE(instruction.OpCode.Code))
+						output.Add("CompareLE " + temp + " " + value1 + " " + value2);
+
+					if (!InvertedBranch)
+						output.Add("JumpT " + temp + " " + targetVal);
+					else
+						output.Add("JumpF " + temp + " " + targetVal);
+					
+					return string.Join(Environment.NewLine, output.ToArray());
 				}
 			}
 			else if (Utility.IsBranch(instruction.OpCode.Code))
@@ -858,7 +886,7 @@ namespace PapyrusDotNet
 			return null;
 		}
 
-		private string GetTargetVariable(Instruction instruction, MethodReference methodRef, string fallbackType = null,bool forceNew=false)
+		private string GetTargetVariable(Instruction instruction, MethodReference methodRef, string fallbackType = null, bool forceNew = false)
 		{
 			string targetVar = null;
 			var whereToPlace = instruction.Next;
@@ -946,8 +974,9 @@ namespace PapyrusDotNet
 			}
 		}
 
-		public string GetConditional(Instruction instruction)
+		public string GetConditional(Instruction instruction, out string cast)
 		{
+			cast = null;
 			var code = instruction.OpCode.Code;
 			var heapStack = EvaluationStack;
 
@@ -962,11 +991,32 @@ namespace PapyrusDotNet
 				string value1 = "";
 				string value2 = "";
 
-				if (obj1.Value is PapyrusVariableReference) value1 = (obj1.Value as PapyrusVariableReference).Name;
+				if (obj1.Value is PapyrusVariableReference)
+				{
+					var oo = (obj1.Value as PapyrusVariableReference);
+					value1 = oo.Name;
+					if (!oo.TypeName.ToLower().Equals("int") && !oo.TypeName.ToLower().Equals("system.int32"))
+					{
+						// CAST BOOL TO INT
+						var typeVariable = GetTargetVariable(instruction, null, "Int");
+						cast = "Cast " + typeVariable + " " + value1;
+					}
+				}
 				else
 					value1 = obj1.Value.ToString();
 
-				if (obj2.Value is PapyrusVariableReference) value2 = (obj2.Value as PapyrusVariableReference).Name;
+				if (obj2.Value is PapyrusVariableReference)
+				{
+					var oo = (obj2.Value as PapyrusVariableReference);
+					value2 = oo.Name;
+					if (!oo.TypeName.ToLower().Equals("int") && !oo.TypeName.ToLower().Equals("system.int32"))
+					{
+						// CAST BOOL TO INT
+						var typeVariable = GetTargetVariable(instruction, null, "Int");
+						cast = "Cast " + typeVariable + " " + value2;
+					}
+
+				}
 				else
 					value2 = obj2.Value.ToString();
 
@@ -1057,8 +1107,14 @@ namespace PapyrusDotNet
 			if (parameters != null && parameters.Count > 0)
 			{
 				int index = 0;
-				foreach (var item in parameters)
+				foreach (var it in parameters)
 				{
+					var item = it;
+					while (item != null && item.Value is EvaluationStackItem)
+					{
+						item = it.Value as EvaluationStackItem;
+					}
+
 					if (item.Value is PapyrusVariableReference)
 					{
 						outp.Add((item.Value as PapyrusVariableReference).Name);
