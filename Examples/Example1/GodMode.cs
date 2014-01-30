@@ -25,6 +25,18 @@ namespace Example1
 	{	
 		public GodMode myGodMode;
 
+		public void test()
+		{
+
+			GodMode[] objs = new GodMode[120];
+
+
+			foreach (var o in objs)
+			{
+				o.SetName("hello!");
+			}
+		}
+
 		public override void OnInit()
 		{
 
@@ -37,6 +49,8 @@ namespace Example1
 					Debug.MessageBox("HELLOOO");
 					break;
 			}
+
+
 
 			GodMode[] objs = new GodMode[120];
 			

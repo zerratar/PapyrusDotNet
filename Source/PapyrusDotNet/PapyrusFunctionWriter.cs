@@ -194,9 +194,16 @@ namespace PapyrusDotNet
 
 		private string ParseInstruction(Mono.Cecil.Cil.Instruction instruction)
 		{
+
 			// ArrayGetElement	<outputVarName>	<arrayName>	<int:index>
 			// ArraySetElement <arrayName> <int:index> <valueOrVariable>?
 			// ArrayLength	<outputVarName>	<arrayName>
+
+			if (Utility.IsConverToNumber(instruction.OpCode.Code))
+			{
+
+				return "";
+			}
 
 			if (Utility.IsLoadElement(instruction.OpCode.Code))
 			{
@@ -290,9 +297,27 @@ namespace PapyrusDotNet
 						{
 							int variableIndex = 0;
 							var storeInstruction = GetNextStoreLocalVariableInstruction(instruction, out variableIndex);
-							if (storeInstruction != null)
+							if (storeInstruction != null || Utility.IsConverToNumber(instruction.Next.OpCode.Code))
 							{
-								return "ArrayLength " + AllVariables[variableIndex].Name + " " + (val.Value as PapyrusVariableReference).Name;
+								if (Utility.IsConverToNumber(instruction.Next.OpCode.Code))
+								{
+									skipNextInstruction = false;
+									SkipToOffset = 0;
+
+									var targetVariable = GetTargetVariable(instruction, null, "Int",true);
+
+									var vari = AllVariables.FirstOrDefault(va => va.Name == targetVariable);
+
+									//EvaluationStack.Push(new EvaluationStackItem() { IsMethodCall = false, IsThis = false, TypeName = vari.TypeName, Value = vari });
+									return "ArrayLength " + targetVariable + " " + (val.Value as PapyrusVariableReference).Name;
+
+								}
+								else
+								{
+									EvaluationStack.Push(new EvaluationStackItem() { IsMethodCall = false, IsThis = false, TypeName = AllVariables[variableIndex].TypeName, Value = AllVariables[variableIndex] });
+									return "ArrayLength " + AllVariables[variableIndex].Name + " " + (val.Value as PapyrusVariableReference).Name;
+
+								}
 							}
 						}
 						else
@@ -746,7 +771,7 @@ namespace PapyrusDotNet
 
 						output.Add("CompareEQ " + temp + " " + value1 + " " + value2);
 
-						if(InvertedBranch)
+						if (InvertedBranch)
 							output.Add("JumpT " + temp + " " + targetVal);
 						else
 						{
@@ -833,7 +858,7 @@ namespace PapyrusDotNet
 			return null;
 		}
 
-		private string GetTargetVariable(Instruction instruction, MethodReference methodRef, string fallbackType = null)
+		private string GetTargetVariable(Instruction instruction, MethodReference methodRef, string fallbackType = null,bool forceNew=false)
 		{
 			string targetVar = null;
 			var whereToPlace = instruction.Next;
@@ -862,7 +887,8 @@ namespace PapyrusDotNet
 				// else 
 				//EvaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
 			}
-			else if (whereToPlace != null && (Utility.IsLoad(whereToPlace.OpCode.Code) || Utility.IsCallMethod(whereToPlace.OpCode.Code) || Utility.IsBranchConditional(instruction.OpCode.Code)))
+			else if (whereToPlace != null && (Utility.IsLoad(whereToPlace.OpCode.Code) || Utility.IsCallMethod(whereToPlace.OpCode.Code) || Utility.IsBranchConditional(instruction.OpCode.Code)
+				|| Utility.IsLoadLength(instruction.OpCode.Code)))
 			{
 				// Most likely this function call have a return value other than Void
 				// and is used for an additional method call, witout being assigned to a variable first.

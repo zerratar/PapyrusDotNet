@@ -199,16 +199,19 @@ Attributes Example: <br/>
 	
 Changelog
 ========
-###v0.03
+###v0.1.3f1
++ Added support for foreach statements
+
+###v0.1.3
 + Added support for switch cases.
 
-###v0.02
+###v0.1.2
 + Added support for Properties and Atttributes.
 + Added support for InitialValue for fields.
 + Fixed a bug when concating strings
 + Added nex example on how to use Attributes and Properties.<br/>
 
-###v0.01
+###v0.1
 + Initial Release to github<br/>
 
 

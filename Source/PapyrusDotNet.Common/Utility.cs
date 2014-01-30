@@ -313,6 +313,15 @@ namespace PapyrusDotNet.Common
 					|| code == Code.Bge_Un || code == Code.Bge_S || code == Code.Bge_Un_S;
 		}
 
+		public static bool IsConverToNumber(Code code)
+		{
+			return code == Code.Conv_I || code == Code.Conv_I1 || code == Code.Conv_I2 || code == Code.Conv_I4
+					|| code == Code.Conv_I8 || code == Code.Conv_Ovf_I || code == Code.Conv_Ovf_I_Un || code == Code.Conv_Ovf_I1
+					|| code == Code.Conv_Ovf_I1_Un || code == Code.Conv_Ovf_I2 || code == Code.Conv_Ovf_I2_Un
+					|| code == Code.Conv_Ovf_I4 || code == Code.Conv_Ovf_I4_Un || code == Code.Conv_Ovf_I8
+					|| code == Code.Conv_Ovf_I8_Un || code == Code.Conv_R_Un || code == Code.Conv_R4 || code == Code.Conv_R8;
+		}
+
 		public static object TypeValueConvert(string typeName, object op)
 		{
 			if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))

@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1391104228
-	.compileTime 1391104228
+	.modifyTime 1391108231
+	.compileTime 1391108231
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -24,6 +24,37 @@
 		.endPropertyTable
 		.stateTable
 			.state
+				.function test
+					.userFlags 0
+					.docString ""
+					.return None
+					.paramTable
+					.endParamTable
+					.localTable
+						.local ::NoneVar None
+						.local V_0 Example1_GodMode[]
+						.local V_1 Example1_GodMode
+						.local V_2 Example1_GodMode[]
+						.local V_3 Int
+						.local V_4 Bool
+						.local ::temp0 Int
+					.endLocalTable
+					.code
+						ArrayCreate V_0 120
+						Assign V_2 V_0
+						Assign V_3 0
+						Jump _label38
+					_label16:
+						ArrayGetElement V_1 V_2 V_3
+						CallMethod SetName V_1 ::NoneVar "hello!"
+						IAdd V_3 V_3 1
+					_label38:
+						ArrayLength ::temp0 V_2
+						CompareLT V_4 V_3 ::temp0
+						JumpF V_4 _label16
+						Return None
+					.endCode
+				.endFunction
 				.function OnInit
 					.userFlags 0
 					.docString ""
@@ -40,6 +71,7 @@
 						.local V_5 Float[]
 						.local V_6 Float
 						.local V_7 Int
+						.local ::temp1 Int
 						.local ::temp0 Bool
 					.endLocalTable
 					.code
@@ -54,7 +86,8 @@
 						Jump _label39
 					_label39:
 						ArrayCreate V_2 120
-						ArrayLength V_3 V_2
+						ArrayLength ::temp1 V_2
+						Assign V_3 ::temp1
 						ArrayGetElement V_4 V_2 28
 						ArraySetElement V_2 28 None
 						ArrayCreate V_5 128
