@@ -131,15 +131,18 @@ namespace PapyrusDotNet.CoreBuilder
 
 			var papyrusObjects = new List<PapyrusAsmObject>();
 
+			Console.WriteLine("Parsing Papyrus...");
 			papyrusObjects.AddRange(files.Select(Parse));
 
+
+			Console.WriteLine("Adding object references...");
 			foreach (var pasObj in papyrusObjects)
 				AddedTypeReferences.Add(GetTypeReference(null, pasObj.Name));
 
 			foreach (var pas in papyrusObjects)
 				MainModule.Types.Add(TypeDefinitionFromPapyrus(pas));
 
-
+			Console.WriteLine("Resolving object references...");
 			foreach (var t in MainModule.Types)
 			{
 				foreach (var f in t.Methods)
@@ -158,9 +161,115 @@ namespace PapyrusDotNet.CoreBuilder
 				}
 			}
 
-			MainModule.Import(
-				typeof(AutoAttribute));
+			Console.WriteLine("Importing Papyrus specific attributes...");
 
+			var isOk = IncludeType(MainModule, typeof(AutoAttribute));
+			isOk = isOk && IncludeType(MainModule, typeof(AutoReadOnlyAttribute));
+			isOk = isOk && IncludeType(MainModule, typeof(ConditionalAttribute));
+			isOk = isOk && IncludeType(MainModule, typeof(HiddenAttribute));
+			isOk = isOk && IncludeType(MainModule, typeof(PropertyAttribute));
+			isOk = isOk && IncludeType(MainModule, typeof(InitialValueAttribute));
+
+			if (!isOk)
+			{
+
+			}
+
+
+
+			Core.Write(OutputFileName);
+			Console.WriteLine(OutputFileName + " successefully generated.");
+		}
+
+		private static bool IncludeType(ModuleDefinition MainModule, Type type)
+		{
+			try
+			{
+				var reference = MainModule.Import(type);
+
+				var definition = reference.Resolve();
+
+				var newType = new TypeDefinition(CoreNamespace, definition.Name, TypeAttributes.Class);
+				newType.IsPublic = true;
+				newType.BaseType = definition.BaseType;
+
+				foreach (var field in definition.Fields)
+				{
+					var newField = new FieldDefinition(field.Name, FieldAttributes.Public, field.FieldType);
+					newType.Fields.Add(newField);
+				}
+
+				foreach (var field in definition.Events)
+				{
+					var newField = new EventDefinition(field.Name, EventAttributes.None, field.EventType);
+					newType.Events.Add(newField);
+				}
+
+				var constructor = definition.Methods.FirstOrDefault(m => m.IsConstructor);
+				if (constructor != null)
+					MainModule.Import(constructor);
+
+				if (definition.BaseType != null)
+				{
+					try
+					{
+						var baseDef = definition.BaseType.Resolve();
+						constructor = baseDef.Methods.FirstOrDefault(m => m.IsConstructor);
+						if (constructor != null)
+							MainModule.Import(constructor);
+					}
+					catch { }
+				}
+
+				// if (constructor != null && !constructor.HasParameters)
+				AddEmptyConstructor(newType);
+
+				foreach (var field in definition.Methods)
+				{
+
+					if (field.IsConstructor && !field.HasParameters) continue;
+
+
+
+
+					var newField = new MethodDefinition(field.Name, field.Attributes, field.ReturnType);
+
+					var refer = MainModule.Import(field);
+
+					foreach (var fp in field.Parameters)
+					{
+						if (fp.Name.Contains("<"))
+						{
+
+						}
+						var newParam = new ParameterDefinition(fp.Name, fp.Attributes, fp.ParameterType);
+						newField.Parameters.Add(newParam);
+					}
+					/*	
+						if (field.HasBody)
+						{
+							foreach (var inst in field.Body.Instructions)
+							{
+								if (inst.Operand is MethodReference)
+									MainModule.Import(inst.Operand as MethodReference);
+								if (inst.Operand is FieldReference)
+									MainModule.Import(inst.Operand as FieldReference);
+
+							
+								// newField.Body.Instructions.Add(inst);
+							}
+						}*/
+
+					CreateEmptyFunctionBody(ref newField);
+					newType.Methods.Add(newField);
+				}
+
+				MainModule.Types.Add(newType);
+				return true;
+			}
+			catch { }
+			return false;
+			/*
 			MainModule.Import(
 			   typeof(AutoReadOnlyAttribute));
 
@@ -168,11 +277,7 @@ namespace PapyrusDotNet.CoreBuilder
 				typeof(ConditionalAttribute));
 
 			MainModule.Import(
-				typeof(HiddenAttribute));
-
-
-			Core.Write(OutputFileName);
-			Console.WriteLine(OutputFileName + " successefully generated.");
+				typeof(HiddenAttribute));*/
 		}
 
 		public static TypeDefinition TypeDefinitionFromPapyrus(PapyrusAsmObject input)

@@ -26,5 +26,9 @@ namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
 	public class HiddenAttribute : Attribute
 	{
+		public HiddenAttribute()
+		{
+			
+		}
 	}
 }

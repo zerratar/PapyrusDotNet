@@ -22,7 +22,9 @@ namespace Example1
 	using PapyrusDotNet.Core;
 
 	public class GodMode : Actor
-	{
+	{	
+		public GodMode myGodMode;
+
 		public override void OnInit()
 		{
 
@@ -30,11 +32,9 @@ namespace Example1
 			int hej2 = (int)hej;
 
 			GodMode[] objs = new GodMode[120];
-			
+
 
 			var objlen = objs.Length;
-
-
 
 			var at1 = objs[28];
 			objs[28] = null;

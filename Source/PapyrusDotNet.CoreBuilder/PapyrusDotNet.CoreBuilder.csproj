@@ -63,7 +63,10 @@
     <Compile Include="CoreExtensions\AutoAttribute.cs" />
     <Compile Include="CoreExtensions\AutoReadOnlyAttribute.cs" />
     <Compile Include="CoreExtensions\ConditionalAttribute.cs" />
+    <Compile Include="CoreExtensions\InitialValueAttribute.cs" />
+    <Compile Include="CoreExtensions\NativeAttribute.cs" />
     <Compile Include="CoreExtensions\HiddenAttribute.cs" />
+    <Compile Include="CoreExtensions\PropertyAttribute.cs" />
     <Compile Include="PapyrusDotNetArgs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

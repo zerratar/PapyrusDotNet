@@ -103,6 +103,82 @@ namespace PapyrusDotNet.Common
 			return null;
 		}
 
+		public static FieldProperties GetFlagsAndProperties(TypeDefinition variable)
+		{
+			string initialValue = null;
+			bool isProperty = false, isAuto = false, isAutoReadOnly = false, isHidden = false, isConditional = false;
+			foreach (var varAttr in variable.CustomAttributes)
+			{
+				if (varAttr.AttributeType.Name.Equals("PropertyAttribute"))
+					isProperty = true;
+
+				if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
+				{
+					// Get initial value here
+					// Not Yet Implemented.
+				}
+				if (varAttr.AttributeType.Name.Equals("AutoAttribute"))
+					isAuto = true;
+
+				if (varAttr.AttributeType.Name.Equals("AutoReadOnlyAttribute"))
+					isAutoReadOnly = true;
+
+				if (varAttr.AttributeType.Name.Equals("HiddenAttribute"))
+					isHidden = true;
+
+
+				if (varAttr.AttributeType.Name.Equals("ConditionalAttribute"))
+					isConditional = true;
+			}
+			return new FieldProperties()
+			{
+				InitialValue = initialValue,
+				IsAuto = isAuto,
+				IsAutoReadOnly = isAutoReadOnly,
+				IsConditional = isConditional,
+				IsHidden = isHidden,
+				IsProperty = isProperty
+			};
+		}
+
+		public static FieldProperties GetFlagsAndProperties(FieldDefinition variable)
+		{
+			string initialValue = null;
+			bool isProperty = false, isAuto = false, isAutoReadOnly = false, isHidden = false, isConditional = false;
+			foreach (var varAttr in variable.CustomAttributes)
+			{
+				if (varAttr.AttributeType.Name.Equals("PropertyAttribute"))
+					isProperty = true;
+
+				if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
+				{
+					// Get initial value here
+					// Not Yet Implemented.
+				}
+				if (varAttr.AttributeType.Name.Equals("AutoAttribute"))
+					isAuto = true;
+
+				if (varAttr.AttributeType.Name.Equals("AutoReadOnlyAttribute"))
+					isAutoReadOnly = true;
+
+				if (varAttr.AttributeType.Name.Equals("HiddenAttribute"))
+					isHidden = true;
+
+
+				if (varAttr.AttributeType.Name.Equals("ConditionalAttribute"))
+					isConditional = true;
+			}
+			return new FieldProperties()
+			{
+				InitialValue = initialValue,
+				IsAuto = isAuto,
+				IsAutoReadOnly = isAutoReadOnly,
+				IsConditional = isConditional,
+				IsHidden = isHidden,
+				IsProperty = isProperty
+			};
+		}
+
 		public static string GetString(object p)
 		{
 			if (p is string) return (string)p;
@@ -145,7 +221,10 @@ namespace PapyrusDotNet.Common
 				}
 				else
 				{
-					swExt = Namespace.Replace('.', '_') + "_";
+					if (Namespace.ToLower().Equals("papyrusdotnet.core")) 
+						swExt = "";
+					else
+						swExt = Namespace.Replace('.', '_') + "_";
 				}
 			}
 			if (isArray)
@@ -395,11 +474,11 @@ namespace PapyrusDotNet.Common
 
 			public int EndRow { get; set; }
 
-			public List<LabelReference> UsedLabels = new List<LabelReference>();
+			public List<PapyrusLabelReference> UsedLabels = new List<PapyrusLabelReference>();
 
-			public List<LabelDefinition> Labels = new List<LabelDefinition>();
+			public List<PapyrusLabelDefinition> Labels = new List<PapyrusLabelDefinition>();
 
-			public LabelDefinition GetLabelDefinition(int row)
+			public PapyrusLabelDefinition GetLabelDefinition(int row)
 			{
 				return Labels.FirstOrDefault(r => r.Row == row);
 			}
@@ -467,11 +546,11 @@ namespace PapyrusDotNet.Common
 				{
 					if (row.Replace("\t", "").StartsWith("_") && row.Trim().EndsWith(":"))
 					{
-						latestCodeBlock.Labels.Add(new LabelDefinition(rowI, row.Replace("\t", "").Trim()));
+						latestCodeBlock.Labels.Add(new PapyrusLabelDefinition(rowI, row.Replace("\t", "").Trim()));
 					}
 					if (row.Replace("\t", "").Contains("_label") && !row.Contains(":") && row.ToLower().Contains("jump"))
 					{
-						latestCodeBlock.UsedLabels.Add(new LabelReference(row.Substring(row.IndexOf("_label")).Split(' ')[0] + ":", rowI));
+						latestCodeBlock.UsedLabels.Add(new PapyrusLabelReference(row.Substring(row.IndexOf("_label")).Split(' ')[0] + ":", rowI));
 					}
 				}
 				rowI++;
@@ -484,9 +563,9 @@ namespace PapyrusDotNet.Common
 		public static string RemoveUnnecessaryLabels(string output)
 		{
 			var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
-			var labelReplacements = new List<ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>>();
+			var labelReplacements = new List<ObjectReplacementHolder<PapyrusLabelDefinition, PapyrusLabelDefinition, PapyrusLabelReference>>();
 			var codeBlocks = ParseCodeBlocks(rows);
-			var lastReplacement = new ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>();
+			var lastReplacement = new ObjectReplacementHolder<PapyrusLabelDefinition, PapyrusLabelDefinition, PapyrusLabelReference>();
 			foreach (var codeBlock in codeBlocks)
 			{
 
@@ -499,7 +578,7 @@ namespace PapyrusDotNet.Common
 					{
 						if (lastReplacement == null)
 						{
-							lastReplacement = new ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>();
+							lastReplacement = new ObjectReplacementHolder<PapyrusLabelDefinition, PapyrusLabelDefinition, PapyrusLabelReference>();
 						}
 
 						var label = codeBlock.GetLabelDefinition(lastRowIndex + 1);
@@ -559,7 +638,7 @@ namespace PapyrusDotNet.Common
 			return String.Join(Environment.NewLine, rows.ToArray());
 		}
 
-		public static string InjectTempVariables(string output, int indentDepth, List<VarReference> TempVariables)
+		public static string InjectTempVariables(string output, int indentDepth, List<PapyrusVariableReference> TempVariables)
 		{
 			var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
 
@@ -640,72 +719,14 @@ namespace PapyrusDotNet.Common
 		}
 
 
-
-	}
-
-
-	public class ObjectReplacementHolder<T, T2, T3>
-	{
-		public T Replacement { get; set; }
-		public List<T2> ToReplace { get; set; }
-		public List<T3> ToReplaceSecondary { get; set; }
-		public ObjectReplacementHolder()
+		public static string GetPropertyName(string p)
 		{
-			ToReplace = new List<T2>();
-			ToReplaceSecondary = new List<T3>();
-		}
-	}
-
-	public class LabelDefinition
-	{
-		public string Name { get; set; }
-		public int Row { get; set; }
-		public LabelDefinition(int row, string name = null)
-		{
-			this.Row = row;
-			this.Name = name;
-			if (string.IsNullOrEmpty(this.Name))
+			string outName = p;
+			if (p.StartsWith("::"))
 			{
-				this.Name = "_label" + this.Row;
+				outName = outName.Substring(2);
 			}
+			return "p" + outName;
 		}
-	}
-
-	public class LabelReference
-	{
-		public string Name { get; set; }
-		public int RowReference { get; set; }
-		public LabelReference(string name, int row)
-		{
-			this.Name = name;
-			this.RowReference = row;
-		}
-	}
-	public class VarReference
-	{
-		public VarReference(string name, string type)
-		{
-			// TODO: Complete member initialization
-			this.Name = name;
-			this.TypeName = type;
-		}
-		public VarReference(string name, string type, string definition)
-		{
-			// TODO: Complete member initialization
-			this.Name = name;
-			this.TypeName = type;
-			this.Definition = definition;
-		}
-		public string Definition { get; set; }
-		public object Value { get; set; }
-		public string Name { get; set; }
-		public string TypeName { get; set; }
-	}
-	public class EvaluationStackItem
-	{
-		public bool IsMethodCall { get; set; }
-		public bool IsThis { get; set; }
-		public object Value { get; set; }
-		public string TypeName { get; set; }
 	}
 }

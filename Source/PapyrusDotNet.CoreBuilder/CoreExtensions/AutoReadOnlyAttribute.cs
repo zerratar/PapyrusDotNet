@@ -26,6 +26,9 @@ namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
 	public class AutoReadOnlyAttribute : Attribute
 	{
+		public AutoReadOnlyAttribute()
+		{
 
+		}
 	}
 }

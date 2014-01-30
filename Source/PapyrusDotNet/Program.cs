@@ -45,13 +45,13 @@ namespace PapyrusDotNet
 	{
 		public static bool HandleConstructorAsOnInit = false;
 
-		private static List<VarReference> Fields;
+		private static List<PapyrusVariableReference> Fields;
 		public static AssemblyDefinition CurrentAssembly;
 		static void Main(string[] args)
 		{
 
 			string outputFolder = @".\output";
-			string inputFile = @"..\..\..\..\Examples\Example1\bin\Debug\Example1.dll";
+			string inputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
 			try
 			{
 				var parsed = Args.Parse<PapyrusDotNetArgs>(args);
@@ -96,7 +96,7 @@ namespace PapyrusDotNet
 						if (!type.FullName.ToLower().Contains("<module>"))
 						{
 							Console.WriteLine("Generating Papyrus Asm for " + type.FullName);
-							Fields = new List<VarReference>();
+							Fields = new List<PapyrusVariableReference>();
 							string papyrus = "";
 							papyrus += CreatePapyrusInfo(CurrentAssembly);
 							papyrus += CreatePapyrusUserflagRef();
@@ -113,6 +113,8 @@ namespace PapyrusDotNet
 			{
 				try
 				{
+					if (!System.IO.Directory.Exists(outputFolder)) System.IO.Directory.CreateDirectory(outputFolder);
+
 					Console.WriteLine("Saving " + System.IO.Path.Combine(outputFolder, pas.Key) + "...");
 					System.IO.File.WriteAllText(System.IO.Path.Combine(outputFolder, pas.Key), pas.Value);
 				}
@@ -135,22 +137,34 @@ namespace PapyrusDotNet
 
 			papyrus += ".objectTable" + Environment.NewLine;
 			papyrus += "\t.object " + GetPapyrusBaseType(type) + (type.BaseType != null ? " " + GetPapyrusBaseType(type.BaseType) : "") + Environment.NewLine;
-			papyrus += "\t\t.userFlags 0" + Environment.NewLine;
+
+			var props = Utility.GetFlagsAndProperties(type);
+
+			papyrus += "\t\t.userFlags " + props.UserFlagsValue + Environment.NewLine;
 			papyrus += "\t\t.docString \"\"" + Environment.NewLine;
 			papyrus += "\t\t.autoState" + Environment.NewLine;
 
 			papyrus += "\t\t.variableTable" + Environment.NewLine;
 			foreach (var variable in type.Fields)
 			{
+				var varProps = Utility.GetFlagsAndProperties(variable);
+
 				var n = variable.Name.Replace('<', '_').Replace('>', '_');
 				var t = variable.FieldType;
 				var v = variable.InitialValue;
 				string initialValue = "";
 				string fieldType = Utility.GetPapyrusReturnType(t.Name, t.Namespace);
 
-
 				papyrus += Utility.StringIndent(3, ".variable ::" + n + " " + fieldType);
-				papyrus += Utility.StringIndent(4, ".userFlags 0");
+
+				var userFlagsVal = varProps.UserFlagsValue;
+				if (varProps.IsHidden && varProps.IsProperty)
+				{
+					userFlagsVal -= 1;
+					// The hidden flag only effects the Property field, declared after the variable field
+				}
+
+				papyrus += Utility.StringIndent(4, ".userFlags " + userFlagsVal);
 
 				if (v != null && v.Length > 0)
 				{
@@ -166,19 +180,35 @@ namespace PapyrusDotNet
 				}
 				else initialValue = "None";
 
+				if (varProps.InitialValue != null) initialValue = varProps.InitialValue;
+
 				papyrus += Utility.StringIndent(4, ".initialValue " + initialValue);
 				papyrus += Utility.StringIndent(3, ".endVariable");
 
-
-				Fields.Add(new VarReference("::" + n, fieldType));
+				var newVar = new PapyrusVariableReference("::" + n, fieldType);
+				newVar.Properties = varProps;
+				Fields.Add(newVar);
 			}
 			papyrus += "\t\t.endVariableTable" + Environment.NewLine;
 
+
 			papyrus += "\t\t.propertyTable" + Environment.NewLine;
+
+			foreach (var propField in Fields.Where(f => f.Properties.IsProperty))
+			{
+				string autoMarker = propField.Properties.IsAuto ? " auto" : "";
+
+				var propName = Utility.GetPropertyName(propField.Name);
+				papyrus += Utility.StringIndent(3, ".property " + propName + " " + propField.TypeName + autoMarker);
+				papyrus += Utility.StringIndent(4, ".userFlags " + propField.Properties.UserFlagsValue);
+				papyrus += Utility.StringIndent(4, ".docString \"\"");
+				papyrus += Utility.StringIndent(4, ".autoVar " + propField.Name);
+				papyrus += Utility.StringIndent(3, ".endProperty");
+			}
+
 			papyrus += "\t\t.endPropertyTable" + Environment.NewLine;
 
 			papyrus += "\t\t.stateTable" + Environment.NewLine;
-
 			papyrus += "\t\t\t.state" + Environment.NewLine;
 			var methods = type.Methods;
 			foreach (var method in methods)
@@ -219,11 +249,11 @@ namespace PapyrusDotNet
 				{
 					if (row.Replace("\t", "").StartsWith("_") && row.Trim().EndsWith(":"))
 					{
-						latestCodeBlock.Labels.Add(new LabelDefinition(rowI, row.Replace("\t", "").Trim()));
+						latestCodeBlock.Labels.Add(new PapyrusLabelDefinition(rowI, row.Replace("\t", "").Trim()));
 					}
 					if (row.Replace("\t", "").Contains("_label") && !row.Contains(":") && row.ToLower().Contains("jump"))
 					{
-						latestCodeBlock.UsedLabels.Add(new LabelReference(row.Substring(row.IndexOf("_label")).Split(' ')[0] + ":", rowI));
+						latestCodeBlock.UsedLabels.Add(new PapyrusLabelReference(row.Substring(row.IndexOf("_label")).Split(' ')[0] + ":", rowI));
 					}
 				}
 				rowI++;
@@ -259,6 +289,8 @@ namespace PapyrusDotNet
 
 			return string.Join(Environment.NewLine, rows.ToArray());
 		}
+
+
 
 		public static string GetPapyrusBaseType(TypeReference typeRef)
 		{

@@ -33,15 +33,16 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PapyrusDotNet.Core, Version=1.0.65535.65535, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\PapyrusDotNet.Importer\bin\Debug\PapyrusDotNet.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
+    <Compile Include="AttributeExample.cs" />
     <Compile Include="GodMode.cs" />
     <Compile Include="GodModeExtended.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PapyrusDotNet.Core">
+      <HintPath>..\..\Binaries\PapyrusDotNet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
