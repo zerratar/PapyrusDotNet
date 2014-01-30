@@ -11,9 +11,14 @@ Please see http://www.gnu.org/licenses/gpl.txt
 
 Copyright © Karl Patrik Johansson 2014
 
-
-There are currently no 'How To Use' as its just a first initial upload to github and its still pretty much
-hardcoded to work on my own system. I'm working on making it more configurable for everyone to use a lot easier.
+###Readme Overview
+* [What is Papyrus.NET (PapyrusDotNet)?](#what-is-PapyrusNET-PapyrusDotNet)
+* [Other Projects](#other-projects)
+* [FAQ](#faq)
+* [Known Issues](#known-issues)
+* [Planned](#planned)
+* [Ready for Test](#ready-for-test)
+* [Changelog](#changelog)
 
 
 ##NOTE:
