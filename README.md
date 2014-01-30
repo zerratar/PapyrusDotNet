@@ -185,7 +185,7 @@ Initial Value Example: <br/>
     [InitialValue(0)]
     public int myStartingVal = 0;
     
-    [InitialValue("hello world!")
+    [InitialValue("hello world!")]
 	public string dummy;
 	
 Properties Example: <br/>
