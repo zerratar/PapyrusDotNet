@@ -279,6 +279,32 @@ namespace PapyrusDotNet.Common
 			return output;
 		}
 
+		public static bool IsBranchConditionalEQ(Code code)
+		{
+			return code == Code.Beq || code == Code.Beq_S;
+		}
+
+		public static bool IsBranchConditionalLT(Code code)
+		{
+			return code == Code.Blt || code == Code.Blt_S || code == Code.Blt_Un || code == Code.Blt_Un_S;
+		}
+
+		public static bool IsBranchConditionalLE(Code code)
+		{
+			return code == Code.Ble || code == Code.Ble_S || code == Code.Ble_Un || code == Code.Ble_Un_S;
+		}
+
+		public static bool IsBranchConditionalGT(Code code)
+		{
+			return code == Code.Bgt || code == Code.Bgt_S || code == Code.Bgt_Un || code == Code.Bgt_Un_S;
+		}
+
+		public static bool IsBranchConditionalGE(Code code)
+		{
+			return code == Code.Bge || code == Code.Bge_S || code == Code.Bge_Un || code == Code.Bge_Un_S;
+		}
+
+
 		public static bool IsBranchConditional(Code code)
 		{
 			return code == Code.Beq || code == Code.Beq_S || code == Code.Bgt || code == Code.Bgt_S || code == Code.Bgt_Un
@@ -553,7 +579,7 @@ namespace PapyrusDotNet.Common
 					{
 						latestCodeBlock.Labels.Add(new PapyrusLabelDefinition(rowI, row.Replace("\t", "").Trim()));
 					}
-					if (row.Replace("\t", "").Contains("_label") && !row.Contains(":") && row.ToLower().Contains("jump"))
+					else if (row.Replace("\t", "").Contains("_label") /* && !row.Contains(":")*/ && row.ToLower().Contains("jump"))
 					{
 						latestCodeBlock.UsedLabels.Add(new PapyrusLabelReference(row.Substring(row.IndexOf("_label")).Split(' ')[0] + ":", rowI));
 					}

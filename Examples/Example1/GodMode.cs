@@ -31,6 +31,13 @@ namespace Example1
 			object hej = 123;
 			int hej2 = (int)hej;
 
+			switch (hej2)
+			{
+				case 0:
+					Debug.MessageBox("HELLOOO");
+					break;
+			}
+
 			GodMode[] objs = new GodMode[120];
 			
 

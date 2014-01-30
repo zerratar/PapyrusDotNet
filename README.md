@@ -152,13 +152,13 @@ Known Issues
 1. No Documentation<br/>
 2. Poorly or non- commented code<br/>
 3. Knowing what kind of code that will work or not<br/>
-4. No support for switch cases yet<br/>
-5. No support for anything from the .NET framework<br/>
-6. No support for generics and generic types/classes 'yet'<br/>
-7. No support for linq 'yet'<br/>
-8. No support for extension functions 'yet'<br/>
-9. No support for the type value Object 'yet'<br/>
-10. Unfortenately, a lot more...
+4. No support for anything from the .NET framework<br/>
+5. No support for generics and generic types/classes 'yet'<br/>
+6. No support for linq 'yet'<br/>
+7. No support for extension functions 'yet'<br/>
+8. No support for the type value Object 'yet'<br/>
+9. Script States are not yet supported.<br/>
+
 
 <br/>
 yet : Will be supported in the future<br/>
@@ -166,13 +166,12 @@ yet : Will be supported in the future<br/>
 
 Planned
 =======
-(Not listed in a specified order)<br/>
-1. Switch cases, not properly tested yet.<br/>
-2. Generics, getting generics to work at compile time instead of runtime.<br/>
-3. Extended functionality of the PapyrusDotNet.Core Framework<br/>
-4. Better and more code comments<br/>
-5. Documentation<br/>
-6. More Examples<br/>
+1. Generics, getting generics to work at compile time instead of runtime.<br/>
+2. Extended functionality of the PapyrusDotNet.Core Framework<br/>
+3. Better and more code comments<br/>
+4. Documentation<br/>
+5. More Examples<br/>
+6. Script States<br/>
 7. And a lot more! Things can only get better from here!<br/>
 
 Ready for Test
@@ -200,6 +199,9 @@ Attributes Example: <br/>
 	
 Changelog
 ========
+###v0.03
++ Added support for switch cases.
+
 ###v0.02
 + Added support for Properties and Atttributes.
 + Added support for InitialValue for fields.

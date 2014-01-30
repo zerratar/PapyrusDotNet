@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1391091084
-	.compileTime 1391091084
+	.modifyTime 1391104228
+	.compileTime 1391104228
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -31,6 +31,7 @@
 					.paramTable
 					.endParamTable
 					.localTable
+						.local ::NoneVar None
 						.local V_0 Object
 						.local V_1 Int
 						.local V_2 Example1_GodMode[]
@@ -38,10 +39,20 @@
 						.local V_4 Example1_GodMode
 						.local V_5 Float[]
 						.local V_6 Float
+						.local V_7 Int
+						.local ::temp0 Bool
 					.endLocalTable
 					.code
 						Assign V_0 123
 						Assign V_1 V_0
+						Assign V_7 V_1
+						CompareEQ ::temp0 0 V_7
+						JumpF ::temp0 _label26
+						Jump _label39
+					_label26:
+						CallStatic Debug MessageBox ::NoneVar "HELLOOO"
+						Jump _label39
+					_label39:
 						ArrayCreate V_2 120
 						ArrayLength V_3 V_2
 						ArrayGetElement V_4 V_2 28

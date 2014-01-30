@@ -279,14 +279,14 @@ namespace PapyrusDotNet
 					}
 				}
 			}
-
+			/*
 			var ordered = labelsToRemove.OrderByDescending(i => i.Key).ToArray();
 
 			foreach (var row in ordered)
 			{
 				rows.RemoveAt(row.Key);
 			}
-
+			*/
 			return string.Join(Environment.NewLine, rows.ToArray());
 		}
 

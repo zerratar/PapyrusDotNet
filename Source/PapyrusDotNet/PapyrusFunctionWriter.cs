@@ -706,6 +706,55 @@ namespace PapyrusDotNet
 			if (Utility.IsBranchConditional(instruction.OpCode.Code))
 			{
 				var heapStack = EvaluationStack;
+
+				var popCount = Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop);
+				if (EvaluationStack.Count >= popCount)
+				{
+
+					var obj1 = EvaluationStack.Pop();
+					var obj2 = EvaluationStack.Pop();
+
+					// Make sure we have a temp variable if necessary
+					string temp = GetTargetVariable(instruction, null, "Bool");
+
+					string value1 = "";
+					string value2 = "";
+
+					if (obj1.Value is PapyrusVariableReference)
+						value1 = (obj1.Value as PapyrusVariableReference).Name;
+					else
+						value1 = obj1.Value.ToString();
+
+					if (obj2.Value is PapyrusVariableReference) value2 = (obj2.Value as PapyrusVariableReference).Name;
+					else
+						value2 = obj2.Value.ToString();
+
+					skipNextInstruction = false;
+					var output = new List<string>();
+					if (Utility.IsBranchConditionalEQ(instruction.OpCode.Code))
+					{
+						var target = instruction.Operand;
+						var targetVal = "";
+						if (target is Instruction)
+						{
+							targetVal = "_label" + (target as Instruction).Offset;
+						}
+						else if (target != null)
+						{
+							targetVal = target.ToString();
+						}
+
+						output.Add("CompareEQ " + temp + " " + value1 + " " + value2);
+
+						if(InvertedBranch)
+							output.Add("JumpT " + temp + " " + targetVal);
+						else
+						{
+							output.Add("JumpF " + temp + " " + targetVal);
+						}
+						return string.Join(Environment.NewLine, output.ToArray());
+					}
+				}
 			}
 			else if (Utility.IsBranch(instruction.OpCode.Code))
 			{
@@ -788,6 +837,7 @@ namespace PapyrusDotNet
 		{
 			string targetVar = null;
 			var whereToPlace = instruction.Next;
+
 			if (whereToPlace != null && (Utility.IsStoreLocalVariable(whereToPlace.OpCode.Code) || Utility.IsStoreField(whereToPlace.OpCode.Code)))
 			{
 
@@ -812,7 +862,7 @@ namespace PapyrusDotNet
 				// else 
 				//EvaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
 			}
-			else if (whereToPlace != null && (Utility.IsLoad(whereToPlace.OpCode.Code) || Utility.IsCallMethod(whereToPlace.OpCode.Code)))
+			else if (whereToPlace != null && (Utility.IsLoad(whereToPlace.OpCode.Code) || Utility.IsCallMethod(whereToPlace.OpCode.Code) || Utility.IsBranchConditional(instruction.OpCode.Code)))
 			{
 				// Most likely this function call have a return value other than Void
 				// and is used for an additional method call, witout being assigned to a variable first.
