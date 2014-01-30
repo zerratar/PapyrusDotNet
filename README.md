@@ -203,6 +203,7 @@ Changelog
 + Improved support for type casting
 + Fixed a type casting bug
 + Fixed a bug with Conditional Jumps making 'switch' select wrong cases.
++ Fixed a bug with Initial Values
 
 ###v0.1.3f1
 + Added support for foreach statements

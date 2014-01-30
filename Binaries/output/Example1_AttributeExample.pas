@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1391119534
-	.compileTime 1391119534
+	.modifyTime 1391120774
+	.compileTime 1391120774
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -29,7 +29,11 @@
 			.endVariable
 			.variable ::totalHoursElapsed Int
 				.userFlags 0
-				.initialValue Mono.Cecil.CustomAttributeArgument
+				.initialValue 0
+			.endVariable
+			.variable ::dummy String
+				.userFlags 0
+				.initialValue "Hello world!"
 			.endVariable
 		.endVariableTable
 		.propertyTable

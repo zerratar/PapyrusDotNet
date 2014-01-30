@@ -114,8 +114,19 @@ namespace PapyrusDotNet.Common
 
 				if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
 				{
-					// Get initial value here
-					// Not Yet Implemented.
+					var ctrArg = varAttr.ConstructorArguments.FirstOrDefault();
+					if (ctrArg.Value != null)
+					{
+						if (ctrArg.Value is CustomAttributeArgument)
+						{
+							var arg = ((CustomAttributeArgument)ctrArg.Value);
+							var val = arg.Value;
+
+							initialValue = TypeValueConvert(arg.Type.Name, val).ToString();
+						}
+						else
+							initialValue = ctrArg.Value.ToString();
+					}
 				}
 				if (varAttr.AttributeType.Name.Equals("AutoAttribute"))
 					isAuto = true;
@@ -152,12 +163,18 @@ namespace PapyrusDotNet.Common
 
 				if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
 				{
-					// Get initial value here
-					// Not Yet Implemented.
 					var ctrArg = varAttr.ConstructorArguments.FirstOrDefault();
 					if (ctrArg.Value != null)
 					{
-						initialValue = ctrArg.Value.ToString();
+						if (ctrArg.Value is CustomAttributeArgument)
+						{
+							var arg = ((CustomAttributeArgument)ctrArg.Value);
+							var val = arg.Value;
+
+							initialValue = TypeValueConvert(arg.Type.Name, val).ToString();
+						}
+						else
+							initialValue = ctrArg.Value.ToString();
 					}
 				}
 				if (varAttr.AttributeType.Name.Equals("AutoAttribute"))

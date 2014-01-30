@@ -17,6 +17,9 @@
 		[InitialValue(0)]
 		private int totalHoursElapsed = 0;
 
+		[InitialValue("Hello world!")]
+		private string dummy;
+
 		public override void OnInit()
 		{
 			RegisterForSingleUpdateGameTime(1);
