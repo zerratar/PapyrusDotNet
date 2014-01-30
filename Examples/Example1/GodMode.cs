@@ -32,7 +32,7 @@ namespace Example1
 			int hej2 = (int)hej;
 
 			GodMode[] objs = new GodMode[120];
-
+			
 
 			var objlen = objs.Length;
 

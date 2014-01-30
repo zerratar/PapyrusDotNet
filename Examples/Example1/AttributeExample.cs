@@ -14,6 +14,7 @@
 		[Property, Auto]
 		public Actor PlayerRef;
 
+		[InitialValue(0)]
 		private int totalHoursElapsed = 0;
 
 		public override void OnInit()

@@ -154,6 +154,11 @@ namespace PapyrusDotNet.Common
 				{
 					// Get initial value here
 					// Not Yet Implemented.
+					var ctrArg = varAttr.ConstructorArguments.FirstOrDefault();
+					if (ctrArg.Value != null)
+					{
+						initialValue = ctrArg.Value.ToString();
+					}
 				}
 				if (varAttr.AttributeType.Name.Equals("AutoAttribute"))
 					isAuto = true;
@@ -221,7 +226,7 @@ namespace PapyrusDotNet.Common
 				}
 				else
 				{
-					if (Namespace.ToLower().Equals("papyrusdotnet.core")) 
+					if (Namespace.ToLower().Equals("papyrusdotnet.core"))
 						swExt = "";
 					else
 						swExt = Namespace.Replace('.', '_') + "_";

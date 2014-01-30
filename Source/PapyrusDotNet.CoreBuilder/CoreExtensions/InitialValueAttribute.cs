@@ -7,7 +7,7 @@ namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
 	public class InitialValueAttribute : Attribute
 	{		
-		public InitialValueAttribute(string value)
+		public InitialValueAttribute(object value)
 		{		
 		}
 	}

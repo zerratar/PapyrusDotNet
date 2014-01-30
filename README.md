@@ -175,6 +175,11 @@ Ready for Test
 1. Papyrus Attributes: Auto, AutoReadOnly, Conditional, Hidden<br/>
 2. Properties<br/>
 
+Initial Value Example: <br/>
+
+    [InitialValue(0)]
+    public int myStartingVal = 0;
+	
 Properties Example: <br/>
 
     [Property, Auto]
@@ -189,6 +194,7 @@ Changelog
 ========
 ###v0.02
 + Added support for Properties and Atttributes.
++ Added support for InitialValue for fields.
 + Fixed a bug when concating strings
 + Added nex example on how to use Attributes and Properties.<br/>
 
