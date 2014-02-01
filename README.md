@@ -30,7 +30,7 @@ __You CANNOT use any of the types, methods, functions from any existing .NET lib
 Even if it builds, and are able to generate some sort of Papyrus Assembly Code, the papyrus code wont compile
 as it does not have these types, methods, functions defined.__
 
-__So Generics does NOT work, dynamics does not work, linq does not work, extensions does not work, not even the System.Object
+__Dynamics does not work, linq does not work, extensions does not work, not even the System.Object
 ValueType does not work.__
 
 However:
@@ -51,7 +51,6 @@ and only use classes from the PapyrusDotNet.Core.dll and/or any PapyrusDotNet.Co
 PapyrusDotNet.Core.Collections
 
 See Examples folder for usable examples.
-
 
 If you're not familiar with Papyrus, i highly recommend you read some<br/>
 of their basic tutorials.<br/>
