@@ -17,17 +17,13 @@
 	Copyright 2014, Karl Patrik Johansson, zerratar@gmail.com
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace PapyrusDotNet.Core.Collections
 {
 	/// <summary>
 	/// Example List<ValueType> converted class.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	[GenericType]
 	internal class ListString : Form
 	{
 		private string[] ArrayHolder_0 = new string[128];

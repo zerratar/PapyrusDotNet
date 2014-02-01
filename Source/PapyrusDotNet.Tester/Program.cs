@@ -27,6 +27,9 @@ namespace PapyrusDotNet.Tester
 		
 		static void Main(string[] args)
 		{
+
+			var array = new Collection();
+			
 			
 			var list = new List<Form>();
 			var f1 = new Form();

@@ -28,6 +28,7 @@ namespace PapyrusDotNet.Core.Collections
 	/// Example List<ValueType> converted class.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	[GenericType]
 	internal class ListInt : Form
 	{
 		private int[] ArrayHolder_0 = new int[128];

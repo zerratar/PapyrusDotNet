@@ -173,9 +173,20 @@ namespace PapyrusDotNet
 			var name = parameter.Name;
 			var type = parameter.ParameterType.FullName;
 			var typeN = parameter.ParameterType.Name;
+
+			var val = Utility.GetPapyrusReturnType(typeN, parameter.ParameterType.Namespace);
+			if (parameter.ParameterType.IsGenericInstance)
+			{
+				var targetName = type.Split('<')[1].Split('>')[0];
+				var papName = Utility.GetPapyrusBaseType(targetName);
+
+				val = val.Replace("`1", "_" + papName);
+
+			}
+
 			Parameters.Add(new PapyrusVariableReference(name, type));
 
-			return ".param " + name + " " + Utility.GetPapyrusReturnType(typeN, parameter.ParameterType.Namespace);
+			return ".param " + name + " " + val;
 		}
 
 		private string ParseLocalVariable(Mono.Cecil.Cil.VariableDefinition variable)
@@ -187,9 +198,22 @@ namespace PapyrusDotNet
 			if (string.IsNullOrEmpty(name))
 				name = "V_" + Variables.Count;
 
+
+			var val = Utility.GetPapyrusReturnType(typeN, variable.VariableType.Namespace);
+			if (variable.VariableType.IsGenericInstance)
+			{
+				var targetName = type.Split('<')[1].Split('>')[0];
+				var papName = Utility.GetPapyrusBaseType(targetName);
+
+				val = val.Replace("`1", "_" + papName);
+
+			}
+
+
+
 			Variables.Add(new PapyrusVariableReference(name, type));
 
-			return ".local " + name + " " + Utility.GetPapyrusReturnType(typeN, variable.VariableType.Namespace);
+			return ".local " + name + " " + val; //Utility.GetPapyrusReturnType(typeN, variable.VariableType.Namespace);
 		}
 
 		private string ParseInstruction(Mono.Cecil.Cil.Instruction instruction)
@@ -720,7 +744,7 @@ namespace PapyrusDotNet
 					var outputVal = GetConditional(instruction, out cast);
 					if (!string.IsNullOrEmpty(outputVal))
 					{
-						if (!string.IsNullOrEmpty(cast)) 
+						if (!string.IsNullOrEmpty(cast))
 							return cast + Environment.NewLine + "CompareGT " + outputVal;
 						return "CompareGT " + outputVal;
 					}
@@ -805,7 +829,7 @@ namespace PapyrusDotNet
 						output.Add("JumpT " + temp + " " + targetVal);
 					else
 						output.Add("JumpF " + temp + " " + targetVal);
-					
+
 					return string.Join(Environment.NewLine, output.ToArray());
 				}
 			}

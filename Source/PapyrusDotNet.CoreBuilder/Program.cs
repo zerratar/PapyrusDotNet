@@ -163,16 +163,18 @@ namespace PapyrusDotNet.CoreBuilder
 
 			Console.WriteLine("Importing Papyrus specific attributes...");
 
-			var isOk = IncludeType(MainModule, typeof(AutoAttribute));
-			isOk = isOk && IncludeType(MainModule, typeof(AutoReadOnlyAttribute));
-			isOk = isOk && IncludeType(MainModule, typeof(ConditionalAttribute));
-			isOk = isOk && IncludeType(MainModule, typeof(HiddenAttribute));
-			isOk = isOk && IncludeType(MainModule, typeof(PropertyAttribute));
-			isOk = isOk && IncludeType(MainModule, typeof(InitialValueAttribute));
 
+			var allAttributesToInclude = System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where(t => t.Name.ToLower().EndsWith("attribute"));
+
+			bool isOk = true;
+			foreach (var attr in allAttributesToInclude)
+			{
+				isOk = isOk && IncludeType(MainModule, attr);
+			}
+		
 			if (!isOk)
 			{
-
+				// dumbidum
 			}
 
 

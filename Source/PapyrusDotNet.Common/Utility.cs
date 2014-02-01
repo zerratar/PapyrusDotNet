@@ -24,6 +24,8 @@ using System.Text;
 
 namespace PapyrusDotNet.Common
 {
+	using System.IO;
+
 	using Microsoft.Win32;
 
 	using Mono.Cecil;
@@ -88,11 +90,11 @@ namespace PapyrusDotNet.Common
 				var ifo = "";
 				var ckfo = "";
 
-				if (!string.IsNullOrEmpty(installationFolder))
-					ifo = System.IO.Path.GetDirectoryName(installationFolder);
+				if (!String.IsNullOrEmpty(installationFolder))
+					ifo = Path.GetDirectoryName(installationFolder);
 
-				if (!string.IsNullOrEmpty(creationkitFolder))
-					ckfo = System.IO.Path.GetDirectoryName(creationkitFolder);
+				if (!String.IsNullOrEmpty(creationkitFolder))
+					ckfo = Path.GetDirectoryName(creationkitFolder);
 
 				return new InstallationPath(ifo, ckfo);
 			}
@@ -106,11 +108,33 @@ namespace PapyrusDotNet.Common
 		public static FieldProperties GetFlagsAndProperties(TypeDefinition variable)
 		{
 			string initialValue = null;
-			bool isProperty = false, isAuto = false, isAutoReadOnly = false, isHidden = false, isConditional = false;
+			bool isProperty = false,
+				isAuto = false,
+				isAutoReadOnly = false,
+				isHidden = false,
+				isConditional = false,
+				isGeneric = false;
+
+			if (variable.HasGenericParameters)
+			{
+				isGeneric = true;
+				var genericParameters = variable.GenericParameters;
+			}
+
 			foreach (var varAttr in variable.CustomAttributes)
 			{
 				if (varAttr.AttributeType.Name.Equals("PropertyAttribute"))
 					isProperty = true;
+
+				if (varAttr.AttributeType.Name.Equals("GenericTypeAttribute"))
+				{
+					isGeneric = true;
+					foreach (var arg in varAttr.ConstructorArguments)
+					{
+
+					}
+				}
+
 
 				if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
 				{
@@ -143,6 +167,7 @@ namespace PapyrusDotNet.Common
 			}
 			return new FieldProperties()
 			{
+				IsGeneric = isGeneric,
 				InitialValue = initialValue,
 				IsAuto = isAuto,
 				IsAutoReadOnly = isAutoReadOnly,
@@ -155,12 +180,27 @@ namespace PapyrusDotNet.Common
 		public static FieldProperties GetFlagsAndProperties(FieldDefinition variable)
 		{
 			string initialValue = null;
-			bool isProperty = false, isAuto = false, isAutoReadOnly = false, isHidden = false, isConditional = false;
+			bool isProperty = false,
+				isAuto = false,
+				isAutoReadOnly = false,
+				isHidden = false,
+				isConditional = false,
+				isGeneric = false;
+
+			if (variable.FieldType.Name == "T") isGeneric = true;
+
 			foreach (var varAttr in variable.CustomAttributes)
 			{
 				if (varAttr.AttributeType.Name.Equals("PropertyAttribute"))
 					isProperty = true;
+				if (varAttr.AttributeType.Name.Equals("GenericMemberAttribute"))
+				{
+					isGeneric = true;
+					foreach (var arg in varAttr.ConstructorArguments)
+					{
 
+					}
+				}
 				if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
 				{
 					var ctrArg = varAttr.ConstructorArguments.FirstOrDefault();
@@ -192,6 +232,7 @@ namespace PapyrusDotNet.Common
 			}
 			return new FieldProperties()
 			{
+				IsGeneric = isGeneric,
 				InitialValue = initialValue,
 				IsAuto = isAuto,
 				IsAutoReadOnly = isAutoReadOnly,
@@ -223,6 +264,76 @@ namespace PapyrusDotNet.Common
 			return GetPapyrusReturnType(reference.Name, reference.Namespace);
 		}
 
+		public static string GetPapyrusBaseType(TypeReference typeRef)
+		{
+			var Name = typeRef.Name;
+			var Namespace = typeRef.Namespace;
+			if (Name == "Object") return "";
+
+			if (Namespace.ToLower().StartsWith("papyrusdotnet.core."))
+			{
+				return "DotNet" + Name;
+			}
+			if (Namespace.StartsWith("PapyrusDotNet.Core"))
+			{
+				return typeRef.Name;
+			}
+
+			if (String.IsNullOrEmpty(Namespace))
+				return Name;
+
+			return Namespace.Replace(".", "_") + "_" + Name;
+		}
+
+		public static string GetPapyrusBaseType(string fullName)
+		{
+			switch (fullName)
+			{
+				case "Object":
+					return "";
+			}
+
+			string Name = fullName;
+			string Namespace = "";
+
+			if (fullName.Contains("."))
+			{
+				Name = fullName.Split('.').LastOrDefault();
+				Namespace = fullName.Remove(fullName.LastIndexOf("."));
+			}
+
+			if (Name == "Object") return "";
+
+			if (Namespace.ToLower().StartsWith("system"))
+			{
+				return GetPapyrusReturnType(Name, Namespace);
+			}
+
+			if (Namespace.ToLower().StartsWith("papyrusdotnet.core."))
+			{
+				return "DotNet" + Name;
+			}
+			if (Namespace.StartsWith("PapyrusDotNet.Core"))
+			{
+				return Name;
+			}
+
+			if (String.IsNullOrEmpty(Namespace))
+				return Name;
+
+			return Namespace.Replace(".", "_") + "_" + Name;
+		}
+
+		public static int ConvertToTimestamp(DateTime value)
+		{
+			//create Timespan by subtracting the value provided from
+			//the Unix Epoch
+			TimeSpan span = (value - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime());
+
+			//return the total seconds (which is a UNIX timestamp)
+			return (int)span.TotalSeconds;
+		}
+
 		public static string GetPapyrusReturnType(string type, string Namespace)
 		{
 
@@ -230,7 +341,7 @@ namespace PapyrusDotNet.Common
 			var swExt = "";
 			bool isArray = swtype.Contains("[]");
 
-			if (!string.IsNullOrEmpty(Namespace))
+			if (!String.IsNullOrEmpty(Namespace))
 			{
 				if (Namespace.ToLower().StartsWith("system"))
 				{
@@ -344,7 +455,7 @@ namespace PapyrusDotNet.Common
 			if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))
 			{
 
-				if (op is int || op is float || op is short || op is double || op is long || op is byte) return ((int)double.Parse(op.ToString()) == 1);
+				if (op is int || op is float || op is short || op is double || op is long || op is byte) return ((int)Double.Parse(op.ToString()) == 1);
 				if (op is bool) return (bool)op;
 				if (op is string) return (string)op == "1" || op.ToString().ToLower() == "true";
 			}
@@ -595,7 +706,7 @@ namespace PapyrusDotNet.Common
 			{
 				if (row.Replace("\t", "").Trim().StartsWith(".code"))
 				{
-					latestCodeBlock = new Utility.CodeBlock();
+					latestCodeBlock = new CodeBlock();
 					latestCodeBlock.StartRow = rowI;
 				}
 				else if (row.Replace("\t", "").Trim().StartsWith(".endCode"))

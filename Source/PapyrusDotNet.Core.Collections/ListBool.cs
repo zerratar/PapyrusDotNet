@@ -28,6 +28,8 @@ namespace PapyrusDotNet.Core.Collections
 	/// Example List<ValueType> converted class.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	
+	[GenericType]
 	public class ListBool : Form
 	{
 		private bool[] ArrayHolder_0 = new bool[128];

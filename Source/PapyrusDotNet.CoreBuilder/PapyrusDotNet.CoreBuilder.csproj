@@ -63,6 +63,9 @@
     <Compile Include="CoreExtensions\AutoAttribute.cs" />
     <Compile Include="CoreExtensions\AutoReadOnlyAttribute.cs" />
     <Compile Include="CoreExtensions\ConditionalAttribute.cs" />
+    <Compile Include="CoreExtensions\GenericIgnoreAttribute.cs" />
+    <Compile Include="CoreExtensions\GenericMemberAttribute.cs" />
+    <Compile Include="CoreExtensions\GenericTypeAttribute.cs" />
     <Compile Include="CoreExtensions\InitialValueAttribute.cs" />
     <Compile Include="CoreExtensions\NativeAttribute.cs" />
     <Compile Include="CoreExtensions\HiddenAttribute.cs" />

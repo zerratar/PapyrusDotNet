@@ -153,11 +153,10 @@ Known Issues
 2. Poorly or non- commented code<br/>
 3. Knowing what kind of code that will work or not<br/>
 4. No support for anything from the .NET framework<br/>
-5. No support for generics and generic types/classes 'yet'<br/>
-6. No support for linq 'yet'<br/>
-7. No support for extension functions 'yet'<br/>
-8. No support for the type value Object 'yet'<br/>
-9. Script States are not yet supported.<br/>
+5. No support for linq 'yet'<br/>
+6. No support for extension functions 'yet'<br/>
+7. No support for the type value Object 'yet'<br/>
+8. Script States are not yet supported.<br/>
 
 
 <br/>
@@ -166,18 +165,18 @@ yet : Will be supported in the future<br/>
 
 Planned
 =======
-1. Generics, getting generics to work at compile time instead of runtime.<br/>
-2. Extended functionality of the PapyrusDotNet.Core Framework<br/>
-3. Better and more code comments<br/>
-4. Documentation<br/>
-5. More Examples<br/>
-6. Script States<br/>
-7. And a lot more! Things can only get better from here!<br/>
+1. Extended functionality of the PapyrusDotNet.Core Framework<br/>
+2. Better and more code comments<br/>
+3. Documentation<br/>
+4. More Examples<br/>
+5. Script States<br/>
+6. And a lot more! Things can only get better from here!<br/>
 
 Ready for Test
 ======
-1. Papyrus Attributes: Auto, AutoReadOnly, Conditional, Hidden<br/>
-2. Properties<br/>
+1. GENERICS! Try them out! It is still very early experimental.<br/>
+2. Papyrus Attributes: Auto, AutoReadOnly, Conditional, Hidden<br/>
+3. Properties<br/>
 
 Initial Value Example: <br/>
 
@@ -199,6 +198,11 @@ Attributes Example: <br/>
 	
 Changelog
 ========
+###v0.1.4
++ Added support for generic types. This is still very experimental, so don't expect it to be bugfree.
++ Added attributes: GenericType, GenericMember, GenericIgnore. They are currently unnecessary, the idea behind them are still undocumented. I will explain more when they do as expected.
++ Added a new example file, GenericTest.cs, see how generics can be used. (Extremely simple)
+
 ###v0.1.3f2
 + Improved support for type casting
 + Fixed a type casting bug

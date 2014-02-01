@@ -19,9 +19,31 @@
 
 namespace Example1
 {
+	using PapyrusDotNet.Core;
+
 	public class GodModeExtended : GodMode
 	{
+		[Property, Auto]
+		public Actor[] MyActors;
+
+		// public Collection Collection;
+
+		public void OnInit()
+		{
+			//for (int i = 0; i < Collection.Length; i++)
+			//{
+			//	Collection[i] = new CollectionArrayItem();
+			//	Collection[i].IntValue = i;
+			//}
+		}
+
+		public Actor this[int idx]
+		{
+			get
+			{
+				return MyActors[idx];
+			}
+		}
 
 	}
-
 }

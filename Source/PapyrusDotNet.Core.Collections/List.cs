@@ -39,17 +39,29 @@ namespace PapyrusDotNet.Core.Collections
 	/// See the other List classes for references.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class List<T> : Form
+	/// 
+	[GenericType("List")]
+	public class List<T>
 	{
+		[GenericMember]
 		private T[] ArrayHolder_0 = new T[128];
+		[GenericMember]
 		private T[] ArrayHolder_1 = new T[128];
+		[GenericMember]
 		private T[] ArrayHolder_2 = new T[128];
+		[GenericMember]
 		private T[] ArrayHolder_3 = new T[128];
+		[GenericMember]
 		private T[] ArrayHolder_4 = new T[128];
+		[GenericMember]
 		private T[] ArrayHolder_5 = new T[128];
+		[GenericMember]
 		private T[] ArrayHolder_6 = new T[128];
+		[GenericMember]
 		private T[] ArrayHolder_7 = new T[128];
+		[GenericMember]
 		private T[] ArrayHolder_8 = new T[128];
+		[GenericMember]
 		private T[] ArrayHolder_9 = new T[128];
 
 		private int ItemIndex;
@@ -63,6 +75,7 @@ namespace PapyrusDotNet.Core.Collections
 			return bigIndex / 128;
 		}
 
+		[GenericMember]
 		private T[] ArrayFromIndex(int index)
 		{
 			if (index == 0) return ArrayHolder_0;
@@ -77,9 +90,9 @@ namespace PapyrusDotNet.Core.Collections
 			if (index == 9) return ArrayHolder_9;
 			return ArrayHolder_0;
 		}
+
 		public int Count()
-		{
-			
+		{	
 			return ItemCount;
 		}
 
@@ -88,6 +101,7 @@ namespace PapyrusDotNet.Core.Collections
 			return ItemIndex;
 		}
 
+		[GenericMember]
 		public void Add(T obj)
 		{
 			int iArray = ArrayIndex(ItemIndex);
@@ -98,6 +112,8 @@ namespace PapyrusDotNet.Core.Collections
 			ItemIndex++;
 			ItemCount++;
 		}
+
+		[GenericMember]
 		public T Get(int index)
 		{
 			int iArray = ArrayIndex(index);
@@ -106,6 +122,7 @@ namespace PapyrusDotNet.Core.Collections
 			var array = ArrayFromIndex(iArray);
 			return array[i];
 		}
+
 
 		public void RemoveAt(int index)
 		{
@@ -119,6 +136,7 @@ namespace PapyrusDotNet.Core.Collections
 			ItemCount--;
 		}
 
+		[GenericMember]
 		public void Remove(T form)
 		{
 

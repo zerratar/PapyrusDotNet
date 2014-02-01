@@ -98,11 +98,44 @@ namespace PapyrusDotNet
 							Console.WriteLine("Generating Papyrus Asm for " + type.FullName);
 							Fields = new List<PapyrusVariableReference>();
 							string papyrus = "";
-							papyrus += CreatePapyrusInfo(CurrentAssembly);
-							papyrus += CreatePapyrusUserflagRef();
-							papyrus += CreatePapyrusObjectTable(type);
-							if (!outputPASFiles.ContainsKey(GetPapyrusBaseType(type) + ".pas"))
-								outputPASFiles.Add(GetPapyrusBaseType(type) + ".pas", papyrus);
+
+
+							var properties = Utility.GetFlagsAndProperties(type);
+							if (properties.IsGeneric)
+							{
+								// Get all usages to know which generic types are necessary to be generated.
+								// then for each of those, we will generate a new class to represent it.
+								// replacing all 'T' with the types used.
+
+								var references = GetAllReferences(type, CurrentAssembly);
+
+								foreach (var r in references)
+								{
+									papyrus = "";
+									papyrus += CreatePapyrusInfo(CurrentAssembly);
+									papyrus += CreatePapyrusUserflagRef();
+									papyrus += CreatePapyrusObjectTable(type, r.Type);
+
+									var genericName = Utility.GetPapyrusBaseType(type);
+
+									genericName = genericName.Replace("`1", "_" + Utility.GetPapyrusBaseType(r.Type));
+
+									if (!outputPASFiles.ContainsKey(genericName + ".pas"))
+										outputPASFiles.Add(genericName + ".pas", papyrus);
+								}
+
+							}
+							else
+							{
+								papyrus += CreatePapyrusInfo(CurrentAssembly);
+								papyrus += CreatePapyrusUserflagRef();
+								papyrus += CreatePapyrusObjectTable(type);
+
+								if (!outputPASFiles.ContainsKey(Utility.GetPapyrusBaseType(type) + ".pas"))
+									outputPASFiles.Add(Utility.GetPapyrusBaseType(type) + ".pas", papyrus);
+							}
+
+
 						}
 					}
 				}
@@ -129,16 +162,141 @@ namespace PapyrusDotNet
 			}
 		}
 
+		private static List<GenericReference> GetAllReferences(TypeDefinition type, AssemblyDefinition asm)
+		{
+			var gReferences = new List<GenericReference>();
+			foreach (var mod in asm.Modules)
+			{
+				foreach (var t in mod.Types)
+				{
+					if (t == type) continue;
 
+					if (t.HasMethods)
+					{
+						foreach (var m in t.Methods)
+						{
+							foreach (var mp in m.Parameters)
+							{
+								if (mp.ParameterType.IsGenericInstance)
+								{
+									var name = mp.ParameterType.Name;
+									var targetName = type.Name;
+									if (name == targetName && mp.ParameterType.FullName.Contains("<"))
+									{
+										var usedType = mp.ParameterType.FullName.Split('<')[1].Split('>')[0];
+										if (!gReferences.Any(j => j.Type == usedType))
+											gReferences.Add(new GenericReference(usedType, t.FullName));
+									}
+								}
+							}
+
+							if (m.HasBody)
+							{
+								foreach (var v in m.Body.Variables)
+								{
+									if (v.VariableType.IsGenericInstance)
+									{
+										var name = v.VariableType.Name;
+										var targetName = type.Name;
+										if (name == targetName && v.VariableType.FullName.Contains("<"))
+										{
+											var usedType = v.VariableType.FullName.Split('<')[1].Split('>')[0];
+											if (!gReferences.Any(j => j.Type == usedType))
+												gReferences.Add(new GenericReference(usedType, t.FullName));
+										}
+									}
+								}
+							}
+						}
+					}
+
+
+					foreach (var gen in t.GenericParameters)
+					{
+						if (gen.IsGenericInstance)
+						{
+							var name = gen.Name;
+							var targetName = type.Name;
+							if (name == targetName && gen.FullName.Contains("<"))
+							{
+								var usedType = gen.FullName.Split('<')[1].Split('>')[0];
+								if (!gReferences.Any(j => j.Type == usedType))
+									gReferences.Add(new GenericReference(usedType, t.FullName));
+							}
+						}
+					}
+					foreach (var f in t.Fields)
+					{
+						if (f.FieldType.IsGenericInstance)
+						{
+							var name = f.FieldType.Name;
+							var targetName = type.Name;
+							if (name == targetName && f.FieldType.FullName.Contains("<"))
+							{
+								var usedType = f.FieldType.FullName.Split('<')[1].Split('>')[0];
+								if (!gReferences.Any(j => j.Type == usedType))
+									gReferences.Add(new GenericReference(usedType, t.FullName));
+							}
+						}
+					}
+				}
+			}
+			return gReferences;
+		}
+
+
+
+
+		public class GenericReference
+		{
+			public string SourceClass { get; set; }
+			public string Type { get; set; }
+			public GenericReference(string t, string c = null)
+			{
+				Type = t;
+				SourceClass = c;
+			}
+		}
+
+
+		public static string CreatePapyrusObjectTable(TypeDefinition type, string replaceGenericWithType)
+		{
+			var ptype = Utility.GetPapyrusBaseType(replaceGenericWithType);
+			var papyrus = CreatePapyrusObjectTable(type);
+
+			var pap = papyrus.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+
+			for (int j = 0; j < pap.Length; j++)
+			{
+				if (pap[j].EndsWith(" T"))
+				{
+					pap[j] = pap[j].Remove(pap[j].LastIndexOf('T')) + ptype;
+				}
+
+				if (pap[j].Contains(".object ") && pap[j].Contains("`1"))
+				{
+					pap[j] = pap[j].Replace("`1", "_" + ptype);
+				}
+			}
+
+			papyrus = string.Join(Environment.NewLine, pap);
+
+			return papyrus;
+		}
 
 		public static string CreatePapyrusObjectTable(TypeDefinition type)
 		{
 			string papyrus = "";
 
 			papyrus += ".objectTable" + Environment.NewLine;
-			papyrus += "\t.object " + GetPapyrusBaseType(type) + (type.BaseType != null ? " " + GetPapyrusBaseType(type.BaseType) : "") + Environment.NewLine;
+			papyrus += "\t.object " + Utility.GetPapyrusBaseType(type) + (type.BaseType != null ? " " + Utility.GetPapyrusBaseType(type.BaseType) : "") + Environment.NewLine;
 
 			var props = Utility.GetFlagsAndProperties(type);
+
+			if (props.IsGeneric)
+			{
+
+			}
 
 			papyrus += "\t\t.userFlags " + props.UserFlagsValue + Environment.NewLine;
 			papyrus += "\t\t.docString \"\"" + Environment.NewLine;
@@ -148,6 +306,11 @@ namespace PapyrusDotNet
 			foreach (var variable in type.Fields)
 			{
 				var varProps = Utility.GetFlagsAndProperties(variable);
+
+				if (varProps.IsGeneric)
+				{
+
+				}
 
 				var n = variable.Name.Replace('<', '_').Replace('>', '_');
 				var t = variable.FieldType;
@@ -292,51 +455,14 @@ namespace PapyrusDotNet
 
 
 
-		public static string GetPapyrusBaseType(TypeReference typeRef)
-		{
-			if (typeRef.Name == "Object") return "";
-
-			if (typeRef.Namespace.ToLower().StartsWith("papyrusdotnet.core."))
-			{
-				return "DotNet" + typeRef.Name;
-			}
-			if (typeRef.Namespace.StartsWith("PapyrusDotNet.Core"))
-			{
-				return typeRef.Name;
-			}
-
-			if (string.IsNullOrEmpty(typeRef.Namespace))
-				return typeRef.Name;
-
-			return typeRef.Namespace.Replace(".", "_") + "_" + typeRef.Name;
-		}
-		public static string GetPapyrusBaseType(string p)
-		{
-			switch (p)
-			{
-				case "Object":
-					return "";
-			}
-			return p;
-		}
-
-		public static int ConvertToTimestamp(DateTime value)
-		{
-			//create Timespan by subtracting the value provided from
-			//the Unix Epoch
-			TimeSpan span = (value - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime());
-
-			//return the total seconds (which is a UNIX timestamp)
-			return (int)span.TotalSeconds;
-		}
-
+	
 		public static string CreatePapyrusInfo(AssemblyDefinition asm)
 		{
 			string output = "";
 			output += ".info" + Environment.NewLine;
 			output += "\t.source \"PapyrusDotNet-Generated.psc\"" + Environment.NewLine;
-			output += "\t.modifyTime " + ConvertToTimestamp(DateTime.Now) + Environment.NewLine;
-			output += "\t.compileTime " + ConvertToTimestamp(DateTime.Now) + Environment.NewLine;
+			output += "\t.modifyTime " + Utility.ConvertToTimestamp(DateTime.Now) + Environment.NewLine;
+			output += "\t.compileTime " + Utility.ConvertToTimestamp(DateTime.Now) + Environment.NewLine;
 			output += "\t.user \"" + Environment.UserName + "\"" + Environment.NewLine;
 			output += "\t.computer \"" + Environment.MachineName + "\"" + Environment.NewLine;
 			output += ".endInfo" + Environment.NewLine;
