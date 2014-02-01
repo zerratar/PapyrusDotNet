@@ -9,6 +9,12 @@ namespace Example1
 
 	public class GenericTest
 	{
+		private GenericClass<bool> boolgen;
+
+		[Property, Auto]
+		public GenericClass<bool> boolgenProp; 
+
+
 		public void OnInit()
 		{
 			GenericClass<Form> formGeneric = new GenericClass<Form>();

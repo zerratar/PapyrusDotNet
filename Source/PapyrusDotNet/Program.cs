@@ -307,16 +307,19 @@ namespace PapyrusDotNet
 			{
 				var varProps = Utility.GetFlagsAndProperties(variable);
 
-				if (varProps.IsGeneric)
-				{
 
-				}
 
 				var n = variable.Name.Replace('<', '_').Replace('>', '_');
 				var t = variable.FieldType;
 				var v = variable.InitialValue;
 				string initialValue = "";
 				string fieldType = Utility.GetPapyrusReturnType(t.Name, t.Namespace);
+
+
+				if (variable.FieldType.IsGenericInstance)
+				{
+					fieldType = fieldType.Replace("`1", "_" + Utility.GetPapyrusBaseType(t.FullName.Split('<')[1].Split('>')[0]));
+				}
 
 				papyrus += Utility.StringIndent(3, ".variable ::" + n + " " + fieldType);
 
@@ -362,7 +365,14 @@ namespace PapyrusDotNet
 				string autoMarker = propField.Properties.IsAuto ? " auto" : "";
 
 				var propName = Utility.GetPropertyName(propField.Name);
-				papyrus += Utility.StringIndent(3, ".property " + propName + " " + propField.TypeName + autoMarker);
+				var fieldType = propField.TypeName;
+				if (propField.Properties.IsGeneric)
+				{
+					// fieldType = fieldType.Replace("`1", "_" + Utility.GetPapyrusBaseType(prop.FullName.Split('<')[1].Split('>')[0]));
+				}
+
+
+				papyrus += Utility.StringIndent(3, ".property " + propName + " " + fieldType + autoMarker);
 				papyrus += Utility.StringIndent(4, ".userFlags " + propField.Properties.UserFlagsValue);
 				papyrus += Utility.StringIndent(4, ".docString \"\"");
 				papyrus += Utility.StringIndent(4, ".autoVar " + propField.Name);
@@ -455,7 +465,7 @@ namespace PapyrusDotNet
 
 
 
-	
+
 		public static string CreatePapyrusInfo(AssemblyDefinition asm)
 		{
 			string output = "";

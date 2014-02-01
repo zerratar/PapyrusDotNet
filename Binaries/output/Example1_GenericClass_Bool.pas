@@ -10,51 +10,47 @@
 	.flag hidden 0
 .endUserFlagsRef
 .objectTable
-	.object Example1_GodModeExtended Example1_GodMode
+	.object Example1_GenericClass_Bool 
 		.userFlags 0
 		.docString ""
 		.autoState
 		.variableTable
-			.variable ::MyActors Actor[]
+			.variable ::GenericVariable Bool
 				.userFlags 0
 				.initialValue None
 			.endVariable
 		.endVariableTable
 		.propertyTable
-			.property pMyActors Actor[] auto
-				.userFlags 0
-				.docString ""
-				.autoVar ::MyActors
-			.endProperty
 		.endPropertyTable
 		.stateTable
 			.state
-				.function OnInit
+				.function Set
 					.userFlags 0
 					.docString ""
 					.return None
 					.paramTable
+						.param value Bool
 					.endParamTable
 					.localTable
 					.endLocalTable
 					.code
+						Assign ::GenericVariable value
 						Return None
 					.endCode
 				.endFunction
-				.function get_Item
+				.function Get
 					.userFlags 0
 					.docString ""
-					.return Actor
+					.return Bool
 					.paramTable
-						.param idx Int
 					.endParamTable
 					.localTable
-						.local V_0 Actor
+						.local V_0 Bool
 					.endLocalTable
 					.code
-						ArrayGetElement V_0 ::MyActors idx
-						Jump _label12
-					_label12:
+						Assign V_0 ::GenericVariable
+						Jump _label10
+					_label10:
 						Return V_0
 					.endCode
 				.endFunction

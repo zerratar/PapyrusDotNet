@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1391284447
-	.compileTime 1391284447
+	.modifyTime 1391285733
+	.compileTime 1391285733
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -15,8 +15,21 @@
 		.docString ""
 		.autoState
 		.variableTable
+			.variable ::boolgen Example1_GenericClass_Bool
+				.userFlags 0
+				.initialValue None
+			.endVariable
+			.variable ::boolgenProp Example1_GenericClass_Bool
+				.userFlags 0
+				.initialValue None
+			.endVariable
 		.endVariableTable
 		.propertyTable
+			.property pboolgenProp Example1_GenericClass_Bool auto
+				.userFlags 0
+				.docString ""
+				.autoVar ::boolgenProp
+			.endProperty
 		.endPropertyTable
 		.stateTable
 			.state
@@ -27,10 +40,15 @@
 					.paramTable
 					.endParamTable
 					.localTable
+						.local ::NoneVar None
 						.local V_0 Example1_GenericClass_Form
 						.local V_1 Example1_GenericClass_Int
 					.endLocalTable
 					.code
+						Assign V_0 None
+						CallMethod Set V_0 ::NoneVar 
+						Assign V_1 None
+						CallMethod Set V_1 ::NoneVar 9999
 						Return None
 					.endCode
 				.endFunction

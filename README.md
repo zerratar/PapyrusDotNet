@@ -198,6 +198,9 @@ Attributes Example: <br/>
 	
 Changelog
 ========
+###v0.1.4f1
++ Fixed a bug with Generic Fields not being properly resolved.
+
 ###v0.1.4
 + Added support for generic types. This is still very experimental, so don't expect it to be bugfree.
 + Added attributes: GenericType, GenericMember, GenericIgnore. They are currently unnecessary, the idea behind them are still undocumented. I will explain more when they do as expected.
