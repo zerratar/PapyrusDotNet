@@ -392,6 +392,38 @@ namespace PapyrusDotNet
 					var tarIn = GetNextStoreLocalVariableInstruction(instruction, out targetVariableIndex);
 					if (tarIn != null)
 					{
+
+						if (tarIn.Operand is FieldReference)
+						{
+							var fref = tarIn.Operand as FieldReference;
+							// if the EvaluationStack.Count == 0
+							// The previous instruction might have been a call that returned a value
+							// Something we did not store...
+
+							var definedField =
+									this.Fields.FirstOrDefault(f => f.Name == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+
+							if (definedField != null)
+							{
+								if (EvaluationStack.Count > 0)
+								{
+									var obj = EvaluationStack.Pop();
+
+									if (obj.Value is PapyrusVariableReference)
+									{
+										var varRef = obj.Value as PapyrusVariableReference;
+										definedField.Value = varRef.Value;
+										// return "Assign " + definedField.Name + " " + varRef.Name;
+										return "ArrayCreate " + definedField.Name + " " + val.Value;
+									}
+								}
+								definedField.Value = Utility.TypeValueConvert(definedField.TypeName, val.Value);
+								// return "Assign " + definedField.Name + " " + definedField.Value;
+								return "ArrayCreate " + definedField.Name + " " + val.Value;
+							}
+						}
+
+
 						return "ArrayCreate " + AllVariables[targetVariableIndex].Name + " " + val.Value;
 					}
 				}
@@ -409,6 +441,8 @@ namespace PapyrusDotNet
 					if (EvaluationStack.Count > 0)
 						EvaluationStack.Pop();
 				}
+				int oi;
+				GetNextStoreLocalVariableInstruction(instruction, out oi);
 			}
 			if (Utility.IsLoadArgs(instruction.OpCode.Code))
 			{
@@ -1117,14 +1151,19 @@ namespace PapyrusDotNet
 		{
 			varIndex = -1;
 			var next = input.Next;
-			while (next != null && !Utility.IsStoreLocalVariable(next.OpCode.Code))
+			while (next != null && !Utility.IsStoreLocalVariable(next.OpCode.Code) && !Utility.IsStoreField(next.OpCode.Code) && !Utility.IsStoreElement(next.OpCode.Code))
 			{
 				next = next.Next;
 			}
+
+
 			if (next != null)
 			{
-				varIndex = (int)IntValue(next);
-				SkipToOffset = next.Offset;
+
+				{
+					varIndex = (int)IntValue(next);
+					SkipToOffset = next.Offset;
+				}
 			}
 			return next;
 		}

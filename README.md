@@ -197,6 +197,9 @@ Attributes Example: <br/>
 	
 Changelog
 ========
+###v0.1.4f3
++ Minor bug fixes
+
 ###v0.1.4f2
 + Improved support for generics
 + Added support for generating Papyrus from referenced assemblies, this excludes assemblies that is part of the .NET framework and papyrusdotnet.core.dll, extended libraries for papyrusdotnet.core is included though.

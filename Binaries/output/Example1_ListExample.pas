@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1391435453
-	.compileTime 1391435453
+	.modifyTime 1391440704
+	.compileTime 1391440704
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -41,7 +41,6 @@
 						.local V_1 Bool
 					.endLocalTable
 					.code
-						Assign V_0 None
 						Assign V_0 0
 						Jump _label35
 					_label16:

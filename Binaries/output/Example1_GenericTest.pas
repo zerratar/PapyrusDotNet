@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1391435453
-	.compileTime 1391435453
+	.modifyTime 1391440704
+	.compileTime 1391440704
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -45,9 +45,7 @@
 						.local V_1 Example1_GenericClass_Int
 					.endLocalTable
 					.code
-						Assign V_0 None
 						CallMethod Set V_0 ::NoneVar 
-						Assign V_1 None
 						CallMethod Set V_1 ::NoneVar 9999
 						Return None
 					.endCode
