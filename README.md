@@ -197,6 +197,11 @@ Attributes Example: <br/>
 	
 Changelog
 ========
+###v0.1.4f2
++ Improved support for generics
++ Added support for generating Papyrus from referenced assemblies, this excludes assemblies that is part of the .NET framework and papyrusdotnet.core.dll, extended libraries for papyrusdotnet.core is included though.
++ Added a WIP class: List<T> that can now be used, see 'ListExample.cs' for usage. This generic class can hold up to 16384 items. (128*128)
+
 ###v0.1.4f1
 + Fixed a bug with Generic Fields not being properly resolved.
 
@@ -221,7 +226,7 @@ Changelog
 + Added support for Properties and Atttributes.
 + Added support for InitialValue for fields.
 + Fixed a bug when concating strings
-+ Added nex example on how to use Attributes and Properties.<br/>
++ Added new example on how to use Attributes and Properties.<br/>
 
 ###v0.1
 + Initial Release to github<br/>

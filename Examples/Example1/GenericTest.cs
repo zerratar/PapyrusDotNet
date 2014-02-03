@@ -20,7 +20,6 @@ namespace Example1
 			GenericClass<Form> formGeneric = new GenericClass<Form>();
 			formGeneric.Set(null);
 
-
 			GenericClass<int> intGeneric = new GenericClass<int>();
 			intGeneric.Set(9999);
 		}

@@ -30,12 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Collection.cs" />
-    <Compile Include="ListForm.cs" />
-    <Compile Include="ListBool.cs" />
     <Compile Include="List.cs" />
-    <Compile Include="ListInt.cs" />
-    <Compile Include="ListString.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

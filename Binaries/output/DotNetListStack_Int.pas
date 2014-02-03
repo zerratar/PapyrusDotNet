@@ -10,12 +10,20 @@
 	.flag hidden 0
 .endUserFlagsRef
 .objectTable
-	.object Example1_GenericClass_Form 
+	.object DotNetListStack_Int 
 		.userFlags 0
 		.docString ""
 		.autoState
 		.variableTable
-			.variable ::GenericVariable Form
+			.variable ::Length Int
+				.userFlags 0
+				.initialValue None
+			.endVariable
+			.variable ::ItemCount Int
+				.userFlags 0
+				.initialValue None
+			.endVariable
+			.variable ::Items DotNetListItem_Int[]
 				.userFlags 0
 				.initialValue None
 			.endVariable
@@ -24,34 +32,49 @@
 		.endPropertyTable
 		.stateTable
 			.state
-				.function Set
+				.function OnInit
 					.userFlags 0
 					.docString ""
 					.return None
 					.paramTable
-						.param value Form
 					.endParamTable
 					.localTable
 					.endLocalTable
 					.code
-						Assign ::GenericVariable value
+						Assign ::Length None
 						Return None
 					.endCode
 				.endFunction
-				.function Get
+				.function get_Item
 					.userFlags 0
 					.docString ""
-					.return Form
+					.return DotNetListItem_Int
 					.paramTable
+						.param index Int
 					.endParamTable
 					.localTable
-						.local V_0 Form
+						.local V_0 DotNetListItem_Int
 					.endLocalTable
 					.code
-						Assign V_0 ::GenericVariable
-						Jump _label10
-					_label10:
+						ArrayGetElement V_0 ::Items index
+						Jump _label12
+					_label12:
 						Return V_0
+					.endCode
+				.endFunction
+				.function set_Item
+					.userFlags 0
+					.docString ""
+					.return None
+					.paramTable
+						.param index Int
+						.param value DotNetListItem_Int
+					.endParamTable
+					.localTable
+					.endLocalTable
+					.code
+						ArraySetElement ::Items index value
+						Return None
 					.endCode
 				.endFunction
 			.endState

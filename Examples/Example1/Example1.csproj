@@ -37,13 +37,19 @@
     <Compile Include="GenericTest.cs" />
     <Compile Include="GodMode.cs" />
     <Compile Include="GodModeExtended.cs" />
+    <Compile Include="ListExample.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PapyrusDotNet.Core">
       <HintPath>..\..\Binaries\PapyrusDotNet.Core.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Source\PapyrusDotNet.Core.Collections\PapyrusDotNet.Core.Collections.csproj">
+      <Project>{f6519960-8599-42a4-a817-c69af065e8f9}</Project>
+      <Name>PapyrusDotNet.Core.Collections</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

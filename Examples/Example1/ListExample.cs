@@ -17,17 +17,25 @@
 	Copyright 2014, Karl Patrik Johansson, zerratar@gmail.com
  */
 
-namespace PapyrusDotNet.Tester
+namespace Example1
 {
 	using PapyrusDotNet.Core;
 	using PapyrusDotNet.Core.Collections;
 
-	public class Program
+	public class ListExample : ObjectReference
 	{
-		
-		static void Main(string[] args)
-		{
 
+		[Property, Auto]
+		public List<int> listOfIntegers;
+
+		public override void OnInit()
+		{
+			listOfIntegers = new List<int>();
+
+			for (int idx = 0; idx < 10; idx++)
+			{
+				listOfIntegers.Add(idx);
+			}
 
 		}
 	}

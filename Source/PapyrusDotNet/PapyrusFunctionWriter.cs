@@ -177,12 +177,26 @@ namespace PapyrusDotNet
 			var val = Utility.GetPapyrusReturnType(typeN, parameter.ParameterType.Namespace);
 			if (parameter.ParameterType.IsGenericInstance)
 			{
-				var targetName = type.Split('<')[1].Split('>')[0];
-				var papName = Utility.GetPapyrusBaseType(targetName);
+				if (type.Contains("<"))
+				{
+					var targetName = type.Split('<')[1].Split('>')[0];
+					var papName = Utility.GetPapyrusBaseType(targetName);
 
-				val = val.Replace("`1", "_" + papName);
+					val = val.Replace("`1", "_" + papName);
+				}
+				else
+				{
+					var papName = Utility.GetPapyrusBaseType(type);
 
+					val = val.Replace("`1", "_" + papName);
+				}
 			}
+			else if (parameter.ParameterType.Name.Contains("<T>"))
+			{
+				val = Utility.GetPapyrusBaseType(type).Replace("<T>", "");
+			}
+
+			val = val.Replace("<T>", "");
 
 			Parameters.Add(new PapyrusVariableReference(name, type));
 
@@ -202,14 +216,24 @@ namespace PapyrusDotNet
 			var val = Utility.GetPapyrusReturnType(typeN, variable.VariableType.Namespace);
 			if (variable.VariableType.IsGenericInstance)
 			{
-				var targetName = type.Split('<')[1].Split('>')[0];
-				var papName = Utility.GetPapyrusBaseType(targetName);
-
-				val = val.Replace("`1", "_" + papName);
-
+				if (type.Contains("<"))
+				{
+					var targetName = type.Split('<')[1].Split('>')[0];
+					var papName = Utility.GetPapyrusBaseType(targetName);
+					val = val.Replace("`1", "_" + papName);
+				}
+				else
+				{
+					var papName = Utility.GetPapyrusBaseType(type);
+					val = val.Replace("`1", "_" + papName);
+				}
+			}
+			else if (variable.VariableType.Name.Contains("<T>"))
+			{
+				val = Utility.GetPapyrusBaseType(type).Replace("<T>", "");
 			}
 
-
+			val = val.Replace("<T>", "");
 
 			Variables.Add(new PapyrusVariableReference(name, type));
 
@@ -973,7 +997,7 @@ namespace PapyrusDotNet
 			}
 			var varname = "::temp" + TempVariables.Count;
 			var type = Utility.GetPapyrusReturnType(Name, Namespace);
-			var def = ".local " + varname + " " + type;
+			var def = ".local " + varname + " " + type.Replace("<T>", "");
 			var varRef = new PapyrusVariableReference(varname, type, def);
 			TempVariables.Add(varRef);
 			return varRef;

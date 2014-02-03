@@ -47,11 +47,15 @@ namespace PapyrusDotNet
 
 		private static List<PapyrusVariableReference> Fields;
 		public static AssemblyDefinition CurrentAssembly;
+
+		public static string outputFolder;
+
+		public static string inputFile;
 		static void Main(string[] args)
 		{
 
-			string outputFolder = @".\output";
-			string inputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
+			outputFolder = @".\output";
+			inputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
 			try
 			{
 				var parsed = Args.Parse<PapyrusDotNetArgs>(args);
@@ -85,62 +89,15 @@ namespace PapyrusDotNet
 			Dictionary<string, string> outputPASFiles = new Dictionary<string, string>();
 			CurrentAssembly = AssemblyDefinition.ReadAssembly(inputFile);
 
-			foreach (var module in CurrentAssembly.Modules)
+			var asmReferences = GetAssemblyReferences(CurrentAssembly);
+
+			foreach (var asm in asmReferences)
 			{
-				if (module.HasTypes)
-				{
-					var types = module.Types;
-					foreach (var type in types)
-					{
-
-						if (!type.FullName.ToLower().Contains("<module>"))
-						{
-							Console.WriteLine("Generating Papyrus Asm for " + type.FullName);
-							Fields = new List<PapyrusVariableReference>();
-							string papyrus = "";
-
-
-							var properties = Utility.GetFlagsAndProperties(type);
-							if (properties.IsGeneric)
-							{
-								// Get all usages to know which generic types are necessary to be generated.
-								// then for each of those, we will generate a new class to represent it.
-								// replacing all 'T' with the types used.
-
-								var references = GetAllReferences(type, CurrentAssembly);
-
-								foreach (var r in references)
-								{
-									papyrus = "";
-									papyrus += CreatePapyrusInfo(CurrentAssembly);
-									papyrus += CreatePapyrusUserflagRef();
-									papyrus += CreatePapyrusObjectTable(type, r.Type);
-
-									var genericName = Utility.GetPapyrusBaseType(type);
-
-									genericName = genericName.Replace("`1", "_" + Utility.GetPapyrusBaseType(r.Type));
-
-									if (!outputPASFiles.ContainsKey(genericName + ".pas"))
-										outputPASFiles.Add(genericName + ".pas", papyrus);
-								}
-
-							}
-							else
-							{
-								papyrus += CreatePapyrusInfo(CurrentAssembly);
-								papyrus += CreatePapyrusUserflagRef();
-								papyrus += CreatePapyrusObjectTable(type);
-
-								if (!outputPASFiles.ContainsKey(Utility.GetPapyrusBaseType(type) + ".pas"))
-									outputPASFiles.Add(Utility.GetPapyrusBaseType(type) + ".pas", papyrus);
-							}
-
-
-						}
-					}
-				}
-
+				GeneratePapyrusFromAssembly(asm, ref outputPASFiles, CurrentAssembly);
 			}
+
+
+			GeneratePapyrusFromAssembly(CurrentAssembly, ref outputPASFiles);
 
 			foreach (var pas in outputPASFiles)
 			{
@@ -162,90 +119,372 @@ namespace PapyrusDotNet
 			}
 		}
 
-		private static List<GenericReference> GetAllReferences(TypeDefinition type, AssemblyDefinition asm)
+		private static void GeneratePapyrusFromAssembly(AssemblyDefinition CurrentAssembly, ref Dictionary<string, string> outputPASFiles, AssemblyDefinition mainAssembly = null)
 		{
-			var gReferences = new List<GenericReference>();
-			foreach (var mod in asm.Modules)
+			foreach (var module in CurrentAssembly.Modules)
 			{
-				foreach (var t in mod.Types)
+				if (module.HasTypes)
 				{
-					if (t == type) continue;
-
-					if (t.HasMethods)
+					var types = module.Types;
+					foreach (var type in types)
 					{
-						foreach (var m in t.Methods)
+						if (!type.FullName.ToLower().Contains("<module>"))
 						{
-							foreach (var mp in m.Parameters)
+							Console.WriteLine("Generating Papyrus Asm for " + type.FullName);
+							Fields = new List<PapyrusVariableReference>();
+							string papyrus = "";
+
+							var properties = Utility.GetFlagsAndProperties(type);
+							if (properties.IsGeneric)
 							{
-								if (mp.ParameterType.IsGenericInstance)
+								// Get all usages to know which generic types are necessary to be generated.
+								// then for each of those, we will generate a new class to represent it.
+								// replacing all 'T' with the types used.
+
+
+								var references = GetAllGenericReferences(type, mainAssembly != null ? mainAssembly : CurrentAssembly);
+
+								var ref2 = GetAllGenericReferences(type, CurrentAssembly);
+
+								var ref3 = GetAllReferences(type, CurrentAssembly);
+
+
+
+
+								foreach (var r in references)
 								{
-									var name = mp.ParameterType.Name;
-									var targetName = type.Name;
-									if (name == targetName && mp.ParameterType.FullName.Contains("<"))
+									if (r.Type == "T") continue;
+
+									papyrus = "";
+									papyrus += CreatePapyrusInfo(CurrentAssembly);
+									papyrus += CreatePapyrusUserflagRef();
+									papyrus += CreatePapyrusObjectTable(type, r.Type);
+
+									var genericName = Utility.GetPapyrusBaseType(type);
+
+									genericName = genericName.Replace("`1", "_" + Utility.GetPapyrusBaseType(r.Type));
+
+									if (!outputPASFiles.ContainsKey(genericName + ".pas"))
 									{
-										var usedType = mp.ParameterType.FullName.Split('<')[1].Split('>')[0];
-										if (!gReferences.Any(j => j.Type == usedType))
-											gReferences.Add(new GenericReference(usedType, t.FullName));
+										outputPASFiles.Add(genericName + ".pas", papyrus);
 									}
 								}
 							}
-
-							if (m.HasBody)
+							else
 							{
-								foreach (var v in m.Body.Variables)
+								papyrus += CreatePapyrusInfo(CurrentAssembly);
+								papyrus += CreatePapyrusUserflagRef();
+								papyrus += CreatePapyrusObjectTable(type);
+
+								if (!outputPASFiles.ContainsKey(Utility.GetPapyrusBaseType(type) + ".pas"))
 								{
-									if (v.VariableType.IsGenericInstance)
-									{
-										var name = v.VariableType.Name;
-										var targetName = type.Name;
-										if (name == targetName && v.VariableType.FullName.Contains("<"))
-										{
-											var usedType = v.VariableType.FullName.Split('<')[1].Split('>')[0];
-											if (!gReferences.Any(j => j.Type == usedType))
-												gReferences.Add(new GenericReference(usedType, t.FullName));
-										}
-									}
+									outputPASFiles.Add(Utility.GetPapyrusBaseType(type) + ".pas", papyrus);
 								}
-							}
-						}
-					}
-
-
-					foreach (var gen in t.GenericParameters)
-					{
-						if (gen.IsGenericInstance)
-						{
-							var name = gen.Name;
-							var targetName = type.Name;
-							if (name == targetName && gen.FullName.Contains("<"))
-							{
-								var usedType = gen.FullName.Split('<')[1].Split('>')[0];
-								if (!gReferences.Any(j => j.Type == usedType))
-									gReferences.Add(new GenericReference(usedType, t.FullName));
-							}
-						}
-					}
-					foreach (var f in t.Fields)
-					{
-						if (f.FieldType.IsGenericInstance)
-						{
-							var name = f.FieldType.Name;
-							var targetName = type.Name;
-							if (name == targetName && f.FieldType.FullName.Contains("<"))
-							{
-								var usedType = f.FieldType.FullName.Split('<')[1].Split('>')[0];
-								if (!gReferences.Any(j => j.Type == usedType))
-									gReferences.Add(new GenericReference(usedType, t.FullName));
 							}
 						}
 					}
 				}
 			}
+		}
+
+		public static List<AssemblyDefinition> GetAssemblyReferences(AssemblyDefinition asm)
+		{
+			var inputFileInfo = new System.IO.FileInfo(inputFile);
+			var assemblyReferences = new List<AssemblyDefinition>();
+			foreach (var mod in asm.Modules)
+			{
+				var asmReferences =
+					// We do not want to get any from mscorlib, PapyrusDotNet.Core, or any other System libs
+						mod.AssemblyReferences.Where(re => re.Name != "mscorlib" && re.Name != "PapyrusDotNet.Core" && !re.Name.StartsWith("System")).ToList();
+
+				foreach (var asr in asmReferences)
+				{
+					var refLibName = asr.Name + ".dll";
+					if (!assemblyReferences.Any(a => a.Name.Name == asr.Name))
+					{
+						if (inputFileInfo.Directory != null)
+						{
+							var refLib = inputFileInfo.Directory.FullName + @"\" + refLibName;
+
+							var refAsm = AssemblyDefinition.ReadAssembly(refLib);
+
+							assemblyReferences.Add(refAsm);
+
+						}
+					}
+				}
+			}
+			return assemblyReferences;
+		}
+
+		private static List<GenericReference> GetAllReferences(TypeDefinition type, AssemblyDefinition asm)
+		{
+			var gReferences = new List<GenericReference>();
+			var assemblyReferences = GetAssemblyReferences(asm);
+
+			foreach (var mod in asm.Modules)
+			{
+				GetReferences(type, mod, gReferences);
+			}
+
+			foreach (var ar in assemblyReferences)
+			{
+				foreach (var mod in ar.Modules)
+				{
+					GetReferences(type, mod, gReferences);
+				}
+			}
+
 			return gReferences;
 		}
 
+		private static List<GenericReference> GetAllGenericReferences(TypeDefinition type, AssemblyDefinition asm)
+		{
+			var gReferences = new List<GenericReference>();
+			var assemblyReferences = GetAssemblyReferences(asm);
 
+			foreach (var mod in asm.Modules)
+			{
+				GetGenericReferences(type, mod, gReferences);
+			}
 
+			foreach (var ar in assemblyReferences)
+			{
+				foreach (var mod in ar.Modules)
+				{
+					GetGenericReferences(type, mod, gReferences);
+				}
+			}
+
+			return gReferences;
+		}
+
+		private static void GetReferences(TypeDefinition type, ModuleDefinition mod, List<GenericReference> gReferences)
+		{
+			foreach (var t in mod.Types)
+			{
+				if (t == type)
+				{
+					continue;
+				}
+
+				if (t.HasMethods)
+				{
+					foreach (var m in t.Methods)
+					{
+						foreach (var mp in m.Parameters)
+						{
+							if (mp.ParameterType.IsGenericInstance || mp.ParameterType.Name == "T")
+							{
+								var name = mp.ParameterType.Name;
+								var targetName = type.Name;
+								if (name == targetName && mp.ParameterType.FullName.Contains("<"))
+								{
+									var usedType = mp.ParameterType.FullName.Split('<')[1].Split('>')[0];
+									if (!gReferences.Any(j => j.Type == usedType))
+									{
+										gReferences.Add(new GenericReference(usedType, t.FullName));
+									}
+								}
+
+							}
+						}
+
+						if (m.HasBody)
+						{
+							foreach (var v in m.Body.Variables)
+							{
+								if (v.VariableType.IsGenericInstance || v.VariableType.Name == "T")
+								{
+									var name = v.VariableType.Name;
+									var targetName = type.Name;
+									if (name == targetName && v.VariableType.FullName.Contains("<"))
+									{
+										var usedType = v.VariableType.FullName.Split('<')[1].Split('>')[0];
+										if (!gReferences.Any(j => j.Type == usedType))
+										{
+											gReferences.Add(new GenericReference(usedType, t.FullName));
+										}
+									}
+
+								}
+							}
+						}
+						foreach (var gen in m.GenericParameters)
+						{
+							if (gen.IsGenericInstance || gen.Type.ToString() == "T")
+							{
+								var name = gen.Name;
+								var targetName = type.Name;
+								if (name == targetName && gen.FullName.Contains("<"))
+								{
+									var usedType = gen.FullName.Split('<')[1].Split('>')[0];
+									if (!gReferences.Any(j => j.Type == usedType))
+									{
+										gReferences.Add(new GenericReference(usedType, t.FullName));
+									}
+								}
+
+							}
+						}
+					}
+				}
+
+				foreach (var gen in t.GenericParameters)
+				{
+					if (gen.IsGenericInstance || gen.Type.ToString() == "T")
+					{
+						var name = gen.Name;
+						var targetName = type.Name;
+						if (name == targetName && gen.FullName.Contains("<"))
+						{
+							var usedType = gen.FullName.Split('<')[1].Split('>')[0];
+							if (!gReferences.Any(j => j.Type == usedType))
+							{
+								gReferences.Add(new GenericReference(usedType, t.FullName));
+							}
+						}
+
+					}
+				}
+				foreach (var f in t.Fields)
+				{
+					if (f.FieldType.IsGenericInstance || f.FieldType.Name == "T")
+					{
+						var name = f.FieldType.Name;
+						var targetName = type.Name;
+						if (name == targetName && f.FieldType.FullName.Contains("<"))
+						{
+							var usedType = f.FieldType.FullName.Split('<')[1].Split('>')[0];
+							if (!gReferences.Any(j => j.Type == usedType))
+							{
+								gReferences.Add(new GenericReference(usedType, t.FullName));
+							}
+						}
+
+					}
+				}
+			}
+		}
+
+		private static void GetGenericReferences(TypeDefinition type, ModuleDefinition mod, List<GenericReference> gReferences, TypeDefinition ignore = null)
+		{
+			foreach (var t in mod.Types)
+			{
+				if ((ignore != null && ignore == t)) return;
+				if (t == type)
+				{
+					continue;
+				}
+
+				if (t.HasGenericParameters)
+				{
+					// time to backtrack!
+					// we need to know if this type has been referenced before
+					// and by using what type.
+					// the same type will be expected by the target type.
+					List<GenericReference> tRefs = new List<GenericReference>();
+					GetGenericReferences(t, mod, tRefs, type);
+					// Now, we need to know if this assembly
+					// is actually referenced, altough we can just 
+					// be sure and generate em all.
+					// easiest way for now. lol xD
+					gReferences.AddRange(tRefs);
+				}
+
+				if (t.HasMethods)
+				{
+					foreach (var m in t.Methods)
+					{
+						foreach (var mp in m.Parameters)
+						{
+							if (mp.ParameterType.IsGenericInstance)
+							{
+								var name = mp.ParameterType.Name;
+								var targetName = type.Name;
+								if (name == targetName && mp.ParameterType.FullName.Contains("<"))
+								{
+									var usedType = mp.ParameterType.FullName.Split('<')[1].Split('>')[0];
+									if (!gReferences.Any(j => j.Type == usedType))
+									{
+										gReferences.Add(new GenericReference(usedType, t.FullName));
+									}
+								}
+							}
+						}
+
+						if (m.HasBody)
+						{
+							foreach (var v in m.Body.Variables)
+							{
+								if (v.VariableType.IsGenericInstance)
+								{
+									var name = v.VariableType.Name;
+									var targetName = type.Name;
+									if (name == targetName && v.VariableType.FullName.Contains("<"))
+									{
+										var usedType = v.VariableType.FullName.Split('<')[1].Split('>')[0];
+										if (!gReferences.Any(j => j.Type == usedType))
+										{
+											gReferences.Add(new GenericReference(usedType, t.FullName));
+										}
+									}
+								}
+							}
+						}
+						foreach (var gen in m.GenericParameters)
+						{
+							if (gen.IsGenericInstance)
+							{
+								var name = gen.Name;
+								var targetName = type.Name;
+								if (name == targetName && gen.FullName.Contains("<"))
+								{
+									var usedType = gen.FullName.Split('<')[1].Split('>')[0];
+									if (!gReferences.Any(j => j.Type == usedType))
+									{
+										gReferences.Add(new GenericReference(usedType, t.FullName));
+									}
+								}
+							}
+						}
+					}
+				}
+
+				foreach (var gen in t.GenericParameters)
+				{
+					if (gen.IsGenericInstance)
+					{
+						var name = gen.Name;
+						var targetName = type.Name;
+						if (name == targetName && gen.FullName.Contains("<"))
+						{
+							var usedType = gen.FullName.Split('<')[1].Split('>')[0];
+							if (!gReferences.Any(j => j.Type == usedType))
+							{
+								gReferences.Add(new GenericReference(usedType, t.FullName));
+							}
+						}
+					}
+				}
+				foreach (var f in t.Fields)
+				{
+					if (f.FieldType.IsGenericInstance)
+					{
+						var name = f.FieldType.Name;
+						var targetName = type.Name;
+						if (name == targetName && f.FieldType.FullName.Contains("<"))
+						{
+							var usedType = f.FieldType.FullName.Split('<')[1].Split('>')[0];
+							if (!gReferences.Any(j => j.Type == usedType))
+							{
+								gReferences.Add(new GenericReference(usedType, t.FullName));
+							}
+						}
+					}
+				}
+			}
+		}
 
 		public class GenericReference
 		{
@@ -268,12 +507,19 @@ namespace PapyrusDotNet
 
 			for (int j = 0; j < pap.Length; j++)
 			{
-				if (pap[j].EndsWith(" T"))
+				if (pap[j].EndsWith(" T")||pap[j].EndsWith("_T"))
 				{
 					pap[j] = pap[j].Remove(pap[j].LastIndexOf('T')) + ptype;
 				}
 
+
+				
+
 				if (pap[j].Contains(".object ") && pap[j].Contains("`1"))
+				{
+					pap[j] = pap[j].Replace("`1", "_" + ptype);
+				}
+				else if (pap[j].Contains("`1"))
 				{
 					pap[j] = pap[j].Replace("`1", "_" + ptype);
 				}
