@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1391440704
-	.compileTime 1391440704
+	.modifyTime 1438182744
+	.compileTime 1438182744
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -15,20 +15,16 @@
 		.docString ""
 		.autoState
 		.variableTable
-			.variable ::boolgen Example1_GenericClass_Bool
-				.userFlags 0
-				.initialValue None
-			.endVariable
-			.variable ::boolgenProp Example1_GenericClass_Bool
+			.variable ::genericInteger Example1_GenericClass_Int
 				.userFlags 0
 				.initialValue None
 			.endVariable
 		.endVariableTable
 		.propertyTable
-			.property pboolgenProp Example1_GenericClass_Bool auto
+			.property pgenericInteger Example1_GenericClass_Int auto
 				.userFlags 0
 				.docString ""
-				.autoVar ::boolgenProp
+				.autoVar ::genericInteger
 			.endProperty
 		.endPropertyTable
 		.stateTable
@@ -41,12 +37,30 @@
 					.endParamTable
 					.localTable
 						.local ::NoneVar None
-						.local V_0 Example1_GenericClass_Form
-						.local V_1 Example1_GenericClass_Int
+						.local V_0 Int
+						.local ::temp0 String
 					.endLocalTable
 					.code
-						CallMethod Set V_0 ::NoneVar 
-						CallMethod Set V_1 ::NoneVar 9999
+						CallMethod __ctor self ::NoneVar
+						CallMethod Set ::genericInteger ::NoneVar 9999
+						CallMethod Get ::genericInteger V_0 
+						StrCat ::temp0 ::temp0 "The value is: "
+						Cast ::temp0 V_0
+						StrCat ::temp0 ::temp0 V_0
+						CallStatic Debug Trace ::NoneVar 0
+						Return None
+					.endCode
+				.endFunction
+				.function __ctor
+					.userFlags 0
+					.docString ""
+					.return None
+					.paramTable
+					.endParamTable
+					.localTable
+						.local ::NoneVar None
+					.endLocalTable
+					.code
 						Return None
 					.endCode
 				.endFunction

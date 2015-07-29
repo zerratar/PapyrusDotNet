@@ -19,72 +19,31 @@
 
 namespace Example1
 {
-	using PapyrusDotNet.Core;
+    using PapyrusDotNet.Core;
 
-	public class GodMode : Actor
-	{	
-		public GodMode myGodMode;
+    public class GodMode : Actor
+    {
 
-		public void test()
-		{
+        public override void OnInit()
+        {
 
-			GodMode[] objs = new GodMode[120];
+            ActivateGodMode(this);
 
+        }
 
-			foreach (var o in objs)
-			{
-				o.SetName("hello!");
-			}
-		}
+        public void ActivateGodMode(Actor player)
+        {
+            var equippedWeapon = player.GetEquippedWeapon(false);
 
-		public override void OnInit()
-		{
+            equippedWeapon.SetBaseDamage(9999);
 
-			float hej = 123;
-			int hej2 = (int)hej;
+            player.SetActorValue("Health", 999999);
 
-			if (hej2 == 0)
-			{
-				Debug.MessageBox("HELLOOO 2");
-			}
+            player.SetActorValue("Magicka", 999999);
 
-			switch (hej2)
-			{
+            player.SetActorValue("Stamina", 999999);
 
-				case 123:
-					Debug.MessageBox("123");
-					return;
-				case 77:
-					Debug.MessageBox("HELLOOO");
-					break;
-			}
-
-
-
-			GodMode[] objs = new GodMode[120];
-			
-
-			var objlen = objs.Length;
-
-			var at1 = objs[28];
-			objs[28] = null;
-			float[] floatArray = new float[128];
-			float at = floatArray[28];
-		}
-
-		public void ActivateGodMode(Actor player)
-		{
-			var equippedWeapon = player.GetEquippedWeapon(false);
-
-			equippedWeapon.SetBaseDamage(9999);
-
-			player.SetActorValue("Health", 999999);
-
-			player.SetActorValue("Magicka", 999999);
-
-			player.SetActorValue("Stamina", 999999);
-
-			Debug.MessageBox("God Mode activated!");
-		}
-	}
+            Debug.MessageBox("God Mode activated!");
+        }
+    }
 }

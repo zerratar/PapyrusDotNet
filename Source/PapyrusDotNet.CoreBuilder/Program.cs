@@ -164,18 +164,16 @@ namespace PapyrusDotNet.CoreBuilder
 			Console.WriteLine("Importing Papyrus specific attributes...");
 
 
-			var allAttributesToInclude = System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where(t => t.Name.ToLower().EndsWith("attribute"));
+			var allAttributesToInclude = System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where(
+                    t => t.Name.ToLower().EndsWith("attribute")
+#warning we should include the PapyrusDotNet.System here as well.
+                );
 
-			bool isOk = true;
 			foreach (var attr in allAttributesToInclude)
 			{
-				isOk = isOk && IncludeType(MainModule, attr);
+				IncludeType(MainModule, attr);
 			}
 		
-			if (!isOk)
-			{
-				// dumbidum
-			}
 
 
 

@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1391440704
-	.compileTime 1391440704
+	.modifyTime 1438182744
+	.compileTime 1438182744
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -10,7 +10,7 @@
 	.flag hidden 0
 .endUserFlagsRef
 .objectTable
-	.object Example1_GenericClass_Int 
+	.object Example1_GenericClass_Int Form
 		.userFlags 0
 		.docString ""
 		.autoState
@@ -52,6 +52,19 @@
 						Jump _label10
 					_label10:
 						Return V_0
+					.endCode
+				.endFunction
+				.function OnInit
+					.userFlags 0
+					.docString ""
+					.return None
+					.paramTable
+					.endParamTable
+					.localTable
+						.local ::NoneVar None
+					.endLocalTable
+					.code
+						Return None
 					.endCode
 				.endFunction
 			.endState

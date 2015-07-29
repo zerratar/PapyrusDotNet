@@ -1,42 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Example1
+﻿namespace Example1
 {
-	using PapyrusDotNet.Core;
+    using PapyrusDotNet.Core;
 
-	public class GenericTest
-	{
-		private GenericClass<bool> boolgen;
+    public class GenericTest
+    {
+        [Property, Auto]
+        private GenericClass<int> genericInteger;
 
-		[Property, Auto]
-		public GenericClass<bool> boolgenProp; 
+        public void OnInit()
+        {
+            genericInteger.Set(9999);
+            var value = genericInteger.Get();
+            Debug.Trace("The value is: " + value, 0);
+        }
+    }
 
+    public class GenericClass<T> : Form
+    {
+        public T GenericVariable;
 
-		public void OnInit()
-		{
-			GenericClass<Form> formGeneric = new GenericClass<Form>();
-			formGeneric.Set(null);
+        public void Set(T value)
+        {
+            GenericVariable = value;
+        }
 
-			GenericClass<int> intGeneric = new GenericClass<int>();
-			intGeneric.Set(9999);
-		}
-	}
-
-	public class GenericClass<T>
-	{
-		public T GenericVariable;
-
-		public void Set(T value)
-		{
-			GenericVariable = value;
-		}
-
-		public T Get()
-		{
-			return GenericVariable;
-		}
-	}
+        public T Get()
+        {
+            return GenericVariable;
+        }
+    }
 }

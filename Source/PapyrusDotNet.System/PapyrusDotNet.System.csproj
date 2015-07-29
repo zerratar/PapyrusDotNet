@@ -4,26 +4,25 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{24C2B02F-807A-481F-AEEA-AEA440223FA4}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{CAAF38B3-8033-4B23-9B50-0059306EAFAC}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PapyrusDotNet.Tester</RootNamespace>
-    <AssemblyName>PapyrusDotNet.Tester</AssemblyName>
+    <RootNamespace>PapyrusDotNet.System</RootNamespace>
+    <AssemblyName>PapyrusDotNet.System</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,10 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PapyrusDotNet.Core">
-      <HintPath>..\PapyrusDotNet.Importer\bin\Debug\PapyrusDotNet.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="PowerArgs">
-      <HintPath>..\packages\PowerArgs.2.0.3.0\lib\net40\PowerArgs.dll</HintPath>
+      <HintPath>..\..\Binaries\PapyrusDotNet.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,17 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="DateTime.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PapyrusDotNet.Core.Collections\PapyrusDotNet.Core.Collections.csproj">
-      <Project>{f6519960-8599-42a4-a817-c69af065e8f9}</Project>
-      <Name>PapyrusDotNet.Core.Collections</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <Compile Include="Random.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

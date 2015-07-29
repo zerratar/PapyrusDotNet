@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1391440704
-	.compileTime 1391440704
+	.modifyTime 1438182736
+	.compileTime 1438182736
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -10,28 +10,64 @@
 	.flag hidden 0
 .endUserFlagsRef
 .objectTable
-	.object DotNetListStack_Bool 
+	.object PDN_DateTime 
 		.userFlags 0
 		.docString ""
 		.autoState
 		.variableTable
-			.variable ::Length Int
-				.userFlags 0
-				.initialValue None
-			.endVariable
-			.variable ::ItemCount Int
-				.userFlags 0
-				.initialValue None
-			.endVariable
-			.variable ::Items DotNetListItem_Bool[]
-				.userFlags 0
-				.initialValue None
-			.endVariable
 		.endVariableTable
 		.propertyTable
 		.endPropertyTable
 		.stateTable
 			.state
+				.function get_Now static
+					.userFlags 0
+					.docString ""
+					.return Float
+					.paramTable
+					.endParamTable
+					.localTable
+						.local V_0 Float
+					.endLocalTable
+					.code
+						CallStatic Utility GetCurrentRealTime V_0 
+						Jump _label9
+					_label9:
+						Return V_0
+					.endCode
+				.endFunction
+				.function get_Min static
+					.userFlags 0
+					.docString ""
+					.return Float
+					.paramTable
+					.endParamTable
+					.localTable
+						.local V_0 Float
+					.endLocalTable
+					.code
+						Assign V_0 0
+						Jump _label13
+					_label13:
+						Return V_0
+					.endCode
+				.endFunction
+				.function get_Max static
+					.userFlags 0
+					.docString ""
+					.return Float
+					.paramTable
+					.endParamTable
+					.localTable
+						.local V_0 Float
+					.endLocalTable
+					.code
+						Assign V_0 99999999999
+						Jump _label13
+					_label13:
+						Return V_0
+					.endCode
+				.endFunction
 				.function OnInit
 					.userFlags 0
 					.docString ""
@@ -39,41 +75,9 @@
 					.paramTable
 					.endParamTable
 					.localTable
+						.local ::NoneVar None
 					.endLocalTable
 					.code
-						ArrayCreate ::Items 128
-						Return None
-					.endCode
-				.endFunction
-				.function get_Item
-					.userFlags 0
-					.docString ""
-					.return DotNetListItem_Bool
-					.paramTable
-						.param index Int
-					.endParamTable
-					.localTable
-						.local V_0 DotNetListItem_Bool
-					.endLocalTable
-					.code
-						ArrayGetElement V_0 ::Items index
-						Jump _label12
-					_label12:
-						Return V_0
-					.endCode
-				.endFunction
-				.function set_Item
-					.userFlags 0
-					.docString ""
-					.return None
-					.paramTable
-						.param index Int
-						.param value DotNetListItem_Bool
-					.endParamTable
-					.localTable
-					.endLocalTable
-					.code
-						ArraySetElement ::Items index value
 						Return None
 					.endCode
 				.endFunction

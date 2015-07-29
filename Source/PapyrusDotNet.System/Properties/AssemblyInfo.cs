@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PapyrusDotNet.Core.Collections")]
+[assembly: AssemblyTitle("PapyrusDotNet.System")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("PapyrusDotNet.Core.Collections")]
-[assembly: AssemblyCopyright("Copyright © Karl Patrik Johansson 2014")]
+[assembly: AssemblyProduct("PapyrusDotNet.System")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("c8c2783b-db33-42e7-9eae-25d128555d25")]
+[assembly: Guid("a4326c41-3264-41d6-b1a9-1456cb76849e")]
 
 // Version information for an assembly consists of the following four values:
 //
