@@ -107,7 +107,8 @@ namespace PapyrusDotNet.Common
 
         public static FieldProperties GetFlagsAndProperties(TypeDefinition variable)
         {
-            string initialValue = null;
+            string initialValue = null,
+                   docString = null;
             bool isProperty = false,
                 isAuto = false,
                 isAutoReadOnly = false,
@@ -135,22 +136,15 @@ namespace PapyrusDotNet.Common
                     }
                 }
 
+                if (varAttr.AttributeType.Name.Equals("DocStringAttribute"))
+                {
+                    docString = CustomAttributeValue(varAttr);
+                }
+
 
                 if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
                 {
-                    var ctrArg = varAttr.ConstructorArguments.FirstOrDefault();
-                    if (ctrArg.Value != null)
-                    {
-                        if (ctrArg.Value is CustomAttributeArgument)
-                        {
-                            var arg = ((CustomAttributeArgument)ctrArg.Value);
-                            var val = arg.Value;
-
-                            initialValue = TypeValueConvert(arg.Type.Name, val).ToString();
-                        }
-                        else
-                            initialValue = ctrArg.Value.ToString();
-                    }
+                    initialValue = CustomAttributeValue(varAttr);
                 }
                 if (varAttr.AttributeType.Name.Equals("AutoAttribute"))
                     isAuto = true;
@@ -173,8 +167,26 @@ namespace PapyrusDotNet.Common
                 IsAutoReadOnly = isAutoReadOnly,
                 IsConditional = isConditional,
                 IsHidden = isHidden,
-                IsProperty = isProperty
+                IsProperty = isProperty,
+                DocString = docString
             };
+        }
+
+        public static string CustomAttributeValue(CustomAttribute varAttr)
+        {
+            var ctrArg = varAttr.ConstructorArguments.FirstOrDefault();
+            if (ctrArg.Value != null)
+            {
+                if (ctrArg.Value is CustomAttributeArgument)
+                {
+                    var arg = ((CustomAttributeArgument)ctrArg.Value);
+                    var val = arg.Value;
+
+                    return TypeValueConvert(arg.Type.Name, val).ToString();
+                }
+                return ctrArg.Value.ToString();
+            }
+            return null;
         }
 
         public static FieldProperties GetFlagsAndProperties(FieldDefinition variable)

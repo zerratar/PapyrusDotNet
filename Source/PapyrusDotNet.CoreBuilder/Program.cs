@@ -19,767 +19,930 @@
 
 namespace PapyrusDotNet.CoreBuilder
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.IO;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.IO;
+    using System.Threading.Tasks;
 
-	using Mono.Cecil;
-	using Mono.Cecil.Cil;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
 
-	using PapyrusDotNet.Common;
-	using PapyrusDotNet.CoreBuilder.CoreExtensions;
+    using PapyrusDotNet.Common;
+    using PapyrusDotNet.CoreBuilder.CoreExtensions;
 
-	using PowerArgs;
+    // using PCompiler;
 
-	public enum PapyrusParseType
-	{
-		Script,
-		Assembly
-	}
+    using PowerArgs;
 
-	class Program
-	{
-		internal static ModuleDefinition MainModule;
+    public enum PapyrusParseType
+    {
+        Script,
+        Assembly
+    }
 
-		internal static AssemblyDefinition Core;
+    class Program
+    {
+        internal static ModuleDefinition MainModule;
 
-		internal static string[] WordList;
+        internal static AssemblyDefinition Core;
 
-		internal static PapyrusParseType ParseType { get; set; }
+        internal static string[] WordList;
 
-		internal static List<string> PreservedTypeNames = new List<string>();
+        internal static PapyrusParseType ParseType { get; set; }
 
-		internal static string OutputFileName = "PapyrusDotNet.Core.dll";
+        internal static List<string> PreservedTypeNames = new List<string>();
 
-		internal static string CoreNamespace = "PapyrusDotNet.Core";
+        internal static string OutputFileName = "PapyrusDotNet.Core.dll";
 
-		static void Main(string[] args)
-		{
-			ParseType = PapyrusParseType.Assembly;
+        internal static string CoreNamespace = "PapyrusDotNet.Core";
 
+        static void Main(string[] args)
+        {
+            ParseType = PapyrusParseType.Assembly;
 
-
-			string inputDirectory = @"C:\The Elder Scrolls V Skyrim\Papyrus Compiler";
-			string searchFor = "*.pas";
-			string typeName = "assembly";
-
-			try
-			{
-				var parsed = Args.Parse<PapyrusDotNetArgs>(args);
-				if (parsed.InputFolder != null)
-				{
-					// Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
-					if (parsed.InputType.ToLower().Contains("script") || parsed.InputType.ToLower().Contains("psc"))
-					{
-						ParseType = PapyrusParseType.Script;
-						searchFor = "*.psc";
-						typeName = "script";
-					}
-
-					inputDirectory = parsed.InputFolder;
-					if (inputDirectory.Contains("\""))
-					{
-						inputDirectory = inputDirectory.Replace("\"", "");
-					}
-					// Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.InputFile, parsed.OutputFolder);
-				}
-				if (parsed.InputFolder == null)
-				{
-					Console.WriteLine("No arguments were defined, using default.");
-					Console.WriteLine("Input: " + inputDirectory);
-					Console.WriteLine("Type: " + typeName);
-					Console.WriteLine();
-					Console.WriteLine("If you are fine with this, press any key to continue.");
-					Console.WriteLine("Or hit CTRL+C to exit.");
-					Console.ReadKey();
-				}
-			}
-			catch (ArgException ex)
-			{
-				Console.WriteLine("Crash on startup :(");
-				Console.WriteLine("Exception thrown: " + ex);
-
-				return;
-			}
+            // ParseScript(@"C:\CreationKit\Data\Scripts\Source\AchievementsScript.psc");
 
 
+            // var scriptObject = PscParser.Parse(@"C:\CreationKit\Data\Scripts\Source\AbTGTrapsightScript.psc");
+
+            Console.Title = "PapyrusDotNet";
+            string inputDirectory = @"C:\CreationKit\Data\Scripts\Source";
+            string searchFor = "*.pas";
+            string typeName = "assembly";
+
+            PapyrusDotNetArgs parsed = new PapyrusDotNetArgs()
+                                       {
+                                           InputFolder = inputDirectory,
+                                           InputType = "script"
+                                       };
+            try
+            {
+                if (parsed == null)
+                    parsed = Args.Parse<PapyrusDotNetArgs>(args);
+                if (parsed.InputFolder != null)
+                {
+                    // Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
+                    if (parsed.InputType.ToLower().Contains("script") || parsed.InputType.ToLower().Contains("psc"))
+                    {
+                        ParseType = PapyrusParseType.Script;
+                        searchFor = "*.psc";
+                        typeName = "script";
+                    }
+
+                    inputDirectory = parsed.InputFolder;
+                    if (inputDirectory.Contains("\""))
+                    {
+                        inputDirectory = inputDirectory.Replace("\"", "");
+                    }
+                    // Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.InputFile, parsed.OutputFolder);
+                }
+                if (parsed.InputFolder == null)
+                {
+                    Console.WriteLine("No arguments were defined, using default.");
+                    Console.WriteLine("Input: " + inputDirectory);
+                    Console.WriteLine("Type: " + typeName);
+                    Console.WriteLine();
+                    Console.WriteLine("If you are fine with this, press any key to continue.");
+                    Console.WriteLine("Or hit CTRL+C to exit.");
+                    Console.ReadKey();
+                }
+            }
+            catch (ArgException ex)
+            {
+                Console.WriteLine("Crash on startup :(");
+                Console.WriteLine("Exception thrown: " + ex);
+
+                return;
+            }
 
 
+            GenerateCoreLib(typeName, inputDirectory, searchFor);
+            Console.ReadKey();
+        }
 
-			Console.WriteLine("Loading all " + typeName + " files...");
+        public static async void GenerateCoreLib(string typeName, string inputDirectory, string searchFor)
+        {
+            Console.WriteLine("Loading all " + typeName + " files...");
 
-			// @"C:\The Elder Scrolls V Skyrim\Data\scripts\Source"
-			var files = Directory.GetFiles(
-				inputDirectory, searchFor, SearchOption.AllDirectories);
+            // @"C:\The Elder Scrolls V Skyrim\Data\scripts\Source"
+            var files = Directory.GetFiles(
+                inputDirectory, searchFor, SearchOption.AllDirectories);
 
-			if (File.Exists("wordlist.txt"))
-			{
-				Console.WriteLine("Loading wordlist...");
-				WordList = File.ReadAllLines("wordlist.txt");
-			}
-			else
-			{
-				Console.WriteLine("Wordlist was not found, skipping...");
-				WordList = new string[0];
-			}
+            if (File.Exists("wordlist.txt"))
+            {
+                Console.WriteLine("Loading wordlist... This may take a few seconds.");
+                WordList = File.ReadAllLines("wordlist.txt");
+            }
+            else
+            {
+                Console.WriteLine("Wordlist was not found, skipping...");
+                WordList = new string[0];
+            }
 
-			Core = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition(CoreNamespace, new Version(1, 0)),
-				CoreNamespace, ModuleKind.Dll);
+            Core = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition(CoreNamespace, new Version(1, 0)),
+                CoreNamespace, ModuleKind.Dll);
 
-			MainModule = Core.MainModule;
+            MainModule = Core.MainModule;
 
-			var papyrusObjects = new List<PapyrusAsmObject>();
+            var papyrusObjects = new List<PapyrusAsmObject>();
 
-			Console.WriteLine("Parsing Papyrus...");
-			papyrusObjects.AddRange(files.Select(Parse));
+            Console.WriteLine("Parsing Papyrus...");
+            Console.WriteLine("This may take anything between 10-30 minutes. So go and grab yourself a cup of coffe.");
+            // var lastPosX = Console.CursorLeft;
+            // var lastPosY = Console.CursorTop;
+            // int index = 0;
+            totalFilesToParse = files.Length;
 
+            var asyncParse = files.Select(Parse);
+            papyrusObjects.AddRange(await Task.WhenAll(asyncParse.ToArray()));
 
-			Console.WriteLine("Adding object references...");
-			foreach (var pasObj in papyrusObjects)
-				AddedTypeReferences.Add(GetTypeReference(null, pasObj.Name));
+            Console.Title = "PapyrusDotNet";
 
-			foreach (var pas in papyrusObjects)
-				MainModule.Types.Add(TypeDefinitionFromPapyrus(pas));
+            //foreach (var f in files)
+            //{
+            //    papyrusObjects.Add(Parse(f));
+            //    index++;
 
-			Console.WriteLine("Resolving object references...");
-			foreach (var t in MainModule.Types)
-			{
-				foreach (var f in t.Methods)
-				{
-					var typeDefinition = MainModule.Types.FirstOrDefault(ty => ty.FullName == f.ReturnType.FullName);
-					f.ReturnType = GetTypeReference(typeDefinition, f.ReturnType.FullName);
-					foreach (var p in f.Parameters)
-					{
-						var td = MainModule.Types.FirstOrDefault(ty => ty.FullName == p.ParameterType.FullName);
-						if (td != null)
-							/*	// Most likely a System object.							
-								p.ParameterType = GetTypeReference(null, p.ParameterType.FullName);
-							else */
-							p.ParameterType = GetTypeReference(typeDefinition, td.FullName);
-					}
-				}
-			}
-
-			Console.WriteLine("Importing Papyrus specific attributes...");
+            //    Console.SetCursorPosition(lastPosX, lastPosY);
+            //    Console.WriteLine(index + " / " + files.Length);
+            //}
 
 
-			var allAttributesToInclude = System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where(
+            Console.WriteLine("Adding object references...");
+            foreach (var pasObj in papyrusObjects)
+                AddedTypeReferences.Add(GetTypeReference(null, pasObj.Name));
+
+            foreach (var pas in papyrusObjects)
+                MainModule.Types.Add(TypeDefinitionFromPapyrus(pas));
+
+            Console.WriteLine("Resolving object references...");
+            foreach (var t in MainModule.Types)
+            {
+                foreach (var f in t.Methods)
+                {
+                    var typeDefinition = MainModule.Types.FirstOrDefault(ty => ty.FullName == f.ReturnType.FullName);
+                    f.ReturnType = GetTypeReference(typeDefinition, f.ReturnType.FullName);
+                    foreach (var p in f.Parameters)
+                    {
+                        var td = MainModule.Types.FirstOrDefault(ty => ty.FullName == p.ParameterType.FullName);
+                        if (td != null)
+                            /*	// Most likely a System object.							
+                                p.ParameterType = GetTypeReference(null, p.ParameterType.FullName);
+                            else */
+                            p.ParameterType = GetTypeReference(typeDefinition, td.FullName);
+                    }
+                }
+            }
+
+            Console.WriteLine("Importing Papyrus specific attributes...");
+
+
+            var allAttributesToInclude = System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where(
                     t => t.Name.ToLower().EndsWith("attribute")
 #warning we should include the PapyrusDotNet.System here as well.
-                );
+);
 
-			foreach (var attr in allAttributesToInclude)
-			{
-				IncludeType(MainModule, attr);
-			}
-		
-
-
-
-			Core.Write(OutputFileName);
-			Console.WriteLine(OutputFileName + " successefully generated.");
-		}
-
-		private static bool IncludeType(ModuleDefinition MainModule, Type type)
-		{
-			try
-			{
-				var reference = MainModule.Import(type);
-
-				var definition = reference.Resolve();
-
-				var newType = new TypeDefinition(CoreNamespace, definition.Name, TypeAttributes.Class);
-				newType.IsPublic = true;
-				newType.BaseType = definition.BaseType;
-
-				foreach (var field in definition.Fields)
-				{
-					var newField = new FieldDefinition(field.Name, FieldAttributes.Public, field.FieldType);
-					newType.Fields.Add(newField);
-				}
-
-				foreach (var field in definition.Events)
-				{
-					var newField = new EventDefinition(field.Name, EventAttributes.None, field.EventType);
-					newType.Events.Add(newField);
-				}
-
-				var constructor = definition.Methods.FirstOrDefault(m => m.IsConstructor);
-				if (constructor != null)
-					MainModule.Import(constructor);
-
-				if (definition.BaseType != null)
-				{
-					try
-					{
-						var baseDef = definition.BaseType.Resolve();
-						constructor = baseDef.Methods.FirstOrDefault(m => m.IsConstructor);
-						if (constructor != null)
-							MainModule.Import(constructor);
-					}
-					catch { }
-				}
-
-				// if (constructor != null && !constructor.HasParameters)
-				AddEmptyConstructor(newType);
-
-				foreach (var field in definition.Methods)
-				{
-
-					if (field.IsConstructor && !field.HasParameters) continue;
+            foreach (var attr in allAttributesToInclude)
+            {
+                IncludeType(MainModule, attr);
+            }
 
 
 
 
-					var newField = new MethodDefinition(field.Name, field.Attributes, field.ReturnType);
+            Core.Write(OutputFileName);
+            Console.WriteLine(OutputFileName + " successefully generated.");
+        }
 
-					var refer = MainModule.Import(field);
+        private static bool IncludeType(ModuleDefinition MainModule, Type type)
+        {
+            try
+            {
+                var reference = MainModule.Import(type);
 
-					foreach (var fp in field.Parameters)
-					{
-						if (fp.Name.Contains("<"))
-						{
+                var definition = reference.Resolve();
 
-						}
-						var newParam = new ParameterDefinition(fp.Name, fp.Attributes, fp.ParameterType);
-						newField.Parameters.Add(newParam);
-					}
-					/*	
-						if (field.HasBody)
-						{
-							foreach (var inst in field.Body.Instructions)
-							{
-								if (inst.Operand is MethodReference)
-									MainModule.Import(inst.Operand as MethodReference);
-								if (inst.Operand is FieldReference)
-									MainModule.Import(inst.Operand as FieldReference);
+                var newType = new TypeDefinition(CoreNamespace, definition.Name, TypeAttributes.Class);
+                newType.IsPublic = true;
+                newType.BaseType = definition.BaseType;
+
+                foreach (var field in definition.Fields)
+                {
+                    var newField = new FieldDefinition(field.Name, FieldAttributes.Public, field.FieldType);
+                    newType.Fields.Add(newField);
+                }
+
+                foreach (var field in definition.Events)
+                {
+                    var newField = new EventDefinition(field.Name, EventAttributes.None, field.EventType);
+                    newType.Events.Add(newField);
+                }
+
+                var constructor = definition.Methods.FirstOrDefault(m => m.IsConstructor);
+                if (constructor != null)
+                    MainModule.Import(constructor);
+
+                if (definition.BaseType != null)
+                {
+                    try
+                    {
+                        var baseDef = definition.BaseType.Resolve();
+                        constructor = baseDef.Methods.FirstOrDefault(m => m.IsConstructor);
+                        if (constructor != null)
+                            MainModule.Import(constructor);
+                    }
+                    catch { }
+                }
+
+                // if (constructor != null && !constructor.HasParameters)
+                AddEmptyConstructor(newType);
+
+                foreach (var field in definition.Methods)
+                {
+
+                    if (field.IsConstructor && !field.HasParameters) continue;
+
+
+
+
+                    var newField = new MethodDefinition(field.Name, field.Attributes, field.ReturnType);
+
+                    var refer = MainModule.Import(field);
+
+                    foreach (var fp in field.Parameters)
+                    {
+                        if (fp.Name.Contains("<"))
+                        {
+
+                        }
+                        var newParam = new ParameterDefinition(fp.Name, fp.Attributes, fp.ParameterType);
+                        newField.Parameters.Add(newParam);
+                    }
+                    /*	
+                        if (field.HasBody)
+                        {
+                            foreach (var inst in field.Body.Instructions)
+                            {
+                                if (inst.Operand is MethodReference)
+                                    MainModule.Import(inst.Operand as MethodReference);
+                                if (inst.Operand is FieldReference)
+                                    MainModule.Import(inst.Operand as FieldReference);
 
 							
-								// newField.Body.Instructions.Add(inst);
-							}
-						}*/
+                                // newField.Body.Instructions.Add(inst);
+                            }
+                        }*/
 
-					CreateEmptyFunctionBody(ref newField);
-					newType.Methods.Add(newField);
-				}
+                    CreateEmptyFunctionBody(ref newField);
+                    newType.Methods.Add(newField);
+                }
 
-				MainModule.Types.Add(newType);
-				return true;
-			}
-			catch { }
-			return false;
-			/*
-			MainModule.Import(
-			   typeof(AutoReadOnlyAttribute));
+                MainModule.Types.Add(newType);
+                return true;
+            }
+            catch { }
+            return false;
+            /*
+            MainModule.Import(
+               typeof(AutoReadOnlyAttribute));
 
-			MainModule.Import(
-				typeof(ConditionalAttribute));
+            MainModule.Import(
+                typeof(ConditionalAttribute));
 
-			MainModule.Import(
-				typeof(HiddenAttribute));*/
-		}
+            MainModule.Import(
+                typeof(HiddenAttribute));*/
+        }
 
-		public static TypeDefinition TypeDefinitionFromPapyrus(PapyrusAsmObject input)
-		{
-			var newType = new TypeDefinition(CoreNamespace, input.Name, TypeAttributes.Class);
-
-
-			newType.IsPublic = true;
-			// newType.DeclaringType = newType;
-			if (!string.IsNullOrEmpty(input.ExtendsName))
-			{
-				newType.BaseType = new TypeReference(CoreNamespace, input.ExtendsName, MainModule, MainModule);
-				// newType.DeclaringType = MainModule.Types.FirstOrDefault(t => t.FullName == newType.BaseType.FullName);
-				newType.Scope = MainModule;
-			}
-			else
-			{
-				newType.BaseType = MainModule.TypeSystem.Object;
-				newType.Scope = MainModule;
-			}
-
-			Console.WriteLine("Generating Type '" + CoreNamespace + "." + input.Name + "'...");
-
-			foreach (var prop in input.PropertyTable)
-			{
-				var typeRef = GetTypeReference(null, prop.Type);
-				var pro = new PropertyDefinition(prop.Name, PropertyAttributes.HasDefault, typeRef);
-				newType.Properties.Add(pro);
-			}
-
-			// newType.AddDefaultConstructor();
-
-			AddEmptyConstructor(newType);
-
-			AddVirtualOnInit(newType);
-
-			foreach (var state in input.States)
-			{
-				TypeReference typeRef = GetTypeReference(null, state.ReturnType);
-				// var typeRef = MainModule.TypeSystem.Void;
-
-				var function = new MethodDefinition(state.Name, MethodAttributes.Public, typeRef);
-				function.IsStatic = state.IsStatic;
-				if (function.IsStatic)
-					function.HasThis = false;
-				if (!function.IsStatic && state.Name.StartsWith("On"))
-					function.IsVirtual = true;
-				else function.IsVirtual = false;
-
-				CreateEmptyFunctionBody(ref function);
-
-				foreach (var par in state.Params)
-				{
-					TypeReference typeRefp = GetTypeReference(null, par.Type);
-					// var typeRefp = MainModule.TypeSystem.Object;
-
-					var nPar = new ParameterDefinition(par.Name, ParameterAttributes.None, typeRefp);
-					function.Parameters.Add(nPar);
-				}
-				bool skipAdd = false;
-				foreach (var m in newType.Methods)
-				{
-					if (m.Name == function.Name)
-					{
-						if (m.Parameters.Count == function.Parameters.Count)
-						{
-							skipAdd = true;
-							for (int pi = 0; pi < m.Parameters.Count; pi++)
-							{
-								if (m.Parameters[pi].ParameterType.FullName != function.Parameters[pi].ParameterType.FullName) skipAdd = false;
-							}
-							break;
-						}
-					}
-				}
-				if (!skipAdd)
-					newType.Methods.Add(function);
-			}
-			return newType;
-		}
-
-		private static void CreateEmptyFunctionBody(ref MethodDefinition function)
-		{
-			var fnl = function.ReturnType.FullName.ToLower();
-			if (fnl.Equals("system.void"))
-			{
-				// Do nothing	
-			}
-
-			else if (fnl.Contains("[]"))
-			{
-				function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
-			}
-
-			else if (fnl.StartsWith("system.string") || fnl.StartsWith("system.object") || fnl.StartsWith(CoreNamespace.ToLower()))
-				function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
-
-			else if (fnl.StartsWith("system.int") || fnl.StartsWith("system.bool") || fnl.StartsWith("system.long") || fnl.StartsWith("system.byte") || fnl.StartsWith("system.short"))
-			{
-				if (fnl.StartsWith("system.long"))
-					function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I8, 0L));
-				else
-					function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
-			}
-
-			else if (fnl.StartsWith("system.float"))
-				function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R4, 0f));
-
-			else if (fnl.StartsWith("system.double"))
-				function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R8, 0d));
+        public static TypeDefinition TypeDefinitionFromPapyrus(PapyrusAsmObject input)
+        {
+            var newType = new TypeDefinition(CoreNamespace, input.Name, TypeAttributes.Class);
 
 
-			function.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-		}
+            newType.IsPublic = true;
+            // newType.DeclaringType = newType;
+            if (!string.IsNullOrEmpty(input.ExtendsName))
+            {
+                newType.BaseType = new TypeReference(CoreNamespace, input.ExtendsName, MainModule, MainModule);
+                // newType.DeclaringType = MainModule.Types.FirstOrDefault(t => t.FullName == newType.BaseType.FullName);
+                newType.Scope = MainModule;
+            }
+            else
+            {
+                newType.BaseType = MainModule.TypeSystem.Object;
+                newType.Scope = MainModule;
+            }
 
-		private static void AddVirtualOnInit(TypeDefinition newType)
-		{
-			if (!newType.Methods.Any(v => v.Name == "OnInit"))
-			{
-				var methodAttributes = MethodAttributes.Public;
-				var method = new MethodDefinition("OnInit", methodAttributes, MainModule.TypeSystem.Void);
-				method.IsVirtual = true;
+            Console.WriteLine("Generating Type '" + CoreNamespace + "." + input.Name + "'...");
+
+            foreach (var prop in input.PropertyTable)
+            {
+                var typeRef = GetTypeReference(null, prop.Type);
+                var pro = new PropertyDefinition(prop.Name, PropertyAttributes.HasDefault, typeRef);
+                newType.Properties.Add(pro);
+            }
+
+            // newType.AddDefaultConstructor();
+
+            AddEmptyConstructor(newType);
+
+            AddVirtualOnInit(newType);
+
+            foreach (var papyrusAsmState in input.States)
+            {
+                foreach (var papyrusAsmFunction in papyrusAsmState.Functions)
+                {
+                    TypeReference typeRef = GetTypeReference(null, papyrusAsmFunction.ReturnType);
+                    // var typeRef = MainModule.TypeSystem.Void;
 
 
 
-				method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-				newType.Methods.Add(method);
-			}
-		}
+                    var function = new MethodDefinition(papyrusAsmFunction.Name, MethodAttributes.Public, typeRef);
+                    function.IsStatic = papyrusAsmFunction.IsStatic;
+                    if (function.IsStatic)
+                        function.HasThis = false;
+                    if (!function.IsStatic && papyrusAsmFunction.Name.StartsWith("On") || papyrusAsmFunction.IsEvent)
+                        function.IsVirtual = true;
+                    else function.IsVirtual = false;
 
-		private static TypeReference GetTypeReference(TypeDefinition newType, string fallback = null)
-		{
-			var typeName = "";
-			if (!string.IsNullOrEmpty(fallback))
-				typeName = fallback;
-			else
-				typeName = newType.FullName;
+                    CreateEmptyFunctionBody(ref function);
 
-			var ns = GetTypeNamespace(typeName);
-			var tn = GetTypeName(typeName);
-			var isArray = tn.EndsWith("[]");
+                    foreach (var par in papyrusAsmFunction.Params)
+                    {
+                        TypeReference typeRefp = GetTypeReference(null, par.Type);
+                        // var typeRefp = MainModule.TypeSystem.Object;
 
-			if (ns == "System")
-			{
+                        var nPar = new ParameterDefinition(par.Name, ParameterAttributes.None, typeRefp);
+                        function.Parameters.Add(nPar);
+                    }
+                    bool skipAdd = false;
+                    foreach (var m in newType.Methods)
+                    {
+                        if (m.Name == function.Name)
+                        {
+                            if (m.Parameters.Count == function.Parameters.Count)
+                            {
+                                skipAdd = true;
+                                for (int pi = 0; pi < m.Parameters.Count; pi++)
+                                {
+                                    if (m.Parameters[pi].ParameterType.FullName != function.Parameters[pi].ParameterType.FullName) skipAdd = false;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    if (!skipAdd)
+                        newType.Methods.Add(function);
+                }
+            }
+            return newType;
+        }
 
-				var propies = MainModule.TypeSystem.GetType().GetProperties().Where(pr => pr.PropertyType == typeof(TypeReference)).ToList();
-				foreach (var propy in propies)
-				{
-					var name = propy.Name;
-					if (tn.Replace("[]", "").ToLower() == name.ToLower())
-					{
-						var val = propy.GetValue(MainModule.TypeSystem, null) as TypeReference;
-						return val;
-					}
-				}
-				// fallback
-				switch (tn.ToLower())
-				{
-					case "none":
-					case "void":
-						return MainModule.TypeSystem.Void;
-					case "byte":
-					case "short":
-					case "int":
-					case "long":
-					case "int8":
-					case "int16":
-					case "int32":
-					case "int64":
-						return MainModule.TypeSystem.Int32;
-					case "string":
-						return MainModule.TypeSystem.String;
-					case "float":
-					case "double":
-						return MainModule.TypeSystem.Double;
-					case "bool":
-					case "boolean":
-						return MainModule.TypeSystem.Boolean;
-					default:
-						return MainModule.TypeSystem.Object;
-				}
-			}
-			var tnA = tn.Replace("[]", "");
-			var existing = AddedTypeReferences.FirstOrDefault(ty => ty.FullName.ToLower() == (ns + "." + tnA).ToLower());
-			if (existing == null)
-			{
-				var hasTypeOf = MainModule.Types.FirstOrDefault(t => t.FullName.ToLower() == (ns + "." + tnA).ToLower());
-				if (hasTypeOf != null)
-				{
-					var typeRef = new TypeReference(hasTypeOf.Namespace, hasTypeOf.Name, MainModule, MainModule);
-					typeRef.Scope = MainModule;
-					AddedTypeReferences.Add(typeRef);
-					return typeRef;
-				}
-				else
-				{
-					if (PreservedTypeNames.Any(n => n.ToLower() == tnA.ToLower()))
-					{
-						tn = PreservedTypeNames.FirstOrDefault(j => j.ToLower() == tnA.ToLower());
-					}
-					var typeRef = new TypeReference(ns, tn, MainModule, MainModule);
-					typeRef.Scope = MainModule;
-					AddedTypeReferences.Add(typeRef);
-					return typeRef;
-				}
+        private static void CreateEmptyFunctionBody(ref MethodDefinition function)
+        {
+            var fnl = function.ReturnType.FullName.ToLower();
+            if (fnl.Equals("system.void"))
+            {
+                // Do nothing	
+            }
 
-			}
+            else if (fnl.Contains("[]"))
+            {
+                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
+            }
 
-			return existing;
-		}
+            else if (fnl.StartsWith("system.string") || fnl.StartsWith("system.object") || fnl.StartsWith(CoreNamespace.ToLower()))
+                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
 
-		public static List<TypeReference> AddedTypeReferences = new List<TypeReference>();
+            else if (fnl.StartsWith("system.int") || fnl.StartsWith("system.bool") || fnl.StartsWith("system.long") || fnl.StartsWith("system.byte") || fnl.StartsWith("system.short"))
+            {
+                if (fnl.StartsWith("system.long"))
+                    function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I8, 0L));
+                else
+                    function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+            }
 
-		public static void AddEmptyConstructor(TypeDefinition type)
-		{
-			var methodAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
-			var method = new MethodDefinition(".ctor", methodAttributes, MainModule.TypeSystem.Void);
+            else if (fnl.StartsWith("system.float"))
+                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R4, 0f));
+
+            else if (fnl.StartsWith("system.double"))
+                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R8, 0d));
+
+
+            function.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        }
+
+        private static void AddVirtualOnInit(TypeDefinition newType)
+        {
+            if (!newType.Methods.Any(v => v.Name == "OnInit"))
+            {
+                var methodAttributes = MethodAttributes.Public;
+                var method = new MethodDefinition("OnInit", methodAttributes, MainModule.TypeSystem.Void);
+                method.IsVirtual = true;
+
+
+
+                method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+                newType.Methods.Add(method);
+            }
+        }
+
+        private static TypeReference GetTypeReference(TypeDefinition newType, string fallback = null)
+        {
+            var typeName = "";
+            if (!string.IsNullOrEmpty(fallback))
+                typeName = fallback;
+            else
+                typeName = newType.FullName;
+
+            var ns = GetTypeNamespace(typeName);
+            var tn = GetTypeName(typeName);
+            var isArray = tn.Contains("[]");
+
+            if (ns == "System")
+            {
+
+                var propies = MainModule.TypeSystem.GetType().GetProperties().Where(pr => pr.PropertyType == typeof(TypeReference)).ToList();
+                foreach (var propy in propies)
+                {
+                    var name = propy.Name;
+                    if (tn.Replace("[]", "").ToLower() == name.ToLower())
+                    {
+                        var val = propy.GetValue(MainModule.TypeSystem, null) as TypeReference;
+                        return isArray && !val.IsArray ? new ArrayType(val) : val;
+                    }
+                }
+                // fallback
+                switch (tn.ToLower())
+                {
+                    case "none":
+                    case "void":
+                        return MainModule.TypeSystem.Void;
+                    case "byte":
+                    case "short":
+                    case "int":
+                    case "long":
+                    case "int8":
+                    case "int16":
+                    case "int32":
+                    case "int64":
+                        return isArray ? new ArrayType(MainModule.TypeSystem.Int32) : MainModule.TypeSystem.Int32;
+                    case "string":
+                        return isArray ? new ArrayType(MainModule.TypeSystem.String) : MainModule.TypeSystem.String;
+                    case "float":
+                    case "double":
+                        return isArray ? new ArrayType(MainModule.TypeSystem.Double) : MainModule.TypeSystem.Double;
+                    case "bool":
+                    case "boolean":
+                        return isArray ? new ArrayType(MainModule.TypeSystem.Boolean) : MainModule.TypeSystem.Boolean;
+                    default:
+                        return isArray ? new ArrayType(MainModule.TypeSystem.Object) : MainModule.TypeSystem.Object;
+                }
+            }
+            var tnA = tn.Replace("[]", "");
+            var existing = AddedTypeReferences.FirstOrDefault(ty => ty.FullName.ToLower() == (ns + "." + tnA).ToLower());
+            if (existing == null)
+            {
+                var hasTypeOf = MainModule.Types.FirstOrDefault(t => t.FullName.ToLower() == (ns + "." + tnA).ToLower());
+                if (hasTypeOf != null)
+                {
+                    var typeRef = new TypeReference(hasTypeOf.Namespace, hasTypeOf.Name, MainModule, MainModule);
+                    typeRef.Scope = MainModule;
+                    AddedTypeReferences.Add(typeRef);
+                    return isArray && !typeRef.IsArray ? new ArrayType(typeRef) : typeRef;
+                }
+                else
+                {
+                    if (PreservedTypeNames.Any(n => n.ToLower() == tnA.ToLower()))
+                    {
+                        tn = PreservedTypeNames.FirstOrDefault(j => j.ToLower() == tnA.ToLower());
+                    }
+                    var typeRef = new TypeReference(ns, tn, MainModule, MainModule);
+
+
+
+                    typeRef.Scope = MainModule;
+                    AddedTypeReferences.Add(typeRef);
+                    return isArray && !typeRef.IsArray ? new ArrayType(typeRef) : typeRef;
+                }
+
+            }
+
+            return isArray && !existing.IsArray ? new ArrayType(existing) : existing;
+        }
+
+        public static List<TypeReference> AddedTypeReferences = new List<TypeReference>();
+
+        public static void AddEmptyConstructor(TypeDefinition type)
+        {
+            var methodAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
+            var method = new MethodDefinition(".ctor", methodAttributes, MainModule.TypeSystem.Void);
 
 #warning might need to fix this later so that PEVERIFY can verify the outputted library properly.
-			// var baseEmptyConstructor = new MethodReference(".ctor", MainModule.TypeSystem.Void, MainModule.TypeSystem.Object);// MainModule.TypeSystem.Object
-			// method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
-			// method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, baseEmptyConstructor));
+            // var baseEmptyConstructor = new MethodReference(".ctor", MainModule.TypeSystem.Void, MainModule.TypeSystem.Object);// MainModule.TypeSystem.Object
+            // method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+            // method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, baseEmptyConstructor));
 
 
 
-			method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-			type.Methods.Add(method);
-		}
+            method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            type.Methods.Add(method);
+        }
 
-		private static string GetTypeName(string p)
-		{
-			if (p.Contains('.')) p = p.Split('.').LastOrDefault();
-			var pl = p.ToLower();
+        private static string GetTypeName(string p)
+        {
+            if (p.Contains('.')) p = p.Split('.').LastOrDefault();
+            var pl = p.ToLower();
 
-			/*if (p.EndsWith("[]"))
-			{
-				pl = pl.Replace("[]", "");
-			}*/
+            /*if (p.EndsWith("[]"))
+            {
+                pl = pl.Replace("[]", "");
+            }*/
 
-			if (pl == "boolean")
-				return "bool";
-			if (pl == "none")
-				return "void";
+            if (pl == "boolean")
+                return "bool";
+            if (pl == "none")
+                return "void";
 
-			if (pl == "float" || pl == "int" || pl == "bool" || pl == "string") return pl;
+            if (pl == "float" || pl == "int" || pl == "bool" || pl == "string") return pl;
 
-			return p;
-		}
+            return p;
+        }
 
-		private static string GetTypeNamespace(string p)
-		{
-			if (p.Contains('.')) p = p.Split('.').LastOrDefault();
-			var pl = p.ToLower();
+        private static string GetTypeNamespace(string p)
+        {
+            if (p.Contains('.')) p = p.Split('.').LastOrDefault();
+            var pl = p.ToLower();
 
-			if (p.EndsWith("[]"))
-			{
-				pl = pl.Replace("[]", "");
-			}
+            if (p.EndsWith("[]"))
+            {
+                pl = pl.Replace("[]", "");
+            }
 
-			/* have not added all possible types yet though.. might be a better way of doing it. */
-			if (pl == "string" || pl == "int" || pl == "boolean" || pl == "bool" || pl == "none"
-			   || pl == "void" || pl == "float" || pl == "short" || pl == "char" || pl == "double"
-			   || pl == "int32" || pl == "integer32" || pl == "long" || pl == "uint")
-			{
-				return "System";
-			}
-			return CoreNamespace;
-		}
+            /* have not added all possible types yet though.. might be a better way of doing it. */
+            if (pl == "string" || pl == "int" || pl == "boolean" || pl == "bool" || pl == "none"
+               || pl == "void" || pl == "float" || pl == "short" || pl == "char" || pl == "double"
+               || pl == "int32" || pl == "integer32" || pl == "long" || pl == "uint")
+            {
+                return "System";
+            }
+            return CoreNamespace;
+        }
+        static int totalFilesToParse = 0;
+        static int filesParsed = 0;
+        public async static Task<PapyrusAsmObject> Parse(string file)
+        {
+            return await Task.Run(() =>
+            {
+                PapyrusAsmObject obj = null;
+                var ext = Path.GetExtension(file);
+                if (!string.IsNullOrEmpty(ext))
+                {
+                    // Console.WriteLine("... " + Path.GetFileNameWithoutExtension(file));
+                    if (ext.ToLower().EndsWith("pas"))
+                    {
+                        obj = ParseAsm(file);
+                    }
+                    else
+                        obj = ParseScript(file);
+                }
+                filesParsed++;
+                Console.Title = "PapyrusDotNet - Parsing Papyrus: " + filesParsed + "/" + totalFilesToParse;
+                return obj;
+            });
+        }
 
-		public static PapyrusAsmObject Parse(string file)
-		{
-			var ext = Path.GetExtension(file);
-			if (!string.IsNullOrEmpty(ext))
-			{
-				if (ext.ToLower().EndsWith("pas"))
-				{
-					return ParseAsm(file);
-				}
-				return ParseScript(file);
-			}
-			return null;
-		}
+        // public static Compiler compiler = new PCompiler.Compiler();
 
-		private static PapyrusAsmObject ParseScript(string file)
-		{
-			var inputScript = File.ReadAllLines(file);
-			var obj = new PapyrusAsmObject();
+        private static PapyrusAsmObject ParseScript(string file)
+        {
 
-			throw new NotImplementedException("Parsing from .psc/ Skyrim Papyrus Scripts are not yet supported.");
+            var obj = new PapyrusAsmObject();
 
-			//	TypeDefinition def = new TypeDefinition("","", TypeAttributes.);
+            var scriptObject = PscParser.Parse(file);
 
-			return obj;
-		}
+            var objName = scriptObject.Name;
 
-		public static PapyrusAsmObject ParseAsm(string file)
-		{
+            obj.Name = objName;
 
-			var inputScript = System.IO.File.ReadAllLines(file);
-			var obj = new PapyrusAsmObject();
-			var inVariableTable = false;
-			var inPropertyTable = false;
-			var inStateTable = false;
-			var inFunction = false;
-			var inFunctionLocalTable = false;
-			var inFunctionParamTable = false;
+            foreach (var s in scriptObject.StateFunctions)
+            {
+                var state = new PapyrusAsmState();
+                state.Name = s.Name;
+                foreach (var f in s.Functions)
+                {
+                    var sourceFunction = f;
 
-			PapyrusAsmState latestFunction = null;
-			foreach (var line in inputScript)
-			{
-				var tLine = line.Replace("\t", "").Trim();
-				if (tLine.Contains(";"))
-					tLine = tLine.Split(';')[0].Trim();
+                    if (!string.IsNullOrEmpty(sourceFunction.StateName) && string.IsNullOrEmpty(state.Name))
+                        state.Name = sourceFunction.StateName;
 
-				if (tLine.StartsWith(".variableTable"))
-					inVariableTable = true;
-				if (tLine.StartsWith(".endVariableTable"))
-					inVariableTable = false;
+                    var function = new PapyrusAsmFunction();
+                    function.Name = PrettifyName(sourceFunction.Name);
+                    function.ReturnType = sourceFunction.ReturnType.VarType;
+                    function.ReturnArray = sourceFunction.ReturnType.IsArray;
+                    int inputNameIndex = 0;
+                    foreach (var p in sourceFunction.Parameters)
+                    {
+                        function.Params.Add(new PapyrusAsmVariable(p.Name, p.VarType));
 
-				if (tLine.StartsWith(".propertyTable"))
-					inPropertyTable = true;
-				if (tLine.StartsWith(".endPropertyTable"))
-					inPropertyTable = false;
+                        inputNameIndex++;
+                    }
 
-				if (tLine.StartsWith(".stateTable"))
-					inStateTable = true;
-				if (tLine.StartsWith(".endStateTable"))
-					inStateTable = false;
+                    function.IsStatic = sourceFunction.IsGlobal;
+                    function.IsNative = sourceFunction.IsNative;
+                    function.IsEvent = sourceFunction.IsEvent;
+                    // Since we are only generating "dummy" classes,
+                    // the function scope is not necessary at this point.
+                    // var fs = sourceFunction.FunctionScope;
 
-				if (tLine.StartsWith(".paramTable"))
-					inFunctionParamTable = true;
-				if (tLine.StartsWith(".endParamTable"))
-					inFunctionParamTable = false;
+                    state.Functions.Add(function);
+                }
 
-				if (tLine.StartsWith(".localTable"))
-					inFunctionLocalTable = true;
-				if (tLine.StartsWith(".endLocalTable"))
-					inFunctionLocalTable = false;
+                obj.States.Add(state);
+            }
 
-				if (tLine.StartsWith(".object "))
-				{
-					//			obj.Name = tLine.Split(' ')[1];
-					obj.Name = Path.GetFileNameWithoutExtension(file);
+            // Ignore Non Overridable Functions for now.
+            // We will need to handle these later to make sure that a user
+            // does not override them. GetState, SetState are both common.
+            //var nof = scriptObject.kNonOverridableFunctions;
+            //var instanceVars = scriptObject.kInstanceVariables;
+            //var propertyVars = scriptObject.kProperties;
 
+            // If the script is extended by another script
+            // The script will have a parent.
+            if (scriptObject.Extends != null)
+            {
+                obj.ExtendsName = scriptObject.Extends;
+            }
 
+            foreach (var prop in scriptObject.Properties)
+            {
+                obj.PropertyTable.Add(new PapyrusAsmVariable(prop.Name, prop.VarType));
+            }
 
-					if (obj.Name.Contains("."))
-					{
-						obj.Name = obj.Name.Split('.')[0];
-					}
+            foreach (var field in scriptObject.InstanceVariables)
+            {
+                // Most likely an auto- property
+                // And we have already added them above.
+                if (field.Name.StartsWith("::")) continue;
 
-					string before = obj.Name;
+            }
 
-					if (WordList != null && WordList.Length > 0)
-					{
-						if (!Char.IsUpper(obj.Name[0]))
-						{
-							var usedWords = new List<string>();
-							var ordered = WordList.OrderByDescending(o => o.Length);
-							foreach (var word in ordered)
-							{
-								if (string.IsNullOrEmpty(word) || word.Length < 4) continue;
-								if (obj.Name.ToLower().Contains(word) && !usedWords.Any(s => s.Contains(word)))
-								{
-									var i = obj.Name.ToLower().IndexOf(word);
+            //      throw new NotImplementedException("Parsing from .psc/ Skyrim Papyrus Scripts are not yet supported.");
 
-									bool skip = false;
-									if (i > 0)
-									{
-										skip = Char.IsUpper(obj.Name[i - 1]);
-									}
-
-									if (skip) continue;
-
-									var w = Char.ToUpper(word[0]) + word.Substring(1);
-									obj.Name = obj.Name.Replace(word, w);
-									usedWords.Add(word);
-								}
-							}
-						}
-
-					}
-					if (!Char.IsUpper(obj.Name[0]))
-					{
-						obj.Name = Char.ToUpper(obj.Name[0]) + obj.Name.Substring(1);
-					}
-					var theBefore = before;
-					var theAfter = obj.Name;
+            //	TypeDefinition def = new TypeDefinition("","", TypeAttributes.);
 
 
+            return obj;
+        }
 
-					if (tLine.Split(' ').Length > 2)
-					{
-						obj.ExtendsName = tLine.Split(' ')[2];
-					}
-					if (tLine.Contains("extends"))
-					{
-						obj.ExtendsName = tLine.Split(' ')[3];// Parse(@"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\" + tLine.Split(' ')[3] + ".disassemble.pas");
-					}
-				}
+        public static PapyrusAsmObject ParseAsm(string file)
+        {
 
-				if (inVariableTable)
-				{
+            var inputScript = System.IO.File.ReadAllLines(file);
+            var obj = new PapyrusAsmObject();
+            var inVariableTable = false;
+            var inPropertyTable = false;
+            var inStateTable = false;
+            var inFunction = false;
+            var inFunctionLocalTable = false;
+            var inFunctionParamTable = false;
 
-				}
-				else if (inPropertyTable)
-				{
+            PapyrusAsmState lastState = null;
+            PapyrusAsmFunction lastFunction = null;
 
-				}
-				else if (inStateTable)
-				{
-					if (tLine.StartsWith(".state") || tLine.StartsWith(".endState")) continue;
-					if (tLine.StartsWith(".function "))
-					{
-						inFunction = true;
-						latestFunction = new PapyrusAsmState();
+            foreach (var line in inputScript)
+            {
+                var tLine = line.Replace("\t", "").Trim();
+                if (tLine.Contains(";"))
+                    tLine = tLine.Split(';')[0].Trim();
 
-						if (tLine.Contains(" static")) latestFunction.IsStatic = true;
-						latestFunction.Name = tLine.Split(' ')[1];
-					}
-					if (tLine.StartsWith(".endFunction"))
-					{
-						inFunction = false;
-						obj.States.Add(latestFunction);
-					}
-					if (inFunctionLocalTable && latestFunction != null)
-					{
-						if (tLine.StartsWith(".local "))
-						{
-							latestFunction.LocalTable.Add(new PapyrusAsmVariable(tLine.Split(' ')[1], tLine.Split(' ')[2]));
-						}
-					}
-					if (inFunctionParamTable && latestFunction != null)
-					{
-						if (tLine.StartsWith(".param "))
-						{
-							latestFunction.Params.Add(new PapyrusAsmVariable(tLine.Split(' ')[1], tLine.Split(' ')[2]));
-						}
-					}
-					if (tLine.StartsWith(".return ") && latestFunction != null)
-					{
-						latestFunction.ReturnType = tLine.Split(' ')[1];
-					}
-				}
-			}
-			return obj;
-		}
-	}
+                if (tLine.StartsWith(".variableTable"))
+                    inVariableTable = true;
+                if (tLine.StartsWith(".endVariableTable"))
+                    inVariableTable = false;
 
-	public class PapyrusAsmObject
-	{
-		public List<PapyrusAsmVariable> VariableTable { get; set; }
-		public List<PapyrusAsmVariable> PropertyTable { get; set; }
-		public List<PapyrusAsmState> States { get; set; }
-		public string Name { get; set; }
-		public string Description { get; set; }
-		public PapyrusAsmObject Extends { get; set; }
-		public PapyrusAsmObject()
-		{
-			VariableTable = new List<PapyrusAsmVariable>();
-			PropertyTable = new List<PapyrusAsmVariable>();
-			States = new List<PapyrusAsmState>();
+                if (tLine.StartsWith(".propertyTable"))
+                    inPropertyTable = true;
+                if (tLine.StartsWith(".endPropertyTable"))
+                    inPropertyTable = false;
 
-		}
+                if (tLine.StartsWith(".stateTable"))
+                    inStateTable = true;
+                if (tLine.StartsWith(".endStateTable"))
+                    inStateTable = false;
 
-		public string ExtendsName { get; set; }
-	}
+                if (tLine.StartsWith(".paramTable"))
+                    inFunctionParamTable = true;
+                if (tLine.StartsWith(".endParamTable"))
+                    inFunctionParamTable = false;
 
-	public class PapyrusAsmState
-	{
-		public string Name { get; set; }
-		public bool IsStatic { get; set; }
-		public string ReturnType { get; set; }
-		public List<PapyrusAsmVariable> Params { get; set; }
-		public List<PapyrusAsmVariable> LocalTable { get; set; }
+                if (tLine.StartsWith(".localTable"))
+                    inFunctionLocalTable = true;
+                if (tLine.StartsWith(".endLocalTable"))
+                    inFunctionLocalTable = false;
 
-		public PapyrusAsmState()
-		{
-			Params = new List<PapyrusAsmVariable>();
-			LocalTable = new List<PapyrusAsmVariable>();
+                if (tLine.StartsWith(".object "))
+                {
+                    //			obj.Name = tLine.Split(' ')[1];
+                    obj.Name = Path.GetFileNameWithoutExtension(file);
 
-		}
 
-	}
-	public class PapyrusAsmVariable
-	{
-		public string Name { get; set; }
-		public string Type { get; set; }
-		public PapyrusAsmVariable(string name, string type)
-		{
-			this.Name = name;
-			this.Type = type;
 
-			if (type.Contains('.'))
-			{
-				var n = type.Substring(type.LastIndexOf('.'));
-				this.Type = type.Remove(type.LastIndexOf('.')) + Char.ToUpper(n[0]) + n.Substring(1);
-			}
-			else
-			{
-				this.Type = Char.ToUpper(type[0]) + type.Substring(1);
-			}
-		}
-	}
+                    if (obj.Name.Contains("."))
+                    {
+                        obj.Name = obj.Name.Split('.')[0];
+                    }
+
+                    string before = obj.Name;
+
+                    obj.Name = PrettifyName(obj.Name);
+
+                    var theBefore = before;
+                    var theAfter = obj.Name;
+
+
+
+                    if (tLine.Split(' ').Length > 2)
+                    {
+                        obj.ExtendsName = tLine.Split(' ')[2];
+                    }
+                    if (tLine.Contains("extends"))
+                    {
+                        obj.ExtendsName = tLine.Split(' ')[3];// Parse(@"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\" + tLine.Split(' ')[3] + ".disassemble.pas");
+                    }
+                }
+
+                if (inVariableTable)
+                {
+
+                }
+                else if (inPropertyTable)
+                {
+
+                }
+                else if (inStateTable)
+                {
+                    if (tLine.StartsWith(".state") || tLine.StartsWith(".endState"))
+                    {
+                        if (tLine.StartsWith(".state"))
+                        {
+                            lastState = new PapyrusAsmState();
+                        }
+                        if (tLine.StartsWith(".endState"))
+                        {
+                            obj.States.Add(lastState);
+                        }
+                        continue;
+                    }
+                    if (tLine.StartsWith(".function "))
+                    {
+                        inFunction = true;
+                        lastFunction = new PapyrusAsmFunction();
+
+                        if (tLine.Contains(" static")) lastFunction.IsStatic = true;
+                        lastFunction.Name = tLine.Split(' ')[1];
+                    }
+                    if (tLine.StartsWith(".endFunction"))
+                    {
+                        inFunction = false;
+                        lastState.Functions.Add(lastFunction);
+                    }
+                    if (inFunctionLocalTable && lastFunction != null)
+                    {
+                        if (tLine.StartsWith(".local "))
+                        {
+                            lastFunction.LocalTable.Add(new PapyrusAsmVariable(tLine.Split(' ')[1], tLine.Split(' ')[2]));
+                        }
+                    }
+                    if (inFunctionParamTable && lastFunction != null)
+                    {
+                        if (tLine.StartsWith(".param "))
+                        {
+                            lastFunction.Params.Add(new PapyrusAsmVariable(tLine.Split(' ')[1], tLine.Split(' ')[2]));
+                        }
+                    }
+                    if (tLine.StartsWith(".return ") && lastFunction != null)
+                    {
+                        lastFunction.ReturnType = tLine.Split(' ')[1];
+                    }
+                }
+            }
+            return obj;
+        }
+
+        public static string PrettifyName(string inputName)
+        {
+            var outputName = inputName;
+            if (WordList != null && WordList.Length > 0)
+            {
+                if (!Char.IsUpper(inputName[0]))
+                {
+                    var usedWords = new List<string>();
+                    var ordered = WordList.OrderByDescending(o => o.Length);
+                    foreach (var word in ordered)
+                    {
+                        if (string.IsNullOrEmpty(word) || word.Length < 4) continue;
+                        if (inputName.ToLower().Contains(word) && !usedWords.Any(s => s.Contains(word)))
+                        {
+                            var i = inputName.ToLower().IndexOf(word);
+
+                            bool skip = false;
+                            if (i > 0)
+                            {
+                                skip = Char.IsUpper(inputName[i - 1]);
+                            }
+
+                            if (skip) continue;
+
+                            var w = Char.ToUpper(word[0]) + word.Substring(1);
+                            outputName = outputName.Replace(word, w);
+                            usedWords.Add(word);
+                        }
+                    }
+                }
+
+            }
+            if (!Char.IsUpper(outputName[0]))
+            {
+                outputName = Char.ToUpper(outputName[0]) + outputName.Substring(1);
+            }
+            return outputName;
+        }
+    }
+
+    public class PapyrusAsmObject
+    {
+        public List<PapyrusAsmVariable> VariableTable { get; set; }
+        public List<PapyrusAsmVariable> PropertyTable { get; set; }
+        public List<PapyrusAsmState> States { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        // public PapyrusAsmObject Extends { get; set; }
+        public PapyrusAsmObject()
+        {
+            VariableTable = new List<PapyrusAsmVariable>();
+            PropertyTable = new List<PapyrusAsmVariable>();
+            States = new List<PapyrusAsmState>();
+
+        }
+
+        public string ExtendsName { get; set; }
+    }
+
+    public class PapyrusAsmState
+    {
+        public string Name { get; set; }
+
+        public List<PapyrusAsmFunction> Functions { get; set; }
+
+
+        public PapyrusAsmState()
+        {
+            Functions = new List<PapyrusAsmFunction>();
+        }
+    }
+
+    public class PapyrusAsmFunction
+    {
+        public string Name { get; set; }
+        public string DocString { get; set; }
+        public bool IsStatic { get; set; }
+        public bool IsNative { get; set; }
+        public bool IsEvent { get; set; }
+        public bool ReturnArray { get; set; }
+        public string ReturnType { get; set; }
+
+        public List<PapyrusAsmVariable> Params { get; set; }
+        public List<PapyrusAsmVariable> LocalTable { get; set; }
+
+        public PapyrusAsmFunction()
+        {
+            Params = new List<PapyrusAsmVariable>();
+            LocalTable = new List<PapyrusAsmVariable>();
+        }
+    }
+
+    public class PapyrusAsmVariable
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public bool IsArray { get; set; }
+        public PapyrusAsmVariable(string name, string type)
+        {
+            this.Name = name;
+            this.Type = type;
+            this.IsArray = type.Contains("[]");
+
+            if (type.Contains('.'))
+            {
+                var n = type.Substring(type.LastIndexOf('.'));
+                this.Type = type.Remove(type.LastIndexOf('.')) + Char.ToUpper(n[0]) + n.Substring(1);
+            }
+            else
+            {
+                this.Type = Char.ToUpper(type[0]) + type.Substring(1);
+            }
+        }
+    }
 }

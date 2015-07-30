@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PapyrusDotNet.CoreBuilder</RootNamespace>
     <AssemblyName>PapyrusDotNet.CoreBuilder</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
@@ -50,6 +52,10 @@
     <Reference Include="PowerArgs">
       <HintPath>..\packages\PowerArgs.2.0.3.0\lib\net40\PowerArgs.dll</HintPath>
     </Reference>
+    <Reference Include="StringTemplate, Version=3.0.1.6846, Culture=neutral, PublicKeyToken=beee492b52c41e85, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\StringTemplate.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -63,6 +69,7 @@
     <Compile Include="CoreExtensions\AutoAttribute.cs" />
     <Compile Include="CoreExtensions\AutoReadOnlyAttribute.cs" />
     <Compile Include="CoreExtensions\ConditionalAttribute.cs" />
+    <Compile Include="CoreExtensions\DocStringAttribute.cs" />
     <Compile Include="CoreExtensions\GenericIgnoreAttribute.cs" />
     <Compile Include="CoreExtensions\GenericMemberAttribute.cs" />
     <Compile Include="CoreExtensions\GenericTypeAttribute.cs" />
@@ -73,6 +80,7 @@
     <Compile Include="PapyrusDotNetArgs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PscParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

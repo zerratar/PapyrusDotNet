@@ -545,7 +545,7 @@ namespace PapyrusDotNet
             }
 
             papyrus += "\t\t.userFlags " + props.UserFlagsValue + Environment.NewLine;
-            papyrus += "\t\t.docString \"\"" + Environment.NewLine;
+            papyrus += "\t\t.docString \"" + props.DocString + "\"" + Environment.NewLine;
             papyrus += "\t\t.autoState" + Environment.NewLine;
 
             papyrus += "\t\t.variableTable" + Environment.NewLine;
