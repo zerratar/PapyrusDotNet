@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PapyrusDotNet.Common
 {
-    public class FieldProperties
+    public class PapyrusFieldProperties
     {
         public bool IsConditional { get; set; }
         public bool IsHidden { get; set; }

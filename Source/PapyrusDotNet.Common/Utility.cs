@@ -105,7 +105,7 @@ namespace PapyrusDotNet.Common
             return null;
         }
 
-        public static FieldProperties GetFlagsAndProperties(TypeDefinition variable)
+        public static PapyrusFieldProperties GetFlagsAndProperties(TypeDefinition variable)
         {
             string initialValue = null,
                    docString = null;
@@ -159,7 +159,7 @@ namespace PapyrusDotNet.Common
                 if (varAttr.AttributeType.Name.Equals("ConditionalAttribute"))
                     isConditional = true;
             }
-            return new FieldProperties()
+            return new PapyrusFieldProperties()
             {
                 IsGeneric = isGeneric,
                 InitialValue = initialValue,
@@ -170,6 +170,39 @@ namespace PapyrusDotNet.Common
                 IsProperty = isProperty,
                 DocString = docString
             };
+        }
+
+        public static string InitialValue(FieldDefinition variable)
+        {
+            string initialValue = "None";
+            if (variable.InitialValue != null && variable.InitialValue.Length > 0)
+            {
+                if (variable.FieldType.FullName.ToLower().Contains("system.int")
+                    || variable.FieldType.FullName.ToLower().Contains("system.byte")
+                    || variable.FieldType.FullName.ToLower().Contains("system.short")
+                    || variable.FieldType.FullName.ToLower().Contains("system.long"))
+                {
+                    initialValue = BitConverter.ToInt32(variable.InitialValue, 0).ToString();
+                    // "\"" + Encoding.Default.GetString(v) + "\"";
+                }
+                if (variable.FieldType.FullName.ToLower().Contains("system.double")
+                    || variable.FieldType.FullName.ToLower().Contains("system.float"))
+                {
+                    initialValue = BitConverter.ToDouble(variable.InitialValue, 0).ToString();
+                    // "\"" + Encoding.Default.GetString(v) + "\"";
+                }
+
+                if (variable.FieldType.FullName.ToLower().Contains("system.string"))
+                {
+                    initialValue = "\"" + Encoding.Default.GetString(variable.InitialValue) + "\"";
+                }
+
+                if (variable.FieldType.FullName.ToLower().Contains("system.bool"))
+                {
+                    initialValue = (variable.InitialValue[0] == 1).ToString();
+                }
+            }
+            return initialValue;
         }
 
         public static string CustomAttributeValue(CustomAttribute varAttr)
@@ -189,7 +222,7 @@ namespace PapyrusDotNet.Common
             return null;
         }
 
-        public static FieldProperties GetFlagsAndProperties(FieldDefinition variable)
+        public static PapyrusFieldProperties GetFlagsAndProperties(FieldDefinition variable)
         {
             string initialValue = null;
             bool isProperty = false,
@@ -242,7 +275,7 @@ namespace PapyrusDotNet.Common
                 if (varAttr.AttributeType.Name.Equals("ConditionalAttribute"))
                     isConditional = true;
             }
-            return new FieldProperties()
+            return new PapyrusFieldProperties()
             {
                 IsGeneric = isGeneric,
                 InitialValue = initialValue,
@@ -269,6 +302,19 @@ namespace PapyrusDotNet.Common
         {
             return code == Code.Br || code == Code.Br_S || code == Code.Brfalse_S || code == Code.Brtrue_S
                     || code == Code.Brfalse || code == Code.Brtrue;
+        }
+
+        public static string GetPapyrusReturnType(TypeReference reference, bool stripGenericMarkers)
+        {
+            var retType = GetPapyrusReturnType(reference);
+
+
+            if (stripGenericMarkers && reference.IsGenericInstance)
+            {
+                retType = retType.Replace("`1", "_" + Utility.GetPapyrusBaseType(reference.FullName.Split('<')[1].Split('>')[0]));
+            }
+
+            return retType;
         }
 
         public static string GetPapyrusReturnType(TypeReference reference)
@@ -408,7 +454,7 @@ namespace PapyrusDotNet.Common
             return "";
         }
 
-        public static string StringIndent(int indents, string line, bool newLine = true)
+        public static string Indent(int indents, string line, bool newLine = true)
         {
             string output = "";
             for (int j = 0; j < indents; j++) output += '\t';
@@ -676,6 +722,14 @@ namespace PapyrusDotNet.Common
             }
         }
 
+        public static string OptimizeLabels(string input)
+        {
+            var output = input;
+            output = RemoveUnusedLabels(output);
+            output = RemoveUnnecessaryLabels(output);
+            return output;
+        }
+
         public static string RemoveUnusedLabels(string output)
         {
             var rows = output.Split(new string[] { Environment.NewLine }, StringSplitOptions.None).ToList();
@@ -812,7 +866,7 @@ namespace PapyrusDotNet.Common
 
                 }
             }
-            List<int> rowsToRemove = new List<int>();
+            var rowsToRemove = new List<int>();
             foreach (var replacer in labelReplacements)
             {
 
@@ -846,7 +900,7 @@ namespace PapyrusDotNet.Common
 
             foreach (var variable in TempVariables)
             {
-                rows.Insert(insertIndex, StringIndent(indentDepth, variable.Definition, false));
+                rows.Insert(insertIndex, Indent(indentDepth, variable.Definition, false));
             }
 
 

@@ -77,10 +77,18 @@
     <Compile Include="CoreExtensions\NativeAttribute.cs" />
     <Compile Include="CoreExtensions\HiddenAttribute.cs" />
     <Compile Include="CoreExtensions\PropertyAttribute.cs" />
+    <Compile Include="Papyrus\Script\PapyrusFunction.cs" />
+    <Compile Include="Papyrus\Script\PapyrusScriptObject.cs" />
+    <Compile Include="Papyrus\Script\PapyrusStateFunction.cs" />
+    <Compile Include="Papyrus\Script\PapyrusVariable.cs" />
+    <Compile Include="Papyrus\Assembly\PapyrusAsmFunction.cs" />
+    <Compile Include="Papyrus\Assembly\PapyrusAsmObject.cs" />
+    <Compile Include="Papyrus\Assembly\PapyrusAsmState.cs" />
+    <Compile Include="Papyrus\Assembly\PapyrusAsmVariable.cs" />
     <Compile Include="PapyrusDotNetArgs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PscParser.cs" />
+    <Compile Include="Papyrus\Script\PapyrusScriptParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -97,6 +105,7 @@
       <Name>PapyrusDotNet.Common</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

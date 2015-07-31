@@ -28,9 +28,6 @@ namespace PapyrusDotNet.CoreBuilder
     using Mono.Cecil;
     using Mono.Cecil.Cil;
 
-    using PapyrusDotNet.Common;
-    using PapyrusDotNet.CoreBuilder.CoreExtensions;
-
     // using PCompiler;
 
     using PowerArgs;
@@ -64,7 +61,7 @@ namespace PapyrusDotNet.CoreBuilder
             // ParseScript(@"C:\CreationKit\Data\Scripts\Source\AchievementsScript.psc");
 
 
-            // var scriptObject = PscParser.Parse(@"C:\CreationKit\Data\Scripts\Source\AbTGTrapsightScript.psc");
+            // var scriptObject = PapyrusScriptParser.Parse(@"C:\CreationKit\Data\Scripts\Source\AbTGTrapsightScript.psc");
 
             Console.Title = "PapyrusDotNet";
             string inputDirectory = @"C:\CreationKit\Data\Scripts\Source";
@@ -147,8 +144,7 @@ namespace PapyrusDotNet.CoreBuilder
 
             var papyrusObjects = new List<PapyrusAsmObject>();
 
-            Console.WriteLine("Parsing Papyrus...");
-            Console.WriteLine("This may take anything between 10-30 minutes. So go and grab yourself a cup of coffe.");
+            Console.WriteLine("Parsing Papyrus... This usually takes about 30 seconds.");
             // var lastPosX = Console.CursorLeft;
             // var lastPosY = Console.CursorTop;
             // int index = 0;
@@ -169,14 +165,14 @@ namespace PapyrusDotNet.CoreBuilder
             //}
 
 
-            Console.WriteLine("Adding object references...");
+            Console.WriteLine("Adding object references... This usually takes about a minute.");
             foreach (var pasObj in papyrusObjects)
                 AddedTypeReferences.Add(GetTypeReference(null, pasObj.Name));
 
             foreach (var pas in papyrusObjects)
                 MainModule.Types.Add(TypeDefinitionFromPapyrus(pas));
 
-            Console.WriteLine("Resolving object references...");
+            Console.WriteLine("Resolving object references... This usually takes about 30 seconds.");
             foreach (var t in MainModule.Types)
             {
                 foreach (var f in t.Methods)
@@ -208,11 +204,11 @@ namespace PapyrusDotNet.CoreBuilder
                 IncludeType(MainModule, attr);
             }
 
-
-
-
             Core.Write(OutputFileName);
+
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(OutputFileName + " successefully generated.");
+            Console.ResetColor();
         }
 
         private static bool IncludeType(ModuleDefinition MainModule, Type type)
@@ -263,9 +259,6 @@ namespace PapyrusDotNet.CoreBuilder
 
                     if (field.IsConstructor && !field.HasParameters) continue;
 
-
-
-
                     var newField = new MethodDefinition(field.Name, field.Attributes, field.ReturnType);
 
                     var refer = MainModule.Import(field);
@@ -303,15 +296,6 @@ namespace PapyrusDotNet.CoreBuilder
             }
             catch { }
             return false;
-            /*
-            MainModule.Import(
-               typeof(AutoReadOnlyAttribute));
-
-            MainModule.Import(
-                typeof(ConditionalAttribute));
-
-            MainModule.Import(
-                typeof(HiddenAttribute));*/
         }
 
         public static TypeDefinition TypeDefinitionFromPapyrus(PapyrusAsmObject input)
@@ -619,7 +603,7 @@ namespace PapyrusDotNet.CoreBuilder
 
             var obj = new PapyrusAsmObject();
 
-            var scriptObject = PscParser.Parse(file);
+            var scriptObject = PapyrusScriptParser.Parse(file);
 
             var objName = scriptObject.Name;
 
@@ -868,81 +852,6 @@ namespace PapyrusDotNet.CoreBuilder
                 outputName = Char.ToUpper(outputName[0]) + outputName.Substring(1);
             }
             return outputName;
-        }
-    }
-
-    public class PapyrusAsmObject
-    {
-        public List<PapyrusAsmVariable> VariableTable { get; set; }
-        public List<PapyrusAsmVariable> PropertyTable { get; set; }
-        public List<PapyrusAsmState> States { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        // public PapyrusAsmObject Extends { get; set; }
-        public PapyrusAsmObject()
-        {
-            VariableTable = new List<PapyrusAsmVariable>();
-            PropertyTable = new List<PapyrusAsmVariable>();
-            States = new List<PapyrusAsmState>();
-
-        }
-
-        public string ExtendsName { get; set; }
-    }
-
-    public class PapyrusAsmState
-    {
-        public string Name { get; set; }
-
-        public List<PapyrusAsmFunction> Functions { get; set; }
-
-
-        public PapyrusAsmState()
-        {
-            Functions = new List<PapyrusAsmFunction>();
-        }
-    }
-
-    public class PapyrusAsmFunction
-    {
-        public string Name { get; set; }
-        public string DocString { get; set; }
-        public bool IsStatic { get; set; }
-        public bool IsNative { get; set; }
-        public bool IsEvent { get; set; }
-        public bool ReturnArray { get; set; }
-        public string ReturnType { get; set; }
-
-        public List<PapyrusAsmVariable> Params { get; set; }
-        public List<PapyrusAsmVariable> LocalTable { get; set; }
-
-        public PapyrusAsmFunction()
-        {
-            Params = new List<PapyrusAsmVariable>();
-            LocalTable = new List<PapyrusAsmVariable>();
-        }
-    }
-
-    public class PapyrusAsmVariable
-    {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public bool IsArray { get; set; }
-        public PapyrusAsmVariable(string name, string type)
-        {
-            this.Name = name;
-            this.Type = type;
-            this.IsArray = type.Contains("[]");
-
-            if (type.Contains('.'))
-            {
-                var n = type.Substring(type.LastIndexOf('.'));
-                this.Type = type.Remove(type.LastIndexOf('.')) + Char.ToUpper(n[0]) + n.Substring(1);
-            }
-            else
-            {
-                this.Type = Char.ToUpper(type[0]) + type.Substring(1);
-            }
         }
     }
 }

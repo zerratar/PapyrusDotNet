@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PapyrusDotNet.CoreBuilder
 {
-    using System.Globalization;
-    using System.Text.RegularExpressions;
+    using PapyrusDotNet.Common;
 
-    using Mono.Cecil;
-
-    public class PscParser
+    public class PapyrusScriptParser
     {
         public static PapyrusScriptObject Parse(string file)
         {
 
             //   file = @"C:\CreationKit\Data\Scripts\Source\MS05BardLutePlay.psc";
 
-            PapyrusScriptObject output = new PapyrusScriptObject();
+            var output = new PapyrusScriptObject();
             output.Name = System.IO.Path.GetFileNameWithoutExtension(file);
 
             var source = System.IO.File.ReadAllText(file);
@@ -75,6 +69,8 @@ namespace PapyrusDotNet.CoreBuilder
                 var dataSplits = l.TrimSplit(" ");
                 var dataSplitsNormal = u.TrimSplit(" ");
 
+                // We won't handle EndProperty just yet.
+                // Since we are not exposing any properties to the DLL atm
                 if (l.StartsWith("endproperty")) continue;
 
                 if (dataSplits.Contains("import"))
@@ -279,119 +275,5 @@ namespace PapyrusDotNet.CoreBuilder
             return ParseParameterList(varData, out wasFinished);
 
         }
-    }
-    public static class StringExtensions
-    {
-        public static bool Contains(this string[] input, string val)
-        {
-            return input.Select(v => v.ToLower().Trim()).Any(b => b == val);
-        }
-        public static bool AnyContains(this string[] input, string val)
-        {
-            return input.Select(v => v.ToLower().Trim()).Any(b => b.Contains(val));
-        }
-
-        public static int IndexOf(this string[] input, string val)
-        {
-            return Array.IndexOf(input.Select(d => d.ToLower().Trim()).ToArray(), val);
-        }
-
-        public static string[] TrimSplit(this string input, string val)
-        {
-            return input.Split(new string[] { val }, StringSplitOptions.RemoveEmptyEntries);
-        }
-    }
-
-    public class PapyrusScriptObject
-    {
-        public string Name;
-
-        public string Extends;
-
-        public bool IsConditional;
-
-        public bool IsHidden;
-
-        public List<string> Imports;
-
-        public List<PapyrusStateFunction> StateFunctions;
-
-        public List<PapyrusVariable> Properties;
-
-        public List<PapyrusVariable> InstanceVariables;
-
-        public PapyrusScriptObject()
-        {
-            Imports = new List<string>();
-            StateFunctions = new List<PapyrusStateFunction>();
-            Properties = new List<PapyrusVariable>();
-            InstanceVariables = new List<PapyrusVariable>();
-        }
-    }
-
-    public class PapyrusStateFunction
-    {
-        public string Name;
-
-        public bool IsAuto;
-
-        public List<PapyrusFunction> Functions;
-
-        public PapyrusStateFunction()
-        {
-            Functions = new List<PapyrusFunction>();
-        }
-    }
-
-    public class PapyrusFunction
-    {
-        public string Name;
-
-        public string StateName;
-
-        public PapyrusVariable ReturnType;
-
-        public List<PapyrusVariable> Parameters;
-
-        public bool IsGlobal;
-
-        public bool IsNative;
-
-        public bool IsEvent;
-
-        public PapyrusFunction()
-        {
-            this.Parameters = new List<PapyrusVariable>();
-        }
-
-        public PapyrusFunction(string name, string stateName)
-        {
-            this.Name = name;
-            this.StateName = stateName;
-            this.Parameters = new List<PapyrusVariable>();
-        }
-    }
-
-    public class PapyrusVariable
-    {
-        public string Name;
-
-        public string VarType;
-
-        public bool HasInitialValue;
-
-        public string InitialValue;
-
-        public bool IsGlobal;
-
-        public bool IsAuto;
-
-        public bool IsConditional;
-
-        public bool IsProperty;
-
-        public bool IsHidden;
-
-        public bool IsArray;
     }
 }

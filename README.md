@@ -9,7 +9,7 @@ This project is built using Visual Studio 2012, .NET Framework 4.0, and is licen
 
 Please see http://www.gnu.org/licenses/gpl.txt
 
-Copyright © Karl Patrik Johansson 2014
+Copyright Â© Karl Patrik Johansson 2014-2015
 
 ###Readme Overview
 * [What is Papyrus.NET (PapyrusDotNet)?](#what-is-papyrusnet-papyrusdotnet)
@@ -21,38 +21,81 @@ Copyright © Karl Patrik Johansson 2014
 * [Changelog](#changelog)
 
 
-##NOTE:
-__ACTUAL .NET FRAMEWORK IS NOT SUPPORTED AT ALL! THIS IS DUE TO THE LIMITATIONS IN PAPYRUS ITSELF. THEREFOR
-YOU CANNOT USE ANY .NET SPECIFIC CODE IN YOUR SCRIPTS. FUTURE UPDATES MAY ENABLE SOME OR A FEW OF THE .NET FUNCTIONS
-BUT RIGHT NOW NONE IS WORKING.__
-
-__You CANNOT use any of the types, methods, functions from any existing .NET library as it wont work in Papyrus.
-Even if it builds, and are able to generate some sort of Papyrus Assembly Code, the papyrus code wont compile
-as it does not have these types, methods, functions defined.__
+##Limitations of PapyrusDotNet
+_.NET FRAMEWORK IS NOT SUPPORTED! This is because .NET Framework does not exist within Papyrus. Using PapyrusDotNet we can only translate functions, classes, objects, etc. That already exists in Papyrus._
 
 __Dynamics does not work, linq does not work, extensions does not work, not even the System.Object
-ValueType does not work.__
+ValueType works.__
 
-However:
+No Extensions or functions of any Value/Base type works.
 
-string, bool, int, byte, short, long, float, double: works.
-Extensions or functions of those TypeValues does NOT work so:
 
-Ex: int.Parse(val) __does not work.__
+    // Following code does not work.
+    string val = "0";
+    var i = int.Parse(val);
 
-    int x = 0; 
+    int x = 0;
 
-    // Does not work, use: hello =  x + ""; Instead.    
-    string hello = x.ToString(); 
+    // This does not work    
+    string hello = x.ToString();
+    
+    // Use this instead
+    string hello = x + "";  
 
 
 So for now, if you want to make a C# Skyrim Script, you will have to follow the original limitations of Papyrus
-and only use classes from the PapyrusDotNet.Core.dll and/or any PapyrusDotNet.Core extended libraries, e.g. 
-PapyrusDotNet.Core.Collections
+and only use classes from the PapyrusDotNet.Core.dll and/or any PapyrusDotNet.System libraries.
+
+
+
+
+**Things that do not work**
+
+1. The .NET framework is **not** supported.
+This means you can only rely on the actual C# language itself and not on any of the existing libraries. So **LINQ is not currently supported**.
+2. The data type **object** is **not** supported.
+3. *Boxing and Unboxing* is **not** supported.
+4. *Extension methods* is **not** supported.
+5. Overloading your own operators is **not** supported.
+6. Creating new instances of objects is **not** supported.
+7. Base class methods is **not** supported,
+such as .ToString(), int.Parse("42"), bool.Parse(..), etc.
+8. *Delegates* are **not** supported yet. It is still being explored.
+9. *Destructors* does **not** work.
+10. *Interfaces* does not work as intended. They are translated into classes currently.
+11. *Enums* does **not** work correctly at this point. It is being worked on.
+12. Keywords such as abstract, virtual, protected, internal, private, public does **not** make any difference. Recommended is to only use public right now.
+13. *Native* functionality is **not** supported. This includes:
+unsafe, extern, DllImport, etc.
+14. The keyword **using** is **not** supported.
+15. Events are **not** supported.
+16. Static fields or properties are **not** supported. Only static methods.
+17. Bitwise operations are **not** supported.
+
+**Things that do work**
+
+1. The keyword **var** works.
+2. Conditional statements, function return points and loops including:
+for, foreach, while, switch, do, if, else, break, return
+3. Following operators: +,++,-,--,%,%=,=,==,!=,<,>,<=,>=,\*,/,\*=,/=,&&,||
+4. Explicit casts works. Ex: 
+    **var x = (Actor)myObjectReference;** and **var y = myObjectReference as Actor;**
+5. Static methods works. Normal methods works.
+6. Properties works, ex: public int helloThere { get; set; }
+7. Constructor works but will be translated into a OnInit function if one does not already exist.
+or if OnInit already exists, the Constructor will be renamed into __ctor and called by the OnInit.
+8. Following primitive types works: **byte, short, int long, float, double, bool, char, string**
+9. Generics works. Ex: public class< T > ScriptName
+
+This should give you a strict overview of what you can and cannot do.
+I may have missed out a lot of things from both lists. Mostly because it would be impossible to mention them all. Just make sure you remember to not use anything part of the .NET Framework. So if you skip out the default **using System;** etc. You should most likely be fine.
+
+Just don't get freightened by the long list of unsupported things. The list may grow by time but it may also (and hopefully) shrink!
+
 
 See Examples folder for usable examples.
 
-If you're not familiar with Papyrus, i highly recommend you read some<br/>
+If you're not familiar with Papyrus, i highly recommend you read some 
 of their basic tutorials.<br/>
 See http://www.creationkit.com/Category:Papyrus
 
@@ -95,13 +138,10 @@ PapyrusDotNet.CoreBuilder.exe -i "c:\skyrim\data\scripts\asm\"
 This will generate PapyrusDotNet.Core.dll in the same folder as PapyrusDotNet.CoreBuilder.exe relies,
 this is a dll that can be used in your projects, enabling references to previously created scripts.
 
-> Note: Only .pas files are supported as input ( disassembled .pex files ) <br/>
-> I'm still working on parsing .psc (script source files). <br/>
 
 ### Warning
 Keep in mind that the generated PapyrusDotNet.Core.dll does __not__ contain any logic.<br/>
-Which means you can't (absolutely should not) use PapyrusDotNet.Core.dll with PapyrusDotNet.exe to re-generate .pas files.<br/>
-As these .pas files can completely break your scripts, worst case scenario you WILL have to reinstall skyrim completely.
+Which means you can't (absolutely should not) use PapyrusDotNet.Core.dll with PapyrusDotNet.exe to re-generate .pas files. As these .pas files can completely break your scripts, worst case scenario you WILL have to reinstall skyrim completely.
 
 ### PapyrusDotNet.Common
 A shared library between PapyrusDotNet and PapyrusDotNet.CoreBuilder<br/>
@@ -112,21 +152,8 @@ Other Projects
 
 Most of the other projects are just different tests or planned features, so don't get sad if they don't work.
 
-### PapyrusDotNet.Launcher
-A test to see if it is possible in the future to inject PapyrusDotNet.Bridge
-directly into skyrim to get a better control over the scripting, a possibility for opening up more functionality
-of the .NET framework.
-
-### PapyrusDotNet.Tester
-Just a test project to see if the extended library works.
-
-
-### PapyrusDotNet.Core.Collections - Incomplete and may change name in the future.
-Extending the PapyrusDotNet.Core.dll Framework with different Skyrim 'optimized' / 'working' scripts.
-Not yet complete, and should not be used just yet.
-
-The idea for this project later is to be automatically used with PapyrusDotNet.exe when generating<br/>Papyrus code for your C# Script, IF you have referenced to this library that is.
-
+### PapyrusDotNet.System - WIP
+Extending the PapyrusDotNet.Core.dll Framework with some classes that you would normally find under .NET Framework System namespace. This reference can be used with your scripts.
 
 
 FAQ
@@ -197,6 +224,22 @@ Attributes Example: <br/>
 	
 Changelog
 ========
+
+###v0.1.5f1
+* Tons of code refactoring, still working on cleaning up the solution more to make it easier to manage and add new features.
+
+###v0.1.5
+* CoreBuilder can now parse psc files
+* CoreBuilder will now handle arrays betterÂ´
+* Some general bug fixes to PapyrusDotNet
+
+###v0.1.4f4
+* Cleaned up the solution, removed old and unusable projects.
+* Added a new Project: PapyrusDotNet.System, a helper library for your papyrus scripts to add some feeling of the .NET framework.
+* Fixed a bug causing some static functions being called as normal functions.
+* Fixed a bug that would cause incorrect class to be used when some static method calls where made.
+* Started working on enums and boxing (these are not complete yet)
+
 ###v0.1.4f3
 + Minor bug fixes
 

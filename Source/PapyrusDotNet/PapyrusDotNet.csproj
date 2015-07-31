@@ -62,8 +62,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyHelper.cs" />
+    <Compile Include="GenericTypeReference.cs" />
+    <Compile Include="Models\PapyrusAssembly.cs" />
     <Compile Include="Models\PapyrusFunction.cs" />
-    <Compile Include="PapyrusFunctionWriter.cs" />
+    <Compile Include="Models\PapyrusHeader.cs" />
+    <Compile Include="Models\PapyrusInfo.cs" />
+    <Compile Include="Models\PapyrusObjectState.cs" />
+    <Compile Include="Models\PapyrusObjectTable.cs" />
+    <Compile Include="Models\PapyrusUserFlags.cs" />
+    <Compile Include="PapyrusAsmWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
