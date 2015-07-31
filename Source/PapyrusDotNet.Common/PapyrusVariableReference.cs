@@ -16,6 +16,10 @@
             this.Definition = definition;
         }
 
+        public string DelegateInvokeReference { get; set; }
+
+        public bool IsDelegateInstance { get; set; }
+
         public string Definition { get; set; }
 
         public object Value { get; set; }

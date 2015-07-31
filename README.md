@@ -106,7 +106,7 @@ This means you can only rely on the actual C# language itself and not on any of 
 6. Creating new instances of objects is **not** supported.
 7. Base class methods is **not** supported,
 such as .ToString(), int.Parse("42"), bool.Parse(..), etc.
-8. *Delegates* are **not** supported yet. It is still being explored.
+8. *Delegates* are **partial** supported. This is still being worked on.
 9. *Destructors* does **not** work.
 10. *Interfaces* does not work as intended. They are translated into classes currently.
 11. Keywords such as abstract, virtual, protected, internal, private, public does **not** make any difference. Recommended is to only use public right now.
@@ -132,6 +132,7 @@ for, foreach, while, switch, do, if, else, break, return
 or if OnInit already exists, the Constructor will be renamed into __ctor and called by the OnInit.
 9. Following primitive types works: **byte, short, int long, float, double, bool, char, string**
 10. Generics works. Ex: public class< T > ScriptName
+11. Simple delegates works but are still in heavy development. I expect delegates to work fully in just a matter of weeks!
 
 This should give you a strict overview of what you can and cannot do.
 I may have missed out a lot of things from both lists. Mostly because it would be impossible to mention them all. Just make sure you remember to not use anything part of the .NET Framework. So if you skip out the default **using System;** etc. You should most likely be fine.
@@ -178,9 +179,53 @@ Known Issues
 
 Ready for Test
 ======
+1. Simple usage of delegates. See example below.
 1. Enums :-)
 1. Generic objects.
 2. Papyrus Attributes: Auto, AutoReadOnly, Conditional, Hidden, InitialValue, Property
+
+Delegates are still being developed on but I've managed to get some very good progress on the matter and got very simple delegates to work.
+
+Following code works
+
+    public delegate void HelloThereDelegate();
+    public void UtilizeDelegate()
+    {
+        HelloThereDelegate awesome = () =>
+        {
+            PapyrusDotNet.Core.Debug.Trace("Awesome was used!", 0);
+        };
+
+        HelloThereDelegate secondAwesome = () =>
+        {
+            PapyrusDotNet.Core.Debug.Trace("Second awesome was used!", 0);
+        };
+
+
+        awesome();
+
+        secondAwesome();
+    }
+
+However, the following code does not
+
+    public delegate void SecondDelegate();
+    public void UtilizeDelegate2()
+    {
+        // just by exposing one variable to be used inside a delegate,
+        // a whole new class is created.. Youch! 
+        // This is not supported just yet. But i'm working on it!
+        // -- The same thing for delegates with parameters. Those do ont work either. Yet!
+        string horror = "test";
+
+        SecondDelegate awesome = () =>
+        {
+            PapyrusDotNet.Core.Debug.Trace("Awesome was used!" + horror, 0);
+        };
+
+        awesome();
+        }
+    }
 
 Initial Value Example:
 
@@ -204,6 +249,9 @@ Attributes Example:
 	
 Changelog
 ========
+
+###v0.1.5f3
+* Parameterless delegates works. (As long as you are not providing a locally instanced variable to be used inside the delegate. See example above.)
 
 ###v0.1.5f2
 * Added support for Enums! :-)

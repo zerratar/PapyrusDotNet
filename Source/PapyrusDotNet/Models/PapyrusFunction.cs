@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Mono.Cecil;
 
 namespace PapyrusDotNet.Models
 {
@@ -19,12 +20,15 @@ namespace PapyrusDotNet.Models
 
         public List<string> CodeInstructions;
 
+        public MethodDefinition MethodDefinition;
+
         public StringBuilder Source;
         public bool IsGlobal;
         public string ReturnType;
         public bool IsNative;
         public int UserFlags = 0;
-
+        public string Name;
+        public int DelegateInvokeCount;
         public PapyrusFunction()
         {
             this.Parameters = new List<PapyrusVariableReference>();
@@ -65,6 +69,8 @@ namespace PapyrusDotNet.Models
                 return var1;
             }
         }
+
+        public PapyrusAssembly PapyrusAssembly { get; set; }
 
         public PapyrusVariableReference CreateTempVariable(string p)
         {

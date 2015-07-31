@@ -53,6 +53,8 @@ namespace PapyrusDotNet
 
         public static List<PapyrusAssembly> ParsedAssemblies = new List<PapyrusAssembly>();
 
+
+
         public PapyrusAsmWriter(AssemblyDefinition assembly, TypeDefinition type, List<PapyrusVariableReference> fields)
         {
             this.Assembly = assembly;
@@ -135,8 +137,9 @@ namespace PapyrusDotNet
             }
         }
 
-        public PapyrusFunction CreateFunction(MethodDefinition method, string overrideFunctionName = null)
+        public PapyrusFunction CreateFunction(PapyrusAssembly asm, MethodDefinition method, string overrideFunctionName = null)
         {
+
             var sourceBuilder = new StringBuilder();
 
             this._targetMethod = method;
@@ -148,9 +151,10 @@ namespace PapyrusDotNet
 
             var staticMarker = method.IsStatic ? " static" : "";
 
-
+            function.PapyrusAssembly = asm;
             function.IsGlobal = method.IsStatic;
-
+            function.Name = method.Name;
+            function.MethodDefinition = method;
             function.ReturnType = returnType;
 
 
@@ -479,9 +483,12 @@ namespace PapyrusDotNet
             val = val.Replace("<T>", "");
 
 #warning We are replacing Delegate vars with Int
+            string delegateInvokeRef = null;
+            var delegateInstanceVar = false;
             var varType = variable.VariableType;
             if (varType.Name.ToLower().Contains("delegate"))
             {
+
                 var d1 = varType.Resolve();
                 if (d1.BaseType.FullName.ToLower().Contains("multicastdelegate"))
                 {
@@ -492,13 +499,28 @@ namespace PapyrusDotNet
                     // By doing so, we are able to use simple delegates in papyrus!
                     type = "Int";
                     val = "Int";
+                    delegateInstanceVar = true;
+
+                    var delegateMethod =
+
+                    function.PapyrusAssembly.DelegateMethodDefinitions.FirstOrDefault(
+                        del => del.Name.Contains(this.function.Name) && del.Name.EndsWith("_1_" + function.DelegateInvokeCount));
+
+                    function.DelegateInvokeCount++;
+
+                    delegateInvokeRef = delegateMethod.Name;
+                    // "_" + function.Name + "_b__1_" + (delegatesUsed++); // varType.Name;
+
+                    // var tn = ;
+
                 }
             }
 
-            function.Variables.Add(new PapyrusVariableReference(name, type));
+            function.Variables.Add(new PapyrusVariableReference(name, type) { IsDelegateInstance = delegateInstanceVar, DelegateInvokeReference = delegateInvokeRef });
 
             return ".local " + name + " " + val; //Utility.GetPapyrusReturnType(typeN, variable.VariableType.Namespace);
         }
+        
 
         private string ParseInstruction(Instruction instruction)
         {
@@ -1092,6 +1114,7 @@ namespace PapyrusDotNet
                     }
                     else
                     {
+                        var targetMethod = methodRef.Name;
                         var callerType = "self";
                         if (methodRef.Parameters.Count != param.Count && param.Count > 0)
                         {
@@ -1103,14 +1126,25 @@ namespace PapyrusDotNet
                             if (callerType.ToLower() == Type.Name.ToLower()) callerType = "self";
                             if (caller.Value is PapyrusVariableReference)
                             {
-                                callerType = (caller.Value as PapyrusVariableReference).Name;
+                                var varRef = (caller.Value as PapyrusVariableReference);
+
+                                callerType = varRef.Name;
+
+                                if (varRef.IsDelegateInstance && methodRef.Name == "Invoke")
+                                {
+                                    callerType = "self";
+                                    targetMethod = varRef.DelegateInvokeReference;
+                                }
                             }
                         }
 
-                       // function.AllVariables
+                        // function.AllVariables 
 #warning check if the variable being used is a delegate, if it is. then run the function on self instead.
 
-                        return "CallMethod " + methodRef.Name + " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
+
+
+
+                        return "CallMethod " + targetMethod + " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
                     }
                 }
             }

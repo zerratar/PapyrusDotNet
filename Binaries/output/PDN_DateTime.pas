@@ -1,9 +1,9 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1438353025
-	.compileTime 1438353025
-	.user "Karlj"
-	.computer "CD197"
+	.modifyTime 1438362418
+	.compileTime 1438362418
+	.user "Karl"
+	.computer "Z-PC"
 .endInfo
 .userFlagsRef
 	.flag conditional 1

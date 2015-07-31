@@ -5,7 +5,7 @@
        
 
         // -----------
-        // The following code is being worked on.
+        // The following code works.
         // -----------
         public delegate void HelloThereDelegate();
         public void UtilizeDelegate()
@@ -15,25 +15,33 @@
                 PapyrusDotNet.Core.Debug.Trace("Awesome was used!", 0);
             };
 
+            HelloThereDelegate secondAwesome = () =>
+            {
+                PapyrusDotNet.Core.Debug.Trace("Second awesome was used!", 0);
+            };
+
+
             awesome();
+
+            secondAwesome();
         }
 
         // -----------
-        // The following code is FAR from being supported
+        // The following code does not work.
         // -----------
-        //public delegate void SecondDelegate();
-        //public void UtilizeDelegate2()
-        //{
-        //    // just by exposing one variable to be used inside a delegate,
-        //    // a whole new class is created.. Youch! 
-        //    string horror = "test";
+        public delegate void SecondDelegate();
+        public void UtilizeDelegate2()
+        {
+            // just by exposing one variable to be used inside a delegate,
+            // a whole new class is created.. Youch! 
+            string horror = "test";
 
-        //    SecondDelegate awesome = () =>
-        //    {
-        //        PapyrusDotNet.Core.Debug.Trace("Awesome was used!" + horror , 0);
-        //    };
+            SecondDelegate awesome = () =>
+            {
+                PapyrusDotNet.Core.Debug.Trace("Awesome was used!" + horror, 0);
+            };
 
-        //    awesome();
-        //}
-    }
+            awesome();
+            }
+        }
 }

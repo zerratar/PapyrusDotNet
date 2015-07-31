@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -30,6 +31,8 @@ namespace PapyrusDotNet.Models
         public PapyrusAssembly()
         {
             Header = new PapyrusHeader();
+
+            this.DelegateMethodDefinitions = new List<MethodDefinition>();
         }
 
         public PapyrusAssembly(Mono.Cecil.TypeDefinition type, string genericTypeReplacement)
@@ -41,10 +44,13 @@ namespace PapyrusDotNet.Models
             this.BaseType = Utility.GetPapyrusBaseType(type);
             this.ObjectTable = CreateObjectTable(type);
             this.OutputName = this.BaseType;
+
+            this.DelegateMethodDefinitions = new List<MethodDefinition>();
         }
 
         public PapyrusAssembly(Mono.Cecil.TypeDefinition type)
         {
+
             // TODO: Complete member initialization
             this.Header = new PapyrusHeader();
 
@@ -52,11 +58,35 @@ namespace PapyrusDotNet.Models
             this.BaseType = Utility.GetPapyrusBaseType(type);
             this.ObjectTable = CreateObjectTable(type);
             this.OutputName = this.BaseType;
+
+            this.DelegateMethodDefinitions = new List<MethodDefinition>();
             // this.AssemblyCode = this.ObjectTable.ToString();
         }
 
+
+        public List<MethodDefinition> DelegateMethodDefinitions;
+
+
         public PapyrusObjectTable CreateObjectTable(TypeDefinition type)
         {
+            this.DelegateMethodDefinitions = new List<MethodDefinition>();
+
+            foreach (var nt in type.NestedTypes)
+            {
+                if (nt.Name.StartsWith("<>"))
+                {
+                    foreach (var m in nt.Methods)
+                    {
+                        if (m.Name.StartsWith("<"))
+                        {
+                            m.Name = m.Name.Replace("<", "_").Replace(">", "_");
+                            DelegateMethodDefinitions.Add(m);
+                        }
+                    }
+                }
+            }
+
+
             // It is important to know if this object is an enum or not
             // as we will have to manage it differently than a normal class.
             // -------
@@ -70,6 +100,8 @@ namespace PapyrusDotNet.Models
             table.Name = Utility.GetPapyrusBaseType(type);
             table.BaseType = type.BaseType != null ? Utility.GetPapyrusBaseType(type.BaseType) : "";
             table.Info = Utility.GetFlagsAndProperties(type);
+
+
 
             foreach (var variable in type.Fields)
             {
@@ -133,9 +165,14 @@ namespace PapyrusDotNet.Models
                 var ctorAvailable = methods.Any(m => m.Name.ToLower().Contains(".ctor"));
                 var mergeCtorAndOnInit = ctorAvailable && onInitAvailable;
 
+                foreach (var method in DelegateMethodDefinitions)
+                {
+                    defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                }
+
                 foreach (var method in methods)
                 {
-                    defaultObjectState.Functions.Add(CreatePapyrusFunction(type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                    defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
                 }
 
                 table.StateTable.Add(defaultObjectState);
@@ -144,12 +181,14 @@ namespace PapyrusDotNet.Models
         }
 
         public PapyrusFunction CreatePapyrusFunction(
+            PapyrusAssembly asm,
             TypeDefinition type,
             MethodDefinition method,
             bool mergeConstructorAndOnInit = false,
             bool onInitAvailable = false,
             bool hasConstructor = false)
         {
+
             string overrideFunctionName = null;
             if (!onInitAvailable && method.IsConstructor)
             {
@@ -162,7 +201,7 @@ namespace PapyrusDotNet.Models
 
             var functionWriter = new PapyrusAsmWriter(Program.CurrentAssembly, type, PapyrusAsmWriter.Fields);
 
-            var function = functionWriter.CreateFunction(method, overrideFunctionName);
+            var function = functionWriter.CreateFunction(asm, method, overrideFunctionName);
 
             if (!method.IsConstructor && method.Name.ToLower() == "oninit" && hasConstructor)
             {
