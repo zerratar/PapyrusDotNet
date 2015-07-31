@@ -77,6 +77,13 @@ namespace PapyrusDotNet.Models
 
                 var variableName = variable.Name.Replace('<', '_').Replace('>', '_');
 
+                // Don't parse any temporarily variables necessary for delegates
+                // At least not for now...
+                if (variableName.Contains("CachedAnonymousMethodDelegate"))
+                {
+                    continue;
+                }
+
                 var variableType = Utility.GetPapyrusReturnType(variable.FieldType, true);
 
                 var initialValue = Utility.InitialValue(variable);

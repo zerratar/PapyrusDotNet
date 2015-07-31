@@ -190,7 +190,9 @@ namespace PapyrusDotNet
                     sourceBuilder.AppendLine(Utility.Indent(indentDepth, ".local ::NoneVar None", false));
 
                 foreach (var variable in method.Body.Variables)
+                {
                     sourceBuilder.AppendLine(Utility.Indent(indentDepth, ParseLocalVariable(variable), false));
+                }
             }
 
             sourceBuilder.AppendLine(Utility.Indent(--indentDepth, ".endLocalTable", false));
@@ -475,6 +477,23 @@ namespace PapyrusDotNet
             }
 
             val = val.Replace("<T>", "");
+
+#warning We are replacing Delegate vars with Int
+            var varType = variable.VariableType;
+            if (varType.Name.ToLower().Contains("delegate"))
+            {
+                var d1 = varType.Resolve();
+                if (d1.BaseType.FullName.ToLower().Contains("multicastdelegate"))
+                {
+                    // Just replace it with a dummy Int for now.
+                    // We then are going to check if we are trying to use the function "invoke" on "Int"
+                    // What we will do is replace the "invoke" with the delegate generated method and
+                    // replace the "int" with "self".
+                    // By doing so, we are able to use simple delegates in papyrus!
+                    type = "Int";
+                    val = "Int";
+                }
+            }
 
             function.Variables.Add(new PapyrusVariableReference(name, type));
 
@@ -1087,6 +1106,10 @@ namespace PapyrusDotNet
                                 callerType = (caller.Value as PapyrusVariableReference).Name;
                             }
                         }
+
+                       // function.AllVariables
+#warning check if the variable being used is a delegate, if it is. then run the function on self instead.
+
                         return "CallMethod " + methodRef.Name + " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
                     }
                 }
