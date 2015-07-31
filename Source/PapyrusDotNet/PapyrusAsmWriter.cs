@@ -51,6 +51,8 @@ namespace PapyrusDotNet
 
         public static List<PapyrusVariableReference> Fields;
 
+        public static List<PapyrusAssembly> ParsedAssemblies = new List<PapyrusAssembly>();
+
         public PapyrusAsmWriter(AssemblyDefinition assembly, TypeDefinition type, List<PapyrusVariableReference> fields)
         {
             this.Assembly = assembly;
@@ -76,10 +78,7 @@ namespace PapyrusDotNet
 
                             Fields = new List<PapyrusVariableReference>();
 
-                            string papyrus = "";
-
-
-
+                            string outputPapyrus = "";
 
                             var properties = Utility.GetFlagsAndProperties(type);
                             if (properties.IsGeneric)
@@ -88,15 +87,11 @@ namespace PapyrusDotNet
                                 // then for each of those, we will generate a new class to represent it.
                                 // replacing all 'T' with the types used.
 
-
                                 var references = AssemblyHelper.GetAllGenericReferences(type, mainAssembly != null ? mainAssembly : currentAssembly);
 
                                 var ref2 = AssemblyHelper.GetAllGenericReferences(type, currentAssembly);
 
                                 var ref3 = AssemblyHelper.GetAllReferences(type, currentAssembly);
-
-
-
 
                                 foreach (var r in references)
                                 {
@@ -104,34 +99,36 @@ namespace PapyrusDotNet
 
                                     var assembly = new PapyrusAssembly(type, r.Type);
 
-                                    papyrus = "";
-                                    papyrus += assembly.Header.Info.ToString();
-                                    papyrus += assembly.Header.UserFlagRef.ToString();
-                                    papyrus += WritePapyrusObjectTable(assembly);
+                                    assembly.OutputName = assembly.BaseType.Replace("`1", "_" + Utility.GetPapyrusBaseType(r.Type));
 
-                                    var genericName = assembly.BaseType;
-
-                                    genericName = genericName.Replace("`1", "_" + Utility.GetPapyrusBaseType(r.Type));
-
-                                    if (!outputPasFiles.ContainsKey(genericName + ".pas"))
-                                    {
-                                        outputPasFiles.Add(genericName + ".pas", papyrus);
-                                    }
+                                    ParsedAssemblies.Add(assembly);
                                 }
                             }
                             else
                             {
-                                var assembly = new PapyrusAssembly(type);
+                                ParsedAssemblies.Add(new PapyrusAssembly(type));
+                            }
 
-                                papyrus += assembly.Header.Info.ToString();
-                                papyrus += assembly.Header.UserFlagRef.ToString();
-                                papyrus += WritePapyrusObjectTable(assembly);
 
-                                if (!outputPasFiles.ContainsKey(assembly.BaseType + ".pas"))
+
+                            {
+                                var assembly = ParsedAssemblies.LastOrDefault();
+                                // Don't write any assembly in case it is an enum.
+                                // However, we still want the type to be parsed, 
+                                // so creating a new Instance of PapyrusAssembly is still necessary
+                                if (!assembly.IsEnum)
                                 {
-                                    outputPasFiles.Add(assembly.BaseType + ".pas", papyrus);
+                                    outputPapyrus += assembly.Header.Info.ToString();
+                                    outputPapyrus += assembly.Header.UserFlagRef.ToString();
+                                    outputPapyrus += WritePapyrusObjectTable(assembly);
+
+                                    if (!outputPasFiles.ContainsKey(assembly.OutputName + ".pas"))
+                                    {
+                                        outputPasFiles.Add(assembly.OutputName + ".pas", outputPapyrus);
+                                    }
                                 }
                             }
+
                         }
                     }
                 }
@@ -272,7 +269,7 @@ namespace PapyrusDotNet
         public static string WritePapyrusObjectTable(PapyrusAssembly asm)
         {
             var papyrus = WritePapyrusObjectTableCore(asm);
-           
+
             if (!string.IsNullOrEmpty(asm.GenericTypeReplacement))
             {
                 var ptype = Utility.GetPapyrusBaseType(asm.GenericTypeReplacement);
@@ -318,6 +315,8 @@ namespace PapyrusDotNet
             papyrus += "\t\t.variableTable" + Environment.NewLine;
 
 
+
+
             foreach (var variable in asm.ObjectTable.VariableTable)
             {
                 var userFlagsVal = variable.Properties.UserFlagsValue;
@@ -327,7 +326,14 @@ namespace PapyrusDotNet
                     // The hidden flag only effects the Property field, declared after the variable field
                 }
 
-                papyrus += Utility.Indent(3, ".variable ::" + variable.Name + " " + variable.TypeName);
+                var reference = ParsedAssemblies.FirstOrDefault(a => a.OutputName == variable.TypeName);
+                if (reference != null && reference.IsEnum)
+                {
+                    variable.TypeName = "Int";
+                }
+                // variable.TypeName
+
+                papyrus += Utility.Indent(3, ".variable " + variable.Name + " " + variable.TypeName);
                 papyrus += Utility.Indent(4, ".userFlags " + userFlagsVal);
                 papyrus += Utility.Indent(4, ".initialValue " + variable.Properties.InitialValue);
                 papyrus += Utility.Indent(3, ".endVariable");
@@ -338,6 +344,12 @@ namespace PapyrusDotNet
 
             foreach (var fieldProp in asm.ObjectTable.PropertyTable)
             {
+                var reference = ParsedAssemblies.FirstOrDefault(a => a.OutputName == fieldProp.TypeName);
+                if (reference != null && reference.IsEnum)
+                {
+                    fieldProp.TypeName = "Int";
+                }
+
                 string autoMarker = fieldProp.Properties.IsAuto ? " auto" : "";
                 papyrus += Utility.Indent(3, ".property " + fieldProp.Name + " " + fieldProp.TypeName + autoMarker);
                 papyrus += Utility.Indent(4, ".userFlags " + fieldProp.Properties.UserFlagsValue);

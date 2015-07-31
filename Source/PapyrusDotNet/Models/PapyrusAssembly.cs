@@ -14,12 +14,17 @@ namespace PapyrusDotNet.Models
 
         public string GenericTypeReplacement;
 
+        public bool IsEnum { get; set; }
+
         public PapyrusHeader Header { get; set; }
 
         public PapyrusObjectTable ObjectTable { get; set; }
 
 
         public string BaseType { get; set; }
+
+        public string OutputName { get; set; }
+
         // public string AssemblyCode { get; set; }
 
         public PapyrusAssembly()
@@ -30,23 +35,36 @@ namespace PapyrusDotNet.Models
         public PapyrusAssembly(Mono.Cecil.TypeDefinition type, string genericTypeReplacement)
         {
             // TODO: Complete member initialization
+            this.Header = new PapyrusHeader();
             this.sourceType = type;
             this.GenericTypeReplacement = genericTypeReplacement;
             this.BaseType = Utility.GetPapyrusBaseType(type);
             this.ObjectTable = CreateObjectTable(type);
+            this.OutputName = this.BaseType;
         }
 
         public PapyrusAssembly(Mono.Cecil.TypeDefinition type)
         {
             // TODO: Complete member initialization
+            this.Header = new PapyrusHeader();
+
             this.sourceType = type;
             this.BaseType = Utility.GetPapyrusBaseType(type);
             this.ObjectTable = CreateObjectTable(type);
+            this.OutputName = this.BaseType;
             // this.AssemblyCode = this.ObjectTable.ToString();
         }
 
-        public static PapyrusObjectTable CreateObjectTable(TypeDefinition type)
+        public PapyrusObjectTable CreateObjectTable(TypeDefinition type)
         {
+            // It is important to know if this object is an enum or not
+            // as we will have to manage it differently than a normal class.
+            // -------
+            // To get Enums working, we can't generate a seperate class for the enum.
+            // Instead, we will have to get all the fields for the enum and then inject these fields to any class
+            // that uses the enum.
+            this.IsEnum = type.IsEnum;
+
             var table = new PapyrusObjectTable();
 
             table.Name = Utility.GetPapyrusBaseType(type);
@@ -62,6 +80,17 @@ namespace PapyrusDotNet.Models
                 var variableType = Utility.GetPapyrusReturnType(variable.FieldType, true);
 
                 var initialValue = Utility.InitialValue(variable);
+
+                if (this.IsEnum)
+                {
+                    if (variable.FieldType.FullName == type.FullName)
+                    {
+                        variableType = "Int";
+                    }
+
+                    if (initialValue == "None" && variable.Constant != null)
+                        initialValue = variable.Constant.ToString();
+                }
 
                 if (varProps.InitialValue == null)
                     varProps.InitialValue = initialValue;
@@ -87,25 +116,27 @@ namespace PapyrusDotNet.Models
                 table.PropertyTable.Add(prop);
             }
 
-
-            var defaultObjectState = new PapyrusObjectState();
-
-            var methods = type.Methods.OrderByDescending(c => c.Name).ToList();
-            var onInitAvailable = methods.Any(m => m.Name.ToLower().Contains("oninit"));
-            var ctorAvailable = methods.Any(m => m.Name.ToLower().Contains(".ctor"));
-            var mergeCtorAndOnInit = ctorAvailable && onInitAvailable;
-
-            foreach (var method in methods)
+            // Enums do not have any functions or states.
+            if (!this.IsEnum)
             {
-                defaultObjectState.Functions.Add(CreatePapyrusFunction(type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                var defaultObjectState = new PapyrusObjectState();
+
+                var methods = type.Methods.OrderByDescending(c => c.Name).ToList();
+                var onInitAvailable = methods.Any(m => m.Name.ToLower().Contains("oninit"));
+                var ctorAvailable = methods.Any(m => m.Name.ToLower().Contains(".ctor"));
+                var mergeCtorAndOnInit = ctorAvailable && onInitAvailable;
+
+                foreach (var method in methods)
+                {
+                    defaultObjectState.Functions.Add(CreatePapyrusFunction(type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                }
+
+                table.StateTable.Add(defaultObjectState);
             }
-
-            table.StateTable.Add(defaultObjectState);
-
             return table;
         }
 
-        public static PapyrusFunction CreatePapyrusFunction(
+        public PapyrusFunction CreatePapyrusFunction(
             TypeDefinition type,
             MethodDefinition method,
             bool mergeConstructorAndOnInit = false,

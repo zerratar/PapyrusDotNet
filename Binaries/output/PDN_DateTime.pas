@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1438182736
-	.compileTime 1438182736
+	.modifyTime 1438347632
+	.compileTime 1438347632
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -10,7 +10,7 @@
 	.flag hidden 0
 .endUserFlagsRef
 .objectTable
-	.object PDN_DateTime 
+.object PDN_DateTime
 		.userFlags 0
 		.docString ""
 		.autoState

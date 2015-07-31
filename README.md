@@ -1,11 +1,11 @@
 PapyrusDotNet
 =============
 
-Papyrus.NET, enables you to write C# or any CLR enabled languages to be used in Skyrim.
+PapyrusDotNet is a Papyrus Compiler. It will parse .NET binaries and compile it into Papyrus.<br/>
+This makes it possible for you to write your Papyrus scripts using C#.
 
 
-
-This project is built using Visual Studio 2012, .NET Framework 4.0, and is licensed with GPL v3
+This project is built using Visual Studio 2012, .NET Framework 4.5, and is licensed with GPL v3
 
 Please see http://www.gnu.org/licenses/gpl.txt
 
@@ -13,91 +13,11 @@ Copyright © Karl Patrik Johansson 2014-2015
 
 ###Readme Overview
 * [What is Papyrus.NET (PapyrusDotNet)?](#what-is-papyrusnet-papyrusdotnet)
-* [Other Projects](#other-projects)
+* [Limitations of PapyrusDotNet](#limitations-of-papyrusdotnet)
 * [FAQ](#faq)
-* [Known Issues](#known-issues)
-* [Planned](#planned)
 * [Ready for Test](#ready-for-test)
 * [Changelog](#changelog)
 
-
-##Limitations of PapyrusDotNet
-_.NET FRAMEWORK IS NOT SUPPORTED! This is because .NET Framework does not exist within Papyrus. Using PapyrusDotNet we can only translate functions, classes, objects, etc. That already exists in Papyrus._
-
-__Dynamics does not work, linq does not work, extensions does not work, not even the System.Object
-ValueType works.__
-
-No Extensions or functions of any Value/Base type works.
-
-
-    // Following code does not work.
-    string val = "0";
-    var i = int.Parse(val);
-
-    int x = 0;
-
-    // This does not work    
-    string hello = x.ToString();
-    
-    // Use this instead
-    string hello = x + "";  
-
-
-So for now, if you want to make a C# Skyrim Script, you will have to follow the original limitations of Papyrus
-and only use classes from the PapyrusDotNet.Core.dll and/or any PapyrusDotNet.System libraries.
-
-
-
-
-**Things that do not work**
-
-1. The .NET framework is **not** supported.
-This means you can only rely on the actual C# language itself and not on any of the existing libraries. So **LINQ is not currently supported**.
-2. The data type **object** is **not** supported.
-3. *Boxing and Unboxing* is **not** supported.
-4. *Extension methods* is **not** supported.
-5. Overloading your own operators is **not** supported.
-6. Creating new instances of objects is **not** supported.
-7. Base class methods is **not** supported,
-such as .ToString(), int.Parse("42"), bool.Parse(..), etc.
-8. *Delegates* are **not** supported yet. It is still being explored.
-9. *Destructors* does **not** work.
-10. *Interfaces* does not work as intended. They are translated into classes currently.
-11. *Enums* does **not** work correctly at this point. It is being worked on.
-12. Keywords such as abstract, virtual, protected, internal, private, public does **not** make any difference. Recommended is to only use public right now.
-13. *Native* functionality is **not** supported. This includes:
-unsafe, extern, DllImport, etc.
-14. The keyword **using** is **not** supported.
-15. Events are **not** supported.
-16. Static fields or properties are **not** supported. Only static methods.
-17. Bitwise operations are **not** supported.
-
-**Things that do work**
-
-1. The keyword **var** works.
-2. Conditional statements, function return points and loops including:
-for, foreach, while, switch, do, if, else, break, return
-3. Following operators: +,++,-,--,%,%=,=,==,!=,<,>,<=,>=,\*,/,\*=,/=,&&,||
-4. Explicit casts works. Ex: 
-    **var x = (Actor)myObjectReference;** and **var y = myObjectReference as Actor;**
-5. Static methods works. Normal methods works.
-6. Properties works, ex: public int helloThere { get; set; }
-7. Constructor works but will be translated into a OnInit function if one does not already exist.
-or if OnInit already exists, the Constructor will be renamed into __ctor and called by the OnInit.
-8. Following primitive types works: **byte, short, int long, float, double, bool, char, string**
-9. Generics works. Ex: public class< T > ScriptName
-
-This should give you a strict overview of what you can and cannot do.
-I may have missed out a lot of things from both lists. Mostly because it would be impossible to mention them all. Just make sure you remember to not use anything part of the .NET Framework. So if you skip out the default **using System;** etc. You should most likely be fine.
-
-Just don't get freightened by the long list of unsupported things. The list may grow by time but it may also (and hopefully) shrink!
-
-
-See Examples folder for usable examples.
-
-If you're not familiar with Papyrus, i highly recommend you read some 
-of their basic tutorials.<br/>
-See http://www.creationkit.com/Category:Papyrus
 
 
 What is Papyrus.NET (PapyrusDotNet)?
@@ -147,13 +67,91 @@ Which means you can't (absolutely should not) use PapyrusDotNet.Core.dll with Pa
 A shared library between PapyrusDotNet and PapyrusDotNet.CoreBuilder<br/>
 just to make sure I don't have to reinvent the wheel too many times over and over again.
 
-Other Projects
-==============
-
-Most of the other projects are just different tests or planned features, so don't get sad if they don't work.
-
 ### PapyrusDotNet.System - WIP
 Extending the PapyrusDotNet.Core.dll Framework with some classes that you would normally find under .NET Framework System namespace. This reference can be used with your scripts.
+
+
+## Limitations of PapyrusDotNet
+**THE .NET FRAMEWORK IS NOT SUPPORTED!** This is because .NET Framework does not exist within Papyrus. Using PapyrusDotNet we can only translate functions, classes, objects, etc. That are already exposed to Papyrus.
+
+__Unfortunately this means:__<br/>Dynamics does not work, linq does not work, extensions does not work, not even the System.Object
+ValueType works. No functions of any Value/Base type works.
+
+To give you an idea. Take a look at the following code
+
+
+    // Following code does not work.
+    string val = "0";
+    var i = int.Parse(val);
+
+    int x = 0;
+
+    // This does not work    
+    string hello = x.ToString();
+    
+    // This works, so use this instead
+    string hello = x + "";  
+
+
+
+
+**Things that do not work**
+
+1. The .NET framework is **not** supported.
+This means you can only rely on the actual C# language itself and not on any of the existing libraries. So **LINQ is not currently supported**.
+2. The data type **object** is **not** supported.
+3. *Boxing and Unboxing* is **not** supported.
+4. *Extension methods* is **not** supported.
+5. Overloading your own operators is **not** supported.
+6. Creating new instances of objects is **not** supported.
+7. Base class methods is **not** supported,
+such as .ToString(), int.Parse("42"), bool.Parse(..), etc.
+8. *Delegates* are **not** supported yet. It is still being explored.
+9. *Destructors* does **not** work.
+10. *Interfaces* does not work as intended. They are translated into classes currently.
+11. Keywords such as abstract, virtual, protected, internal, private, public does **not** make any difference. Recommended is to only use public right now.
+12. *Native* functionality is **not** supported. This includes:
+unsafe, extern, DllImport, etc.
+13. The keyword **using** is **not** supported.
+14. Events are **not** supported.
+15. Static fields or properties are **not** supported. Only static methods.
+16. Bitwise operations are **not** supported.
+
+**Things that do work**
+
+1. The keyword **var** works.
+2. Conditional statements, function return points and loops including:
+for, foreach, while, switch, do, if, else, break, return
+3. Enum works.
+4. Following operators: +,++,-,--,%,%=,=,==,!=,<,>,<=,>=,\*,/,\*=,/=,&&,||
+5. Explicit casts works. Ex: 
+    **var x = (Actor)myObjectReference;** and **var y = myObjectReference as Actor;**
+6. Static methods works. Normal methods works.
+7. Properties works, ex: public int helloThere { get; set; }
+8. Constructor works but will be translated into a OnInit function if one does not already exist.
+or if OnInit already exists, the Constructor will be renamed into __ctor and called by the OnInit.
+9. Following primitive types works: **byte, short, int long, float, double, bool, char, string**
+10. Generics works. Ex: public class< T > ScriptName
+
+This should give you a strict overview of what you can and cannot do.
+I may have missed out a lot of things from both lists. Mostly because it would be impossible to mention them all. Just make sure you remember to not use anything part of the .NET Framework. So if you skip out the default **using System;** etc. You should most likely be fine.
+
+Just don't get freightened by the long list of unsupported things. The list may grow by time but it may also (and hopefully) shrink!
+
+
+See Examples folder for usable examples.
+
+If you're not familiar with Papyrus, i highly recommend you read some 
+of their basic tutorials.<br/>
+See [http://www.creationkit.com/Category:Papyrus](http://www.creationkit.com/Category:Papyrus)
+
+
+## Examples
+This section will be updated very soon!
+
+For now, you can check my article about PapyrusDotNet, where I include a few examples.
+
+[http://www.codeandux.com/writing-your-skyrim-mods-using-c/](http://www.codeandux.com/writing-your-skyrim-mods-using-c/)
 
 
 FAQ
@@ -175,55 +173,41 @@ A3.3. If you are still not sure, you can e-mail me your code, see contact at bot
 
 Known Issues
 ======
-1. No Documentation<br/>
-2. Poorly or non- commented code<br/>
-3. Knowing what kind of code that will work or not<br/>
-4. No support for anything from the .NET framework<br/>
-5. No support for linq 'yet'<br/>
-6. No support for extension functions 'yet'<br/>
-7. No support for the type value Object 'yet'<br/>
-8. Script States are not yet supported.<br/>
+1. Script States are not yet supported.<br/>
 
-
-<br/>
-yet : Will be supported in the future<br/>
-'yet' : May or may not be supported in the future.<br/>
-
-Planned
-=======
-1. Extended functionality of the PapyrusDotNet.Core Framework<br/>
-2. Better and more code comments<br/>
-3. Documentation<br/>
-4. More Examples<br/>
-5. Script States<br/>
-6. And a lot more! Things can only get better from here!<br/>
 
 Ready for Test
 ======
-1. GENERICS! Try them out! It is still very early experimental.<br/>
-2. Papyrus Attributes: Auto, AutoReadOnly, Conditional, Hidden<br/>
-3. Properties<br/>
+1. Enums :-)
+1. Generic objects.
+2. Papyrus Attributes: Auto, AutoReadOnly, Conditional, Hidden, InitialValue, Property
 
-Initial Value Example: <br/>
+Initial Value Example:
 
-    [InitialValue(0)]
+    // When setting a initial value directly on the field
+    // That value will be set in the constructor (Constructors are a function that OnInit will call first) 
     public int myStartingVal = 0;
     
+    // When using the InitialValue attribute, the value will be set directly in the output assembly code 
     [InitialValue("hello world!")]
 	public string dummy;
 	
-Properties Example: <br/>
+Properties Example:
 
     [Property, Auto]
     public Actor MyPlayerRef;
 
-Attributes Example: <br/>
+Attributes Example:
 
     [Hidden, Conditional]
     public class MyScriptName : ObjectReference
 	
 Changelog
 ========
+
+###v0.1.5f2
+* Added support for Enums! :-)
+* Fixed a few bugs that would cause the project not to build. Stupid code refactoring. My bad..
 
 ###v0.1.5f1
 * Tons of code refactoring, still working on cleaning up the solution more to make it easier to manage and add new features.

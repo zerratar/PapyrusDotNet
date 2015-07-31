@@ -34,6 +34,11 @@
             RegisterForSingleUpdateGameTime(1);
 
             Debug.Trace("New expression: " + activeExpression, 0);
+
+            if (playerExpression == Face.Frown)
+            {
+                Debug.Trace("Aww! Don't be frowning!", 0);
+            }
         }
     }
 

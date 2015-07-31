@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1438182744
-	.compileTime 1438182744
+	.modifyTime 1438347632
+	.compileTime 1438347632
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -10,7 +10,7 @@
 	.flag hidden 0
 .endUserFlagsRef
 .objectTable
-	.object Example1_FacialExpressions Actor
+.object Example1_FacialExpressions Actor
 		.userFlags 0
 		.docString ""
 		.autoState
@@ -50,6 +50,7 @@
 					.localTable
 						.local ::NoneVar None
 						.local V_0 Bool
+						.local ::temp4 Int
 						.local ::temp3 String
 						.local ::temp2 Int
 						.local ::temp1 Int
@@ -75,6 +76,11 @@
 						Cast ::temp3 ::activeExpression
 						StrCat ::temp3 ::temp3 ::activeExpression
 						CallStatic Debug Trace ::NoneVar 0
+						Cast ::temp4 ::playerExpression
+						CompareEQ V_0 ::playerExpression 1
+						JumpF V_0 _label174
+						CallStatic Debug Trace ::NoneVar ::temp4 "Aww! Don't be frowning!" 0
+					_label174:
 						Return None
 					.endCode
 				.endFunction

@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1438182744
-	.compileTime 1438182744
+	.modifyTime 1438345699
+	.compileTime 1438345699
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -10,7 +10,7 @@
 	.flag hidden 0
 .endUserFlagsRef
 .objectTable
-	.object Example1_Face System_Enum
+.object Example1_Face
 		.userFlags 0
 		.docString ""
 		.autoState
@@ -19,37 +19,37 @@
 				.userFlags 0
 				.initialValue None
 			.endVariable
-			.variable ::Normal Example1_Face
+			.variable ::Normal Int
 				.userFlags 0
-				.initialValue None
+				.initialValue 0
 			.endVariable
-			.variable ::Frown Example1_Face
+			.variable ::Frown Int
 				.userFlags 0
-				.initialValue None
+				.initialValue 1
 			.endVariable
-			.variable ::Grin Example1_Face
+			.variable ::Grin Int
 				.userFlags 0
-				.initialValue None
+				.initialValue 2
 			.endVariable
-			.variable ::Angry Example1_Face
+			.variable ::Angry Int
 				.userFlags 0
-				.initialValue None
+				.initialValue 3
 			.endVariable
-			.variable ::Raged Example1_Face
+			.variable ::Raged Int
 				.userFlags 0
-				.initialValue None
+				.initialValue 4
 			.endVariable
-			.variable ::Happy Example1_Face
+			.variable ::Happy Int
 				.userFlags 0
-				.initialValue None
+				.initialValue 5
 			.endVariable
-			.variable ::Sad Example1_Face
+			.variable ::Sad Int
 				.userFlags 0
-				.initialValue None
+				.initialValue 6
 			.endVariable
-			.variable ::Scared Example1_Face
+			.variable ::Scared Int
 				.userFlags 0
-				.initialValue None
+				.initialValue 7
 			.endVariable
 		.endVariableTable
 		.propertyTable

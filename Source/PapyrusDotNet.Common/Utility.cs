@@ -326,7 +326,7 @@ namespace PapyrusDotNet.Common
         {
             var Name = typeRef.Name;
             var Namespace = typeRef.Namespace;
-            if (Name == "Object") return "";
+            if (Name == "Object" || Namespace.ToLower().Equals("system") || Namespace.ToLower().StartsWith("system.")) return "";
 
             if (Namespace.ToLower().StartsWith("papyrusdotnet.core.") || Namespace.StartsWith("PapyrusDotNet.System"))
             {
@@ -422,29 +422,31 @@ namespace PapyrusDotNet.Common
             {
                 swtype = swtype.Split(new string[] { "[]" }, StringSplitOptions.None)[0];
             }
-            switch (swtype)
+            switch (swtype.ToLower())
             {
-                // for now...
-                case "NNULL":
+                // for now..
+                case "enum": return "";
+                case "none":
+                case "nil":
+                case "nnull":
                 case "null":
-                case "Null":
-                case "Void":
+                case "void":
                     return "None" + (isArray ? "[]" : "");
-                case "Bool":
-                case "Boolean":
+                case "bool":
+                case "boolean":
                     return "Bool" + (isArray ? "[]" : "");
-                case "Long":
-                case "Int64":
-                case "Integer64":
-                case "Int32":
-                case "Integer":
-                case "Integer32":
+                case "long":
+                case "int64":
+                case "integer64":
+                case "int32":
+                case "integer":
+                case "integer32":
                     return "Int" + (isArray ? "[]" : "");
-                case "Float":
-                case "Float32":
-                case "Double":
-                case "Double32":
-                case "Single":
+                case "float":
+                case "float32":
+                case "double":
+                case "double32":
+                case "single":
                     return "Float" + (isArray ? "[]" : "");
                 default:
                     return swExt + type;
