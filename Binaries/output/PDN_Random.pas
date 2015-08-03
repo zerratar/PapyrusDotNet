@@ -1,9 +1,9 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1438362418
-	.compileTime 1438362418
-	.user "Karl"
-	.computer "Z-PC"
+	.modifyTime 1438617588
+	.compileTime 1438617588
+	.user "Karlj"
+	.computer "CD197"
 .endInfo
 .userFlagsRef
 	.flag conditional 1
@@ -32,7 +32,7 @@
 						.local V_0 Int
 					.endLocalTable
 					.code
-						CallStatic Utility RandomInt V_0 max
+						CallStatic Utility RandomInt V_0 min max
 						Jump _label11
 					_label11:
 						Return V_0
@@ -50,7 +50,7 @@
 						.local V_0 Float
 					.endLocalTable
 					.code
-						CallStatic Utility RandomFloat V_0 max
+						CallStatic Utility RandomFloat V_0 min max
 						Jump _label13
 					_label13:
 						Return V_0

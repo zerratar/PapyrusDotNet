@@ -11,7 +11,7 @@ namespace PapyrusDotNet.Models
 
     public class PapyrusAssembly
     {
-        private Mono.Cecil.TypeDefinition sourceType;
+        public Mono.Cecil.TypeDefinition sourceType;
 
         public string GenericTypeReplacement;
 
@@ -21,6 +21,7 @@ namespace PapyrusDotNet.Models
 
         public PapyrusObjectTable ObjectTable { get; set; }
 
+        public string FinalAssemblyCode { get; set; }
 
         public string BaseType { get; set; }
 
@@ -33,12 +34,14 @@ namespace PapyrusDotNet.Models
             Header = new PapyrusHeader();
 
             this.DelegateMethodDefinitions = new List<MethodDefinition>();
+            this.ObjectTable = new PapyrusObjectTable();
         }
 
         public PapyrusAssembly(Mono.Cecil.TypeDefinition type, string genericTypeReplacement)
         {
             // TODO: Complete member initialization
             this.Header = new PapyrusHeader();
+            this.ObjectTable = new PapyrusObjectTable();
             this.sourceType = type;
             this.GenericTypeReplacement = genericTypeReplacement;
             this.BaseType = Utility.GetPapyrusBaseType(type);
@@ -53,6 +56,7 @@ namespace PapyrusDotNet.Models
 
             // TODO: Complete member initialization
             this.Header = new PapyrusHeader();
+            this.ObjectTable = new PapyrusObjectTable();
 
             this.sourceType = type;
             this.BaseType = Utility.GetPapyrusBaseType(type);
@@ -64,7 +68,7 @@ namespace PapyrusDotNet.Models
         }
 
 
-        public List<MethodDefinition> DelegateMethodDefinitions;
+        public List<MethodDefinition> DelegateMethodDefinitions, ExtensionMethodDefinitions;
 
         public Dictionary<MethodDefinition, List<FieldDefinition>> DelegateMethodFieldPair;
 
@@ -72,10 +76,11 @@ namespace PapyrusDotNet.Models
 
         public PapyrusObjectTable CreateObjectTable(TypeDefinition type)
         {
+            this.ExtensionMethodDefinitions = new List<MethodDefinition>();
             this.DelegateMethodDefinitions = new List<MethodDefinition>();
             this.DelegateMethodFieldPair = new Dictionary<MethodDefinition, List<FieldDefinition>>();
             this.DelegateFields = new List<FieldDefinition>();
-
+            var defaultObjectState = new PapyrusObjectState();
             // Get any compile time generated classes
             // These are usually created when using a paremeterless delegate.
             // However, when parameters are used. The functions seem to be injected into the current class instead.
@@ -114,16 +119,52 @@ namespace PapyrusDotNet.Models
                     }
                 }
             }
-
+            // Search for delegate methods inside the current class
             foreach (var m in type.Methods)
             {
                 if (IsDelegateMethod(type, m))
                 {
                     m.Name = m.Name.Replace("<", "_").Replace(">", "_");
                     m.IsStatic = false;
-                    DelegateMethodDefinitions.Add(m);                    
+                    DelegateMethodDefinitions.Add(m);
                 }
             }
+
+            // In case we are using some hokus pokus from PapyrusDotNet.System.Linq, 
+            // 1. We need to inject those functions seperately into this type.
+            // 2. Change the "linq" function name to match the name it is first executed from. Making sure it has a unique name.
+            // 3. Replace any generic variables to match the target type.
+            // 4. Remove the predicate variable and replace the CallMethod to the generated delegate function
+            // 5. Done!
+            foreach (var m in type.Methods)
+            {
+                MethodReference methodRef;
+                if (CallsMethodInsideNamespace(m, "PapyrusDotNet.System.Linq", out methodRef))
+                {
+
+                    var targetAssembly = PapyrusAsmWriter.ParsedAssemblies.FirstOrDefault(a => a.sourceType.Name == methodRef.DeclaringType.Name);
+                    if (targetAssembly != null)
+                    {
+                        var defaultState = targetAssembly.ObjectTable.StateTable.FirstOrDefault();
+                        var targetFunction = defaultState.Functions.FirstOrDefault(m2 => m2.Name == methodRef.Name);
+                        if (targetFunction != null)
+                        {
+                            // Extension methods are static, however we are injecting this function
+                            // directly into the same type. No need for this static call.
+                            targetFunction.RemoveStaticKeyword();
+
+                            defaultObjectState.Functions.Add(targetFunction);
+                        }
+                    }
+                    //try
+                    //{
+                    //    var mf = methodRef.Resolve();
+                    //    ExtensionMethodDefinitions.Add(mf);
+                    //}
+                    //catch { }
+                }
+            }
+
 
 
             // It is important to know if this object is an enum or not
@@ -134,11 +175,11 @@ namespace PapyrusDotNet.Models
             // that uses the enum.
             this.IsEnum = type.IsEnum;
 
-            var table = new PapyrusObjectTable();
 
-            table.Name = Utility.GetPapyrusBaseType(type);
-            table.BaseType = type.BaseType != null ? Utility.GetPapyrusBaseType(type.BaseType) : "";
-            table.Info = Utility.GetFlagsAndProperties(type);
+
+            this.ObjectTable.Name = Utility.GetPapyrusBaseType(type);
+            this.ObjectTable.BaseType = type.BaseType != null ? Utility.GetPapyrusBaseType(type.BaseType) : "";
+            this.ObjectTable.Info = Utility.GetFlagsAndProperties(type);
 
 
             var allFields = new List<FieldDefinition>();
@@ -179,7 +220,7 @@ namespace PapyrusDotNet.Models
 
                 newVar.Properties = varProps;
 
-                table.VariableTable.Add(newVar);
+                this.ObjectTable.VariableTable.Add(newVar);
 
                 PapyrusAsmWriter.Fields.Add(newVar);
             }
@@ -193,18 +234,24 @@ namespace PapyrusDotNet.Models
                 prop.AutoVarName = propField.Name;
                 prop.Properties = propField.Properties;
 
-                table.PropertyTable.Add(prop);
+                this.ObjectTable.PropertyTable.Add(prop);
             }
 
             // Enums do not have any functions or states.
             if (!this.IsEnum)
             {
-                var defaultObjectState = new PapyrusObjectState();
+                this.ObjectTable.StateTable.Add(defaultObjectState);
 
                 var methods = type.Methods.OrderByDescending(c => c.Name).ToList();
                 var onInitAvailable = methods.Any(m => m.Name.ToLower().Contains("oninit"));
                 var ctorAvailable = methods.Any(m => m.Name.ToLower().Contains(".ctor"));
                 var mergeCtorAndOnInit = ctorAvailable && onInitAvailable;
+
+                foreach (var method in ExtensionMethodDefinitions)
+                {
+                    if (!defaultObjectState.Functions.Any(c => c.Name == method.Name))
+                        defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                }
 
                 foreach (var method in DelegateMethodDefinitions)
                 {
@@ -218,9 +265,21 @@ namespace PapyrusDotNet.Models
                         defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
                 }
 
-                table.StateTable.Add(defaultObjectState);
             }
-            return table;
+            return this.ObjectTable;
+        }
+
+        private static bool CallsMethodInsideNamespace(MethodDefinition m, string targetNamespace, out MethodReference methodRef)
+        {
+            methodRef = null;
+            foreach (var instruction in m.Body.Instructions)
+            {
+                if (Utility.IsCallMethodInsideNamespace(instruction, targetNamespace, out methodRef))
+                {
+                    return true;
+                }               
+            }
+            return false;
         }
 
         private static bool IsDelegateMethod(TypeDefinition type, MethodDefinition m)

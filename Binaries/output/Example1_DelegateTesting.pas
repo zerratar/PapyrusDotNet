@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1438600795
-	.compileTime 1438600795
+	.modifyTime 1438617588
+	.compileTime 1438617588
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -57,7 +57,9 @@
 					.endLocalTable
 					.code
 						Jump _label27
+						Jump _label27
 					_label27:
+						Assign V_0 None
 						CallMethod _UtilizeDelegate4_b__a self ::NoneVar ::magic
 						Return None
 					.endCode
@@ -156,7 +158,9 @@
 					.code
 						Assign V_0 "test"
 						Jump _label33
+						Jump _label33
 					_label33:
+						Assign V_1 None
 						CallMethod _UtilizeDelegate3_b__7 self ::NoneVar V_0
 						Return None
 					.endCode
@@ -190,9 +194,13 @@
 					.endLocalTable
 					.code
 						Jump _label27
+						Jump _label27
 					_label27:
+						Assign V_0 None
+						Jump _label59
 						Jump _label59
 					_label59:
+						Assign V_1 None
 						CallMethod _UtilizeDelegate_b__0 self ::NoneVar 
 						CallMethod _UtilizeDelegate_b__1 self ::NoneVar 
 						Return None

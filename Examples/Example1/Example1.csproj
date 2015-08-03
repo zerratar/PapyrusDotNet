@@ -39,6 +39,7 @@
     <Compile Include="GodMode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestingEnums.cs" />
+    <Compile Include="TestingLinqStuff.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PapyrusDotNet.Core">

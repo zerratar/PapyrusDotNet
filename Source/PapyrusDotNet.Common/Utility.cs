@@ -322,6 +322,11 @@ namespace PapyrusDotNet.Common
             return GetPapyrusReturnType(reference.Name, reference.Namespace);
         }
 
+        public static string GetPapyrusReturnType(string reference)
+        {
+            return GetPapyrusReturnType(reference.Split('.').LastOrDefault(), reference.Remove(reference.LastIndexOf('.')));
+        }
+
         public static string GetPapyrusBaseType(TypeReference typeRef)
         {
             var Name = typeRef.Name;
@@ -641,6 +646,11 @@ namespace PapyrusDotNet.Common
             return IsLoadArgs(code) || IsLoadInteger(code) || IsLoadLocalVariable(code) || IsLoadString(code);
         }
 
+        public static bool IsStore(Code code)
+        {
+            return IsStoreElement(code) || IsStoreField(code) || IsStoreLocalVariable(code) || IsStoreStaticField(code);
+        }
+
         public static bool IsStoreField(Code code)
         {
             return code == Code.Stfld;
@@ -670,6 +680,16 @@ namespace PapyrusDotNet.Common
         public static bool IsMath(Code code)
         {
             return code == Code.Add || code == Code.Sub || code == Code.Div || code == Code.Mul;
+        }
+
+        public static bool IsLoadStaticField(Code code)
+        {
+            return code == Code.Ldsfld || code == Code.Ldsflda;
+        }
+
+        public static bool IsStoreStaticField(Code code)
+        {
+            return code == Code.Stsfld;
         }
 
 
@@ -981,6 +1001,21 @@ namespace PapyrusDotNet.Common
                 outName = outName.Substring(2);
             }
             return "p" + outName;
+        }
+
+        public static bool IsCallMethodInsideNamespace(Instruction instruction, string targetNamespace, out MethodReference methodRef)
+        {
+            methodRef = null;
+            if (Utility.IsCallMethod(instruction.OpCode.Code))
+            {
+                var method = (instruction.Operand as MethodReference);
+                if (method != null && method.FullName.Contains(targetNamespace))
+                {
+                    methodRef = method;
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
