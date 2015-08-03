@@ -87,6 +87,7 @@ namespace PapyrusDotNet.Models
                     {
                         if (m.Name.StartsWith("<"))
                         {
+                            m.IsStatic = false;
                             m.Name = m.Name.Replace("<", "_").Replace(">", "_");
                             DelegateMethodDefinitions.Add(m);
                             var fieldDefinitions = new List<FieldDefinition>();
@@ -119,7 +120,8 @@ namespace PapyrusDotNet.Models
                 if (IsDelegateMethod(type, m))
                 {
                     m.Name = m.Name.Replace("<", "_").Replace(">", "_");
-                    DelegateMethodDefinitions.Add(m);
+                    m.IsStatic = false;
+                    DelegateMethodDefinitions.Add(m);                    
                 }
             }
 
