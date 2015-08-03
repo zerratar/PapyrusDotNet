@@ -195,6 +195,8 @@ namespace PapyrusDotNet
 
                 foreach (var variable in method.Body.Variables)
                 {
+                    if (variable.VariableType.Name.StartsWith("<>")) continue; // Delegate variables should not be added.
+
                     sourceBuilder.AppendLine(Utility.Indent(indentDepth, ParseLocalVariable(variable), false));
                 }
             }
@@ -501,10 +503,27 @@ namespace PapyrusDotNet
                     val = "Int";
                     delegateInstanceVar = true;
 
-                    var delegateMethod =
+                    var functionName = this.function.Name;
 
-                    function.PapyrusAssembly.DelegateMethodDefinitions.FirstOrDefault(
-                        del => del.Name.Contains(this.function.Name) && del.Name.EndsWith("_1_" + function.DelegateInvokeCount));
+                    // In case this is a delegate inside a delegate...
+                    // _UtilizeDelegate4_b__0
+                    if (functionName.StartsWith("_") && functionName.Contains("b_"))
+                    {
+                        functionName = functionName.Split('_')[1];
+                        function.DelegateInvokeCount++;
+                    }
+
+
+                    var delegateMethod =
+                        function.PapyrusAssembly.DelegateMethodDefinitions.FirstOrDefault(
+                            del => del.Name.Contains("_" + functionName + "_") && del.Name.EndsWith("_" + function.DelegateInvokeCount));
+
+                    if (delegateMethod == null)
+                    {
+                        delegateMethod =
+                            function.PapyrusAssembly.DelegateMethodDefinitions.FirstOrDefault(
+                                del => del.Name.Contains("_" + functionName + "_") && del.Name.Contains("b_") && del.Name != this.function.Name);
+                    }
 
                     function.DelegateInvokeCount++;
 
@@ -520,7 +539,7 @@ namespace PapyrusDotNet
 
             return ".local " + name + " " + val; //Utility.GetPapyrusReturnType(typeN, variable.VariableType.Namespace);
         }
-        
+
 
         private string ParseInstruction(Instruction instruction)
         {
@@ -780,7 +799,7 @@ namespace PapyrusDotNet
             if (Utility.IsLoadArgs(instruction.OpCode.Code))
             {
                 var index = IntValue(instruction);
-                if (_targetMethod.IsStatic && (int)index == 0)
+                if (_targetMethod.IsStatic && (int)index == 0 && _targetMethod.Parameters.Count == 0)
                 {
                     EvaluationStack.Push(new EvaluationStackItem { IsThis = true, Value = this.Type, TypeName = this.Type.FullName });
                 }
@@ -957,10 +976,12 @@ namespace PapyrusDotNet
                         {
                             if (concatValues[j].Value is PapyrusVariableReference)
                             {
-                                if (!concatValues[j].TypeName.ToLower().Contains("string"))
-                                    strCats.Add("Cast " + concatTargetVar + " " + (concatValues[j].Value as PapyrusVariableReference).Name);
+                                var name = (concatValues[j].Value as PapyrusVariableReference).Name;
 
-                                strCats.Add("StrCat " + concatTargetVar + " " + concatTargetVar + " " + (concatValues[j].Value as PapyrusVariableReference).Name);
+                                if (!concatValues[j].TypeName.ToLower().Contains("string"))
+                                    strCats.Add("Cast " + concatTargetVar + " " + name);
+
+                                strCats.Add("StrCat " + concatTargetVar + " " + concatTargetVar + " " + name);
                             }
                             else
                             {

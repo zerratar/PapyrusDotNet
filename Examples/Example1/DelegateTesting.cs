@@ -2,7 +2,7 @@
 {
     public class DelegateTesting
     {
-       
+
 
         // -----------
         // The following code works.
@@ -20,28 +20,52 @@
                 PapyrusDotNet.Core.Debug.Trace("Second awesome was used!", 0);
             };
 
-
             awesome();
 
             secondAwesome();
         }
 
-        // -----------
-        // The following code does not work.
-        // -----------
         public delegate void SecondDelegate();
         public void UtilizeDelegate2()
         {
-            // just by exposing one variable to be used inside a delegate,
-            // a whole new class is created.. Youch! 
-            string horror = "test";
+            string whatHorrorLiesHere = "test123";
 
-            SecondDelegate awesome = () =>
+            SecondDelegate arrr = () =>
             {
-                PapyrusDotNet.Core.Debug.Trace("Awesome was used!" + horror, 0);
+                PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate2 was used!" + whatHorrorLiesHere, 0);
             };
 
-            awesome();
-            }
+            arrr();
         }
+
+        public delegate void AnotherDelegate(string input);
+        public void UtilizeDelegate3()
+        {
+            string horror = "test";
+
+            AnotherDelegate awesome = (s) =>
+            {
+                PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate3 was used!" + s, 0);
+            };
+
+            awesome(horror);
+        }
+
+        public delegate void HorribleDelegate();
+        public void UtilizeDelegate4()
+        {
+            string magic = "helloo";
+            HorribleDelegate awesome = () =>
+            {
+                AnotherDelegate awe2 = (s) =>
+                {
+                    PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate4 was used!" + s, 0);
+                };
+
+                awe2(magic);
+
+            };
+            awesome();
+        }
+    }
 }

@@ -66,11 +66,19 @@ namespace PapyrusDotNet.Models
 
         public List<MethodDefinition> DelegateMethodDefinitions;
 
+        public Dictionary<MethodDefinition, List<FieldDefinition>> DelegateMethodFieldPair;
+
+        public List<FieldDefinition> DelegateFields;
 
         public PapyrusObjectTable CreateObjectTable(TypeDefinition type)
         {
             this.DelegateMethodDefinitions = new List<MethodDefinition>();
+            this.DelegateMethodFieldPair = new Dictionary<MethodDefinition, List<FieldDefinition>>();
+            this.DelegateFields = new List<FieldDefinition>();
 
+            // Get any compile time generated classes
+            // These are usually created when using a paremeterless delegate.
+            // However, when parameters are used. The functions seem to be injected into the current class instead.
             foreach (var nt in type.NestedTypes)
             {
                 if (nt.Name.StartsWith("<>"))
@@ -81,8 +89,37 @@ namespace PapyrusDotNet.Models
                         {
                             m.Name = m.Name.Replace("<", "_").Replace(">", "_");
                             DelegateMethodDefinitions.Add(m);
+                            var fieldDefinitions = new List<FieldDefinition>();
+                            foreach (var instruction in m.Body.Instructions)
+                            {
+                                var op = instruction.Operand;
+                                if (op is FieldReference)
+                                {
+                                    var f = (op as FieldReference);
+                                    foreach (var field in nt.Fields)
+                                    {
+                                        if (f.FullName == field.FullName)
+                                        {
+                                            fieldDefinitions.Add(field);
+                                            if (!DelegateFields.Contains(field))
+                                                DelegateFields.Add(field);
+                                        }
+                                    }
+                                }
+                                /*nt.Fields*/
+                            }
+                            DelegateMethodFieldPair.Add(m, fieldDefinitions);
                         }
                     }
+                }
+            }
+
+            foreach (var m in type.Methods)
+            {
+                if (IsDelegateMethod(type, m))
+                {
+                    m.Name = m.Name.Replace("<", "_").Replace(">", "_");
+                    DelegateMethodDefinitions.Add(m);
                 }
             }
 
@@ -102,8 +139,10 @@ namespace PapyrusDotNet.Models
             table.Info = Utility.GetFlagsAndProperties(type);
 
 
-
-            foreach (var variable in type.Fields)
+            var allFields = new List<FieldDefinition>();
+            allFields.AddRange(type.Fields);
+            allFields.AddRange(DelegateFields);
+            foreach (var variable in allFields)
             {
                 var varProps = Utility.GetFlagsAndProperties(variable);
 
@@ -167,17 +206,36 @@ namespace PapyrusDotNet.Models
 
                 foreach (var method in DelegateMethodDefinitions)
                 {
-                    defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                    if (!defaultObjectState.Functions.Any(c => c.Name == method.Name))
+                        defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
                 }
 
                 foreach (var method in methods)
                 {
-                    defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                    if (!defaultObjectState.Functions.Any(c => c.Name == method.Name))
+                        defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
                 }
 
                 table.StateTable.Add(defaultObjectState);
             }
             return table;
+        }
+
+        private static bool IsDelegateMethod(TypeDefinition type, MethodDefinition m)
+        {
+            var isDelegateMethod = false;
+            if (m.Name.StartsWith("<") && m.Name.Contains(">") && m.Name.Contains("_"))
+            {
+                foreach (var m2 in type.Methods)
+                {
+                    if (!m2.Name.StartsWith("<") && !m2.Name.Contains(">") && m.Name.Contains(m2.Name))
+                    {
+                        isDelegateMethod = true;
+                        break;
+                    }
+                }
+            }
+            return isDelegateMethod;
         }
 
         public PapyrusFunction CreatePapyrusFunction(

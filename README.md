@@ -179,14 +179,14 @@ Known Issues
 
 Ready for Test
 ======
-1. Simple usage of delegates. See example below.
+1. Delegates. See example below.
 1. Enums :-)
 1. Generic objects.
 2. Papyrus Attributes: Auto, AutoReadOnly, Conditional, Hidden, InitialValue, Property
 
-Delegates are still being developed on but I've managed to get some very good progress on the matter and got very simple delegates to work.
+Basic delegates are now done. It may still have some untested bugs or so, but at least we have something working here! :-)
 
-Following code works
+Following code now works
 
     public delegate void HelloThereDelegate();
     public void UtilizeDelegate()
@@ -201,30 +201,52 @@ Following code works
             PapyrusDotNet.Core.Debug.Trace("Second awesome was used!", 0);
         };
 
-
         awesome();
 
         secondAwesome();
     }
 
-However, the following code does not
-
     public delegate void SecondDelegate();
     public void UtilizeDelegate2()
     {
-        // just by exposing one variable to be used inside a delegate,
-        // a whole new class is created.. Youch! 
-        // This is not supported just yet. But i'm working on it!
-        // -- The same thing for delegates with parameters. Those do ont work either. Yet!
-        string horror = "test";
+        string whatHorrorLiesHere = "test123";
 
-        SecondDelegate awesome = () =>
+        SecondDelegate arrr = () =>
         {
-            PapyrusDotNet.Core.Debug.Trace("Awesome was used!" + horror, 0);
+            PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate2 was used!" + whatHorrorLiesHere, 0);
         };
 
+        arrr();
+    }
+
+    public delegate void AnotherDelegate(string input);
+    public void UtilizeDelegate3()
+    {
+        string horror = "test";
+
+        AnotherDelegate awesome = (s) =>
+        {
+            PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate3 was used!" + s, 0);
+        };
+
+        awesome(horror);
+    }
+
+    public delegate void HorribleDelegate();
+    public void UtilizeDelegate4()
+    {
+        string magic = "helloo";
+        HorribleDelegate awesome = () =>
+        {
+            AnotherDelegate awe2 = (s) =>
+            {
+                PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate4 was used!" + s, 0);
+            };
+
+            awe2(magic);
+
+        };
         awesome();
-        }
     }
 
 Initial Value Example:
@@ -249,6 +271,9 @@ Attributes Example:
 	
 Changelog
 ========
+
+###v0.1.6
+* Delegates now works, still needs to be properly tested. Check above examples to see the difference scenarios that works.
 
 ###v0.1.5f3
 * Parameterless delegates works. (As long as you are not providing a locally instanced variable to be used inside the delegate. See example above.)

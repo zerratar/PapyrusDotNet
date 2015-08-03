@@ -1,9 +1,9 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1438366422
-	.compileTime 1438366422
-	.user "Karl"
-	.computer "Z-PC"
+	.modifyTime 1438600387
+	.compileTime 1438600387
+	.user "Karlj"
+	.computer "CD197"
 .endInfo
 .userFlagsRef
 	.flag conditional 1
@@ -63,13 +63,11 @@
 					.endParamTable
 					.localTable
 						.local ::NoneVar None
-						.local V_0 Int
 						.local ::temp1 String
 						.local ::temp0 String
 					.endLocalTable
 					.code
-						Assign V_0 ::totalHoursElapsed
-						IAdd ::totalHoursElapsed V_0 1
+						IAdd ::totalHoursElapsed ::totalHoursElapsed 1
 						CallMethod GetName ::PlayerRef ::temp0 
 						Cast ::temp1 ::totalHoursElapsed
 						StrCat ::temp1 ::temp1 ::totalHoursElapsed
