@@ -132,7 +132,6 @@ for, foreach, while, switch, do, if, else, break, return
 or if OnInit already exists, the Constructor will be renamed into __ctor and called by the OnInit.
 9. Following primitive types works: **byte, short, int long, float, double, bool, char, string**
 10. Generics works. Ex: public class< T > ScriptName
-11. Simple delegates works but are still in heavy development. I expect delegates to work fully in just a matter of weeks!
 
 This should give you a strict overview of what you can and cannot do.
 I may have missed out a lot of things from both lists. Mostly because it would be impossible to mention them all. Just make sure you remember to not use anything part of the .NET Framework. So if you skip out the default **using System;** etc. You should most likely be fine.
