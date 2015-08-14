@@ -1,7 +1,7 @@
 .info
 	.source "PapyrusDotNet-Generated.psc"
-	.modifyTime 1438617588
-	.compileTime 1438617588
+	.modifyTime 1439547956
+	.compileTime 1439547956
 	.user "Karlj"
 	.computer "CD197"
 .endInfo
@@ -10,7 +10,7 @@
 	.flag hidden 0
 .endUserFlagsRef
 .objectTable
-.object Example1_TestingLinqStuff
+.object Example1_TestingLinqStuff ObjectReference
 		.userFlags 0
 		.docString ""
 		.autoState
@@ -26,7 +26,6 @@
 					.return String
 					.paramTable
 						.param source String[]
-						.param predicate Func`2
 					.endParamTable
 					.localTable
 						.local V_0 String
@@ -36,7 +35,7 @@
 						.local V_4 Bool
 						.local V_5 String
 						.local ::temp1 Int
-						.local ::temp0 !1
+						.local ::temp0 Bool
 					.endLocalTable
 					.code
 						Assign V_2 source
@@ -44,7 +43,7 @@
 						Jump _label43
 					_label8:
 						ArrayGetElement V_0 V_2 V_3
-						CallMethod Invoke predicate ::temp0 V_0
+						CallMethod _FirstTest_b__0 self ::temp0 V_0
 						Cast V_4 ::temp0
 						CompareEQ V_4 ::temp0 0
 						JumpF V_4 _label38
@@ -80,6 +79,25 @@
 						Return V_0
 					.endCode
 				.endFunction
+				.function _FirstTest_b__1
+					.userFlags 0
+					.docString ""
+					.return Bool
+					.paramTable
+						.param l String
+					.endParamTable
+					.localTable
+						.local V_0 Bool
+						.local ::temp0 Bool
+					.endLocalTable
+					.code
+						CompareEQ ::temp0 l ""
+						Assign V_0 ::temp0
+						Jump _label14
+					_label14:
+						Return V_0
+					.endCode
+				.endFunction
 				.function FirstTest
 					.userFlags 0
 					.docString ""
@@ -87,27 +105,41 @@
 					.paramTable
 					.endParamTable
 					.localTable
+						.local ::NoneVar None
 						.local V_0 String[]
 						.local V_1 String
-						.local V_2 String[]
+						.local V_2 String
+						.local V_3 String[]
+						.local ::temp1 String
+						.local ::temp0 String
 					.endLocalTable
 					.code
-						ArrayCreate V_2 10
-						ArraySetElement V_2 0 "0"
-						ArraySetElement V_2 1 "1"
-						ArraySetElement V_2 2 "2"
-						ArraySetElement V_2 3 "3"
-						ArraySetElement V_2 4 "4"
-						ArraySetElement V_2 5 "5"
-						ArraySetElement V_2 6 "6"
-						ArraySetElement V_2 7 "7"
-						ArraySetElement V_2 8 "8"
-						ArraySetElement V_2 9 "9"
-						Assign V_0 V_2
+						ArrayCreate V_3 10
+						ArraySetElement V_3 0 "0"
+						ArraySetElement V_3 1 "1"
+						ArraySetElement V_3 2 "2"
+						ArraySetElement V_3 3 "3"
+						ArraySetElement V_3 4 "4"
+						ArraySetElement V_3 5 "5"
+						ArraySetElement V_3 6 "6"
+						ArraySetElement V_3 7 "7"
+						ArraySetElement V_3 8 "8"
+						ArraySetElement V_3 9 "9"
+						Assign V_0 V_3
 						JumpF V_0 _label119
 						Jump _label119
 					_label119:
 						CallMethod FirstOrDefault self V_1 
+						StrCat ::temp0 ::temp0 "We selected number "
+						StrCat ::temp0 ::temp0 V_1
+						CallStatic Debug Trace ::NoneVar 0
+						JumpF V_0 _label175
+						Jump _label175
+					_label175:
+						CallMethod LastOrDefault self V_2 
+						StrCat ::temp1 ::temp1 "Our last number is "
+						StrCat ::temp1 ::temp1 V_2
+						CallStatic Debug Trace ::NoneVar 0
 						Return None
 					.endCode
 				.endFunction

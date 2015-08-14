@@ -31,6 +31,7 @@ namespace PapyrusDotNet.Models
         public int UserFlags = 0;
         public string Name;
         public int DelegateInvokeCount;
+        public int ExtensionInvokeCount;
         public PapyrusFunction()
         {
             this.Parameters = new List<PapyrusVariableReference>();
@@ -72,21 +73,40 @@ namespace PapyrusDotNet.Models
             }
         }
 
-        public PapyrusVariableReference CreateTempVariable(string p)
+        public PapyrusVariableReference CreateTempVariable(string p, MethodReference methodRef = null)
         {
-            string Namespace = "";
-            string Name = "";
+            var originalTarget = p;
+            if (p.StartsWith("!"))
+            {
+                // Get argument variable at index 1
+                if (methodRef != null && methodRef.FullName.Contains("<") && methodRef.FullName.Contains(","))
+                {
+                    try
+                    {
+                        var pm = methodRef.FullName.TrimSplit("<")[1].TrimSplit(">")[0];
+                        var vars = pm.TrimSplit(",");
+                        var argIndex = int.Parse(p.Substring(1));
+                        p = vars[argIndex];
+                    }
+                    catch { p = originalTarget; }
+                }
+            }
+
+            string @namespace = "";
+            string name = "";
             if (p.Contains("."))
             {
-                Namespace = p.Remove(p.LastIndexOf('.'));
-                Name = p.Split('.').LastOrDefault();
+                @namespace = p.Remove(p.LastIndexOf('.'));
+                name = p.Split('.').LastOrDefault();
             }
             else
             {
-                Name = p;
+                name = p;
             }
+
+
             var varname = "::temp" + TempVariables.Count;
-            var type = Utility.GetPapyrusReturnType(Name, Namespace);
+            var type = Utility.GetPapyrusReturnType(name, @namespace);
             var def = ".local " + varname + " " + type.Replace("<T>", "");
             var varRef = new PapyrusVariableReference(varname, type, def);
             TempVariables.Add(varRef);

@@ -98,7 +98,8 @@ To give you an idea. Take a look at the following code
 **Things that do not work**
 
 1. The .NET framework is **not** supported.
-This means you can only rely on the actual C# language itself and not on any of the existing libraries. So **LINQ is not currently supported**.
+This means you can only rely on the actual C# language itself and not on any of the existing libraries.
+2. Linq does **not** work just yet.
 2. The data type **object** is **not** supported.
 3. *Boxing and Unboxing* is **not** supported.
 4. *Extension methods* is **not** supported.
@@ -267,7 +268,7 @@ Attributes Example:
 
     [Hidden, Conditional]
     public class MyScriptName : ObjectReference
-	
+
 Changelog
 ========
 

@@ -46,7 +46,7 @@ namespace PapyrusDotNet
     class Program
     {
         public static bool HandleConstructorAsOnInit = false;
-        
+
         public static AssemblyDefinition CurrentAssembly;
 
         public static string outputFolder;
@@ -93,11 +93,18 @@ namespace PapyrusDotNet
 
             var asmReferences = AssemblyHelper.GetAssemblyReferences(CurrentAssembly);
 
+            /* Generate all CallStacks */
+            foreach (var asm in asmReferences)
+            {
+                PapyrusAsmWriter.GenerateCallStack(asm);
+            }
+            PapyrusAsmWriter.GenerateCallStack(CurrentAssembly);
+         
+            /* Generate all papyrus code */
             foreach (var asm in asmReferences)
             {
                 PapyrusAsmWriter.GeneratePapyrusFromAssembly(asm, ref outputPasFiles, CurrentAssembly);
             }
-
 
             PapyrusAsmWriter.GeneratePapyrusFromAssembly(CurrentAssembly, ref outputPasFiles);
 

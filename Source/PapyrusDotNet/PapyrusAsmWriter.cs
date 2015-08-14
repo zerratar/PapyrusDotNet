@@ -31,6 +31,17 @@ namespace PapyrusDotNet
     using PapyrusDotNet.Common;
     using PapyrusDotNet.Models;
 
+    public struct MethodCallPair
+    {
+        public MethodDefinition CallerMethod;
+        public MethodReference TargetMethod;
+        public MethodCallPair(MethodDefinition cm, MethodReference tm)
+        {
+            CallerMethod = cm;
+            TargetMethod = tm;
+        }
+    }
+
     public class PapyrusAsmWriter
     {
         private AssemblyDefinition Assembly;
@@ -53,7 +64,7 @@ namespace PapyrusDotNet
 
         public static List<PapyrusAssembly> ParsedAssemblies = new List<PapyrusAssembly>();
 
-
+        private List<ParameterDefinition> skippedParameters = new List<ParameterDefinition>();
 
         public PapyrusAsmWriter(AssemblyDefinition assembly, TypeDefinition type, List<PapyrusVariableReference> fields)
         {
@@ -65,8 +76,49 @@ namespace PapyrusDotNet
             this.function.Fields = fields;
         }
 
+        public static List<MethodCallPair> CallStack = new List<MethodCallPair>();
+
+        private static void GetCallStack(TypeDefinition type)
+        {
+            foreach (var m in type.Methods)
+            {
+                if (m.HasBody)
+                {
+                    foreach (var i in m.Body.Instructions)
+                    {
+                        if (Utility.IsCallMethod(i.OpCode.Code))
+                        {
+                            var mRef = i.Operand as MethodReference;
+                            if (mRef != null)
+                            {
+                                CallStack.Add(new MethodCallPair(m, mRef));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void GetCallStackRecursive(TypeDefinition type)
+        {
+            if (!type.FullName.ToLower().Contains("<module>"))
+            {
+                GetCallStack(type);
+                if (type.HasNestedTypes)
+                {
+                    foreach (var nt in type.NestedTypes)
+                    {
+                        GetCallStackRecursive(nt);
+                    }
+                }
+            }
+        }
+
         public static void GeneratePapyrusFromAssembly(AssemblyDefinition currentAssembly, ref Dictionary<string, string> outputPasFiles, AssemblyDefinition mainAssembly = null)
         {
+            // CallStack.Clear();
+
+
             foreach (var module in currentAssembly.Modules)
             {
                 if (module.HasTypes)
@@ -76,6 +128,7 @@ namespace PapyrusDotNet
                     {
                         if (!type.FullName.ToLower().Contains("<module>"))
                         {
+
                             Console.WriteLine("Generating Papyrus Asm for " + type.FullName);
 
                             Fields = new List<PapyrusVariableReference>();
@@ -89,10 +142,11 @@ namespace PapyrusDotNet
                                 // then for each of those, we will generate a new class to represent it.
                                 // replacing all 'T' with the types used.
 
-                                var references = AssemblyHelper.GetAllGenericReferences(type, mainAssembly != null ? mainAssembly : currentAssembly);
+                                var references = AssemblyHelper.GetAllGenericReferences(type, mainAssembly ?? currentAssembly);
 
+                                // Output values are not being used. But the actual method needs to be called.
                                 var ref2 = AssemblyHelper.GetAllGenericReferences(type, currentAssembly);
-
+                                // Output values are not being used. But the actual method needs to be called.
                                 var ref3 = AssemblyHelper.GetAllReferences(type, currentAssembly);
 
                                 foreach (var r in references)
@@ -118,7 +172,7 @@ namespace PapyrusDotNet
                                 // Don't write any assembly in case it is an enum.
                                 // However, we still want the type to be parsed, 
                                 // so creating a new Instance of PapyrusAssembly is still necessary
-                                if (!assembly.IsEnum)
+                                if (assembly != null && !assembly.IsEnum)
                                 {
                                     outputPapyrus += assembly.Header.Info.ToString();
                                     outputPapyrus += assembly.Header.UserFlagRef.ToString();
@@ -141,7 +195,8 @@ namespace PapyrusDotNet
 
         public PapyrusFunction CreateFunction(PapyrusAssembly asm, MethodDefinition method, string overrideFunctionName = null)
         {
-
+            skippedParameters = new List<ParameterDefinition>();
+            // callStack = new List<MethodCallPair>();
             var sourceBuilder = new StringBuilder();
 
             this._targetMethod = method;
@@ -158,6 +213,8 @@ namespace PapyrusDotNet
             function.Name = method.Name;
             function.MethodDefinition = method;
             function.ReturnType = returnType;
+
+
 
 
             // Native methods or functions can be declared			
@@ -184,7 +241,9 @@ namespace PapyrusDotNet
 
             foreach (var parameter in method.Parameters)
             {
-                sourceBuilder.AppendLine(Utility.Indent(indentDepth, ParseParameter(parameter), false));
+                var parameterOutput = ParseParameter(parameter);
+                if (!string.IsNullOrEmpty(parameterOutput))
+                    sourceBuilder.AppendLine(Utility.Indent(indentDepth, parameterOutput, false));
             }
 
             sourceBuilder.AppendLine(Utility.Indent(--indentDepth, ".endParamTable", false));
@@ -208,13 +267,17 @@ namespace PapyrusDotNet
             if (method.HasBody)
             {
 
-                if (_targetMethod.Name.Contains("FirstTest"))
-                {
-
-                }
-
                 foreach (var instruction in method.Body.Instructions)
                 {
+
+
+
+                    if (_targetMethod.Name.Contains("FirstOrDefault") && Utility.IsCallMethod(instruction.OpCode.Code))
+                    {
+
+                    }
+
+
                     // We will add a new label for each instruction.
                     // And at the end we will remove any unused instructions.
                     sourceBuilder.AppendLine(Utility.Indent(indentDepth - 1, "_label" + instruction.Offset + ":", false));
@@ -430,11 +493,34 @@ namespace PapyrusDotNet
             return false;
         }
 
-        private string ParseParameter(ParameterDefinition parameter)
+        private string ParseParameter(ParameterDefinition parameter, bool parseFuncParameter = false)
         {
             var name = parameter.Name;
             var type = parameter.ParameterType.FullName;
             var typeN = parameter.ParameterType.Name;
+
+            if (typeN.StartsWith("Func`"))
+            {
+                /* Following code below would allow a proper conversion of the Func parameter name to be used
+                 * however, when it comes to FirstOrDefault/LastOrDefault, etc, the predicate is parameter is not necessary as it wont be used. 
+                 * Which means, we can actually skip to parse this parameter completely. However we still want to keep track on this param */
+                if (!parseFuncParameter)
+                {
+                    skippedParameters.Add(parameter);
+                    return "";
+                }
+
+                var git = (parameter.ParameterType as GenericInstanceType);
+                if (git != null)
+                {
+                    var args = git.GenericArguments;
+                    if (args.Count > 1)
+                    {
+                        type = args[1].FullName;
+                        typeN = args[1].Name;
+                    }
+                }
+            }
 
             var val = Utility.GetPapyrusReturnType(typeN, parameter.ParameterType.Namespace);
             if (parameter.ParameterType.IsGenericInstance)
@@ -664,7 +750,7 @@ namespace PapyrusDotNet
                     if (Utility.IsCallMethod(instruction.Next.OpCode.Code))
                     {
                         var targetMethod = instruction.Next.Operand as MethodReference;
-                        if (targetMethod.HasParameters)
+                        if (targetMethod != null && targetMethod.HasParameters)
                         {
                             var tarVar = GetTargetVariable(instruction, targetMethod, sourceArray.TypeName.Replace("[]", ""));
 
@@ -962,20 +1048,46 @@ namespace PapyrusDotNet
                     return retVal;
                 }
             }
-
+            string overrideMethodCallName = null;
             if (Utility.IsCallMethod(instruction.OpCode.Code))
             {
                 if (instruction.Operand is MethodReference)
                 {
-
-
-
                     var methodRef = instruction.Operand as MethodReference;
 
-                    if (methodRef.FullName == "System.Void PapyrusDotNet.Core.Debug::Trace(System.String,System.Int32)")
+                    /* Check if we are calling a invoke function from a skipped Func parameter */
+                    if (methodRef.Name.Contains("Invoke"))
                     {
+                        int loadArgIndex = -1;
+                        if (instruction.Previous != null && Utility.IsLoadArgs(instruction.Previous.OpCode.Code))
+                        {
+                            loadArgIndex = Utility.GetCodeIndex(instruction.Previous.OpCode.Code);
+                        }
+                        if (instruction.Previous != null && instruction.Previous.Previous != null && Utility.IsLoadArgs(instruction.Previous.Previous.OpCode.Code))
+                        {
+                            loadArgIndex = Utility.GetCodeIndex(instruction.Previous.Previous.OpCode.Code);
+                        }
+                        if (loadArgIndex > 0 && loadArgIndex >= function.Parameters.Count)
+                        {
+                            var callHierarchy = PapyrusAsmWriter.CallStack;
+                            if (callHierarchy.Count > 0)
+                            {
+                                var skippedParam = skippedParameters.LastOrDefault();
+                                if (skippedParam != null)
+                                {
+                                    // skippedParam should be a predicate, but at this  point we already know that.
+                                    // And by knowing that we know we are actually calling a compiler-time generated method
+                                    var caller = callHierarchy.FirstOrDefault(f => f.TargetMethod.Name == _targetMethod.Name);
+                                    if (caller.CallerMethod != null)
+                                    {
+                                        overrideMethodCallName = "_" + caller.CallerMethod.Name + "_b__" + (function.ExtensionInvokeCount++);
+                                    }
+                                }
+                            }
 
+                        }
                     }
+
 
 
                     if (methodRef.Name.ToLower().Contains("concat"))
@@ -1143,7 +1255,7 @@ namespace PapyrusDotNet
                                     "PapyrusDotNet.System.Linq",
                                     out methodRef2))
 
-                                return "CallStatic " + callerType + " " + methodRef.Name + " " + targetVar + " "
+                                return "CallStatic " + callerType + " " + (!string.IsNullOrEmpty(overrideMethodCallName) ? overrideMethodCallName : methodRef.Name) + " " + targetVar + " "
                                        + FormatParameters(methodRef, param); //definition;                            
                             else
                             {
@@ -1175,7 +1287,7 @@ namespace PapyrusDotNet
                             if (callerType.Contains(".")) callerType = callerType.Split('.').LastOrDefault();
                         }
 
-                        return "CallMethod " + methodRef.Name + " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
+                        return "CallMethod " + (!string.IsNullOrEmpty(overrideMethodCallName) ? overrideMethodCallName : methodRef.Name) + " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
                     }
                     else
                     {
@@ -1206,10 +1318,7 @@ namespace PapyrusDotNet
                         // function.AllVariables 
 #warning check if the variable being used is a delegate, if it is. then run the function on self instead.
 
-
-
-
-                        return "CallMethod " + targetMethod + " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
+                        return "CallMethod " + (!string.IsNullOrEmpty(overrideMethodCallName) ? overrideMethodCallName : targetMethod) + " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
                     }
                 }
             }
@@ -1455,7 +1564,7 @@ namespace PapyrusDotNet
 
                 // EvaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
 
-                var tVar = function.CreateTempVariable(!String.IsNullOrEmpty(fallbackType) ? fallbackType : methodRef.ReturnType.FullName);
+                var tVar = function.CreateTempVariable(!String.IsNullOrEmpty(fallbackType) ? fallbackType : methodRef.ReturnType.FullName, methodRef);
                 targetVar = tVar.Name;
                 EvaluationStack.Push(new EvaluationStackItem { Value = tVar, TypeName = tVar.TypeName });
                 LastSaughtTypeName = tVar.TypeName;
@@ -1680,6 +1789,22 @@ namespace PapyrusDotNet
                     index = Int32.Parse(instruction.Operand.ToString());
             }
             return index;
+        }
+
+        public static void GenerateCallStack(AssemblyDefinition asm)
+        {
+            foreach (var module in asm.Modules)
+            {
+                if (module.HasTypes)
+                {
+                    var types = module.Types;
+
+                    foreach (var type in types)
+                    {
+                        GetCallStackRecursive(type);
+                    }
+                }
+            }
         }
     }
 

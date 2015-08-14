@@ -5,6 +5,8 @@ using System.Text;
 
 namespace PapyrusDotNet.Models
 {
+    using System.Runtime.Remoting.Messaging;
+
     using Mono.Cecil;
 
     using PapyrusDotNet.Common;
@@ -26,6 +28,13 @@ namespace PapyrusDotNet.Models
         public string BaseType { get; set; }
 
         public string OutputName { get; set; }
+
+        public List<MethodDefinition> DelegateMethodDefinitions;
+        public List<MethodReference> ExtensionMethodReferences;
+
+        public Dictionary<MethodDefinition, List<FieldDefinition>> DelegateMethodFieldPair;
+
+        public List<FieldDefinition> DelegateFields;
 
         // public string AssemblyCode { get; set; }
 
@@ -67,16 +76,10 @@ namespace PapyrusDotNet.Models
             // this.AssemblyCode = this.ObjectTable.ToString();
         }
 
-
-        public List<MethodDefinition> DelegateMethodDefinitions, ExtensionMethodDefinitions;
-
-        public Dictionary<MethodDefinition, List<FieldDefinition>> DelegateMethodFieldPair;
-
-        public List<FieldDefinition> DelegateFields;
-
         public PapyrusObjectTable CreateObjectTable(TypeDefinition type)
         {
-            this.ExtensionMethodDefinitions = new List<MethodDefinition>();
+
+            this.ExtensionMethodReferences = new List<MethodReference>();
             this.DelegateMethodDefinitions = new List<MethodDefinition>();
             this.DelegateMethodFieldPair = new Dictionary<MethodDefinition, List<FieldDefinition>>();
             this.DelegateFields = new List<FieldDefinition>();
@@ -111,7 +114,9 @@ namespace PapyrusDotNet.Models
                                                 DelegateFields.Add(field);
                                         }
                                     }
+
                                 }
+
                                 /*nt.Fields*/
                             }
                             DelegateMethodFieldPair.Add(m, fieldDefinitions);
@@ -154,6 +159,8 @@ namespace PapyrusDotNet.Models
                             targetFunction.RemoveStaticKeyword();
 
                             defaultObjectState.Functions.Add(targetFunction);
+
+                            ExtensionMethodReferences.Add(methodRef);
                         }
                     }
                     //try
@@ -247,11 +254,11 @@ namespace PapyrusDotNet.Models
                 var ctorAvailable = methods.Any(m => m.Name.ToLower().Contains(".ctor"));
                 var mergeCtorAndOnInit = ctorAvailable && onInitAvailable;
 
-                foreach (var method in ExtensionMethodDefinitions)
-                {
-                    if (!defaultObjectState.Functions.Any(c => c.Name == method.Name))
-                        defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
-                }
+                //foreach (var method in ExtensionMethodReferences)
+                //{
+                //    if (!defaultObjectState.Functions.Any(c => c.Name == method.Name))
+                //        defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                //}
 
                 foreach (var method in DelegateMethodDefinitions)
                 {
@@ -277,7 +284,7 @@ namespace PapyrusDotNet.Models
                 if (Utility.IsCallMethodInsideNamespace(instruction, targetNamespace, out methodRef))
                 {
                     return true;
-                }               
+                }
             }
             return false;
         }
