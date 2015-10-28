@@ -49,11 +49,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeBlock.cs" />
+    <Compile Include="ConsoleStatusCallbackService.cs" />
     <Compile Include="EvaluationStackItem.cs" />
+    <Compile Include="Interfaces\ICodeBlock.cs" />
+    <Compile Include="InstructionHelper.cs" />
+    <Compile Include="Interfaces\IStatusCallbackService.cs" />
     <Compile Include="PapyrusFieldProperties.cs" />
     <Compile Include="PapyrusLabelDefinition.cs" />
     <Compile Include="PapyrusLabelReference.cs" />
     <Compile Include="ObjectReplacementHolder.cs" />
+    <Compile Include="SkyrimInstallationPath.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

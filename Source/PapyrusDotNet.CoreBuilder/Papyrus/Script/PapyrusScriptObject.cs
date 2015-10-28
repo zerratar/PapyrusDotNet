@@ -1,31 +1,46 @@
-namespace PapyrusDotNet.CoreBuilder
-{
-    using System.Collections.Generic;
+/*
+    This file is part of PapyrusDotNet.
 
+    PapyrusDotNet is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PapyrusDotNet is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+	
+	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+ */
+
+using System.Collections.Generic;
+
+namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
+{
     public class PapyrusScriptObject
     {
-        public string Name;
+        public string Name { get; set; }
 
-        public string Extends;
+        public string Extends { get; set; }
 
-        public bool IsConditional;
+        public bool IsConditional { get; set; }
 
-        public bool IsHidden;
+        public bool IsHidden { get; set; }
 
-        public List<string> Imports;
+        public List<string> Imports { get; private set; } = new List<string>();
 
-        public List<PapyrusStateFunction> StateFunctions;
+        public List<PapyrusScriptStateFunction> StateFunctions { get; private set; } = new List<PapyrusScriptStateFunction>();
 
-        public List<PapyrusVariable> Properties;
+        public List<PapyrusScriptVariable> Properties { get; private set; } = new List<PapyrusScriptVariable>();
 
-        public List<PapyrusVariable> InstanceVariables;
+        public List<PapyrusScriptVariable> InstanceVariables { get; private set; } = new List<PapyrusScriptVariable>();
 
         public PapyrusScriptObject()
         {
-            Imports = new List<string>();
-            StateFunctions = new List<PapyrusStateFunction>();
-            Properties = new List<PapyrusVariable>();
-            InstanceVariables = new List<PapyrusVariable>();
         }
     }
 }

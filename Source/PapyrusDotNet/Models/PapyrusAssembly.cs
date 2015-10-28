@@ -1,21 +1,34 @@
-﻿using System;
+﻿/*
+    This file is part of PapyrusDotNet.
+
+    PapyrusDotNet is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PapyrusDotNet is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+	
+	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+ */
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Mono.Cecil;
+using PapyrusDotNet.Common;
 
 namespace PapyrusDotNet.Models
 {
-    using System.Runtime.Remoting.Messaging;
-
-    using Mono.Cecil;
-
-    using PapyrusDotNet.Common;
-
     public class PapyrusAssembly
     {
-        public Mono.Cecil.TypeDefinition sourceType;
+        public TypeDefinition SourceType { get; set; }
 
-        public string GenericTypeReplacement;
+        public string GenericTypeReplacement { get; set; }
 
         public bool IsEnum { get; set; }
 
@@ -29,12 +42,13 @@ namespace PapyrusDotNet.Models
 
         public string OutputName { get; set; }
 
-        public List<MethodDefinition> DelegateMethodDefinitions;
-        public List<MethodReference> ExtensionMethodReferences;
+        public List<MethodDefinition> DelegateMethodDefinitions { get; set; }
 
-        public Dictionary<MethodDefinition, List<FieldDefinition>> DelegateMethodFieldPair;
+        public List<MethodReference> ExtensionMethodReferences { get; set; }
 
-        public List<FieldDefinition> DelegateFields;
+        public Dictionary<MethodDefinition, List<FieldDefinition>> DelegateMethodFieldPair { get; set; }
+
+        public List<FieldDefinition> DelegateFields { get; set; }
 
         // public string AssemblyCode { get; set; }
 
@@ -42,47 +56,47 @@ namespace PapyrusDotNet.Models
         {
             Header = new PapyrusHeader();
 
-            this.DelegateMethodDefinitions = new List<MethodDefinition>();
-            this.ObjectTable = new PapyrusObjectTable();
+            DelegateMethodDefinitions = new List<MethodDefinition>();
+            ObjectTable = new PapyrusObjectTable();
         }
 
-        public PapyrusAssembly(Mono.Cecil.TypeDefinition type, string genericTypeReplacement)
+        public PapyrusAssembly(TypeDefinition type, string genericTypeReplacement)
         {
             // TODO: Complete member initialization
-            this.Header = new PapyrusHeader();
-            this.ObjectTable = new PapyrusObjectTable();
-            this.sourceType = type;
-            this.GenericTypeReplacement = genericTypeReplacement;
-            this.BaseType = Utility.GetPapyrusBaseType(type);
-            this.ObjectTable = CreateObjectTable(type);
-            this.OutputName = this.BaseType;
+            Header = new PapyrusHeader();
+            ObjectTable = new PapyrusObjectTable();
+            SourceType = type;
+            GenericTypeReplacement = genericTypeReplacement;
+            BaseType = Utility.GetPapyrusBaseType(type);
+            ObjectTable = CreateObjectTable(type);
+            OutputName = BaseType;
 
-            this.DelegateMethodDefinitions = new List<MethodDefinition>();
+            DelegateMethodDefinitions = new List<MethodDefinition>();
         }
 
-        public PapyrusAssembly(Mono.Cecil.TypeDefinition type)
+        public PapyrusAssembly(TypeDefinition type)
         {
 
             // TODO: Complete member initialization
-            this.Header = new PapyrusHeader();
-            this.ObjectTable = new PapyrusObjectTable();
+            Header = new PapyrusHeader();
+            ObjectTable = new PapyrusObjectTable();
 
-            this.sourceType = type;
-            this.BaseType = Utility.GetPapyrusBaseType(type);
-            this.ObjectTable = CreateObjectTable(type);
-            this.OutputName = this.BaseType;
+            SourceType = type;
+            BaseType = Utility.GetPapyrusBaseType(type);
+            ObjectTable = CreateObjectTable(type);
+            OutputName = BaseType;
 
-            this.DelegateMethodDefinitions = new List<MethodDefinition>();
+            DelegateMethodDefinitions = new List<MethodDefinition>();
             // this.AssemblyCode = this.ObjectTable.ToString();
         }
 
         public PapyrusObjectTable CreateObjectTable(TypeDefinition type)
         {
 
-            this.ExtensionMethodReferences = new List<MethodReference>();
-            this.DelegateMethodDefinitions = new List<MethodDefinition>();
-            this.DelegateMethodFieldPair = new Dictionary<MethodDefinition, List<FieldDefinition>>();
-            this.DelegateFields = new List<FieldDefinition>();
+            ExtensionMethodReferences = new List<MethodReference>();
+            DelegateMethodDefinitions = new List<MethodDefinition>();
+            DelegateMethodFieldPair = new Dictionary<MethodDefinition, List<FieldDefinition>>();
+            DelegateFields = new List<FieldDefinition>();
             var defaultObjectState = new PapyrusObjectState();
             // Get any compile time generated classes
             // These are usually created when using a paremeterless delegate.
@@ -147,11 +161,11 @@ namespace PapyrusDotNet.Models
                 if (CallsMethodInsideNamespace(m, "PapyrusDotNet.System.Linq", out methodRef))
                 {
 
-                    var targetAssembly = PapyrusAsmWriter.ParsedAssemblies.FirstOrDefault(a => a.sourceType.Name == methodRef.DeclaringType.Name);
+                    var targetAssembly = PapyrusAsmWriter.ParsedAssemblies.FirstOrDefault(a => a.SourceType.Name == methodRef.DeclaringType.Name);
                     if (targetAssembly != null)
                     {
                         var defaultState = targetAssembly.ObjectTable.StateTable.FirstOrDefault();
-                        var targetFunction = defaultState.Functions.FirstOrDefault(m2 => m2.Name == methodRef.Name);
+                        var targetFunction = defaultState?.Functions.FirstOrDefault(m2 => m2.Name == methodRef.Name);
                         if (targetFunction != null)
                         {
                             // Extension methods are static, however we are injecting this function
@@ -180,13 +194,13 @@ namespace PapyrusDotNet.Models
             // To get Enums working, we can't generate a seperate class for the enum.
             // Instead, we will have to get all the fields for the enum and then inject these fields to any class
             // that uses the enum.
-            this.IsEnum = type.IsEnum;
+            IsEnum = type.IsEnum;
 
 
 
-            this.ObjectTable.Name = Utility.GetPapyrusBaseType(type);
-            this.ObjectTable.BaseType = type.BaseType != null ? Utility.GetPapyrusBaseType(type.BaseType) : "";
-            this.ObjectTable.Info = Utility.GetFlagsAndProperties(type);
+            ObjectTable.Name = Utility.GetPapyrusBaseType(type);
+            ObjectTable.BaseType = type.BaseType != null ? Utility.GetPapyrusBaseType(type.BaseType) : "";
+            ObjectTable.Info = Utility.GetFlagsAndProperties(type);
 
 
             var allFields = new List<FieldDefinition>();
@@ -209,7 +223,7 @@ namespace PapyrusDotNet.Models
 
                 var initialValue = Utility.InitialValue(variable);
 
-                if (this.IsEnum)
+                if (IsEnum)
                 {
                     if (variable.FieldType.FullName == type.FullName)
                     {
@@ -223,11 +237,13 @@ namespace PapyrusDotNet.Models
                 if (varProps.InitialValue == null)
                     varProps.InitialValue = initialValue;
 
-                var newVar = new PapyrusVariableReference("::" + variableName, variableType);
+                var newVar = new PapyrusVariableReference("::" + variableName, variableType)
+                {
+                    Properties = varProps
+                };
 
-                newVar.Properties = varProps;
 
-                this.ObjectTable.VariableTable.Add(newVar);
+                ObjectTable.VariableTable.Add(newVar);
 
                 PapyrusAsmWriter.Fields.Add(newVar);
             }
@@ -237,17 +253,19 @@ namespace PapyrusDotNet.Models
                 var propName = Utility.GetPropertyName(propField.Name);
                 var fieldType = propField.TypeName;
 
-                var prop = new PapyrusVariableReference(propName, fieldType);
-                prop.AutoVarName = propField.Name;
-                prop.Properties = propField.Properties;
+                var prop = new PapyrusVariableReference(propName, fieldType)
+                {
+                    AutoVarName = propField.Name,
+                    Properties = propField.Properties
+                };
 
-                this.ObjectTable.PropertyTable.Add(prop);
+                ObjectTable.PropertyTable.Add(prop);
             }
 
             // Enums do not have any functions or states.
-            if (!this.IsEnum)
+            if (!IsEnum)
             {
-                this.ObjectTable.StateTable.Add(defaultObjectState);
+                ObjectTable.StateTable.Add(defaultObjectState);
 
                 var methods = type.Methods.OrderByDescending(c => c.Name).ToList();
                 var onInitAvailable = methods.Any(m => m.Name.ToLower().Contains("oninit"));
@@ -273,7 +291,7 @@ namespace PapyrusDotNet.Models
                 }
 
             }
-            return this.ObjectTable;
+            return ObjectTable;
         }
 
         private static bool CallsMethodInsideNamespace(MethodDefinition m, string targetNamespace, out MethodReference methodRef)

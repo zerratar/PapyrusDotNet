@@ -1,4 +1,23 @@
-﻿using System;
+﻿/*
+    This file is part of PapyrusDotNet.
+
+    PapyrusDotNet is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PapyrusDotNet is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+	
+	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +25,7 @@ using Mono.Cecil;
 
 namespace PapyrusDotNet.Models
 {
-    using PapyrusDotNet.Common;
+    using Common;
 
     public class PapyrusFunction
     {
@@ -34,15 +53,15 @@ namespace PapyrusDotNet.Models
         public int ExtensionInvokeCount;
         public PapyrusFunction()
         {
-            this.Parameters = new List<PapyrusVariableReference>();
-            this.Variables = new List<PapyrusVariableReference>();
-            this.TempVariables = new List<PapyrusVariableReference>();
-            this.CodeInstructions = new List<string>();
+            Parameters = new List<PapyrusVariableReference>();
+            Variables = new List<PapyrusVariableReference>();
+            TempVariables = new List<PapyrusVariableReference>();
+            CodeInstructions = new List<string>();
         }
 
         public void InsertCodeInstruction(int index, string instruction)
         {
-            var sourcecode = this.Source.ToString();
+            var sourcecode = Source.ToString();
 
             instruction = instruction.Replace("\t", "");
             instruction = "\t\t\t\t\t\t" + instruction;
@@ -120,9 +139,9 @@ namespace PapyrusDotNet.Models
 
         public void RemoveStaticKeyword()
         {
-            this.IsGlobal = false;
+            IsGlobal = false;
 
-            var sourcecode = this.Source.ToString();
+            var sourcecode = Source.ToString();
 
             var lines = sourcecode.Split('\n').ToList();
 
@@ -133,7 +152,7 @@ namespace PapyrusDotNet.Models
 
         internal void ReplaceGenericTypesWith(string LastSaughtTypeName)
         {
-            var sourcecode = this.Source.ToString();
+            var sourcecode = Source.ToString();
 
             var lines = sourcecode.Split('\n').ToList();
 

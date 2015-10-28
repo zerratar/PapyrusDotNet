@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
 	
-	Copyright 2014, Karl Patrik Johansson, zerratar@gmail.com
+	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
 using System;
@@ -29,7 +29,7 @@ namespace PapyrusDotNet
 {
     using System.IO;
 
-    using PapyrusDotNet.Common;
+    using Common;
 
     using PowerArgs;
 
@@ -112,10 +112,10 @@ namespace PapyrusDotNet
             {
                 try
                 {
-                    if (!System.IO.Directory.Exists(outputFolder)) System.IO.Directory.CreateDirectory(outputFolder);
+                    if (!Directory.Exists(outputFolder)) Directory.CreateDirectory(outputFolder);
 
-                    Console.WriteLine("Saving " + System.IO.Path.Combine(outputFolder, pas.Key) + "...");
-                    System.IO.File.WriteAllText(System.IO.Path.Combine(outputFolder, pas.Key), pas.Value);
+                    Console.WriteLine("Saving " + Path.Combine(outputFolder, pas.Key) + "...");
+                    File.WriteAllText(Path.Combine(outputFolder, pas.Key), pas.Value);
                 }
                 catch (Exception exc)
                 {

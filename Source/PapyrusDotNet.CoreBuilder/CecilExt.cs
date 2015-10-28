@@ -1,80 +1,94 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿/*
+    This file is part of PapyrusDotNet.
+
+    PapyrusDotNet is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PapyrusDotNet is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+	
+	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+ */
+
+ using PapyrusDotNet.CoreBuilder.Interfaces;
+using System;
+using Mono.Cecil.Cil;
+using Mono.Cecil;
+using System.Reflection;
 
 namespace PapyrusDotNet.CoreBuilder
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Text;
-	using Mono.Cecil.Cil;
-	using Mono.Cecil;
-	using System.Reflection;
 
-	/// <summary>
-	/// A class that extends the <see cref="TypeDefinition"/>
-	/// class with features similar to the features in the
-	/// System.Reflection.Emit namespace.
-	/// </summary>
-	public static class TypeDefinitionExtensions
-	{
-		/// <summary>
-		/// Adds a default constructor to the target type.
-		/// </summary>
-		/// <param name="targetType">The type that will contain the default constructor.</param>
-		/// <returns>The default constructor.</returns>
-		public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType)
-		{
-			var parentType = typeof(object);
+    /// <summary>
+    /// A class that extends the <see cref="TypeDefinition"/>
+    /// class with features similar to the features in the
+    /// System.Reflection.Emit namespace.
+    /// </summary>
+    public static class TypeDefinitionExtensions
+    {
+        /// <summary>
+        /// Adds a default constructor to the target type.
+        /// </summary>
+        /// <param name="targetType">The type that will contain the default constructor.</param>
+        /// <returns>The default constructor.</returns>
+        public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, ICoreLibraryGenerator libraryGenerator)
+        {
+            var parentType = typeof(object);
 
-			return AddDefaultConstructor(targetType, parentType);
-		}
+            return AddDefaultConstructor(targetType, parentType, libraryGenerator);
+        }
 
-		/// <summary>
-		/// Adds a default constructor to the target type.
-		/// </summary>
-		/// <param name="parentType">The base class that contains the default constructor that will be used for constructor chaining..</param>
-		/// <param name="targetType">The type that will contain the default constructor.</param>
-		/// <returns>The default constructor.</returns>
-		public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, Type parentType)
-		{
-			var module = Program.MainModule;// targetType.Module;
-			var voidType = module.Import(typeof(void));
-			var methodAttributes = Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.HideBySig
-								   | Mono.Cecil.MethodAttributes.SpecialName | Mono.Cecil.MethodAttributes.RTSpecialName;
+        /// <summary>
+        /// Adds a default constructor to the target type.
+        /// </summary>
+        /// <param name="parentType">The base class that contains the default constructor that will be used for constructor chaining..</param>
+        /// <param name="targetType">The type that will contain the default constructor.</param>
+        /// <returns>The default constructor.</returns>
+        public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, Type parentType, ICoreLibraryGenerator libraryGenerator)
+        {
+            var module = libraryGenerator.MainModule;// targetType.Module;
+            var voidType = module.Import(typeof(void));
+            var methodAttributes = Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.HideBySig
+                                   | Mono.Cecil.MethodAttributes.SpecialName | Mono.Cecil.MethodAttributes.RTSpecialName;
 
 
-			var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-			var objectConstructor = parentType.GetConstructor(flags, null, new Type[0], null);
+            var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            var objectConstructor = parentType.GetConstructor(flags, null, new Type[0], null);
 
-			// Revert to the System.Object constructor
-			// if the parent type does not have a default constructor
-			if (objectConstructor == null)
-				objectConstructor = typeof(object).GetConstructor(new Type[0]);
+            // Revert to the System.Object constructor
+            // if the parent type does not have a default constructor
+            if (objectConstructor == null)
+                objectConstructor = typeof(object).GetConstructor(new Type[0]);
 
-			var baseConstructor = module.Import(objectConstructor);
+            var baseConstructor = module.Import(objectConstructor);
 
-			// Define the default constructor
-			var ctor = new MethodDefinition(".ctor", methodAttributes, voidType)
-			{
-				CallingConvention = MethodCallingConvention.StdCall,
-				ImplAttributes = (Mono.Cecil.MethodImplAttributes.IL | Mono.Cecil.MethodImplAttributes.Managed)
-			};
+            // Define the default constructor
+            var ctor = new MethodDefinition(".ctor", methodAttributes, voidType)
+            {
+                CallingConvention = MethodCallingConvention.StdCall,
+                ImplAttributes = (Mono.Cecil.MethodImplAttributes.IL | Mono.Cecil.MethodImplAttributes.Managed)
+            };
 
-			var IL = ctor.Body.Instructions;
+            var IL = ctor.Body.Instructions;
 
-			// Call the constructor for System.Object, and exit
-			IL.Add(Instruction.Create(OpCodes.Ldarg_0));
-			IL.Add(Instruction.Create(OpCodes.Call, baseConstructor));
-			IL.Add(Instruction.Create(OpCodes.Ret));
+            // Call the constructor for System.Object, and exit
+            IL.Add(Instruction.Create(OpCodes.Ldarg_0));
+            IL.Add(Instruction.Create(OpCodes.Call, baseConstructor));
+            IL.Add(Instruction.Create(OpCodes.Ret));
 
-			targetType.Methods.Add(ctor);
+            targetType.Methods.Add(ctor);
 
-			return ctor;
-		}
+            return ctor;
+        }
 
-		/*/// <summary>
+        /*/// <summary>
 		/// Adds a new method to the <paramref name="typeDef">target type</paramref>.
 		/// </summary>
 		/// <param name="typeDef">The type that will hold the newly-created method.</param>
@@ -106,157 +120,157 @@ namespace PapyrusDotNet.CoreBuilder
 			return method;
 		}
 		*/
-		/// <summary>
-		/// Adds a rewritable property to the <paramref name="typeDef">target type</paramref>.
-		/// </summary>
-		/// <param name="typeDef">The target type that will hold the newly-created property.</param>
-		/// <param name="propertyName">The name of the property itself.</param>
-		/// <param name="propertyType">The <see cref="System.Type"/> instance that describes the property type.</param>
-		public static void AddProperty(this TypeDefinition typeDef, string propertyName, Type propertyType)
-		{
-			var module = typeDef.Module;
-			var typeRef = module.Import(propertyType);
-			typeDef.AddProperty(propertyName, typeRef);
-		}
+        /// <summary>
+        /// Adds a rewritable property to the <paramref name="typeDef">target type</paramref>.
+        /// </summary>
+        /// <param name="typeDef">The target type that will hold the newly-created property.</param>
+        /// <param name="propertyName">The name of the property itself.</param>
+        /// <param name="propertyType">The <see cref="System.Type"/> instance that describes the property type.</param>
+        public static void AddProperty(this TypeDefinition typeDef, string propertyName, Type propertyType)
+        {
+            var module = typeDef.Module;
+            var typeRef = module.Import(propertyType);
+            typeDef.AddProperty(propertyName, typeRef);
+        }
 
-		/// <summary>
-		/// Adds a rewritable property to the <paramref name="typeDef">target type</paramref>.
-		/// </summary>
-		/// <param name="typeDef">The target type that will hold the newly-created property.</param>
-		/// <param name="propertyName">The name of the property itself.</param>
-		/// <param name="propertyType">The <see cref="TypeReference"/> instance that describes the property type.</param>
-		public static void AddProperty(this TypeDefinition typeDef, string propertyName,
-			TypeReference propertyType)
-		{
-			#region Add the backing field
-			string fieldName = string.Format("__{0}_backingField", propertyName);
-			FieldDefinition actualField = new FieldDefinition(fieldName,
-				Mono.Cecil.FieldAttributes.Private,propertyType);
-
-
-			typeDef.Fields.Add(actualField);
-			#endregion
+        /// <summary>
+        /// Adds a rewritable property to the <paramref name="typeDef">target type</paramref>.
+        /// </summary>
+        /// <param name="typeDef">The target type that will hold the newly-created property.</param>
+        /// <param name="propertyName">The name of the property itself.</param>
+        /// <param name="propertyType">The <see cref="TypeReference"/> instance that describes the property type.</param>
+        public static void AddProperty(this TypeDefinition typeDef, string propertyName,
+            TypeReference propertyType)
+        {
+            #region Add the backing field
+            string fieldName = string.Format("__{0}_backingField", propertyName);
+            FieldDefinition actualField = new FieldDefinition(fieldName,
+                Mono.Cecil.FieldAttributes.Private, propertyType);
 
 
-			FieldReference backingField = actualField;
-			if (typeDef.GenericParameters.Count > 0)
-				backingField = GetBackingField(fieldName, typeDef, propertyType);
-
-			var getterName = string.Format("get_{0}", propertyName);
-			var setterName = string.Format("set_{0}", propertyName);
+            typeDef.Fields.Add(actualField);
+            #endregion
 
 
-			const Mono.Cecil.MethodAttributes attributes = Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.HideBySig |
-												Mono.Cecil.MethodAttributes.SpecialName | Mono.Cecil.MethodAttributes.NewSlot |
-												Mono.Cecil.MethodAttributes.Virtual;
+            FieldReference backingField = actualField;
+            if (typeDef.GenericParameters.Count > 0)
+                backingField = GetBackingField(fieldName, typeDef, propertyType);
 
-			ModuleDefinition module = typeDef.Module;
-			TypeReference voidType = module.Import(typeof(void));
+            var getterName = string.Format("get_{0}", propertyName);
+            var setterName = string.Format("set_{0}", propertyName);
 
-			// Implement the getter and the setter
-			MethodDefinition getter = AddPropertyGetter(propertyType, getterName, attributes, backingField);
-			MethodDefinition setter = AddPropertySetter(propertyType, attributes, backingField, setterName, voidType);
 
-			typeDef.AddProperty(propertyName, propertyType, getter, setter);
-		}
+            const Mono.Cecil.MethodAttributes attributes = Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.HideBySig |
+                                                Mono.Cecil.MethodAttributes.SpecialName | Mono.Cecil.MethodAttributes.NewSlot |
+                                                Mono.Cecil.MethodAttributes.Virtual;
 
-		/// <summary>
-		/// Adds a rewriteable property to the <paramref name="typeDef">target type</paramref>
-		/// using an existing <paramref name="getter"/> and <paramref name="setter"/>.
-		/// </summary>
-		/// <param name="typeDef">The target type that will hold the newly-created property.</param>
-		/// <param name="propertyName">The name of the property itself.</param>
-		/// <param name="propertyType">The <see cref="TypeReference"/> instance that describes the property type.</param>
-		/// <param name="getter">The property getter method.</param>
-		/// <param name="setter">The property setter method.</param>
-		public static void AddProperty(this TypeDefinition typeDef, string propertyName, TypeReference propertyType, MethodDefinition getter, MethodDefinition setter)
-		{
-			var newProperty = new PropertyDefinition(propertyName,
-				Mono.Cecil.PropertyAttributes.Unused,propertyType)
-			{
-				GetMethod = getter,
-				SetMethod = setter
-			};
+            ModuleDefinition module = typeDef.Module;
+            TypeReference voidType = module.Import(typeof(void));
 
-			typeDef.Methods.Add(getter);
-			typeDef.Methods.Add(setter);
-			typeDef.Properties.Add(newProperty);
-		}
+            // Implement the getter and the setter
+            MethodDefinition getter = AddPropertyGetter(propertyType, getterName, attributes, backingField);
+            MethodDefinition setter = AddPropertySetter(propertyType, attributes, backingField, setterName, voidType);
 
-		/// <summary>
-		/// Creates a property getter method implementation with the
-		/// <paramref name="propertyType"/> as the return type.
-		/// </summary>
-		/// <param name="propertyType">Represents the <see cref="TypeReference">return type</see> for the getter method.</param>
-		/// <param name="getterName">The getter method name.</param>
-		/// <param name="attributes">The method attributes associated with the getter method.</param>
-		/// <param name="backingField">The field that will store the instance that the getter method will retrieve.</param>
-		/// <returns>A <see cref="MethodDefinition"/> representing the getter method itself.</returns>
-		private static MethodDefinition AddPropertyGetter(TypeReference propertyType,
-			string getterName, Mono.Cecil.MethodAttributes attributes, FieldReference backingField)
-		{
-			var getter = new MethodDefinition(getterName, attributes, propertyType)
-			{
-				IsPublic = true,
-				ImplAttributes = (Mono.Cecil.MethodImplAttributes.Managed | Mono.Cecil.MethodImplAttributes.IL)
-			};
+            typeDef.AddProperty(propertyName, propertyType, getter, setter);
+        }
 
-			var IL = getter.Body.Instructions;
-			IL.Add(Instruction.Create(OpCodes.Ldarg_0));
-			IL.Add(Instruction.Create(OpCodes.Ldfld, backingField));
-			IL.Add(Instruction.Create(OpCodes.Ret));
+        /// <summary>
+        /// Adds a rewriteable property to the <paramref name="typeDef">target type</paramref>
+        /// using an existing <paramref name="getter"/> and <paramref name="setter"/>.
+        /// </summary>
+        /// <param name="typeDef">The target type that will hold the newly-created property.</param>
+        /// <param name="propertyName">The name of the property itself.</param>
+        /// <param name="propertyType">The <see cref="TypeReference"/> instance that describes the property type.</param>
+        /// <param name="getter">The property getter method.</param>
+        /// <param name="setter">The property setter method.</param>
+        public static void AddProperty(this TypeDefinition typeDef, string propertyName, TypeReference propertyType, MethodDefinition getter, MethodDefinition setter)
+        {
+            var newProperty = new PropertyDefinition(propertyName,
+                Mono.Cecil.PropertyAttributes.Unused, propertyType)
+            {
+                GetMethod = getter,
+                SetMethod = setter
+            };
 
-			return getter;
-		}
+            typeDef.Methods.Add(getter);
+            typeDef.Methods.Add(setter);
+            typeDef.Properties.Add(newProperty);
+        }
 
-		/// <summary>
-		/// Creates a property setter method implementation with the
-		/// <paramref name="propertyType"/> as the setter parameter.
-		/// </summary>
-		/// <param name="propertyType">Represents the <see cref="TypeReference">parameter type</see> for the setter method.</param>
-		/// <param name="attributes">The method attributes associated with the setter method.</param>
-		/// <param name="backingField">The field that will store the instance for the setter method.</param>
-		/// <param name="setterName">The method name of the setter method.</param>
-		/// <param name="voidType">The <see cref="TypeReference"/> that represents <see cref="Void"/>.</param>
-		/// <returns>A <see cref="MethodDefinition"/> that represents the setter method itself.</returns>
-		private static MethodDefinition AddPropertySetter(TypeReference propertyType, Mono.Cecil.MethodAttributes attributes, FieldReference backingField, string setterName, TypeReference voidType)
-		{
-			var setter = new MethodDefinition(setterName, attributes, voidType)
-			{
-				IsPublic = true,
-				ImplAttributes = (Mono.Cecil.MethodImplAttributes.Managed | Mono.Cecil.MethodImplAttributes.IL)
-			};
+        /// <summary>
+        /// Creates a property getter method implementation with the
+        /// <paramref name="propertyType"/> as the return type.
+        /// </summary>
+        /// <param name="propertyType">Represents the <see cref="TypeReference">return type</see> for the getter method.</param>
+        /// <param name="getterName">The getter method name.</param>
+        /// <param name="attributes">The method attributes associated with the getter method.</param>
+        /// <param name="backingField">The field that will store the instance that the getter method will retrieve.</param>
+        /// <returns>A <see cref="MethodDefinition"/> representing the getter method itself.</returns>
+        private static MethodDefinition AddPropertyGetter(TypeReference propertyType,
+            string getterName, Mono.Cecil.MethodAttributes attributes, FieldReference backingField)
+        {
+            var getter = new MethodDefinition(getterName, attributes, propertyType)
+            {
+                IsPublic = true,
+                ImplAttributes = (Mono.Cecil.MethodImplAttributes.Managed | Mono.Cecil.MethodImplAttributes.IL)
+            };
 
-			setter.Parameters.Add(new ParameterDefinition(propertyType));
+            var IL = getter.Body.Instructions;
+            IL.Add(Instruction.Create(OpCodes.Ldarg_0));
+            IL.Add(Instruction.Create(OpCodes.Ldfld, backingField));
+            IL.Add(Instruction.Create(OpCodes.Ret));
 
-			var IL = setter.Body.Instructions;
-			IL.Add(Instruction.Create(OpCodes.Ldarg_0));
-			IL.Add(Instruction.Create(OpCodes.Ldarg_1));
-			IL.Add(Instruction.Create(OpCodes.Stfld, backingField));
-			IL.Add(Instruction.Create(OpCodes.Ret));
+            return getter;
+        }
 
-			return setter;
-		}
+        /// <summary>
+        /// Creates a property setter method implementation with the
+        /// <paramref name="propertyType"/> as the setter parameter.
+        /// </summary>
+        /// <param name="propertyType">Represents the <see cref="TypeReference">parameter type</see> for the setter method.</param>
+        /// <param name="attributes">The method attributes associated with the setter method.</param>
+        /// <param name="backingField">The field that will store the instance for the setter method.</param>
+        /// <param name="setterName">The method name of the setter method.</param>
+        /// <param name="voidType">The <see cref="TypeReference"/> that represents <see cref="Void"/>.</param>
+        /// <returns>A <see cref="MethodDefinition"/> that represents the setter method itself.</returns>
+        private static MethodDefinition AddPropertySetter(TypeReference propertyType, Mono.Cecil.MethodAttributes attributes, FieldReference backingField, string setterName, TypeReference voidType)
+        {
+            var setter = new MethodDefinition(setterName, attributes, voidType)
+            {
+                IsPublic = true,
+                ImplAttributes = (Mono.Cecil.MethodImplAttributes.Managed | Mono.Cecil.MethodImplAttributes.IL)
+            };
 
-		/// <summary>
-		/// Resolves the backing field for a generic type declaration.
-		/// </summary>
-		/// <param name="fieldName">The name of the field to reference.</param>
-		/// <param name="typeDef">The type that holds the actual field.</param>
-		/// <param name="propertyType">The <see cref="TypeReference"/> that describes the property type being referenced.</param>
-		/// <returns>A <see cref="FieldReference"/> that points to the actual backing field.</returns>
-		private static FieldReference GetBackingField(string fieldName, TypeDefinition typeDef, TypeReference propertyType)
-		{
-			// If the current type is a generic type, 
-			// the current generic type must be resolved before
-			// using the actual field
-			var declaringType = new GenericInstanceType(typeDef);
-			foreach (GenericParameter parameter in typeDef.GenericParameters)
-			{
-				declaringType.GenericArguments.Add(parameter);
-			}
+            setter.Parameters.Add(new ParameterDefinition(propertyType));
 
-			return new FieldReference(fieldName, declaringType, propertyType); ;
-		}
-	}
+            var IL = setter.Body.Instructions;
+            IL.Add(Instruction.Create(OpCodes.Ldarg_0));
+            IL.Add(Instruction.Create(OpCodes.Ldarg_1));
+            IL.Add(Instruction.Create(OpCodes.Stfld, backingField));
+            IL.Add(Instruction.Create(OpCodes.Ret));
+
+            return setter;
+        }
+
+        /// <summary>
+        /// Resolves the backing field for a generic type declaration.
+        /// </summary>
+        /// <param name="fieldName">The name of the field to reference.</param>
+        /// <param name="typeDef">The type that holds the actual field.</param>
+        /// <param name="propertyType">The <see cref="TypeReference"/> that describes the property type being referenced.</param>
+        /// <returns>A <see cref="FieldReference"/> that points to the actual backing field.</returns>
+        private static FieldReference GetBackingField(string fieldName, TypeDefinition typeDef, TypeReference propertyType)
+        {
+            // If the current type is a generic type, 
+            // the current generic type must be resolved before
+            // using the actual field
+            var declaringType = new GenericInstanceType(typeDef);
+            foreach (GenericParameter parameter in typeDef.GenericParameters)
+            {
+                declaringType.GenericArguments.Add(parameter);
+            }
+
+            return new FieldReference(fieldName, declaringType, propertyType); ;
+        }
+    }
 }

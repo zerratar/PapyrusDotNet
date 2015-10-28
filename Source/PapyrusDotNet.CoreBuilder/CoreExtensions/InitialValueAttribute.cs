@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
-	public class InitialValueAttribute : Attribute
-	{		
-		public InitialValueAttribute(object value)
-		{		
-		}
-	}
+    public class InitialValueAttribute : Attribute
+    {
+        public object InitialValue { get; set; }
+        public InitialValueAttribute(object value)
+        {
+            InitialValue = value;
+        }
+    }
 }

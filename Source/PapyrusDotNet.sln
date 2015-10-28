@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet", "PapyrusDotNet\PapyrusDotNet.csproj", "{328A4BC6-9157-4581-B695-C7A51C3D965F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.CoreBuilder", "PapyrusDotNet.CoreBuilder\PapyrusDotNet.CoreBuilder.csproj", "{54B3F2D8-7510-4445-8A4C-420A73994D03}"
@@ -10,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example1", "..\Examples\Example1\Example1.csproj", "{58CA8F82-6071-4212-A745-51C4B4FA0544}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.System", "PapyrusDotNet.System\PapyrusDotNet.System.csproj", "{CAAF38B3-8033-4B23-9B50-0059306EAFAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.CoreBuilder.Tests", "PapyrusDotNet.CoreBuilder.Tests\PapyrusDotNet.CoreBuilder.Tests.csproj", "{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +41,10 @@ Global
 		{CAAF38B3-8033-4B23-9B50-0059306EAFAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAAF38B3-8033-4B23-9B50-0059306EAFAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAAF38B3-8033-4B23-9B50-0059306EAFAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

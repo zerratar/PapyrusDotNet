@@ -1,4 +1,22 @@
-﻿namespace PapyrusDotNet.Common
+﻿/*
+    This file is part of PapyrusDotNet.
+
+    PapyrusDotNet is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PapyrusDotNet is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+	
+	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+ */
+namespace PapyrusDotNet.Common
 {
 	public class PapyrusLabelDefinition
 	{
@@ -6,11 +24,11 @@
 		public int Row { get; set; }
 		public PapyrusLabelDefinition(int row, string name = null)
 		{
-			this.Row = row;
-			this.Name = name;
-			if (string.IsNullOrEmpty(this.Name))
+			Row = row;
+			Name = name;
+			if (string.IsNullOrEmpty(Name))
 			{
-				this.Name = "_label" + this.Row;
+				Name = "_label" + Row;
 			}
 		}
 	}

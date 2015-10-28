@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
@@ -10,7 +7,7 @@ namespace PapyrusDotNet.CoreBuilder.CoreExtensions
         public string Comment;
         public DocStringAttribute(string comment)
         {
-            this.Comment = comment;
+            Comment = comment;
         }
     }
 }

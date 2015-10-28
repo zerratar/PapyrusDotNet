@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
 	
-	Copyright 2014, Karl Patrik Johansson, zerratar@gmail.com
+	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
 namespace Example1
