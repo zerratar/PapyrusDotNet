@@ -52,10 +52,6 @@
     <Reference Include="PowerArgs">
       <HintPath>..\packages\PowerArgs.2.0.3.0\lib\net40\PowerArgs.dll</HintPath>
     </Reference>
-    <Reference Include="StringTemplate, Version=3.0.1.6846, Culture=neutral, PublicKeyToken=beee492b52c41e85, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libs\StringTemplate.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -66,6 +62,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CecilExt.cs" />
+    <Compile Include="DefaultPapyrusCilAssemblyBuilder.cs" />
+    <Compile Include="Implementation\CoreAssemblyNameResolver.cs" />
     <Compile Include="CoreExtensions\AutoAttribute.cs" />
     <Compile Include="CoreExtensions\AutoReadOnlyAttribute.cs" />
     <Compile Include="CoreExtensions\ConditionalAttribute.cs" />
@@ -77,12 +75,22 @@
     <Compile Include="CoreExtensions\NativeAttribute.cs" />
     <Compile Include="CoreExtensions\HiddenAttribute.cs" />
     <Compile Include="CoreExtensions\PropertyAttribute.cs" />
-    <Compile Include="CoreLibraryGenerator.cs" />
-    <Compile Include="DictionaryPapyrusNameResolver.cs" />
-    <Compile Include="Interfaces\ICoreLibraryGenerator.cs" />
+    <Compile Include="Interfaces\IPapyrusTypeNameResolver.cs" />
+    <Compile Include="Implementation\PapyrusTypeNameResolver.cs" />
+    <Compile Include="Interfaces\IAssemblyNameResolver.cs" />
+    <Compile Include="Interfaces\IPapyrusNamespaceResolver.cs" />
+    <Compile Include="Interfaces\IPapyrusTypeDefinitionResolver.cs" />
+    <Compile Include="Implementation\PapyrusTypeDefinitionResolver.cs" />
+    <Compile Include="Implementation\PapyrusCilAssemblyBuilder.cs" />
+    <Compile Include="Implementation\DictionaryPapyrusNameResolver.cs" />
+    <Compile Include="Interfaces\IPapyrusCilAssemblyBuilder.cs" />
     <Compile Include="Interfaces\IPapyrusAssemblyParser.cs" />
     <Compile Include="Interfaces\IPapyrusNameResolver.cs" />
     <Compile Include="Interfaces\IPapyrusScriptParser.cs" />
+    <Compile Include="Interfaces\IPapyrusTypeReferenceResolver.cs" />
+    <Compile Include="Implementation\PapyrusTypeReferenceResolver.cs" />
+    <Compile Include="Implementation\PapyrusNamespaceResolver.cs" />
+    <Compile Include="PapyrusParseType.cs" />
     <Compile Include="Papyrus\Assembly\PapyrusAssemblyParser.cs" />
     <Compile Include="Papyrus\Script\PapyrusScriptFunction.cs" />
     <Compile Include="Papyrus\Script\PapyrusScriptObject.cs" />

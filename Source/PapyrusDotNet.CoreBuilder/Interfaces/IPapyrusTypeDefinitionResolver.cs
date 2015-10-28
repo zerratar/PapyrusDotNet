@@ -16,15 +16,15 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
-
 using Mono.Cecil;
+using PapyrusDotNet.CoreBuilder.Papyrus.Assembly;
 
 namespace PapyrusDotNet.CoreBuilder.Interfaces
 {
-    public interface ICoreLibraryGenerator
+    public interface IPapyrusTypeDefinitionResolver
     {
-        ModuleDefinition MainModule { get; set; }
+        TypeDefinition Resolve(ModuleDefinition targetModule, PapyrusAssemblyObject input);
 
-        void GenerateCoreLibrary(string typeName, string inputDirectory, string searchFor);
+        void Initialize(IPapyrusCilAssemblyBuilder builder);
     }
 }

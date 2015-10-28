@@ -21,6 +21,11 @@ namespace PapyrusDotNet.CoreBuilder.Interfaces
 {
     public interface IPapyrusNameResolver
     {
+        /// <summary>
+        /// Resolve the inputName with a more appropiate string.
+        /// </summary>
+        /// <param name="inputName"></param>
+        /// <returns></returns>
         string Resolve(string inputName);
     }
 }

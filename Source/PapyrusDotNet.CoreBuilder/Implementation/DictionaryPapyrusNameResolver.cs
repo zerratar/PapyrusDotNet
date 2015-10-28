@@ -17,37 +17,52 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
- using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.CoreBuilder.Interfaces;
 
-namespace PapyrusDotNet.CoreBuilder
+namespace PapyrusDotNet.CoreBuilder.Implementation
 {
     public class DictionaryPapyrusNameResolver : IPapyrusNameResolver
     {
         internal string[] WordList;
 
-        public DictionaryPapyrusNameResolver(string wordDictionaryFile = null)
+        private IStatusCallbackService statusCallbackService;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="statusCallback"></param>
+        /// <param name="wordDictionaryFile"></param>
+        public DictionaryPapyrusNameResolver(IStatusCallbackService statusCallback, string wordDictionaryFile = null)
         {
+            statusCallbackService = statusCallback;
             // "wordlist.txt"
             if (string.IsNullOrEmpty(wordDictionaryFile))
                 return;
             if (File.Exists(wordDictionaryFile))
             {
-                Console.WriteLine("Loading wordlist... This may take a few seconds.");
-                WordList = File.ReadAllLines("wordlist.txt");
+                statusCallbackService.WriteLine("Loading wordlist... This may take a few seconds.");
+                WordList = File.ReadAllLines(wordDictionaryFile);
             }
             else
             {
-                Console.WriteLine("Wordlist was not found, skipping...");
+                statusCallbackService.WriteLine("Wordlist was not found, skipping...");
                 WordList = new string[0];
             }
         }
 
+        /// <summary>
+        /// Resolves the inputName and returns a PascalCase class-friendly name
+        /// </summary>
+        /// <param name="inputName"></param>
+        /// <returns></returns>
         public string Resolve(string inputName)
         {
+            if (string.IsNullOrEmpty(inputName)) return null;
+
             var outputName = inputName;
             if (WordList != null && WordList.Length > 0)
             {
@@ -76,7 +91,6 @@ namespace PapyrusDotNet.CoreBuilder
                         }
                     }
                 }
-
             }
             if (!char.IsUpper(outputName[0]))
             {

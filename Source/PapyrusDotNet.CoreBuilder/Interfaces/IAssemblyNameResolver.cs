@@ -17,14 +17,27 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
-using System.Collections.Generic;
+using Mono.Cecil;
 
-namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
+namespace PapyrusDotNet.CoreBuilder.Interfaces
 {
-    public class PapyrusAssemblyState
+    public interface IAssemblyNameResolver
     {
-        public string Name { get; set; }
+        /// <summary>
+        /// Resolve the input typeName and returns an appropiate AssemblyNameDefinition
+        /// </summary>
+        /// <param name="typeName"></param>
+        /// <returns>Matching AssemblyNameDefinition</returns>
+        AssemblyNameDefinition Resolve(string typeName);
 
-        public List<PapyrusAssemblyFunction> Functions { get; private set; } = new List<PapyrusAssemblyFunction>();
+        /// <summary>
+        /// The target output library filename
+        /// </summary>
+        string OutputLibraryFilename { get; }
+
+        /// <summary>
+        /// The target base namespace to be used 
+        /// </summary>
+        string BaseNamespace { get; }
     }
 }

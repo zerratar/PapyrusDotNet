@@ -527,16 +527,16 @@ namespace PapyrusDotNet.Common
             return string.Join(Environment.NewLine, rows.ToArray());
         }
 
-        public static ICodeBlock ParseCodeBlock(string codeBlock)
+        public static CodeBlock ParseCodeBlock(string codeBlock)
         {
             var rows = codeBlock.Split('\n');
             return ParseCodeBlocks(rows.ToList()).FirstOrDefault();
         }
 
-        public static List<ICodeBlock> ParseCodeBlocks(List<string> rows)
+        public static List<CodeBlock> ParseCodeBlocks(List<string> rows)
         {
-            var codeBlocks = new List<ICodeBlock>();
-            ICodeBlock latestCodeBlock = null;
+            var codeBlocks = new List<CodeBlock>();
+            CodeBlock latestCodeBlock = null;
             int rowI = 0;
 
             foreach (var row in rows)

@@ -17,10 +17,8 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
-using PapyrusDotNet.Common;
+using System.IO;
 using PapyrusDotNet.CoreBuilder.Interfaces;
-using PapyrusDotNet.CoreBuilder.Papyrus.Assembly;
-using PapyrusDotNet.CoreBuilder.Papyrus.Script;
 
 namespace PapyrusDotNet.CoreBuilder
 {
@@ -28,29 +26,17 @@ namespace PapyrusDotNet.CoreBuilder
 
     using PowerArgs;
 
-    public enum PapyrusParseType
-    {
-        Script,
-        Assembly
-    }
-
     class Program
     {
-        private static IPapyrusNameResolver nameResolver;
-        private static IPapyrusScriptParser scriptParser;
-        private static IPapyrusAssemblyParser assemblyParser;
-        private static ICoreLibraryGenerator coreGenerator;
-
+        private static IPapyrusCilAssemblyBuilder coreAssemblyBuilder;
 
         static void Main(string[] args)
         {
-            var ParseType = PapyrusParseType.Assembly;
-
             Console.Title = "PapyrusDotNet";
 
-            string inputDirectory = @"C:\CreationKit\Data\Scripts\Source";
-            string searchFor = "*.pas";
-            string typeName = "assembly";
+            var inputDirectory = @"C:\CreationKit\Data\Scripts\Source";
+            var inputExtensionFilter = "*.pas";
+            var inputSourceType = "assembly";
 
             PapyrusDotNetArgs parsed = new PapyrusDotNetArgs()
             {
@@ -59,16 +45,17 @@ namespace PapyrusDotNet.CoreBuilder
             };
             try
             {
+                // TODO: set the parsed = null; as default value.                
                 if (parsed == null)
                     parsed = Args.Parse<PapyrusDotNetArgs>(args);
+
                 if (parsed.InputFolder != null)
                 {
                     // Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
                     if (parsed.InputType.ToLower().Contains("script") || parsed.InputType.ToLower().Contains("psc"))
                     {
-                        ParseType = PapyrusParseType.Script;
-                        searchFor = "*.psc";
-                        typeName = "script";
+                        inputExtensionFilter = "*.psc";
+                        inputSourceType = "script";
                     }
 
                     inputDirectory = parsed.InputFolder;
@@ -82,7 +69,7 @@ namespace PapyrusDotNet.CoreBuilder
                 {
                     Console.WriteLine("No arguments were defined, using default.");
                     Console.WriteLine("Input: " + inputDirectory);
-                    Console.WriteLine("Type: " + typeName);
+                    Console.WriteLine("Type: " + inputSourceType);
                     Console.WriteLine();
                     Console.WriteLine("If you are fine with this, press any key to continue.");
                     Console.WriteLine("Or hit CTRL+C to exit.");
@@ -98,12 +85,11 @@ namespace PapyrusDotNet.CoreBuilder
             }
 
 
-            nameResolver = new DictionaryPapyrusNameResolver();
-            scriptParser = new PapyrusScriptParser(nameResolver);
-            assemblyParser = new PapyrusAssemblyParser(nameResolver);
-            coreGenerator = new CoreLibraryGenerator(new ConsoleStatusCallbackService(), scriptParser, assemblyParser);
+            var inputSourceFiles = Directory.GetFiles(inputDirectory, inputExtensionFilter, SearchOption.AllDirectories);
 
-            coreGenerator.GenerateCoreLibrary(typeName, inputDirectory, searchFor);
+            coreAssemblyBuilder = new DefaultPapyrusCilAssemblyBuilder();
+
+            coreAssemblyBuilder.BuildAssembly(inputSourceFiles);
 
             Console.ReadKey();
         }

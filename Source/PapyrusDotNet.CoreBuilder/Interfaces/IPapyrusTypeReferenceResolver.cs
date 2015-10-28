@@ -1,4 +1,4 @@
-/*
+﻿/*
     This file is part of PapyrusDotNet.
 
     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -16,15 +16,14 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+using Mono.Cecil;
 
-using System.Collections.Generic;
-
-namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
+namespace PapyrusDotNet.CoreBuilder.Interfaces
 {
-    public class PapyrusAssemblyState
+    public interface IPapyrusTypeReferenceResolver
     {
-        public string Name { get; set; }
+        TypeReference Resolve(ModuleDefinition mainModule, TypeDefinition newType, string fallbackTypeName = null);
 
-        public List<PapyrusAssemblyFunction> Functions { get; private set; } = new List<PapyrusAssemblyFunction>();
+        void Initialize(IPapyrusCilAssemblyBuilder builder);
     }
 }

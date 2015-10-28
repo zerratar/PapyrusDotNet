@@ -17,14 +17,15 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
- using System.IO;
+using System.IO;
+
 using PapyrusDotNet.CoreBuilder.Interfaces;
 
 namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
 {
     public class PapyrusAssemblyParser : IPapyrusAssemblyParser
     {
-        private IPapyrusNameResolver assemblyNameResolver;
+        private readonly IPapyrusNameResolver assemblyNameResolver;
         public PapyrusAssemblyParser(IPapyrusNameResolver nameResolver)
         {
             assemblyNameResolver = nameResolver;
@@ -33,7 +34,7 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
         public PapyrusAssemblyObject ParseAssembly(string file)
         {
 
-            var inputScript = System.IO.File.ReadAllLines(file);
+            var inputScript = File.ReadAllLines(file);
             var obj = new PapyrusAssemblyObject();
             var inVariableTable = false;
             var inPropertyTable = false;
@@ -88,12 +89,12 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
                         obj.Name = obj.Name.Split('.')[0];
                     }
 
-                    string before = obj.Name;
+                    //string before = obj.Name;
 
                     obj.Name = assemblyNameResolver.Resolve(obj.Name);
 
-                    var theBefore = before;
-                    var theAfter = obj.Name;
+                    //var theBefore = before;
+                    //var theAfter = obj.Name;
 
 
 
@@ -137,7 +138,7 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
                         if (tLine.Contains(" static")) lastFunction.IsStatic = true;
                         lastFunction.Name = tLine.Split(' ')[1];
                     }
-                    if (tLine.StartsWith(".endFunction"))
+                    if (tLine.StartsWith(".endFunction") && inFunction)
                     {
                         inFunction = false;
                         lastState.Functions.Add(lastFunction);

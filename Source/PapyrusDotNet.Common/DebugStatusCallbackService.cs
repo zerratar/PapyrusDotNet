@@ -1,4 +1,4 @@
-/*
+﻿/*
     This file is part of PapyrusDotNet.
 
     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -17,14 +17,25 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
-using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using PapyrusDotNet.Common.Interfaces;
 
-namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
+namespace PapyrusDotNet.Common
 {
-    public class PapyrusAssemblyState
+    public class DebugStatusCallbackService : IStatusCallbackService
     {
-        public string Name { get; set; }
+        public string Title { get; set; }
 
-        public List<PapyrusAssemblyFunction> Functions { get; private set; } = new List<PapyrusAssemblyFunction>();
+        public ConsoleColor ForegroundColor { get; set; }
+
+        public void WriteLine(string status)
+        {
+            Debug.WriteLine(status);
+        }
+
+        public void ResetColor()
+        {
+        }
     }
 }

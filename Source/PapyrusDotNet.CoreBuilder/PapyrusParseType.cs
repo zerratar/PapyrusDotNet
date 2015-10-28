@@ -1,4 +1,4 @@
-/*
+﻿/*
     This file is part of PapyrusDotNet.
 
     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -16,15 +16,11 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
-
-using System.Collections.Generic;
-
-namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
+namespace PapyrusDotNet.CoreBuilder
 {
-    public class PapyrusAssemblyState
+    public enum PapyrusParseType
     {
-        public string Name { get; set; }
-
-        public List<PapyrusAssemblyFunction> Functions { get; private set; } = new List<PapyrusAssemblyFunction>();
+        Script,
+        Assembly
     }
 }

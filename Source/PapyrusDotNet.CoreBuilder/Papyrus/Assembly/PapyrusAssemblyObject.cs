@@ -30,9 +30,5 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
         public List<PapyrusAssemblyVariable> VariableTable { get; private set; } = new List<PapyrusAssemblyVariable>();
         public List<PapyrusAssemblyVariable> PropertyTable { get; private set; } = new List<PapyrusAssemblyVariable>();
         public List<PapyrusAssemblyState> States { get; private set; } = new List<PapyrusAssemblyState>();
-
-        public PapyrusAssemblyObject()
-        {
-        }
     }
 }

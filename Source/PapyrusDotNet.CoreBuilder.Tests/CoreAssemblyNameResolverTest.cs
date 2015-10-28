@@ -1,4 +1,4 @@
-/*
+﻿/*
     This file is part of PapyrusDotNet.
 
     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -16,15 +16,24 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PapyrusDotNet.CoreBuilder.Implementation;
 
-using System.Collections.Generic;
-
-namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
+namespace PapyrusDotNet.CoreBuilder.Tests
 {
-    public class PapyrusAssemblyState
+    [TestClass]
+    public class CoreAssemblyNameResolverTest
     {
-        public string Name { get; set; }
+        [TestMethod]
+        public void Resolve_PassNothing_ReturnAssemblyNameDefinition()
+        {
+            var nameResolver = new CoreAssemblyNameResolver();
+            var assemblyNameDef = nameResolver.Resolve(null);
 
-        public List<PapyrusAssemblyFunction> Functions { get; private set; } = new List<PapyrusAssemblyFunction>();
+            Assert.IsNotNull(assemblyNameDef);
+            Assert.AreEqual("PapyrusDotNet.Core", assemblyNameDef.Name);
+            Assert.AreEqual("PapyrusDotNet.Core", nameResolver.BaseNamespace);
+            Assert.AreEqual("PapyrusDotNet.Core.dll", nameResolver.OutputLibraryFilename);
+        }
     }
 }

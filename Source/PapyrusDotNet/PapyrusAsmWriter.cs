@@ -31,17 +31,6 @@ namespace PapyrusDotNet
     using Common;
     using Models;
 
-    public struct MethodCallPair
-    {
-        public MethodDefinition CallerMethod;
-        public MethodReference TargetMethod;
-        public MethodCallPair(MethodDefinition cm, MethodReference tm)
-        {
-            CallerMethod = cm;
-            TargetMethod = tm;
-        }
-    }
-
     public class PapyrusAsmWriter
     {
         private AssemblyDefinition Assembly;
@@ -461,8 +450,6 @@ namespace PapyrusDotNet
             return papyrus; // String.Join(Environment.NewLine, rows.ToArray());
         }
 
-
-
         public static string GetPapyrusType(TypeReference reference)
         {
 
@@ -626,7 +613,7 @@ namespace PapyrusDotNet
 
                     function.DelegateInvokeCount++;
 
-                    delegateInvokeRef = delegateMethod.Name;
+                    delegateInvokeRef = delegateMethod?.Name;
                     // "_" + function.Name + "_b__1_" + (delegatesUsed++); // varType.Name;
 
                     // var tn = ;
@@ -1115,11 +1102,11 @@ namespace PapyrusDotNet
                         }
 
 
-                        var leftOverCount = concatValues.Count % 2;
+                        //var leftOverCount = concatValues.Count % 2;
 
-                        List<string> strCats = new List<string>();
+                        var strCats = new List<string>();
 
-                        var outputStr = "";
+                        //var outputStr = "";
 
                         for (int j = concatValues.Count - 1; j >= 0; j--)
                         {
@@ -1346,7 +1333,7 @@ namespace PapyrusDotNet
             }
 
 
-        EqualityCheck:
+            EqualityCheck:
 
             if (Utility.IsConditional(instruction.OpCode.Code) || passThroughConditional)
             {

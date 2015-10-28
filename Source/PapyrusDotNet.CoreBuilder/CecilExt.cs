@@ -38,7 +38,7 @@ namespace PapyrusDotNet.CoreBuilder
         /// </summary>
         /// <param name="targetType">The type that will contain the default constructor.</param>
         /// <returns>The default constructor.</returns>
-        public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, ICoreLibraryGenerator libraryGenerator)
+        public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, IPapyrusCilAssemblyBuilder libraryGenerator)
         {
             var parentType = typeof(object);
 
@@ -51,7 +51,7 @@ namespace PapyrusDotNet.CoreBuilder
         /// <param name="parentType">The base class that contains the default constructor that will be used for constructor chaining..</param>
         /// <param name="targetType">The type that will contain the default constructor.</param>
         /// <returns>The default constructor.</returns>
-        public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, Type parentType, ICoreLibraryGenerator libraryGenerator)
+        public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, Type parentType, IPapyrusCilAssemblyBuilder libraryGenerator)
         {
             var module = libraryGenerator.MainModule;// targetType.Module;
             var voidType = module.Import(typeof(void));

@@ -33,9 +33,5 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
 
         public List<PapyrusAssemblyVariable> Params { get; private set; } = new List<PapyrusAssemblyVariable>();
         public List<PapyrusAssemblyVariable> LocalTable { get; private set; } = new List<PapyrusAssemblyVariable>();
-
-        public PapyrusAssemblyFunction()
-        {
-        }
     }
 }

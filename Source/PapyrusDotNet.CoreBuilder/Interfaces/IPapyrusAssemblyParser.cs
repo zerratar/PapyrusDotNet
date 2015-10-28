@@ -17,7 +17,7 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
- using PapyrusDotNet.CoreBuilder.Papyrus.Assembly;
+using PapyrusDotNet.CoreBuilder.Papyrus.Assembly;
 
 namespace PapyrusDotNet.CoreBuilder.Interfaces
 {
