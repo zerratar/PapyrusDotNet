@@ -17,7 +17,7 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
- namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
+namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
 {
     public class PapyrusScriptVariable
     {

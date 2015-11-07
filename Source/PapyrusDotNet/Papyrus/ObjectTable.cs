@@ -18,32 +18,32 @@
  */
 
 using System.Collections.Generic;
-using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Papyrus;
 
 namespace PapyrusDotNet.Papyrus
 {
     public class ObjectTable
     {
+        public ObjectTable()
+        {
+            Info = new FieldAttributes();
+            VariableTable = new List<VariableReference>();
+            PropertyTable = new List<VariableReference>();
+            StateTable = new List<ObjectState>();
+        }
+
         public string Name { get; set; }
 
         public string BaseType { get; set; }
 
-        public PapyrusFieldProperties Info { get; set; }
+        public FieldAttributes Info { get; set; }
 
         public string AutoState { get; set; }
 
-        public List<PapyrusVariableReference> VariableTable { get; set; }
+        public List<VariableReference> VariableTable { get; set; }
 
-        public List<PapyrusVariableReference> PropertyTable { get; set; }
+        public List<VariableReference> PropertyTable { get; set; }
 
         public List<ObjectState> StateTable { get; set; }
-
-        public ObjectTable()
-        {
-            Info = new PapyrusFieldProperties();
-            VariableTable = new List<PapyrusVariableReference>();
-            PropertyTable = new List<PapyrusVariableReference>();
-            StateTable = new List<ObjectState>();
-        }
     }
 }

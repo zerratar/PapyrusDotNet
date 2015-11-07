@@ -24,20 +24,20 @@ namespace PapyrusDotNet.CoreBuilder.Interfaces
     public interface IAssemblyNameResolver
     {
         /// <summary>
-        /// Resolve the input typeName and returns an appropiate AssemblyNameDefinition
-        /// </summary>
-        /// <param name="typeName"></param>
-        /// <returns>Matching AssemblyNameDefinition</returns>
-        AssemblyNameDefinition Resolve(string typeName);
-
-        /// <summary>
-        /// The target output library filename
+        ///     The target output library filename
         /// </summary>
         string OutputLibraryFilename { get; }
 
         /// <summary>
-        /// The target base namespace to be used 
+        ///     The target base namespace to be used
         /// </summary>
         string BaseNamespace { get; }
+
+        /// <summary>
+        ///     Resolve the input typeName and returns an appropiate AssemblyNameDefinition
+        /// </summary>
+        /// <param name="typeName"></param>
+        /// <returns>Matching AssemblyNameDefinition</returns>
+        AssemblyNameDefinition Resolve(string typeName);
     }
 }

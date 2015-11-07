@@ -23,40 +23,58 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Papyrus;
 
 namespace PapyrusDotNet.Papyrus
 {
     public class Function
     {
-        public List<PapyrusVariableReference> Parameters;
-
-        public List<PapyrusVariableReference> Variables;
-
-        public List<PapyrusVariableReference> TempVariables;
-
-        public List<PapyrusVariableReference> Fields;
-
         public List<string> CodeInstructions;
+        public int DelegateInvokeCount;
+        public int ExtensionInvokeCount;
+
+        public List<VariableReference> Fields;
+        public bool IsGlobal;
+        public bool IsNative;
 
         public MethodDefinition MethodDefinition;
+        public string Name;
+        public List<VariableReference> Parameters;
+        public string ReturnType;
+
+        public StringBuilder Source;
+
+        public List<VariableReference> TempVariables;
+        public int UserFlags = 0;
+
+        public List<VariableReference> Variables;
+
+        public Function()
+        {
+            Parameters = new List<VariableReference>();
+            Variables = new List<VariableReference>();
+            TempVariables = new List<VariableReference>();
+            CodeInstructions = new List<string>();
+        }
 
         public Assembly Assembly { get; set; }
 
-        public StringBuilder Source;
-        public bool IsGlobal;
-        public string ReturnType;
-        public bool IsNative;
-        public int UserFlags = 0;
-        public string Name;
-        public int DelegateInvokeCount;
-        public int ExtensionInvokeCount;
-        public Function()
+        public List<VariableReference> AllVariables
         {
-            Parameters = new List<PapyrusVariableReference>();
-            Variables = new List<PapyrusVariableReference>();
-            TempVariables = new List<PapyrusVariableReference>();
-            CodeInstructions = new List<string>();
+            get
+            {
+                var var1 = new List<VariableReference>();
+                if (Variables != null)
+                    var1.AddRange(Variables);
+                if (TempVariables != null)
+                    var1.AddRange(TempVariables);
+                if (Fields != null)
+                    var1.AddRange(Fields);
+                return var1;
+            }
         }
+
+        public string InstanceCaller { get; set; }
 
         public void InsertCodeInstruction(int index, string instruction)
         {
@@ -76,22 +94,7 @@ namespace PapyrusDotNet.Papyrus
             Source = new StringBuilder(string.Join("\n", lines));
         }
 
-        public List<PapyrusVariableReference> AllVariables
-        {
-            get
-            {
-                var var1 = new List<PapyrusVariableReference>();
-                if (Variables != null)
-                    var1.AddRange(Variables);
-                if (TempVariables != null)
-                    var1.AddRange(TempVariables);
-                if (Fields != null)
-                    var1.AddRange(Fields);
-                return var1;
-            }
-        }
-
-        public PapyrusVariableReference CreateTempVariable(string p, MethodReference methodRef = null)
+        public VariableReference CreateTempVariable(string p, MethodReference methodRef = null)
         {
             var originalTarget = p;
             if (p.StartsWith("!"))
@@ -106,12 +109,15 @@ namespace PapyrusDotNet.Papyrus
                         var argIndex = int.Parse(p.Substring(1));
                         p = vars[argIndex];
                     }
-                    catch { p = originalTarget; }
+                    catch
+                    {
+                        p = originalTarget;
+                    }
                 }
             }
 
-            string @namespace = "";
-            string name = "";
+            var @namespace = "";
+            var name = "";
             if (p.Contains("."))
             {
                 @namespace = p.Remove(p.LastIndexOf('.'));
@@ -126,7 +132,7 @@ namespace PapyrusDotNet.Papyrus
             var varname = "::temp" + TempVariables.Count;
             var type = Utility.GetPapyrusReturnType(name, @namespace);
             var def = ".local " + varname + " " + type.Replace("<T>", "");
-            var varRef = new PapyrusVariableReference(varname, type, def);
+            var varRef = new VariableReference(varname, type, def);
             TempVariables.Add(varRef);
             return varRef;
         }
@@ -157,7 +163,6 @@ namespace PapyrusDotNet.Papyrus
 
             for (var i = 0; i < lines.Count; i++)
             {
-
                 var trimmedLine = lines[i].Replace("\t", "").Trim();
                 if (trimmedLine.Equals(".return T") || trimmedLine.Equals(".return T[]"))
                 {
@@ -171,7 +176,5 @@ namespace PapyrusDotNet.Papyrus
 
             Source = new StringBuilder(string.Join("\n", lines));
         }
-
-        public string InstanceCaller { get; set; }
     }
 }

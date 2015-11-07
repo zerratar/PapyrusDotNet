@@ -19,6 +19,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using PapyrusDotNet.Common.Papyrus;
 
 namespace PapyrusDotNet.Common
 {
@@ -28,11 +29,11 @@ namespace PapyrusDotNet.Common
 
         public int EndRow { get; set; }
 
-        public List<PapyrusLabelReference> UsedLabels { get; set; } = new List<PapyrusLabelReference>();
+        public List<LabelReference> UsedLabels { get; set; } = new List<LabelReference>();
 
-        public List<PapyrusLabelDefinition> Labels { get; set; } = new List<PapyrusLabelDefinition>();
+        public List<LabelDefinition> Labels { get; set; } = new List<LabelDefinition>();
 
-        public PapyrusLabelDefinition GetLabelDefinition(int row)
+        public LabelDefinition GetLabelDefinition(int row)
         {
             return Labels.FirstOrDefault(r => r.Row == row);
         }

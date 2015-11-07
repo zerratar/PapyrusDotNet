@@ -28,7 +28,7 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
         private AssemblyNameDefinition assemblyNameDefinition;
 
         /// <summary>
-        /// Resolve the input typeName and returns an appropiate AssemblyNameDefinition
+        ///     Resolve the input typeName and returns an appropiate AssemblyNameDefinition
         /// </summary>
         /// <param name="typeName"></param>
         /// <returns>Matching AssemblyNameDefinition</returns>
@@ -39,12 +39,12 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
         }
 
         /// <summary>
-        /// The target output library filename
+        ///     The target output library filename
         /// </summary>
         public string OutputLibraryFilename => assemblyNameDefinition.Name + ".dll";
 
         /// <summary>
-        /// The target base namespace to be used 
+        ///     The target base namespace to be used
         /// </summary>
         public string BaseNamespace => assemblyNameDefinition.Name;
     }

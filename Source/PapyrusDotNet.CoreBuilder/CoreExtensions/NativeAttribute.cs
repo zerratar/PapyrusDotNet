@@ -2,11 +2,7 @@
 
 namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
-	public class NativeAttribute : Attribute
-	{
-		public NativeAttribute()
-		{
-			
-		}
-	}
+    public class NativeAttribute : Attribute
+    {
+    }
 }

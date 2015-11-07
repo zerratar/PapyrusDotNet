@@ -33,7 +33,8 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
             // newType.DeclaringType = newType;
             if (!string.IsNullOrEmpty(input.ExtendsName))
             {
-                newType.BaseType = new TypeReference(assemblyNameResolver.BaseNamespace, input.ExtendsName, mainModule, mainModule);
+                newType.BaseType = new TypeReference(assemblyNameResolver.BaseNamespace, input.ExtendsName, mainModule,
+                    mainModule);
                 // newType.DeclaringType = MainModule.Types.FirstOrDefault(t => t.FullName == newType.BaseType.FullName);
                 newType.Scope = mainModule;
             }
@@ -43,7 +44,8 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                 newType.Scope = mainModule;
             }
 
-            statusCallback.WriteLine("Generating Type '" + assemblyNameResolver.BaseNamespace + "." + input.Name + "'...");
+            statusCallback.WriteLine("Generating Type '" + assemblyNameResolver.BaseNamespace + "." + input.Name +
+                                     "'...");
 
             foreach (var prop in input.PropertyTable)
             {
@@ -86,7 +88,7 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                         var nPar = new ParameterDefinition(par.Name, ParameterAttributes.None, resolvedTypeReference);
                         function.Parameters.Add(nPar);
                     }
-                    bool skipAdd = false;
+                    var skipAdd = false;
                     foreach (var m in newType.Methods)
                     {
                         if (m.Name == function.Name)
@@ -94,9 +96,10 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                             if (m.Parameters.Count == function.Parameters.Count)
                             {
                                 skipAdd = true;
-                                for (int pi = 0; pi < m.Parameters.Count; pi++)
+                                for (var pi = 0; pi < m.Parameters.Count; pi++)
                                 {
-                                    if (m.Parameters[pi].ParameterType.FullName != function.Parameters[pi].ParameterType.FullName) skipAdd = false;
+                                    if (m.Parameters[pi].ParameterType.FullName !=
+                                        function.Parameters[pi].ParameterType.FullName) skipAdd = false;
                                 }
                                 break;
                             }

@@ -18,7 +18,6 @@
  */
 
 using System.IO;
-
 using PapyrusDotNet.CoreBuilder.Interfaces;
 
 namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
@@ -26,6 +25,7 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
     public class PapyrusAssemblyParser : IPapyrusAssemblyParser
     {
         private readonly IPapyrusNameResolver assemblyNameResolver;
+
         public PapyrusAssemblyParser(IPapyrusNameResolver nameResolver)
         {
             assemblyNameResolver = nameResolver;
@@ -33,7 +33,6 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
 
         public PapyrusAssemblyObject ParseAssembly(string file)
         {
-
             var inputScript = File.ReadAllLines(file);
             var obj = new PapyrusAssemblyObject();
             var inVariableTable = false;
@@ -83,7 +82,6 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
                     obj.Name = Path.GetFileNameWithoutExtension(file);
 
 
-
                     if (obj.Name.Contains("."))
                     {
                         obj.Name = obj.Name.Split('.')[0];
@@ -97,24 +95,22 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
                     //var theAfter = obj.Name;
 
 
-
                     if (tLine.Split(' ').Length > 2)
                     {
                         obj.ExtendsName = tLine.Split(' ')[2];
                     }
                     if (tLine.Contains("extends"))
                     {
-                        obj.ExtendsName = tLine.Split(' ')[3];// Parse(@"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\" + tLine.Split(' ')[3] + ".disassemble.pas");
+                        obj.ExtendsName = tLine.Split(' ')[3];
+                            // Parse(@"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\" + tLine.Split(' ')[3] + ".disassemble.pas");
                     }
                 }
 
                 if (inVariableTable)
                 {
-
                 }
                 else if (inPropertyTable)
                 {
-
                 }
                 else if (inStateTable)
                 {
@@ -147,7 +143,8 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
                     {
                         if (tLine.StartsWith(".local "))
                         {
-                            lastFunction.LocalTable.Add(new PapyrusAssemblyVariable(tLine.Split(' ')[1], tLine.Split(' ')[2]));
+                            lastFunction.LocalTable.Add(new PapyrusAssemblyVariable(tLine.Split(' ')[1],
+                                tLine.Split(' ')[2]));
                         }
                     }
                     if (inFunctionParamTable && lastFunction != null)

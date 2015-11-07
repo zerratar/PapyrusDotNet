@@ -16,6 +16,7 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 namespace PapyrusDotNet.Common.Papyrus
 {
     public class VariableReference
@@ -26,6 +27,7 @@ namespace PapyrusDotNet.Common.Papyrus
             Name = name;
             TypeName = type;
         }
+
         public VariableReference(string name, string type, string definition)
         {
             // TODO: Complete member initialization

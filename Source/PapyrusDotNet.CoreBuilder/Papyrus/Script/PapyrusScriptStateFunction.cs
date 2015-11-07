@@ -17,20 +17,15 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
- using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
 {
     public class PapyrusScriptStateFunction
     {
+        public bool IsAuto;
         public string Name;
 
-        public bool IsAuto;
-
         public List<PapyrusScriptFunction> Functions { get; set; } = new List<PapyrusScriptFunction>();
-
-        public PapyrusScriptStateFunction()
-        {
-        }
     }
 }

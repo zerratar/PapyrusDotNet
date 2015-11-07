@@ -18,17 +18,10 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
-	public class ConditionalAttribute : Attribute
-	{
-		public ConditionalAttribute()
-		{
-			
-		}
-	}
+    public class ConditionalAttribute : Attribute
+    {
+    }
 }

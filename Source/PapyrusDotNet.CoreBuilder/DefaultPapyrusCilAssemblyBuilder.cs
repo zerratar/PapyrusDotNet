@@ -16,6 +16,7 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 using PapyrusDotNet.Common;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.CoreBuilder.Implementation;
@@ -29,34 +30,37 @@ namespace PapyrusDotNet.CoreBuilder
     {
         public DefaultPapyrusCilAssemblyBuilder()
         {
-            assemblyNameResolver = new CoreAssemblyNameResolver();
+            AssemblyNameResolver = new CoreAssemblyNameResolver();
 
             var statusCallBack = new ConsoleStatusCallbackService();
             var nameResolver = new DictionaryPapyrusNameResolver(statusCallBack);
-            var namespaceResolver = new PapyrusNamespaceResolver(assemblyNameResolver);
+            var namespaceResolver = new PapyrusNamespaceResolver(AssemblyNameResolver);
             var typeNameResolver = new PapyrusTypeNameResolver();
 
-            papyrusScriptParser = new PapyrusScriptParser(nameResolver);
-            papyrusAssemblyParser = new PapyrusAssemblyParser(nameResolver);
+            PapyrusScriptParser = new PapyrusScriptParser(nameResolver);
+            PapyrusAssemblyParser = new PapyrusAssemblyParser(nameResolver);
 
-            typeReferenceResolver = new PapyrusTypeReferenceResolver(namespaceResolver, typeNameResolver);
-            typeDefinitionResolver = new PapyrusTypeDefinitionResolver(assemblyNameResolver, typeReferenceResolver, statusCallBack);
+            TypeReferenceResolver = new PapyrusTypeReferenceResolver(namespaceResolver, typeNameResolver);
+            TypeDefinitionResolver = new PapyrusTypeDefinitionResolver(AssemblyNameResolver, TypeReferenceResolver,
+                statusCallBack);
 
-            typeDefinitionResolver.Initialize(this);
-            typeReferenceResolver.Initialize(this);
+            TypeDefinitionResolver.Initialize(this);
+            TypeReferenceResolver.Initialize(this);
         }
 
-        public DefaultPapyrusCilAssemblyBuilder(IPapyrusScriptParser scriptParser, IPapyrusAssemblyParser assemblyParser, IPapyrusTypeDefinitionResolver typeDefinitionResolver, IPapyrusTypeReferenceResolver typeReferenceResolver, IAssemblyNameResolver nameResolver, IStatusCallbackService callback) : base(scriptParser, assemblyParser, typeDefinitionResolver, typeReferenceResolver, nameResolver, callback)
+        public DefaultPapyrusCilAssemblyBuilder(IPapyrusScriptParser scriptParser, IPapyrusAssemblyParser assemblyParser,
+            IPapyrusTypeDefinitionResolver typeDefinitionResolver, IPapyrusTypeReferenceResolver typeReferenceResolver,
+            IAssemblyNameResolver nameResolver, IStatusCallbackService callback)
+            : base(scriptParser, assemblyParser, typeDefinitionResolver, typeReferenceResolver, nameResolver, callback)
         {
-            assemblyNameResolver = nameResolver;
-            statusCallback = callback;
-            papyrusScriptParser = scriptParser;
-            papyrusAssemblyParser = assemblyParser;
-            this.typeDefinitionResolver = typeDefinitionResolver;
-            this.typeReferenceResolver = typeReferenceResolver;
-            this.typeDefinitionResolver.Initialize(this);
-            this.typeReferenceResolver.Initialize(this);
+            AssemblyNameResolver = nameResolver;
+            StatusCallback = callback;
+            PapyrusScriptParser = scriptParser;
+            PapyrusAssemblyParser = assemblyParser;
+            TypeDefinitionResolver = typeDefinitionResolver;
+            TypeReferenceResolver = typeReferenceResolver;
+            TypeDefinitionResolver.Initialize(this);
+            TypeReferenceResolver.Initialize(this);
         }
-
     }
 }

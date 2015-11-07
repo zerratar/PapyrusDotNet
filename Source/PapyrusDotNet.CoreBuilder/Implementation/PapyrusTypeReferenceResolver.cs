@@ -11,7 +11,8 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
         private readonly IPapyrusTypeNameResolver typeNameResolver;
         private IPapyrusCilAssemblyBuilder builder;
 
-        public PapyrusTypeReferenceResolver(IPapyrusNamespaceResolver namespaceResolver, IPapyrusTypeNameResolver typeNameResolver)
+        public PapyrusTypeReferenceResolver(IPapyrusNamespaceResolver namespaceResolver,
+            IPapyrusTypeNameResolver typeNameResolver)
         {
             this.namespaceResolver = namespaceResolver;
             this.typeNameResolver = typeNameResolver;
@@ -27,15 +28,18 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
 
             if (ns == "System")
             {
-
-                var propies = mainModule.TypeSystem.GetType().GetProperties().Where(pr => pr.PropertyType == typeof(TypeReference)).ToList();
+                var propies =
+                    mainModule.TypeSystem.GetType()
+                        .GetProperties()
+                        .Where(pr => pr.PropertyType == typeof (TypeReference))
+                        .ToList();
                 foreach (var propy in propies)
                 {
                     var name = propy.Name;
                     if (tn.Replace("[]", "").ToLower() == name.ToLower())
                     {
                         var val = propy.GetValue(mainModule.TypeSystem, null) as TypeReference;
-                        return val != null && (isArray && !val.IsArray) ? new ArrayType(val) : val;
+                        return val != null && isArray && !val.IsArray ? new ArrayType(val) : val;
                     }
                 }
                 // fallback
@@ -66,7 +70,8 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                 }
             }
             var tnA = tn.Replace("[]", "");
-            var existing = builder.AddedTypeReferences.FirstOrDefault(ty => ty.FullName.ToLower() == (ns + "." + tnA).ToLower());
+            var existing =
+                builder.AddedTypeReferences.FirstOrDefault(ty => ty.FullName.ToLower() == (ns + "." + tnA).ToLower());
             if (existing == null)
             {
                 var hasTypeOf = mainModule.Types.FirstOrDefault(t => t.FullName.ToLower() == (ns + "." + tnA).ToLower());
@@ -81,18 +86,20 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                 }
                 else
                 {
-                    if (builder.ReservedTypeNames.Any(n => string.Equals(n, tnA, StringComparison.CurrentCultureIgnoreCase)))
+                    if (
+                        builder.ReservedTypeNames.Any(
+                            n => string.Equals(n, tnA, StringComparison.CurrentCultureIgnoreCase)))
                     {
-                        tn = builder.ReservedTypeNames.FirstOrDefault(j => string.Equals(j, tnA, StringComparison.CurrentCultureIgnoreCase));
+                        tn =
+                            builder.ReservedTypeNames.FirstOrDefault(
+                                j => string.Equals(j, tnA, StringComparison.CurrentCultureIgnoreCase));
                     }
-                    var typeRef = new TypeReference(ns, tn, mainModule, mainModule) { Scope = mainModule };
-
+                    var typeRef = new TypeReference(ns, tn, mainModule, mainModule) {Scope = mainModule};
 
 
                     builder.AddedTypeReferences.Add(typeRef);
                     return isArray && !typeRef.IsArray ? new ArrayType(typeRef) : typeRef;
                 }
-
             }
 
             return isArray && !existing.IsArray ? new ArrayType(existing) : existing;

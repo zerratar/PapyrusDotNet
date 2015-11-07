@@ -16,6 +16,7 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 using Mono.Cecil;
 
 namespace PapyrusDotNet.CoreBuilder.Interfaces

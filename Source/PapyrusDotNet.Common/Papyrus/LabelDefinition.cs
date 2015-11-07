@@ -16,12 +16,11 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 namespace PapyrusDotNet.Common.Papyrus
 {
     public class LabelDefinition
     {
-        public string Name { get; set; }
-        public int Row { get; set; }
         public LabelDefinition(int row, string name = null)
         {
             Row = row;
@@ -31,5 +30,8 @@ namespace PapyrusDotNet.Common.Papyrus
                 Name = "_label" + Row;
             }
         }
+
+        public string Name { get; set; }
+        public int Row { get; set; }
     }
 }

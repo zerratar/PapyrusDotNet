@@ -2,11 +2,10 @@
 
 namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
-	public class GenericTypeAttribute : Attribute
-	{
-		public GenericTypeAttribute(string typeName)
-		{
-
-		}
-	}
+    public class GenericTypeAttribute : Attribute
+    {
+        public GenericTypeAttribute(string typeName)
+        {
+        }
+    }
 }

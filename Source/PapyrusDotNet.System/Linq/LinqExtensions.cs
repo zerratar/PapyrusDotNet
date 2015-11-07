@@ -4,7 +4,6 @@ namespace PapyrusDotNet.System.Linq
 {
     public static class LinqExtensions
     {
-
         // Not Supported Yet
         /* 
         public static T First<T>(this T[] source)

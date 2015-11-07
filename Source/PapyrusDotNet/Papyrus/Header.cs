@@ -21,13 +21,13 @@ namespace PapyrusDotNet.Papyrus
 {
     public class Header
     {
-        public PapyrusInfo Info { get; set; }
-        public PapyrusUserFlags UserFlagRef { get; set; }
-
         public Header()
         {
-            Info = new PapyrusInfo();
-            UserFlagRef = new PapyrusUserFlags();
+            SourceInfo = new SourceInfo();
+            UserFlagReferenceRef = new UserFlagsReference();
         }
+
+        public SourceInfo SourceInfo { get; set; }
+        public UserFlagsReference UserFlagReferenceRef { get; set; }
     }
 }

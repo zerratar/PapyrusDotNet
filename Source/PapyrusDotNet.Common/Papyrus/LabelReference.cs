@@ -16,16 +16,18 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 namespace PapyrusDotNet.Common.Papyrus
 {
     public class LabelReference
     {
-        public string Name { get; set; }
-        public int RowReference { get; set; }
         public LabelReference(string name, int row)
         {
             Name = name;
             RowReference = row;
         }
+
+        public string Name { get; set; }
+        public int RowReference { get; set; }
     }
 }

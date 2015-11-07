@@ -2,11 +2,7 @@
 
 namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
-	public class PropertyAttribute : Attribute
-	{
-		public PropertyAttribute()
-		{
-			
-		}
-	}
+    public class PropertyAttribute : Attribute
+    {
+    }
 }

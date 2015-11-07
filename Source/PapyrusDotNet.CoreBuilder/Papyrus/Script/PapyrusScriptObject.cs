@@ -33,14 +33,11 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
 
         public List<string> Imports { get; private set; } = new List<string>();
 
-        public List<PapyrusScriptStateFunction> StateFunctions { get; private set; } = new List<PapyrusScriptStateFunction>();
+        public List<PapyrusScriptStateFunction> StateFunctions { get; private set; } =
+            new List<PapyrusScriptStateFunction>();
 
         public List<PapyrusScriptVariable> Properties { get; private set; } = new List<PapyrusScriptVariable>();
 
         public List<PapyrusScriptVariable> InstanceVariables { get; private set; } = new List<PapyrusScriptVariable>();
-
-        public PapyrusScriptObject()
-        {
-        }
     }
 }

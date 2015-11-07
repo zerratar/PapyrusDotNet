@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using PapyrusDotNet.Core;
 
 namespace PapyrusDotNet.System
 {
-    using PapyrusDotNet.Core;
-
     public class Random
     {
         public static double Range(float min, float max)

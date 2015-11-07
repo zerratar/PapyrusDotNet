@@ -16,6 +16,7 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 using System;
 
 namespace PapyrusDotNet.Common.Interfaces

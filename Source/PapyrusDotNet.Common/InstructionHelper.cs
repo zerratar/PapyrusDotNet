@@ -16,33 +16,34 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 using Mono.Cecil.Cil;
 
 namespace PapyrusDotNet.Common
 {
     public class InstructionHelper
     {
-        public static bool IsBranchConditionalEQ(Code code)
+        public static bool IsBranchConditionalEq(Code code)
         {
             return code == Code.Beq || code == Code.Beq_S;
         }
 
-        public static bool IsBranchConditionalLT(Code code)
+        public static bool IsBranchConditionalLt(Code code)
         {
             return code == Code.Blt || code == Code.Blt_S || code == Code.Blt_Un || code == Code.Blt_Un_S;
         }
 
-        public static bool IsBranchConditionalLE(Code code)
+        public static bool IsBranchConditionalLe(Code code)
         {
             return code == Code.Ble || code == Code.Ble_S || code == Code.Ble_Un || code == Code.Ble_Un_S;
         }
 
-        public static bool IsBranchConditionalGT(Code code)
+        public static bool IsBranchConditionalGt(Code code)
         {
             return code == Code.Bgt || code == Code.Bgt_S || code == Code.Bgt_Un || code == Code.Bgt_Un_S;
         }
 
-        public static bool IsBranchConditionalGE(Code code)
+        public static bool IsBranchConditionalGe(Code code)
         {
             return code == Code.Bge || code == Code.Bge_S || code == Code.Bge_Un || code == Code.Bge_Un_S;
         }
@@ -50,10 +51,13 @@ namespace PapyrusDotNet.Common
 
         public static bool IsBranchConditional(Code code)
         {
-            return code == Code.Beq || code == Code.Beq_S || code == Code.Bgt || code == Code.Bgt_S || code == Code.Bgt_Un
-                    || code == Code.Bgt_Un_S || code == Code.Blt || code == Code.Blt_Un || code == Code.Blt_S || code == Code.Blt_Un_S
-                    || code == Code.Ble || code == Code.Ble_Un || code == Code.Ble_S || code == Code.Ble_Un_S || code == Code.Bge
-                    || code == Code.Bge_Un || code == Code.Bge_S || code == Code.Bge_Un_S;
+            return code == Code.Beq || code == Code.Beq_S || code == Code.Bgt || code == Code.Bgt_S ||
+                   code == Code.Bgt_Un
+                   || code == Code.Bgt_Un_S || code == Code.Blt || code == Code.Blt_Un || code == Code.Blt_S ||
+                   code == Code.Blt_Un_S
+                   || code == Code.Ble || code == Code.Ble_Un || code == Code.Ble_S || code == Code.Ble_Un_S ||
+                   code == Code.Bge
+                   || code == Code.Bge_Un || code == Code.Bge_S || code == Code.Bge_Un_S;
         }
 
         public static bool IsBoxing(Code code)
@@ -64,10 +68,12 @@ namespace PapyrusDotNet.Common
         public static bool IsConverToNumber(Code code)
         {
             return code == Code.Conv_I || code == Code.Conv_I1 || code == Code.Conv_I2 || code == Code.Conv_I4
-                    || code == Code.Conv_I8 || code == Code.Conv_Ovf_I || code == Code.Conv_Ovf_I_Un || code == Code.Conv_Ovf_I1
-                    || code == Code.Conv_Ovf_I1_Un || code == Code.Conv_Ovf_I2 || code == Code.Conv_Ovf_I2_Un
-                    || code == Code.Conv_Ovf_I4 || code == Code.Conv_Ovf_I4_Un || code == Code.Conv_Ovf_I8
-                    || code == Code.Conv_Ovf_I8_Un || code == Code.Conv_R_Un || code == Code.Conv_R4 || code == Code.Conv_R8;
+                   || code == Code.Conv_I8 || code == Code.Conv_Ovf_I || code == Code.Conv_Ovf_I_Un ||
+                   code == Code.Conv_Ovf_I1
+                   || code == Code.Conv_Ovf_I1_Un || code == Code.Conv_Ovf_I2 || code == Code.Conv_Ovf_I2_Un
+                   || code == Code.Conv_Ovf_I4 || code == Code.Conv_Ovf_I4_Un || code == Code.Conv_Ovf_I8
+                   || code == Code.Conv_Ovf_I8_Un || code == Code.Conv_R_Un || code == Code.Conv_R4 ||
+                   code == Code.Conv_R8;
         }
 
         public static bool IsLoadArgs(Code code)
@@ -209,15 +215,18 @@ namespace PapyrusDotNet.Common
         public static bool IsLoadElement(Code code)
         {
             return code == Code.Ldelem_Any || code == Code.Ldelem_I || code == Code.Ldelem_I1 || code == Code.Ldelem_I2
-                   || code == Code.Ldelem_I4 || code == Code.Ldelem_I8 || code == Code.Ldelem_R4 || code == Code.Ldelem_R8
-                   || code == Code.Ldelem_Ref || code == Code.Ldelem_U1 || code == Code.Ldelem_U2 || code == Code.Ldelem_U4
+                   || code == Code.Ldelem_I4 || code == Code.Ldelem_I8 || code == Code.Ldelem_R4 ||
+                   code == Code.Ldelem_R8
+                   || code == Code.Ldelem_Ref || code == Code.Ldelem_U1 || code == Code.Ldelem_U2 ||
+                   code == Code.Ldelem_U4
                    || code == Code.Ldelema;
         }
 
         public static bool IsStoreElement(Code code)
         {
             return code == Code.Stelem_Any || code == Code.Stelem_I || code == Code.Stelem_I1 || code == Code.Stelem_I2
-                   || code == Code.Stelem_I4 || code == Code.Stelem_I8 || code == Code.Stelem_R4 || code == Code.Stelem_R8
+                   || code == Code.Stelem_I4 || code == Code.Stelem_I8 || code == Code.Stelem_R4 ||
+                   code == Code.Stelem_R8
                    || code == Code.Stelem_Ref;
         }
 

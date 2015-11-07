@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using PapyrusDotNet.CoreBuilder.Interfaces;
 
 namespace PapyrusDotNet.CoreBuilder.Implementation
@@ -26,7 +22,8 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                 if (typeNameLower == "none")
                     return "void";
 
-                if (typeNameLower == "float" || typeNameLower == "int" || typeNameLower == "bool" || typeNameLower == "string") return typeNameLower;
+                if (typeNameLower == "float" || typeNameLower == "int" || typeNameLower == "bool" ||
+                    typeNameLower == "string") return typeNameLower;
             }
 
             return typeName;

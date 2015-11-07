@@ -27,30 +27,6 @@ namespace PapyrusDotNet.Papyrus
 {
     public class Assembly
     {
-        public TypeDefinition SourceType { get; set; }
-
-        public string GenericTypeReplacement { get; set; }
-
-        public bool IsEnum { get; set; }
-
-        public Header Header { get; set; }
-
-        public ObjectTable ObjectTable { get; set; }
-
-        public string FinalAssemblyCode { get; set; }
-
-        public string BaseType { get; set; }
-
-        public string OutputName { get; set; }
-
-        public List<MethodDefinition> DelegateMethodDefinitions { get; set; }
-
-        public List<MethodReference> ExtensionMethodReferences { get; set; }
-
-        public Dictionary<MethodDefinition, List<FieldDefinition>> DelegateMethodFieldPair { get; set; }
-
-        public List<FieldDefinition> DelegateFields { get; set; }
-
         // public string AssemblyCode { get; set; }
 
         public Assembly()
@@ -88,9 +64,32 @@ namespace PapyrusDotNet.Papyrus
             // this.AssemblyCode = this.ObjectTable.ToString();
         }
 
+        public TypeDefinition SourceType { get; set; }
+
+        public string GenericTypeReplacement { get; set; }
+
+        public bool IsEnum { get; set; }
+
+        public Header Header { get; set; }
+
+        public ObjectTable ObjectTable { get; set; }
+
+        public string FinalAssemblyCode { get; set; }
+
+        public string BaseType { get; set; }
+
+        public string OutputName { get; set; }
+
+        public List<MethodDefinition> DelegateMethodDefinitions { get; set; }
+
+        public List<MethodReference> ExtensionMethodReferences { get; set; }
+
+        public Dictionary<MethodDefinition, List<FieldDefinition>> DelegateMethodFieldPair { get; set; }
+
+        public List<FieldDefinition> DelegateFields { get; set; }
+
         public ObjectTable CreateObjectTable(TypeDefinition type)
         {
-
             ExtensionMethodReferences = new List<MethodReference>();
             DelegateMethodDefinitions = new List<MethodDefinition>();
             DelegateMethodFieldPair = new Dictionary<MethodDefinition, List<FieldDefinition>>();
@@ -116,7 +115,7 @@ namespace PapyrusDotNet.Papyrus
                                 var op = instruction.Operand;
                                 if (op is FieldReference)
                                 {
-                                    var f = (op as FieldReference);
+                                    var f = op as FieldReference;
                                     foreach (var field in nt.Fields)
                                     {
                                         if (f.FullName == field.FullName)
@@ -126,7 +125,6 @@ namespace PapyrusDotNet.Papyrus
                                                 DelegateFields.Add(field);
                                         }
                                     }
-
                                 }
 
                                 /*nt.Fields*/
@@ -158,8 +156,9 @@ namespace PapyrusDotNet.Papyrus
                 MethodReference methodRef;
                 if (CallsMethodInsideNamespace(m, "PapyrusDotNet.System.Linq", out methodRef))
                 {
-
-                    var targetAssembly = PapyrusAsmWriter.ParsedAssemblies.FirstOrDefault(a => a.SourceType.Name == methodRef.DeclaringType.Name);
+                    var targetAssembly =
+                        PapyrusAsmWriter.ParsedAssemblies.FirstOrDefault(
+                            a => a.SourceType.Name == methodRef.DeclaringType.Name);
                     if (targetAssembly != null)
                     {
                         var defaultState = targetAssembly.ObjectTable.StateTable.FirstOrDefault();
@@ -268,20 +267,22 @@ namespace PapyrusDotNet.Papyrus
                 foreach (var method in DelegateMethodDefinitions)
                 {
                     if (defaultObjectState.Functions.All(c => c.Name != method.Name))
-                        defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                        defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit,
+                            onInitAvailable, ctorAvailable));
                 }
 
                 foreach (var method in methods)
                 {
                     if (defaultObjectState.Functions.All(c => c.Name != method.Name))
-                        defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit, onInitAvailable, ctorAvailable));
+                        defaultObjectState.Functions.Add(CreatePapyrusFunction(this, type, method, mergeCtorAndOnInit,
+                            onInitAvailable, ctorAvailable));
                 }
-
             }
             return ObjectTable;
         }
 
-        private static bool CallsMethodInsideNamespace(MethodDefinition m, string targetNamespace, out MethodReference methodRef)
+        private static bool CallsMethodInsideNamespace(MethodDefinition m, string targetNamespace,
+            out MethodReference methodRef)
         {
             methodRef = null;
             foreach (var instruction in m.Body.Instructions)
@@ -319,7 +320,6 @@ namespace PapyrusDotNet.Papyrus
             bool onInitAvailable = false,
             bool hasConstructor = false)
         {
-
             string overrideFunctionName = null;
             if (!onInitAvailable && method.IsConstructor)
             {
@@ -341,6 +341,5 @@ namespace PapyrusDotNet.Papyrus
 
             return function;
         }
-
     }
 }

@@ -22,49 +22,49 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using PapyrusDotNet.Common;
 using PapyrusDotNet.Papyrus;
+using VariableReference = PapyrusDotNet.Common.Papyrus.VariableReference;
 
 namespace PapyrusDotNet
 {
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-
-    using Common;
-
     public class PapyrusAsmWriter
     {
-        private readonly AssemblyDefinition assembly;
+        public static List<VariableReference> Fields;
 
-        private readonly TypeDefinition type;
+        public static List<Assembly> ParsedAssemblies = new List<Assembly>();
+
+        public static List<MethodCallPair> CallStack = new List<MethodCallPair>();
+        private readonly AssemblyDefinition assembly;
 
         private readonly Stack<EvaluationStackItem> evaluationStack;
 
         private readonly Function function;
 
-        private bool skipNextInstruction;
-
-        private MethodDefinition targetMethod;
+        private readonly TypeDefinition type;
 
         private bool invertedBranch;
 
-        private int skipToOffset = -1;
+        public string LastSaughtTypeName = "";
 
-        public static List<PapyrusVariableReference> Fields;
-
-        public static List<Assembly> ParsedAssemblies = new List<Assembly>();
+        private bool skipNextInstruction;
 
         private List<ParameterDefinition> skippedParameters = new List<ParameterDefinition>();
 
-        public PapyrusAsmWriter(AssemblyDefinition assembly, TypeDefinition type, List<PapyrusVariableReference> fields)
+        private int skipToOffset = -1;
+
+        private MethodDefinition targetMethod;
+
+        public PapyrusAsmWriter(AssemblyDefinition assembly, TypeDefinition type, List<VariableReference> fields)
         {
             this.assembly = assembly;
             this.type = type;
             evaluationStack = new Stack<EvaluationStackItem>();
 
-            function = new Function { Fields = fields };
+            function = new Function {Fields = fields};
         }
-
-        public static List<MethodCallPair> CallStack = new List<MethodCallPair>();
 
         private static void GetCallStack(TypeDefinition type)
         {
@@ -102,7 +102,8 @@ namespace PapyrusDotNet
             }
         }
 
-        public static void GeneratePapyrusFromAssembly(AssemblyDefinition currentAssembly, ref Dictionary<string, string> outputPasFiles, AssemblyDefinition mainAssembly = null)
+        public static void GeneratePapyrusFromAssembly(AssemblyDefinition currentAssembly,
+            ref Dictionary<string, string> outputPasFiles, AssemblyDefinition mainAssembly = null)
         {
             // CallStack.Clear();
 
@@ -118,7 +119,7 @@ namespace PapyrusDotNet
 
                     Console.WriteLine("Generating Papyrus Asm for " + type.FullName);
 
-                    Fields = new List<PapyrusVariableReference>();
+                    Fields = new List<VariableReference>();
 
                     var outputPapyrus = "";
 
@@ -142,7 +143,8 @@ namespace PapyrusDotNet
 
                             var outputAssembly = new Assembly(type, r.Type);
 
-                            outputAssembly.OutputName = outputAssembly.BaseType.Replace("`1", "_" + Utility.GetPapyrusBaseType(r.Type));
+                            outputAssembly.OutputName = outputAssembly.BaseType.Replace("`1",
+                                "_" + Utility.GetPapyrusBaseType(r.Type));
 
                             ParsedAssemblies.Add(outputAssembly);
                         }
@@ -158,13 +160,14 @@ namespace PapyrusDotNet
                     // so creating a new Instance of assembly is still necessary
                     if (assembly == null || assembly.IsEnum) continue;
 
-                    outputPapyrus += assembly.Header.InfoBlock.ToString();
+                    outputPapyrus += assembly.Header.SourceInfo.ToString();
                     outputPapyrus += assembly.Header.UserFlagReferenceRef.ToString();
                     outputPapyrus += WritePapyrusObjectTable(assembly);
 
                     assembly.FinalAssemblyCode = outputPapyrus;
 
-                    if (!outputPasFiles.ContainsKey(assembly.OutputName + ".pas") && !assembly.SourceType.Namespace.EndsWith("System.Linq"))
+                    if (!outputPasFiles.ContainsKey(assembly.OutputName + ".pas") &&
+                        !assembly.SourceType.Namespace.EndsWith("System.Linq"))
                     {
                         outputPasFiles.Add(assembly.OutputName + ".pas", outputPapyrus);
                     }
@@ -205,9 +208,10 @@ namespace PapyrusDotNet
 
             var nativeMarker = method.IsNative ? " native" : "";
 
-            int indentDepth = 4;
+            var indentDepth = 4;
 
-            sourceBuilder.AppendLine(Utility.Indent(indentDepth++, ".function " + method.Name + staticMarker + nativeMarker, false));
+            sourceBuilder.AppendLine(Utility.Indent(indentDepth++,
+                ".function " + method.Name + staticMarker + nativeMarker, false));
             sourceBuilder.AppendLine(Utility.Indent(indentDepth, ".userFlags " + function.UserFlags, false));
             sourceBuilder.AppendLine(Utility.Indent(indentDepth, ".docString \"\"", false));
             sourceBuilder.AppendLine(Utility.Indent(indentDepth, ".return " + function.ReturnType, false));
@@ -230,7 +234,8 @@ namespace PapyrusDotNet
 
                 foreach (var variable in method.Body.Variables)
                 {
-                    if (variable.VariableType.Name.StartsWith("<>")) continue; // Delegate variables should not be added.
+                    if (variable.VariableType.Name.StartsWith("<>"))
+                        continue; // Delegate variables should not be added.
 
                     sourceBuilder.AppendLine(Utility.Indent(indentDepth, ParseLocalVariable(variable), false));
                 }
@@ -240,14 +245,12 @@ namespace PapyrusDotNet
             sourceBuilder.AppendLine(Utility.Indent(indentDepth++, ".code", false));
             if (method.HasBody)
             {
-
                 foreach (var instruction in method.Body.Instructions)
                 {
-
                     // This is currently being used for debugging and trying to solve the FirstOrDefault() Linq extension
-                    if (targetMethod.Name.Contains("FirstOrDefault") && InstructionHelper.IsCallMethod(instruction.OpCode.Code))
+                    if (targetMethod.Name.Contains("FirstOrDefault") &&
+                        InstructionHelper.IsCallMethod(instruction.OpCode.Code))
                     {
-
                     }
 
                     // We will add a new label for each instruction.
@@ -288,7 +291,7 @@ namespace PapyrusDotNet
                     // We will have to format it properly and add each instruction to our function.
                     if (value.Contains(Environment.NewLine))
                     {
-                        var rows = value.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                        var rows = value.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
                         foreach (var row in rows)
                         {
                             var codeInstruction = Utility.Indent(indentDepth, row, false);
@@ -329,7 +332,7 @@ namespace PapyrusDotNet
 
             var ptype = Utility.GetPapyrusBaseType(asm.GenericTypeReplacement);
 
-            var papyrusRow = papyrus.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var papyrusRow = papyrus.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
 
             for (var j = 0; j < papyrusRow.Length; j++)
             {
@@ -356,7 +359,8 @@ namespace PapyrusDotNet
             var papyrus = "";
 
             papyrus += ".objectTable" + Environment.NewLine;
-            papyrus += ("\t.object " + asm.ObjectTable.Name + " " + asm.ObjectTable.BaseType).Trim() + Environment.NewLine;
+            papyrus += ("\t.object " + asm.ObjectTable.Name + " " + asm.ObjectTable.BaseType).Trim() +
+                       Environment.NewLine;
 
             papyrus += "\t\t.userFlags " + asm.ObjectTable.Info.UserFlagsValue + Environment.NewLine;
             papyrus += "\t\t.docString \"" + asm.ObjectTable.Info.DocString + "\"" + Environment.NewLine;
@@ -370,8 +374,8 @@ namespace PapyrusDotNet
 
             foreach (var variable in asm.ObjectTable.VariableTable)
             {
-                var userFlagsVal = variable.Properties.UserFlagsValue;
-                if (variable.Properties.IsHidden && variable.Properties.IsProperty)
+                var userFlagsVal = variable.Attributes.UserFlagsValue;
+                if (variable.Attributes.IsHidden && variable.Attributes.IsProperty)
                 {
                     userFlagsVal -= 1;
                     // The hidden flag only effects the Property field, declared after the variable field
@@ -387,9 +391,8 @@ namespace PapyrusDotNet
 
                 papyrus += Utility.Indent(3, ".variable " + variable.Name + " " + variable.TypeName);
                 papyrus += Utility.Indent(4, ".userFlags " + userFlagsVal);
-                papyrus += Utility.Indent(4, ".initialValue " + variable.Properties.InitialValue);
+                papyrus += Utility.Indent(4, ".initialValue " + variable.Attributes.InitialValue);
                 papyrus += Utility.Indent(3, ".endVariable");
-
             }
             papyrus += "\t\t.endVariableTable" + Environment.NewLine;
             papyrus += "\t\t.propertyTable" + Environment.NewLine;
@@ -402,9 +405,9 @@ namespace PapyrusDotNet
                     fieldProp.TypeName = "Int";
                 }
 
-                string autoMarker = fieldProp.Properties.IsAuto ? " auto" : "";
+                var autoMarker = fieldProp.Attributes.IsAuto ? " auto" : "";
                 papyrus += Utility.Indent(3, ".property " + fieldProp.Name + " " + fieldProp.TypeName + autoMarker);
-                papyrus += Utility.Indent(4, ".userFlags " + fieldProp.Properties.UserFlagsValue);
+                papyrus += Utility.Indent(4, ".userFlags " + fieldProp.Attributes.UserFlagsValue);
                 papyrus += Utility.Indent(4, ".docString \"\"");
                 papyrus += Utility.Indent(4, ".autoVar " + fieldProp.AutoVarName);
                 papyrus += Utility.Indent(3, ".endProperty");
@@ -477,7 +480,7 @@ namespace PapyrusDotNet
                     return "";
                 }
 
-                var genericType = (parameter.ParameterType as GenericInstanceType);
+                var genericType = parameter.ParameterType as GenericInstanceType;
                 var args = genericType?.GenericArguments;
                 if (args?.Count > 1)
                 {
@@ -510,7 +513,7 @@ namespace PapyrusDotNet
 
             val = val.Replace("<T>", "");
 
-            function.Parameters.Add(new PapyrusVariableReference(name, typeFullName));
+            function.Parameters.Add(new VariableReference(name, typeFullName));
 
             return ".param " + name + " " + val;
         }
@@ -553,7 +556,6 @@ namespace PapyrusDotNet
             var varType = variable.VariableType;
             if (varType.Name.ToLower().Contains("delegate"))
             {
-
                 var d1 = varType.Resolve();
                 if (d1.BaseType.FullName.ToLower().Contains("multicastdelegate"))
                 {
@@ -579,13 +581,17 @@ namespace PapyrusDotNet
 
                     var delegateMethod =
                         function.Assembly.DelegateMethodDefinitions.FirstOrDefault(
-                            del => del.Name.Contains("_" + functionName + "_") && del.Name.EndsWith("_" + function.DelegateInvokeCount));
+                            del =>
+                                del.Name.Contains("_" + functionName + "_") &&
+                                del.Name.EndsWith("_" + function.DelegateInvokeCount));
 
                     if (delegateMethod == null)
                     {
                         delegateMethod =
                             function.Assembly.DelegateMethodDefinitions.FirstOrDefault(
-                                del => del.Name.Contains("_" + functionName + "_") && del.Name.Contains("b_") && del.Name != function.Name);
+                                del =>
+                                    del.Name.Contains("_" + functionName + "_") && del.Name.Contains("b_") &&
+                                    del.Name != function.Name);
                     }
 
                     function.DelegateInvokeCount++;
@@ -594,11 +600,14 @@ namespace PapyrusDotNet
                     // "_" + function.Name + "_b__1_" + (delegatesUsed++); // varType.Name;
 
                     // var tn = ;
-
                 }
             }
 
-            function.Variables.Add(new PapyrusVariableReference(name, type) { IsDelegateInstance = delegateInstanceVar, DelegateInvokeReference = delegateInvokeRef });
+            function.Variables.Add(new VariableReference(name, type)
+            {
+                IsDelegateInstance = delegateInstanceVar,
+                DelegateInvokeReference = delegateInvokeRef
+            });
 
             return ".local " + name + " " + val; //Utility.GetPapyrusReturnType(typeN, variable.VariableType.Namespace);
         }
@@ -613,7 +622,6 @@ namespace PapyrusDotNet
 
             if (InstructionHelper.IsConverToNumber(instruction.OpCode.Code))
             {
-
                 return "";
             }
 
@@ -635,9 +643,9 @@ namespace PapyrusDotNet
                 //string value1 = "";
                 //string value2 = "";
 
-                //if (obj1.Value is PapyrusVariableReference)
+                //if (obj1.Value is VariableReference)
                 //{
-                //    var oo = (obj1.Value as PapyrusVariableReference);
+                //    var oo = (obj1.Value as VariableReference);
                 //    value1 = oo.Name;
                 //    if (!oo.TypeName.ToLower().Equals("int") && !oo.TypeName.ToLower().Equals("system.int32"))
                 //    {
@@ -649,9 +657,9 @@ namespace PapyrusDotNet
                 //else
                 //    value1 = obj1.Value.ToString();
 
-                //if (obj2.Value is PapyrusVariableReference)
+                //if (obj2.Value is VariableReference)
                 //{
-                //    var oo = (obj2.Value as PapyrusVariableReference);
+                //    var oo = (obj2.Value as VariableReference);
                 //    value2 = oo.Name;
                 //    if (!oo.TypeName.ToLower().Equals("int") && !oo.TypeName.ToLower().Equals("system.int32"))
                 //    {
@@ -663,8 +671,6 @@ namespace PapyrusDotNet
                 //}
                 //else
                 //    value2 = obj2.Value.ToString();
-
-
             }
 
             if (InstructionHelper.IsLoadStaticField(instruction.OpCode.Code))
@@ -680,14 +686,14 @@ namespace PapyrusDotNet
                     var itemIndex = evaluationStack.Pop();
                     var itemArray = evaluationStack.Pop();
 
-                    PapyrusVariableReference sourceArray = null;
+                    VariableReference sourceArray = null;
 
-                    string tar = "";
+                    var tar = "";
                     var idx = -1;
                     var oidx = "0";
-                    if (itemIndex.Value is PapyrusVariableReference)
+                    if (itemIndex.Value is VariableReference)
                     {
-                        oidx = (itemIndex.Value as PapyrusVariableReference).Name;
+                        oidx = (itemIndex.Value as VariableReference).Name;
                     }
                     else if (itemIndex.Value != null)
                         idx = int.Parse(itemIndex.Value.ToString());
@@ -696,13 +702,11 @@ namespace PapyrusDotNet
                     if (idx != -1)
                         oidx = idx.ToString();
 
-                    if (itemArray.Value is PapyrusVariableReference)
+                    if (itemArray.Value is VariableReference)
                     {
-                        sourceArray = (itemArray.Value as PapyrusVariableReference);
+                        sourceArray = itemArray.Value as VariableReference;
                         tar = sourceArray.Name;
                     }
-                    else
-                    { /* Unsupported */ }
 
 
                     // Supports:
@@ -716,23 +720,20 @@ namespace PapyrusDotNet
                         var targetMethod = instruction.Next.Operand as MethodReference;
                         if (targetMethod != null && targetMethod.HasParameters)
                         {
-                            var tarVar = GetTargetVariable(instruction, targetMethod, sourceArray.TypeName.Replace("[]", ""));
+                            var tarVar = GetTargetVariable(instruction, targetMethod,
+                                sourceArray.TypeName.Replace("[]", ""));
 
                             return "ArrayGetElement " + tarVar + " " + tar + " " + oidx;
-
                         }
                     }
 
-                    int targetVariableIndex = 0;
+                    var targetVariableIndex = 0;
                     var tarIn = GetNextStoreLocalVariableInstruction(instruction, out targetVariableIndex);
                     if (tarIn != null)
                     {
-
-                        return "ArrayGetElement " + function.AllVariables[targetVariableIndex].Name + " " + tar + " " + oidx;
+                        return "ArrayGetElement " + function.AllVariables[targetVariableIndex].Name + " " + tar + " " +
+                               oidx;
                     }
-
-
-
                 }
             }
 
@@ -745,30 +746,27 @@ namespace PapyrusDotNet
                     var itemIndex = evaluationStack.Pop();
                     var itemArray = evaluationStack.Pop();
 
-                    string val = "";
-                    string tar = "";
+                    var val = "";
+                    var tar = "";
                     var idx = -1;
                     var oidx = "0";
-                    if (itemIndex.Value is PapyrusVariableReference)
-                        oidx = (itemIndex.Value as PapyrusVariableReference).Name;
+                    if (itemIndex.Value is VariableReference)
+                        oidx = (itemIndex.Value as VariableReference).Name;
                     else if (itemIndex.Value != null)
                         idx = int.Parse(itemIndex.Value.ToString());
 
                     if (idx > 128) idx = 128;
                     if (idx != -1)
                         oidx = idx.ToString();
-                    if (itemArray.Value is PapyrusVariableReference)
-                        tar = (itemArray.Value as PapyrusVariableReference).Name;
-                    else
-                    { /* Unsupported */ }
+                    if (itemArray.Value is VariableReference)
+                        tar = (itemArray.Value as VariableReference).Name;
 
-                    if (newValue.Value is PapyrusVariableReference)
-                        val = (newValue.Value as PapyrusVariableReference).Name;
+                    if (newValue.Value is VariableReference)
+                        val = (newValue.Value as VariableReference).Name;
 
                     else if (newValue.Value != null) val = newValue.Value.ToString();
 
                     return "ArraySetElement " + tar + " " + oidx + " " + val;
-
                 }
             }
 
@@ -780,11 +778,12 @@ namespace PapyrusDotNet
                     var val = evaluationStack.Pop();
                     if (val.TypeName.EndsWith("[]"))
                     {
-                        if (val.Value is PapyrusVariableReference)
+                        if (val.Value is VariableReference)
                         {
-                            int variableIndex = 0;
+                            var variableIndex = 0;
                             var storeInstruction = GetNextStoreLocalVariableInstruction(instruction, out variableIndex);
-                            if (storeInstruction != null || InstructionHelper.IsConverToNumber(instruction.Next.OpCode.Code))
+                            if (storeInstruction != null ||
+                                InstructionHelper.IsConverToNumber(instruction.Next.OpCode.Code))
                             {
                                 if (InstructionHelper.IsConverToNumber(instruction.Next.OpCode.Code))
                                 {
@@ -796,25 +795,19 @@ namespace PapyrusDotNet
                                     var vari = function.AllVariables.FirstOrDefault(va => va.Name == targetVariable);
 
                                     //evaluationStack.Push(new EvaluationStackItem() { IsMethodCall = false, IsThis = false, TypeName = vari.TypeName, Value = vari });
-                                    return "ArrayLength " + targetVariable + " " + (val.Value as PapyrusVariableReference).Name;
-
+                                    return "ArrayLength " + targetVariable + " " + (val.Value as VariableReference).Name;
                                 }
-                                else
+                                evaluationStack.Push(new EvaluationStackItem
                                 {
-                                    evaluationStack.Push(new EvaluationStackItem() { IsMethodCall = false, IsThis = false, TypeName = function.AllVariables[variableIndex].TypeName, Value = function.AllVariables[variableIndex] });
-                                    return "ArrayLength " + function.AllVariables[variableIndex].Name + " " + (val.Value as PapyrusVariableReference).Name;
-
-                                }
+                                    IsMethodCall = false,
+                                    IsThis = false,
+                                    TypeName = function.AllVariables[variableIndex].TypeName,
+                                    Value = function.AllVariables[variableIndex]
+                                });
+                                return "ArrayLength " + function.AllVariables[variableIndex].Name + " " +
+                                       (val.Value as VariableReference).Name;
                             }
                         }
-                        else
-                        {
-                            // NOT SUPPORTED
-                        }
-                    }
-                    else
-                    {
-                        // size of ?
                     }
                 }
                 // ArrayLength <outputVariableName> <arrayName>
@@ -827,11 +820,10 @@ namespace PapyrusDotNet
                 {
                     var val = evaluationStack.Pop();
 
-                    int targetVariableIndex = 0;
+                    var targetVariableIndex = 0;
                     var tarIn = GetNextStoreLocalVariableInstruction(instruction, out targetVariableIndex);
                     if (tarIn != null)
                     {
-
                         if (tarIn.Operand is FieldReference)
                         {
                             var fref = tarIn.Operand as FieldReference;
@@ -840,7 +832,8 @@ namespace PapyrusDotNet
                             // Something we did not store...
 
                             var definedField =
-                                    function.Fields.FirstOrDefault(f => f.Name == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+                                function.Fields.FirstOrDefault(
+                                    f => f.Name == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
 
                             if (definedField != null)
                             {
@@ -848,9 +841,9 @@ namespace PapyrusDotNet
                                 {
                                     var obj = evaluationStack.Pop();
 
-                                    if (obj.Value is PapyrusVariableReference)
+                                    if (obj.Value is VariableReference)
                                     {
-                                        var varRef = obj.Value as PapyrusVariableReference;
+                                        var varRef = obj.Value as VariableReference;
                                         definedField.Value = varRef.Value;
                                         // return "Assign " + definedField.Name + " " + varRef.Name;
                                         return "ArrayCreate " + definedField.Name + " " + val.Value;
@@ -875,7 +868,7 @@ namespace PapyrusDotNet
                 // this opCode should be ignored, but we should still pop the values from the stack
                 // to maintain correct work flow.
 
-                for (int pops = 0; pops < popCount; pops++)
+                for (var pops = 0; pops < popCount; pops++)
                 {
                     if (evaluationStack.Count > 0)
                         evaluationStack.Pop();
@@ -886,29 +879,32 @@ namespace PapyrusDotNet
             if (InstructionHelper.IsLoadArgs(instruction.OpCode.Code))
             {
                 var index = IntValue(instruction);
-                if (targetMethod.IsStatic && (int)index == 0 && targetMethod.Parameters.Count == 0)
+                if (targetMethod.IsStatic && (int) index == 0 && targetMethod.Parameters.Count == 0)
                 {
-                    evaluationStack.Push(new EvaluationStackItem { IsThis = true, Value = type, TypeName = type.FullName });
+                    evaluationStack.Push(new EvaluationStackItem {IsThis = true, Value = type, TypeName = type.FullName});
                 }
                 else
                 {
                     if (!targetMethod.IsStatic && index > 0) index--;
                     if (index < function.Parameters.Count)
                     {
-                        evaluationStack.Push(new EvaluationStackItem { Value = function.Parameters[(int)index], TypeName = function.Parameters[(int)index].TypeName });
+                        evaluationStack.Push(new EvaluationStackItem
+                        {
+                            Value = function.Parameters[(int) index],
+                            TypeName = function.Parameters[(int) index].TypeName
+                        });
                     }
                 }
-
             }
             if (InstructionHelper.IsLoadInteger(instruction.OpCode.Code))
             {
                 var index = IntValue(instruction);
-                evaluationStack.Push(new EvaluationStackItem { Value = index, TypeName = "Int" });
+                evaluationStack.Push(new EvaluationStackItem {Value = index, TypeName = "Int"});
             }
 
             if (InstructionHelper.IsLoadNull(instruction.OpCode.Code))
             {
-                evaluationStack.Push(new EvaluationStackItem { Value = "None", TypeName = "None" });
+                evaluationStack.Push(new EvaluationStackItem {Value = "None", TypeName = "None"});
             }
 
             if (InstructionHelper.IsLoadField(instruction.OpCode.Code))
@@ -917,10 +913,16 @@ namespace PapyrusDotNet
                 {
                     var fref = instruction.Operand as FieldReference;
 
-                    var definedField = function.Fields.FirstOrDefault(f => f.Name == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+                    var definedField =
+                        function.Fields.FirstOrDefault(
+                            f => f.Name == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
                     if (definedField != null)
                     {
-                        evaluationStack.Push(new EvaluationStackItem { Value = definedField, TypeName = definedField.TypeName });
+                        evaluationStack.Push(new EvaluationStackItem
+                        {
+                            Value = definedField,
+                            TypeName = definedField.TypeName
+                        });
                     }
                 }
             }
@@ -931,7 +933,11 @@ namespace PapyrusDotNet
                 var index = IntValue(instruction);
                 if (index < function.AllVariables.Count)
                 {
-                    evaluationStack.Push(new EvaluationStackItem { Value = function.AllVariables[(int)index], TypeName = function.AllVariables[(int)index].TypeName });
+                    evaluationStack.Push(new EvaluationStackItem
+                    {
+                        Value = function.AllVariables[(int) index],
+                        TypeName = function.AllVariables[(int) index].TypeName
+                    });
                 }
             }
 
@@ -939,14 +945,13 @@ namespace PapyrusDotNet
             {
                 var value = Utility.GetString(instruction.Operand);
 
-                evaluationStack.Push(new EvaluationStackItem { Value = "\"" + value + "\"", TypeName = "String" });
+                evaluationStack.Push(new EvaluationStackItem {Value = "\"" + value + "\"", TypeName = "String"});
             }
 
 
-
-            if (InstructionHelper.IsStoreLocalVariable(instruction.OpCode.Code) || InstructionHelper.IsStoreField(instruction.OpCode.Code))
+            if (InstructionHelper.IsStoreLocalVariable(instruction.OpCode.Code) ||
+                InstructionHelper.IsStoreField(instruction.OpCode.Code))
             {
-
                 if (instruction.Operand is FieldReference)
                 {
                     var fref = instruction.Operand as FieldReference;
@@ -957,12 +962,14 @@ namespace PapyrusDotNet
                     {
                         var obj = evaluationStack.Pop();
 
-                        var definedField = function.Fields.FirstOrDefault(f => f.Name == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+                        var definedField =
+                            function.Fields.FirstOrDefault(
+                                f => f.Name == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
                         if (definedField != null)
                         {
-                            if (obj.Value is PapyrusVariableReference)
+                            if (obj.Value is VariableReference)
                             {
-                                var varRef = obj.Value as PapyrusVariableReference;
+                                var varRef = obj.Value as VariableReference;
                                 definedField.Value = varRef.Value;
                                 return "Assign " + definedField.Name + " " + varRef.Name;
                             }
@@ -977,22 +984,22 @@ namespace PapyrusDotNet
                     if (evaluationStack.Count > 0)
                     {
                         var heapObj = evaluationStack.Pop();
-                        if (heapObj.Value is PapyrusVariableReference)
+                        if (heapObj.Value is VariableReference)
                         {
-                            var varRef = heapObj.Value as PapyrusVariableReference;
-                            function.AllVariables[(int)index].Value = varRef.Value;
-                            return "Assign " + function.AllVariables[(int)index].Name + " " + varRef.Name;
+                            var varRef = heapObj.Value as VariableReference;
+                            function.AllVariables[(int) index].Value = varRef.Value;
+                            return "Assign " + function.AllVariables[(int) index].Name + " " + varRef.Name;
                         }
 
 
-                        function.AllVariables[(int)index].Value = Utility.TypeValueConvert(function.AllVariables[(int)index].TypeName, heapObj.Value);
+                        function.AllVariables[(int) index].Value =
+                            Utility.TypeValueConvert(function.AllVariables[(int) index].TypeName, heapObj.Value);
                     }
-                    var valout = function.AllVariables[(int)index].Value;
+                    var valout = function.AllVariables[(int) index].Value;
                     var valoutStr = valout + "";
                     if (string.IsNullOrEmpty(valoutStr)) valoutStr = "None";
-                    return "Assign " + function.AllVariables[(int)index].Name + " " + valoutStr;
+                    return "Assign " + function.AllVariables[(int) index].Name + " " + valoutStr;
                 }
-
             }
 
             if (InstructionHelper.IsMath(instruction.OpCode.Code))
@@ -1001,7 +1008,7 @@ namespace PapyrusDotNet
                 {
                     // should be 2.
                     // Make sure we have a temp variable if necessary
-                    string concatTargetVar = GetTargetVariable(instruction, null, "Int");
+                    var concatTargetVar = GetTargetVariable(instruction, null, "Int");
 
                     // Equiviliant Papyrus: StrCat <output> <val1> <val2>
 
@@ -1022,12 +1029,14 @@ namespace PapyrusDotNet
                     /* Check if we are calling a invoke function from a skipped Func parameter */
                     if (methodRef.Name.Contains("Invoke"))
                     {
-                        int loadArgIndex = -1;
-                        if (instruction.Previous != null && InstructionHelper.IsLoadArgs(instruction.Previous.OpCode.Code))
+                        var loadArgIndex = -1;
+                        if (instruction.Previous != null &&
+                            InstructionHelper.IsLoadArgs(instruction.Previous.OpCode.Code))
                         {
                             loadArgIndex = InstructionHelper.GetCodeIndex(instruction.Previous.OpCode.Code);
                         }
-                        if (instruction.Previous != null && instruction.Previous.Previous != null && InstructionHelper.IsLoadArgs(instruction.Previous.Previous.OpCode.Code))
+                        if (instruction.Previous != null && instruction.Previous.Previous != null &&
+                            InstructionHelper.IsLoadArgs(instruction.Previous.Previous.OpCode.Code))
                         {
                             loadArgIndex = InstructionHelper.GetCodeIndex(instruction.Previous.Previous.OpCode.Code);
                         }
@@ -1041,23 +1050,23 @@ namespace PapyrusDotNet
                                 {
                                     // skippedParam should be a predicate, but at this  point we already know that.
                                     // And by knowing that we know we are actually calling a compiler-time generated method
-                                    var caller = callHierarchy.FirstOrDefault(f => f.TargetMethod.Name == targetMethod.Name);
+                                    var caller =
+                                        callHierarchy.FirstOrDefault(f => f.TargetMethod.Name == targetMethod.Name);
                                     if (caller.CallerMethod != null)
                                     {
-                                        overrideMethodCallName = "_" + caller.CallerMethod.Name + "_b__" + (function.ExtensionInvokeCount++);
+                                        overrideMethodCallName = "_" + caller.CallerMethod.Name + "_b__" +
+                                                                 function.ExtensionInvokeCount++;
                                     }
                                 }
                             }
-
                         }
                     }
-
 
 
                     if (methodRef.Name.ToLower().Contains("concat"))
                     {
                         // Make sure we have a temp variable if necessary
-                        string concatTargetVar = GetTargetVariable(instruction, methodRef);
+                        var concatTargetVar = GetTargetVariable(instruction, methodRef);
 
                         // Equiviliant Papyrus: StrCat <output> <val1> <val2>
 
@@ -1066,14 +1075,14 @@ namespace PapyrusDotNet
 
                         var targetVariable = evaluationStack.Peek();
                         //	var val=evaluationStack.Peek()
-                        if (targetVariable.Value is PapyrusVariableReference)
+                        if (targetVariable.Value is VariableReference)
                         {
                             targetVariable = evaluationStack.Pop();
                         }
                         else targetVariable = null;
 
                         var concatValues = new List<EvaluationStackItem>();
-                        for (int idx = 0; idx < popCount; idx++)
+                        for (var idx = 0; idx < popCount; idx++)
                         {
                             concatValues.Add(evaluationStack.Pop());
                         }
@@ -1085,11 +1094,11 @@ namespace PapyrusDotNet
 
                         //var outputStr = "";
 
-                        for (int j = concatValues.Count - 1; j >= 0; j--)
+                        for (var j = concatValues.Count - 1; j >= 0; j--)
                         {
-                            if (concatValues[j].Value is PapyrusVariableReference)
+                            if (concatValues[j].Value is VariableReference)
                             {
-                                var name = (concatValues[j].Value as PapyrusVariableReference).Name;
+                                var name = (concatValues[j].Value as VariableReference).Name;
 
                                 if (!concatValues[j].TypeName.ToLower().Contains("string"))
                                     strCats.Add("Cast " + concatTargetVar + " " + name);
@@ -1098,7 +1107,8 @@ namespace PapyrusDotNet
                             }
                             else
                             {
-                                strCats.Add("StrCat " + concatTargetVar + " " + concatTargetVar + " " + concatValues[j].Value);
+                                strCats.Add("StrCat " + concatTargetVar + " " + concatTargetVar + " " +
+                                            concatValues[j].Value);
                             }
                         }
                         var possibleMethodCall = instruction.Next;
@@ -1110,10 +1120,19 @@ namespace PapyrusDotNet
                         {
                             if (targetVariable != null)
                             {
-                                evaluationStack.Push(new EvaluationStackItem() { TypeName = targetVariable.TypeName, Value = targetVariable });
+                                evaluationStack.Push(new EvaluationStackItem
+                                {
+                                    TypeName = targetVariable.TypeName,
+                                    Value = targetVariable
+                                });
                             }
                             else
-                                evaluationStack.Push(new EvaluationStackItem() { TypeName = function.AllVariables.FirstOrDefault(n => n.Name == concatTargetVar).TypeName, Value = function.AllVariables.FirstOrDefault(n => n.Name == concatTargetVar) });
+                                evaluationStack.Push(new EvaluationStackItem
+                                {
+                                    TypeName =
+                                        function.AllVariables.FirstOrDefault(n => n.Name == concatTargetVar).TypeName,
+                                    Value = function.AllVariables.FirstOrDefault(n => n.Name == concatTargetVar)
+                                });
                         }
 
                         return string.Join(Environment.NewLine, strCats.ToArray());
@@ -1132,19 +1151,18 @@ namespace PapyrusDotNet
                         // evaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
                         passThroughConditional = true;
                         goto EqualityCheck;
-
                     }
 
-                    bool isCalledByThis = false;
+                    var isCalledByThis = false;
                     var param = new List<EvaluationStackItem>();
 
 
-
                     var itemsToPop = 0;
-                    if (instruction.OpCode.StackBehaviourPop == StackBehaviour.Varpop) itemsToPop = methodRef.Parameters.Count;
+                    if (instruction.OpCode.StackBehaviourPop == StackBehaviour.Varpop)
+                        itemsToPop = methodRef.Parameters.Count;
                     else itemsToPop = Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop);
 
-                    for (int j = 0; j < itemsToPop; j++)
+                    for (var j = 0; j < itemsToPop; j++)
                     {
                         if (evaluationStack.Count > 0)
                         {
@@ -1152,7 +1170,6 @@ namespace PapyrusDotNet
                             if (parameter.IsThis && evaluationStack.Count > methodRef.Parameters.Count
                                 || methodRef.CallingConvention == MethodCallingConvention.ThisCall)
                             {
-
                                 isCalledByThis = true;
                                 // this.CallMethod();
                             }
@@ -1181,10 +1198,9 @@ namespace PapyrusDotNet
                     }
                     catch
                     {
-
                     }
 
-                    string targetVar = GetTargetVariable(instruction, methodRef);
+                    var targetVar = GetTargetVariable(instruction, methodRef);
 
 
                     // methodRef.Module
@@ -1201,7 +1217,7 @@ namespace PapyrusDotNet
                             var fName = methodRef.FullName;
                             if (fName.Contains("::"))
                             {
-                                var values = fName.Split(new string[] { "::" }, StringSplitOptions.None)[0];
+                                var values = fName.Split(new[] {"::"}, StringSplitOptions.None)[0];
                                 if (values.Contains("."))
                                 {
                                     values = values.Split('.').LastOrDefault();
@@ -1215,25 +1231,27 @@ namespace PapyrusDotNet
                             MethodReference methodRef2 = null;
 
                             if (!Utility.IsCallMethodInsideNamespace(
-                                    instruction,
-                                    "PapyrusDotNet.System.Linq",
-                                    out methodRef2))
+                                instruction,
+                                "PapyrusDotNet.System.Linq",
+                                out methodRef2))
 
-                                return "CallStatic " + callerType + " " + (!string.IsNullOrEmpty(overrideMethodCallName) ? overrideMethodCallName : methodRef.Name) + " " + targetVar + " "
+                                return "CallStatic " + callerType + " " +
+                                       (!string.IsNullOrEmpty(overrideMethodCallName)
+                                           ? overrideMethodCallName
+                                           : methodRef.Name) + " " + targetVar + " "
                                        + FormatParameters(methodRef, param); //definition;                            
-                            else
+                            if (!string.IsNullOrEmpty(LastSaughtTypeName))
                             {
-                                if (!string.IsNullOrEmpty(LastSaughtTypeName))
+                                var defaultState = function.Assembly.ObjectTable.StateTable.FirstOrDefault();
+                                if (defaultState != null)
                                 {
-                                    var defaultState = function.Assembly.ObjectTable.StateTable.FirstOrDefault();
-                                    if (defaultState != null)
+                                    var linqFunction =
+                                        defaultState.Functions.FirstOrDefault(f => f.Name == methodRef.Name);
+                                    if (linqFunction != null)
                                     {
-                                        var linqFunction = defaultState.Functions.FirstOrDefault(f => f.Name == methodRef.Name);
-                                        if (linqFunction != null)
-                                        {
-                                            linqFunction.InstanceCaller = targetMethod.Name;
-                                            linqFunction.ReplaceGenericTypesWith(Utility.GetPapyrusReturnType(LastSaughtTypeName));
-                                        }
+                                        linqFunction.InstanceCaller = targetMethod.Name;
+                                        linqFunction.ReplaceGenericTypesWith(
+                                            Utility.GetPapyrusReturnType(LastSaughtTypeName));
                                     }
                                 }
                             }
@@ -1251,7 +1269,9 @@ namespace PapyrusDotNet
                             if (callerType.Contains(".")) callerType = callerType.Split('.').LastOrDefault();
                         }
 
-                        return "CallMethod " + (!string.IsNullOrEmpty(overrideMethodCallName) ? overrideMethodCallName : methodRef.Name) + " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
+                        return "CallMethod " +
+                               (!string.IsNullOrEmpty(overrideMethodCallName) ? overrideMethodCallName : methodRef.Name) +
+                               " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
                     }
                     else
                     {
@@ -1265,9 +1285,9 @@ namespace PapyrusDotNet
                             if (callerType.Contains(".")) callerType = callerType.Split('.').LastOrDefault();
 
                             if (callerType.ToLower() == type.Name.ToLower()) callerType = "self";
-                            if (caller.Value is PapyrusVariableReference)
+                            if (caller.Value is VariableReference)
                             {
-                                var varRef = (caller.Value as PapyrusVariableReference);
+                                var varRef = caller.Value as VariableReference;
 
                                 callerType = varRef.Name;
 
@@ -1282,7 +1302,9 @@ namespace PapyrusDotNet
                         // function.AllVariables 
 #warning check if the variable being used is a delegate, if it is. then run the function on self instead.
 
-                        return "CallMethod " + (!string.IsNullOrEmpty(overrideMethodCallName) ? overrideMethodCallName : targetMethod) + " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
+                        return "CallMethod " +
+                               (!string.IsNullOrEmpty(overrideMethodCallName) ? overrideMethodCallName : targetMethod) +
+                               " " + callerType + " " + targetVar + " " + FormatParameters(methodRef, param);
                     }
                 }
             }
@@ -1297,9 +1319,9 @@ namespace PapyrusDotNet
                 if (evaluationStack.Count >= Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop))
                 {
                     var topValue = evaluationStack.Pop();
-                    if (topValue.Value is PapyrusVariableReference)
+                    if (topValue.Value is VariableReference)
                     {
-                        var variable = topValue.Value as PapyrusVariableReference;
+                        var variable = topValue.Value as VariableReference;
                         return "Return " + variable.Name;
                     }
                 }
@@ -1338,7 +1360,6 @@ namespace PapyrusDotNet
                 }
                 else if (InstructionHelper.IsEqualTo(instruction.OpCode.Code) || passThroughConditional)
                 {
-
                     string cast;
                     var outputVal = GetConditional(instruction, out cast);
                     if (!string.IsNullOrEmpty(outputVal))
@@ -1348,7 +1369,6 @@ namespace PapyrusDotNet
                         return "CompareEQ " + outputVal;
                     }
                 }
-
             }
 
             if (InstructionHelper.IsBranchConditional(instruction.OpCode.Code))
@@ -1358,22 +1378,21 @@ namespace PapyrusDotNet
                 var popCount = Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop);
                 if (evaluationStack.Count >= popCount)
                 {
-
                     var obj1 = evaluationStack.Pop();
                     var obj2 = evaluationStack.Pop();
 
                     // Make sure we have a temp variable if necessary
-                    string temp = GetTargetVariable(instruction, null, "Bool");
+                    var temp = GetTargetVariable(instruction, null, "Bool");
 
-                    string value1 = "";
-                    string value2 = "";
+                    var value1 = "";
+                    var value2 = "";
 
-                    if (obj1.Value is PapyrusVariableReference)
-                        value1 = (obj1.Value as PapyrusVariableReference).Name;
+                    if (obj1.Value is VariableReference)
+                        value1 = (obj1.Value as VariableReference).Name;
                     else
                         value1 = obj1.Value.ToString();
 
-                    if (obj2.Value is PapyrusVariableReference) value2 = (obj2.Value as PapyrusVariableReference).Name;
+                    if (obj2.Value is VariableReference) value2 = (obj2.Value as VariableReference).Name;
                     else
                         value2 = obj2.Value.ToString();
 
@@ -1391,15 +1410,15 @@ namespace PapyrusDotNet
                     }
 
 
-                    if (InstructionHelper.IsBranchConditionalEQ(instruction.OpCode.Code))
+                    if (InstructionHelper.IsBranchConditionalEq(instruction.OpCode.Code))
                         output.Add("CompareEQ " + temp + " " + value1 + " " + value2);
-                    else if (InstructionHelper.IsBranchConditionalLT(instruction.OpCode.Code))
+                    else if (InstructionHelper.IsBranchConditionalLt(instruction.OpCode.Code))
                         output.Add("CompareLT " + temp + " " + value1 + " " + value2);
-                    else if (InstructionHelper.IsBranchConditionalGT(instruction.OpCode.Code))
+                    else if (InstructionHelper.IsBranchConditionalGt(instruction.OpCode.Code))
                         output.Add("CompareGT " + temp + " " + value1 + " " + value2);
-                    else if (InstructionHelper.IsBranchConditionalGE(instruction.OpCode.Code))
+                    else if (InstructionHelper.IsBranchConditionalGe(instruction.OpCode.Code))
                         output.Add("CompareGE " + temp + " " + value1 + " " + value2);
-                    else if (InstructionHelper.IsBranchConditionalGE(instruction.OpCode.Code))
+                    else if (InstructionHelper.IsBranchConditionalGe(instruction.OpCode.Code))
                         output.Add("CompareLE " + temp + " " + value1 + " " + value2);
 
                     if (!invertedBranch)
@@ -1430,13 +1449,12 @@ namespace PapyrusDotNet
                 {
                     var value = heapStack.Pop();
                     var compareVal = "";
-                    if (value.Value is PapyrusVariableReference)
+                    if (value.Value is VariableReference)
                     {
-                        var variable = value.Value as PapyrusVariableReference;
+                        var variable = value.Value as VariableReference;
                         compareVal = variable.Name;
                     }
                     else compareVal = value.Value.ToString();
-
 
 
                     if (instruction.OpCode.Code == Code.Brtrue || instruction.OpCode.Code == Code.Brtrue_S)
@@ -1466,18 +1484,19 @@ namespace PapyrusDotNet
             return "";
         }
 
-        public PapyrusVariableReference GetFieldFromSTFLD(Instruction whereToPlace)
+        public VariableReference GetFieldFromSTFLD(Instruction whereToPlace)
         {
             if (InstructionHelper.IsStoreField(whereToPlace.OpCode.Code))
             {
-
                 if (whereToPlace.Operand is FieldReference)
                 {
                     var fref = whereToPlace.Operand as FieldReference;
                     // if the evaluationStack.Count == 0
                     // The previous instruction might have been a call that returned a value
                     // Something we did not store...
-                    var definedField = function.Fields.FirstOrDefault(f => f.Name == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+                    var definedField =
+                        function.Fields.FirstOrDefault(
+                            f => f.Name == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
                     if (definedField != null)
                     {
                         return definedField;
@@ -1487,16 +1506,16 @@ namespace PapyrusDotNet
             return null;
         }
 
-        public string LastSaughtTypeName = "";
-
-        private string GetTargetVariable(Instruction instruction, MethodReference methodRef, string fallbackType = null, bool forceNew = false)
+        private string GetTargetVariable(Instruction instruction, MethodReference methodRef, string fallbackType = null,
+            bool forceNew = false)
         {
             string targetVar = null;
             var whereToPlace = instruction.Next;
 
-            if (whereToPlace != null && (InstructionHelper.IsStoreLocalVariable(whereToPlace.OpCode.Code) || InstructionHelper.IsStoreField(whereToPlace.OpCode.Code)))
+            if (whereToPlace != null &&
+                (InstructionHelper.IsStoreLocalVariable(whereToPlace.OpCode.Code) ||
+                 InstructionHelper.IsStoreField(whereToPlace.OpCode.Code)))
             {
-
                 if (InstructionHelper.IsStoreField(whereToPlace.OpCode.Code))
                 {
                     var fieldData = GetFieldFromSTFLD(whereToPlace);
@@ -1511,8 +1530,8 @@ namespace PapyrusDotNet
                     var index = IntValue(whereToPlace);
                     if (index < function.AllVariables.Count)
                     {
-                        targetVar = function.AllVariables[(int)index].Name;
-                        LastSaughtTypeName = function.AllVariables[(int)index].TypeName;
+                        targetVar = function.AllVariables[(int) index].Name;
+                        LastSaughtTypeName = function.AllVariables[(int) index].TypeName;
                     }
                 }
                 skipNextInstruction = true;
@@ -1520,17 +1539,23 @@ namespace PapyrusDotNet
                 // else 
                 //evaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
             }
-            else if (whereToPlace != null && (InstructionHelper.IsLoad(whereToPlace.OpCode.Code) || InstructionHelper.IsCallMethod(whereToPlace.OpCode.Code) || InstructionHelper.IsBranchConditional(instruction.OpCode.Code)
-                || Utility.IsLoadLength(instruction.OpCode.Code)))
+            else if (whereToPlace != null &&
+                     (InstructionHelper.IsLoad(whereToPlace.OpCode.Code) ||
+                      InstructionHelper.IsCallMethod(whereToPlace.OpCode.Code) ||
+                      InstructionHelper.IsBranchConditional(instruction.OpCode.Code)
+                      || Utility.IsLoadLength(instruction.OpCode.Code)))
             {
                 // Most likely this function call have a return value other than Void
                 // and is used for an additional method call, witout being assigned to a variable first.
 
                 // evaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
 
-                var tVar = function.CreateTempVariable(!string.IsNullOrEmpty(fallbackType) ? fallbackType : methodRef.ReturnType.FullName, methodRef);
+                var tVar =
+                    function.CreateTempVariable(
+                        !string.IsNullOrEmpty(fallbackType) ? fallbackType : methodRef.ReturnType.FullName,
+                        methodRef);
                 targetVar = tVar.Name;
-                evaluationStack.Push(new EvaluationStackItem { Value = tVar, TypeName = tVar.TypeName });
+                evaluationStack.Push(new EvaluationStackItem {Value = tVar, TypeName = tVar.TypeName});
                 LastSaughtTypeName = tVar.TypeName;
             }
             else
@@ -1541,7 +1566,6 @@ namespace PapyrusDotNet
         }
 
 
-
         public string GetConditional(Instruction instruction, out string cast)
         {
             cast = null;
@@ -1549,19 +1573,19 @@ namespace PapyrusDotNet
             var heapStack = evaluationStack;
 
 
-            if (heapStack.Count >= 2)//Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop))
+            if (heapStack.Count >= 2) //Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop))
             {
                 var obj1 = heapStack.Pop();
                 var obj2 = heapStack.Pop();
                 var vars = function.AllVariables;
                 var varIndex = 0;
 
-                string value1 = "";
-                string value2 = "";
+                var value1 = "";
+                var value2 = "";
 
-                if (obj1.Value is PapyrusVariableReference)
+                if (obj1.Value is VariableReference)
                 {
-                    var oo = (obj1.Value as PapyrusVariableReference);
+                    var oo = obj1.Value as VariableReference;
                     value1 = oo.Name;
                     if (!oo.TypeName.ToLower().Equals("int") && !oo.TypeName.ToLower().Equals("system.int32")
                         && !oo.TypeName.ToLower().Equals("system.string") && !oo.TypeName.ToLower().Equals("string"))
@@ -1574,9 +1598,9 @@ namespace PapyrusDotNet
                 else
                     value1 = obj1.Value.ToString();
 
-                if (obj2.Value is PapyrusVariableReference)
+                if (obj2.Value is VariableReference)
                 {
-                    var oo = (obj2.Value as PapyrusVariableReference);
+                    var oo = obj2.Value as VariableReference;
                     value2 = oo.Name;
                     if (!oo.TypeName.ToLower().Equals("int") && !oo.TypeName.ToLower().Equals("system.int32")
                         && !oo.TypeName.ToLower().Equals("system.string") && !oo.TypeName.ToLower().Equals("string"))
@@ -1585,7 +1609,6 @@ namespace PapyrusDotNet
                         var typeVariable = GetTargetVariable(instruction, null, "Int");
                         cast = "Cast " + typeVariable + " " + value2;
                     }
-
                 }
                 else
                     value2 = obj2.Value.ToString();
@@ -1593,7 +1616,9 @@ namespace PapyrusDotNet
                 // if (Utility.IsGreaterThan(code) || Utility.IsLessThan(code))
                 {
                     var next = instruction.Next;
-                    while (next != null && !InstructionHelper.IsStoreLocalVariable(next.OpCode.Code) && !InstructionHelper.IsStoreField(next.OpCode.Code) && !InstructionHelper.IsCallMethod(next.OpCode.Code))
+                    while (next != null && !InstructionHelper.IsStoreLocalVariable(next.OpCode.Code) &&
+                           !InstructionHelper.IsStoreField(next.OpCode.Code) &&
+                           !InstructionHelper.IsCallMethod(next.OpCode.Code))
                     {
                         next = next.Next;
                     }
@@ -1604,14 +1629,12 @@ namespace PapyrusDotNet
                         var methodRef = instruction.Operand as MethodReference;
                         var tVar = function.CreateTempVariable(methodRef.ReturnType.FullName);
                         var targetVar = tVar.Name;
-                        evaluationStack.Push(new EvaluationStackItem { Value = tVar, TypeName = tVar.TypeName });
+                        evaluationStack.Push(new EvaluationStackItem {Value = tVar, TypeName = tVar.TypeName});
                         return targetVar + " " + value2 + " " + value1;
                     }
 
                     if (next == null)
                     {
-
-
                         // No intentions to store this value into a variable, 
                         // Its to be used in a function call.
                         return "NULLPTR " + value2 + " " + value1;
@@ -1626,8 +1649,7 @@ namespace PapyrusDotNet
                     }
 
 
-                    varIndex = (int)IntValue(next);
-
+                    varIndex = (int) IntValue(next);
                 }
 
                 return vars[varIndex].Name + " " + value2 + " " + value1;
@@ -1639,7 +1661,8 @@ namespace PapyrusDotNet
         {
             varIndex = -1;
             var next = input.Next;
-            while (next != null && !InstructionHelper.IsStore(next.OpCode.Code)/* && !Utility.IsStoreElement(next.OpCode.Code) && !Utility.IsStoreLocalVariable(next.OpCode.Code) && !Utility.IsStoreField(next.OpCode.Code)*/)
+            while (next != null && !InstructionHelper.IsStore(next.OpCode.Code)
+                /* && !Utility.IsStoreElement(next.OpCode.Code) && !Utility.IsStoreLocalVariable(next.OpCode.Code) && !Utility.IsStoreField(next.OpCode.Code)*/)
             {
                 next = next.Next;
             }
@@ -1649,7 +1672,7 @@ namespace PapyrusDotNet
             {
 
                 {
-                    varIndex = (int)IntValue(next);
+                    varIndex = (int) IntValue(next);
                     skipToOffset = next.Offset;
                 }
             }
@@ -1670,7 +1693,9 @@ namespace PapyrusDotNet
                         if (typeDef.Methods.Any(m => m.FullName == methodRef.FullName)) return true;
                     }
                 }
-                catch { }
+                catch
+                {
+                }
                 //.m
             }
             return false;
@@ -1681,7 +1706,7 @@ namespace PapyrusDotNet
             var outp = new List<string>();
             if (parameters != null && parameters.Count > 0)
             {
-                int index = 0;
+                var index = 0;
                 foreach (var it in parameters)
                 {
                     var item = it;
@@ -1690,9 +1715,9 @@ namespace PapyrusDotNet
                         item = it.Value as EvaluationStackItem;
                     }
 
-                    if (item.Value is PapyrusVariableReference)
+                    if (item.Value is VariableReference)
                     {
-                        outp.Add((item.Value as PapyrusVariableReference).Name);
+                        outp.Add((item.Value as VariableReference).Name);
                         continue;
                     }
                     if (item.TypeName.ToLower().Equals("int"))
@@ -1720,7 +1745,7 @@ namespace PapyrusDotNet
 
         public static bool IsVoid(TypeReference typeReference)
         {
-            return (typeReference.FullName.ToLower().Equals("system.void") || typeReference.Name.ToLower().Equals("void"));
+            return typeReference.FullName.ToLower().Equals("system.void") || typeReference.Name.ToLower().Equals("void");
         }
 
 
@@ -1739,15 +1764,17 @@ namespace PapyrusDotNet
                     // not yet implemented
                     return 0;
                 }
-                if (instruction.Operand is VariableReference)
+                if (instruction.Operand is Mono.Cecil.Cil.VariableReference)
                 {
-                    var v = instruction.Operand as VariableReference;
+                    var v = instruction.Operand as Mono.Cecil.Cil.VariableReference;
                     if (v != null)
                     {
-                        return Array.IndexOf(function.AllVariables.ToArray(), function.AllVariables.FirstOrDefault(va => va.Name == "V_" + v.Index));
+                        return Array.IndexOf(function.AllVariables.ToArray(),
+                            function.AllVariables.FirstOrDefault(va => va.Name == "V_" + v.Index));
                     }
                 }
-                else if (instruction.Operand is double || instruction.Operand is long || instruction.Operand is float || instruction.Operand is decimal)
+                else if (instruction.Operand is double || instruction.Operand is long || instruction.Operand is float ||
+                         instruction.Operand is decimal)
                     index = double.Parse(instruction.Operand.ToString());
                 else
                     index = int.Parse(instruction.Operand.ToString());
@@ -1771,5 +1798,4 @@ namespace PapyrusDotNet
             }
         }
     }
-
 }

@@ -1,11 +1,10 @@
-﻿namespace Example1
-{
-    using PapyrusDotNet.Core;
+﻿using PapyrusDotNet.Core;
 
+namespace Example1
+{
     public class GenericTest
     {
-        [Property, Auto]
-        private GenericClass<int> genericInteger;
+        [Property, Auto] private GenericClass<int> genericInteger;
 
         public void OnInit()
         {

@@ -17,20 +17,20 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
+using PowerArgs;
+
 namespace PapyrusDotNet.CoreBuilder
 {
-	using PowerArgs;
+    public class PapyrusDotNetArgs
+    {
+        [ArgShortcut("type")]
+        [ArgShortcut("t")]
+        [ArgPosition(1)]
+        public string InputType { get; set; }
 
-	public class PapyrusDotNetArgs
-	{
-		[ArgShortcut("type")]
-		[ArgShortcut("t")]
-		[ArgPosition(1)]
-		public string InputType { get; set; }
-
-		[ArgShortcut("input")]
-		[ArgShortcut("i")]
-		[ArgPosition(0)]
-		public string InputFolder { get; set; }
-	}
+        [ArgShortcut("input")]
+        [ArgShortcut("i")]
+        [ArgPosition(0)]
+        public string InputFolder { get; set; }
+    }
 }

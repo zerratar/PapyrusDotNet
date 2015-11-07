@@ -31,42 +31,34 @@ using PapyrusDotNet.CoreBuilder.Papyrus.Assembly;
 using EventAttributes = Mono.Cecil.EventAttributes;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
-using ParameterAttributes = Mono.Cecil.ParameterAttributes;
-using PropertyAttributes = Mono.Cecil.PropertyAttributes;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace PapyrusDotNet.CoreBuilder.Implementation
 {
     /// <summary>
-    /// Used for building .NET Assemblies using Papyrus as input
+    ///     Used for building .NET Assemblies using Papyrus as input
     /// </summary>
     public abstract class PapyrusCilAssemblyBuilder : IPapyrusCilAssemblyBuilder
     {
-        public ModuleDefinition MainModule { get; set; }
-
-        public AssemblyDefinition CoreAssembly { get; set; }
-
-        public List<string> ReservedTypeNames { get; set; } = new List<string>();
-
-        public List<TypeReference> AddedTypeReferences { get; set; } = new List<TypeReference>();
+        protected IAssemblyNameResolver AssemblyNameResolver;
+        private int filesParsed;
+        protected IPapyrusAssemblyParser PapyrusAssemblyParser;
 
         // public const string OutputFileName = "PapyrusDotNet.Core.dll";
         // public const string CoreNamespace = "PapyrusDotNet.Core";
 
-        protected IPapyrusScriptParser papyrusScriptParser;
-        protected IPapyrusAssemblyParser papyrusAssemblyParser;
-        protected IPapyrusTypeDefinitionResolver typeDefinitionResolver;
-        protected IPapyrusTypeReferenceResolver typeReferenceResolver;
-        protected IAssemblyNameResolver assemblyNameResolver;
-        protected IStatusCallbackService statusCallback;
+        protected IPapyrusScriptParser PapyrusScriptParser;
+        protected IStatusCallbackService StatusCallback;
 
         private int totalFilesToParse;
-        private int filesParsed;
+        protected IPapyrusTypeDefinitionResolver TypeDefinitionResolver;
+        protected IPapyrusTypeReferenceResolver TypeReferenceResolver;
 
-        protected PapyrusCilAssemblyBuilder() { }
+        protected PapyrusCilAssemblyBuilder()
+        {
+        }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="scriptParser"></param>
         /// <param name="assemblyParser"></param>
@@ -81,18 +73,25 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
             IAssemblyNameResolver nameResolver,
             IStatusCallbackService callback)
         {
-            assemblyNameResolver = nameResolver;
-            statusCallback = callback;
-            papyrusScriptParser = scriptParser;
-            papyrusAssemblyParser = assemblyParser;
-            this.typeDefinitionResolver = typeDefinitionResolver;
-            this.typeReferenceResolver = typeReferenceResolver;
-            this.typeDefinitionResolver.Initialize(this);
-            this.typeReferenceResolver.Initialize(this);
+            AssemblyNameResolver = nameResolver;
+            StatusCallback = callback;
+            PapyrusScriptParser = scriptParser;
+            PapyrusAssemblyParser = assemblyParser;
+            TypeDefinitionResolver = typeDefinitionResolver;
+            TypeReferenceResolver = typeReferenceResolver;
+            TypeDefinitionResolver.Initialize(this);
+            TypeReferenceResolver.Initialize(this);
         }
 
+        public AssemblyDefinition CoreAssembly { get; set; }
+        public ModuleDefinition MainModule { get; set; }
+
+        public List<string> ReservedTypeNames { get; set; } = new List<string>();
+
+        public List<TypeReference> AddedTypeReferences { get; set; } = new List<TypeReference>();
+
         /// <summary>
-        /// Builds a .NET Assembly using the input Papyrus Source
+        ///     Builds a .NET Assembly using the input Papyrus Source
         /// </summary>
         /// <param name="inputSourceFiles"></param>
         public async void BuildAssembly(string[] inputSourceFiles)
@@ -100,7 +99,7 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
             // @"C:\The Elder Scrolls V Skyrim\Data\scripts\Source"
             var files = inputSourceFiles;
 
-            AssemblyNameDefinition resolvedAssemblyName = assemblyNameResolver.Resolve(null);
+            var resolvedAssemblyName = AssemblyNameResolver.Resolve(null);
             CoreAssembly = AssemblyDefinition.CreateAssembly(
                 resolvedAssemblyName,
                 resolvedAssemblyName.Name, ModuleKind.Dll);
@@ -109,29 +108,29 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
 
             var papyrusObjects = new List<PapyrusAssemblyObject>();
 
-            statusCallback.WriteLine("Parsing Papyrus... This usually takes about 30 seconds.");
+            StatusCallback.WriteLine("Parsing Papyrus... This usually takes about 30 seconds.");
 
             totalFilesToParse = files.Length;
 
             var asyncParse = files.Select(Parse);
             papyrusObjects.AddRange(await Task.WhenAll(asyncParse.ToArray()));
 
-            statusCallback.Title = "PapyrusDotNet";
+            StatusCallback.Title = "PapyrusDotNet";
 
-            statusCallback.WriteLine("Adding object references... This usually takes about a minute.");
+            StatusCallback.WriteLine("Adding object references... This usually takes about a minute.");
             foreach (var pasObj in papyrusObjects)
-                AddedTypeReferences.Add(typeReferenceResolver.Resolve(MainModule, null, pasObj.Name));
+                AddedTypeReferences.Add(TypeReferenceResolver.Resolve(MainModule, null, pasObj.Name));
 
             foreach (var pas in papyrusObjects)
-                MainModule.Types.Add(typeDefinitionResolver.Resolve(MainModule, pas));
+                MainModule.Types.Add(TypeDefinitionResolver.Resolve(MainModule, pas));
 
-            statusCallback.WriteLine("Resolving object references... This usually takes about 30 seconds.");
+            StatusCallback.WriteLine("Resolving object references... This usually takes about 30 seconds.");
             foreach (var t in MainModule.Types)
             {
                 foreach (var f in t.Methods)
                 {
                     var typeDefinition = MainModule.Types.FirstOrDefault(ty => ty.FullName == f.ReturnType.FullName);
-                    f.ReturnType = typeReferenceResolver.Resolve(MainModule, typeDefinition, f.ReturnType.FullName);
+                    f.ReturnType = TypeReferenceResolver.Resolve(MainModule, typeDefinition, f.ReturnType.FullName);
                     foreach (var p in f.Parameters)
                     {
                         var td = MainModule.Types.FirstOrDefault(ty => ty.FullName == p.ParameterType.FullName);
@@ -139,17 +138,17 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                             /*	// Most likely a System object.							
                                 p.ParameterType = GetTypeReference(null, p.ParameterType.FullName);
                             else */
-                            p.ParameterType = typeReferenceResolver.Resolve(MainModule, typeDefinition, td.FullName);
+                            p.ParameterType = TypeReferenceResolver.Resolve(MainModule, typeDefinition, td.FullName);
                     }
                 }
             }
 
-            statusCallback.WriteLine("Importing Papyrus specific attributes...");
+            StatusCallback.WriteLine("Importing Papyrus specific attributes...");
 
 
             var allAttributesToInclude = Assembly.GetExecutingAssembly().GetTypes().Where(
                 t => t.Name.ToLower().EndsWith("attribute")
-                    //TODO: we should include the PapyrusDotNet.System here as well.
+                //TODO: we should include the PapyrusDotNet.System here as well.
                 );
 
             foreach (var attr in allAttributesToInclude)
@@ -157,16 +156,86 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                 ImportType(MainModule, attr);
             }
 
-            CoreAssembly.Write(assemblyNameResolver.OutputLibraryFilename);
+            CoreAssembly.Write(AssemblyNameResolver.OutputLibraryFilename);
 
-            statusCallback.ForegroundColor = ConsoleColor.Green;
-            statusCallback.WriteLine(assemblyNameResolver.OutputLibraryFilename + " successefully generated.");
-            statusCallback.ResetColor();
+            StatusCallback.ForegroundColor = ConsoleColor.Green;
+            StatusCallback.WriteLine(AssemblyNameResolver.OutputLibraryFilename + " successefully generated.");
+            StatusCallback.ResetColor();
+        }
+
+
+        public void CreateEmptyFunctionBody(ref MethodDefinition function)
+        {
+            var fnl = function.ReturnType.FullName.ToLower();
+            if (fnl.Equals("system.void"))
+            {
+                // Do nothing	
+            }
+
+            else if (fnl.Contains("[]"))
+            {
+                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
+            }
+
+            else if (fnl.StartsWith("system.string") || fnl.StartsWith("system.object") ||
+                     fnl.StartsWith(AssemblyNameResolver.BaseNamespace.ToLower()))
+                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
+
+            else if (fnl.StartsWith("system.int") || fnl.StartsWith("system.bool") || fnl.StartsWith("system.long") ||
+                     fnl.StartsWith("system.byte") || fnl.StartsWith("system.short"))
+            {
+                function.Body.Instructions.Add(fnl.StartsWith("system.long")
+                    ? Instruction.Create(OpCodes.Ldc_I8, 0L)
+                    : Instruction.Create(OpCodes.Ldc_I4_0));
+            }
+
+            else if (fnl.StartsWith("system.float"))
+                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R4, 0f));
+
+            else if (fnl.StartsWith("system.double"))
+                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R8, 0d));
+
+
+            function.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        }
+
+        public void AddVirtualOnInit(TypeDefinition newType)
+        {
+            // ReSharper disable once SimplifyLinqExpression
+            if (!newType.Methods.Any(v => v.Name == "OnInit"))
+            {
+                var methodAttributes = MethodAttributes.Public;
+                var method = new MethodDefinition("OnInit", methodAttributes, MainModule.TypeSystem.Void)
+                {
+                    IsVirtual = true
+                };
+
+
+                method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+                newType.Methods.Add(method);
+            }
+        }
+
+
+        public void AddEmptyConstructor(TypeDefinition type)
+        {
+            var method = new MethodDefinition(".ctor", MethodAttributes.Public | MethodAttributes.HideBySig |
+                                                       MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
+                MainModule.TypeSystem.Void);
+
+            //TODO: might need to fix this later so that PEVERIFY can verify the outputted library properly.
+            // var baseEmptyConstructor = new MethodReference(".ctor", MainModule.TypeSystem.Void, MainModule.TypeSystem.Object);// MainModule.TypeSystem.Object
+            // method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+            // method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, baseEmptyConstructor));
+
+
+            method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            type.Methods.Add(method);
         }
 
 
         /// <summary>
-        /// Imports the Type specified to the target module
+        ///     Imports the Type specified to the target module
         /// </summary>
         /// <param name="mainModule"></param>
         /// <param name="typeToImport"></param>
@@ -178,7 +247,7 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
 
                 var definition = reference.Resolve();
 
-                var newType = new TypeDefinition(assemblyNameResolver.BaseNamespace, definition.Name,
+                var newType = new TypeDefinition(AssemblyNameResolver.BaseNamespace, definition.Name,
                     TypeAttributes.Class)
                 {
                     IsPublic = true,
@@ -221,7 +290,6 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
 
                 foreach (var field in definition.Methods)
                 {
-
                     if (field.IsConstructor && !field.HasParameters) continue;
 
                     var newField = new MethodDefinition(field.Name, field.Attributes, field.ReturnType);
@@ -232,7 +300,6 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                     {
                         if (fp.Name.Contains("<"))
                         {
-
                         }
                         var newParam = new ParameterDefinition(fp.Name, fp.Attributes, fp.ParameterType);
                         newField.Parameters.Add(newParam);
@@ -264,75 +331,6 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
             }
         }
 
-
-        public void CreateEmptyFunctionBody(ref MethodDefinition function)
-        {
-            var fnl = function.ReturnType.FullName.ToLower();
-            if (fnl.Equals("system.void"))
-            {
-                // Do nothing	
-            }
-
-            else if (fnl.Contains("[]"))
-            {
-                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
-            }
-
-            else if (fnl.StartsWith("system.string") || fnl.StartsWith("system.object") || fnl.StartsWith(assemblyNameResolver.BaseNamespace.ToLower()))
-                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
-
-            else if (fnl.StartsWith("system.int") || fnl.StartsWith("system.bool") || fnl.StartsWith("system.long") || fnl.StartsWith("system.byte") || fnl.StartsWith("system.short"))
-            {
-                function.Body.Instructions.Add(fnl.StartsWith("system.long")
-                    ? Instruction.Create(OpCodes.Ldc_I8, 0L)
-                    : Instruction.Create(OpCodes.Ldc_I4_0));
-            }
-
-            else if (fnl.StartsWith("system.float"))
-                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R4, 0f));
-
-            else if (fnl.StartsWith("system.double"))
-                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R8, 0d));
-
-
-            function.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-        }
-
-        public void AddVirtualOnInit(TypeDefinition newType)
-        {
-            // ReSharper disable once SimplifyLinqExpression
-            if (!newType.Methods.Any(v => v.Name == "OnInit"))
-            {
-                var methodAttributes = MethodAttributes.Public;
-                var method = new MethodDefinition("OnInit", methodAttributes, MainModule.TypeSystem.Void)
-                {
-                    IsVirtual = true
-                };
-
-
-
-                method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-                newType.Methods.Add(method);
-            }
-        }
-
-
-        public void AddEmptyConstructor(TypeDefinition type)
-        {
-            var method = new MethodDefinition(".ctor", MethodAttributes.Public | MethodAttributes.HideBySig |
-                    MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, MainModule.TypeSystem.Void);
-
-            //TODO: might need to fix this later so that PEVERIFY can verify the outputted library properly.
-            // var baseEmptyConstructor = new MethodReference(".ctor", MainModule.TypeSystem.Void, MainModule.TypeSystem.Object);// MainModule.TypeSystem.Object
-            // method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
-            // method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, baseEmptyConstructor));
-
-
-
-            method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-            type.Methods.Add(method);
-        }
-
         public async Task<PapyrusAssemblyObject> Parse(string file)
         {
             return await Task.Run(() =>
@@ -341,13 +339,13 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                 var ext = Path.GetExtension(file);
                 if (!string.IsNullOrEmpty(ext))
                 {
-                    // statusCallback.WriteLine("... " + Path.GetFileNameWithoutExtension(file));
-                    obj = ext.ToLower().EndsWith("pas") ?
-                        papyrusAssemblyParser.ParseAssembly(file) :
-                        papyrusScriptParser.ParseScript(file);
+                    // StatusCallback.WriteLine("... " + Path.GetFileNameWithoutExtension(file));
+                    obj = ext.ToLower().EndsWith("pas")
+                        ? PapyrusAssemblyParser.ParseAssembly(file)
+                        : PapyrusScriptParser.ParseScript(file);
                 }
                 filesParsed++;
-                statusCallback.Title = "PapyrusDotNet - Parsing Papyrus: " + filesParsed + "/" + totalFilesToParse;
+                StatusCallback.Title = "PapyrusDotNet - Parsing Papyrus: " + filesParsed + "/" + totalFilesToParse;
                 return obj;
             });
         }

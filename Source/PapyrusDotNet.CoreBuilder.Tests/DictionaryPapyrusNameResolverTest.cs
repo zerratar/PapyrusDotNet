@@ -16,6 +16,7 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PapyrusDotNet.Common;
 using PapyrusDotNet.CoreBuilder.Implementation;

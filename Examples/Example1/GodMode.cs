@@ -17,18 +17,15 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
+using PapyrusDotNet.Core;
+
 namespace Example1
 {
-    using PapyrusDotNet.Core;
-
     public class GodMode : Actor
     {
-
         public override void OnInit()
         {
-
             ActivateGodMode(this);
-
         }
 
         public void ActivateGodMode(Actor player)

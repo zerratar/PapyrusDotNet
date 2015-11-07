@@ -16,6 +16,7 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 using System;
 using System.Linq;
 
@@ -33,7 +34,6 @@ namespace PapyrusDotNet.Common
             => Array.IndexOf(input.Select(d => d.ToLower().Trim()).ToArray(), val);
 
         public static string[] TrimSplit(this string input, string val)
-            => input.Split(new[] { val }, StringSplitOptions.RemoveEmptyEntries);
-
+            => input.Split(new[] {val}, StringSplitOptions.RemoveEmptyEntries);
     }
 }

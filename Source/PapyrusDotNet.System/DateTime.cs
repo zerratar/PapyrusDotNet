@@ -1,31 +1,22 @@
-﻿namespace PapyrusDotNet.System
-{
-    using PapyrusDotNet.Core;
+﻿using PapyrusDotNet.Core;
 
+namespace PapyrusDotNet.System
+{
     public class DateTime
     {
         public static double Now
         {
-            get
-            {                
-                return Utility.GetCurrentRealTime();
-            }
+            get { return Utility.GetCurrentRealTime(); }
         }
 
         public static double Min
         {
-            get
-            {
-                return 0;
-            }
+            get { return 0; }
         }
 
         public static double Max
         {
-            get
-            {
-                return 99999999999;
-            }
+            get { return 99999999999; }
         }
     }
 }

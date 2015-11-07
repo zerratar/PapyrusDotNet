@@ -16,20 +16,13 @@
 	
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
+
 using System.IO;
 
 namespace PapyrusDotNet.Common
 {
     public class SkyrimInstallationPath
     {
-        public bool SkyrimPathExists => !string.IsNullOrEmpty(Skyrim) && File.Exists(Skyrim);
-
-        public bool CreationKitPathExists => !string.IsNullOrEmpty(CreationKit) && File.Exists(CreationKit);
-
-        public string Skyrim { get; set; }
-
-        public string CreationKit { get; set; }
-
         public SkyrimInstallationPath(string sp, string ckp)
         {
             if (Directory.Exists(sp))
@@ -38,5 +31,13 @@ namespace PapyrusDotNet.Common
             if (Directory.Exists(ckp))
                 CreationKit = ckp;
         }
+
+        public bool SkyrimPathExists => !string.IsNullOrEmpty(Skyrim) && File.Exists(Skyrim);
+
+        public bool CreationKitPathExists => !string.IsNullOrEmpty(CreationKit) && File.Exists(CreationKit);
+
+        public string Skyrim { get; set; }
+
+        public string CreationKit { get; set; }
     }
 }

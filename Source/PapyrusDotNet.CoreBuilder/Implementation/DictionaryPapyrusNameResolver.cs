@@ -27,12 +27,10 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
 {
     public class DictionaryPapyrusNameResolver : IPapyrusNameResolver
     {
+        private readonly IStatusCallbackService statusCallbackService;
         internal string[] WordList;
 
-        private IStatusCallbackService statusCallbackService;
-
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="statusCallback"></param>
         /// <param name="wordDictionaryFile"></param>
@@ -55,7 +53,7 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
         }
 
         /// <summary>
-        /// Resolves the inputName and returns a PascalCase class-friendly name
+        ///     Resolves the inputName and returns a PascalCase class-friendly name
         /// </summary>
         /// <param name="inputName"></param>
         /// <returns></returns>
@@ -77,7 +75,7 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                         {
                             var i = inputName.ToLower().IndexOf(word);
 
-                            bool skip = false;
+                            var skip = false;
                             if (i > 0)
                             {
                                 skip = char.IsUpper(inputName[i - 1]);

@@ -24,8 +24,6 @@ namespace PapyrusDotNet.Papyrus
 {
     public class UserFlagsReference
     {
-        public Dictionary<string, int> Flags { get; set; }
-
         public UserFlagsReference()
         {
             Flags = new Dictionary<string, int>();
@@ -33,9 +31,11 @@ namespace PapyrusDotNet.Papyrus
             Flags.Add("hidden", 0);
         }
 
+        public Dictionary<string, int> Flags { get; set; }
+
         public override string ToString()
         {
-            string output = "";
+            var output = "";
             output += ".userFlagsRef" + Environment.NewLine;
 
             foreach (var flag in Flags)

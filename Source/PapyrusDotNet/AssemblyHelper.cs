@@ -17,24 +17,26 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Mono.Cecil;
+
 namespace PapyrusDotNet
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Mono.Cecil;
-
     public class AssemblyHelper
     {
         public static List<AssemblyDefinition> GetAssemblyReferences(AssemblyDefinition asm)
         {
-            var inputFileInfo = new System.IO.FileInfo(Program.inputFile);
+            var inputFileInfo = new FileInfo(Program.inputFile);
             var assemblyReferences = new List<AssemblyDefinition>();
             foreach (var mod in asm.Modules)
             {
                 var asmReferences =
                     // We do not want to get any from mscorlib, PapyrusDotNet.Core, or any other System libs
-                    mod.AssemblyReferences.Where(re => re.Name != "mscorlib" && re.Name != "PapyrusDotNet.Core" && !re.Name.StartsWith("System")).ToList();
+                    mod.AssemblyReferences.Where(
+                        re => re.Name != "mscorlib" && re.Name != "PapyrusDotNet.Core" && !re.Name.StartsWith("System"))
+                        .ToList();
 
                 foreach (var asr in asmReferences)
                 {
@@ -48,7 +50,6 @@ namespace PapyrusDotNet
                             var refAsm = AssemblyDefinition.ReadAssembly(refLib);
 
                             assemblyReferences.Add(refAsm);
-
                         }
                     }
                 }
@@ -98,7 +99,8 @@ namespace PapyrusDotNet
             return gReferences;
         }
 
-        public static void GetReferences(TypeDefinition type, ModuleDefinition mod, List<GenericTypeReference> gReferences)
+        public static void GetReferences(TypeDefinition type, ModuleDefinition mod,
+            List<GenericTypeReference> gReferences)
         {
             foreach (var t in mod.Types)
             {
@@ -125,7 +127,6 @@ namespace PapyrusDotNet
                                         gReferences.Add(new GenericTypeReference(usedType, t.FullName));
                                     }
                                 }
-
                             }
                         }
 
@@ -145,7 +146,6 @@ namespace PapyrusDotNet
                                             gReferences.Add(new GenericTypeReference(usedType, t.FullName));
                                         }
                                     }
-
                                 }
                             }
                         }
@@ -163,7 +163,6 @@ namespace PapyrusDotNet
                                         gReferences.Add(new GenericTypeReference(usedType, t.FullName));
                                     }
                                 }
-
                             }
                         }
                     }
@@ -183,7 +182,6 @@ namespace PapyrusDotNet
                                 gReferences.Add(new GenericTypeReference(usedType, t.FullName));
                             }
                         }
-
                     }
                 }
                 foreach (var f in t.Fields)
@@ -200,17 +198,17 @@ namespace PapyrusDotNet
                                 gReferences.Add(new GenericTypeReference(usedType, t.FullName));
                             }
                         }
-
                     }
                 }
             }
         }
 
-        public static void GetGenericReferences(TypeDefinition type, ModuleDefinition mod, List<GenericTypeReference> gReferences, TypeDefinition ignore = null)
+        public static void GetGenericReferences(TypeDefinition type, ModuleDefinition mod,
+            List<GenericTypeReference> gReferences, TypeDefinition ignore = null)
         {
             foreach (var t in mod.Types)
             {
-                if ((ignore != null && ignore == t)) return;
+                if (ignore != null && ignore == t) return;
                 if (t == type)
                 {
                     continue;
@@ -222,7 +220,7 @@ namespace PapyrusDotNet
                     // we need to know if this type has been referenced before
                     // and by using what type.
                     // the same type will be expected by the target type.
-                    List<GenericTypeReference> tRefs = new List<GenericTypeReference>();
+                    var tRefs = new List<GenericTypeReference>();
                     GetGenericReferences(t, mod, tRefs, type);
                     // Now, we need to know if this assembly
                     // is actually referenced, altough we can just 

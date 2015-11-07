@@ -19,22 +19,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.IO;
 using Microsoft.Win32;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using PapyrusDotNet.Common.Interfaces;
+using PapyrusDotNet.Common.Papyrus;
+using FieldAttributes = PapyrusDotNet.Common.Papyrus.FieldAttributes;
+using VariableReference = PapyrusDotNet.Common.Papyrus.VariableReference;
 
 namespace PapyrusDotNet.Common
 {
-
-
     public class Utility
     {
-
-
         /*[HKEY_CLASSES_ROOT\Local Settings\Software\Microsoft\Windows\Shell\MuiCache]
         "D:\\The Elder Scrolls V Skyrim\\CreationKit.exe"="Creation Kit"
         "D:\\The Elder Scrolls V Skyrim\\TESV.exe"="Skyrim"
@@ -54,7 +52,9 @@ namespace PapyrusDotNet.Common
                 var subMuiCache = subShell?.OpenSubKey("MuiCache");
                 var test = subMuiCache?.GetValueNames();
 
-                var installationFolder = test?.FirstOrDefault(s => s.ToLower().Contains("tesv.exe") || s.ToLower().Contains("skyrimlauncher.exe"));
+                var installationFolder =
+                    test?.FirstOrDefault(
+                        s => s.ToLower().Contains("tesv.exe") || s.ToLower().Contains("skyrimlauncher.exe"));
                 var creationkitFolder = test?.FirstOrDefault(s => s.ToLower().Contains("creationkit.exe"));
 
                 var ifo = "";
@@ -75,10 +75,10 @@ namespace PapyrusDotNet.Common
             return null;
         }
 
-        public static PapyrusFieldProperties GetFlagsAndProperties(TypeDefinition variable)
+        public static FieldAttributes GetFlagsAndProperties(TypeDefinition variable)
         {
             string initialValue = null,
-                   docString = null;
+                docString = null;
             bool isProperty = false,
                 isAuto = false,
                 isAutoReadOnly = false,
@@ -129,7 +129,7 @@ namespace PapyrusDotNet.Common
                 if (varAttr.AttributeType.Name.Equals("ConditionalAttribute"))
                     isConditional = true;
             }
-            return new PapyrusFieldProperties()
+            return new FieldAttributes
             {
                 IsGeneric = isGeneric,
                 InitialValue = initialValue,
@@ -144,7 +144,7 @@ namespace PapyrusDotNet.Common
 
         public static string InitialValue(FieldDefinition variable)
         {
-            string initialValue = "None";
+            var initialValue = "None";
             if (variable.InitialValue != null && variable.InitialValue.Length > 0)
             {
                 if (variable.FieldType.FullName.ToLower().Contains("system.int")
@@ -182,7 +182,7 @@ namespace PapyrusDotNet.Common
             {
                 if (ctrArg.Value is CustomAttributeArgument)
                 {
-                    var arg = ((CustomAttributeArgument)ctrArg.Value);
+                    var arg = (CustomAttributeArgument) ctrArg.Value;
                     var val = arg.Value;
 
                     return TypeValueConvert(arg.Type.Name, val).ToString();
@@ -192,7 +192,7 @@ namespace PapyrusDotNet.Common
             return null;
         }
 
-        public static PapyrusFieldProperties GetFlagsAndProperties(FieldDefinition variable)
+        public static FieldAttributes GetFlagsAndProperties(FieldDefinition variable)
         {
             string initialValue = null;
             bool isProperty = false,
@@ -223,7 +223,7 @@ namespace PapyrusDotNet.Common
                     {
                         if (ctrArg.Value is CustomAttributeArgument)
                         {
-                            var arg = ((CustomAttributeArgument)ctrArg.Value);
+                            var arg = (CustomAttributeArgument) ctrArg.Value;
                             var val = arg.Value;
 
                             initialValue = TypeValueConvert(arg.Type.Name, val).ToString();
@@ -245,7 +245,7 @@ namespace PapyrusDotNet.Common
                 if (varAttr.AttributeType.Name.Equals("ConditionalAttribute"))
                     isConditional = true;
             }
-            return new PapyrusFieldProperties()
+            return new FieldAttributes
             {
                 IsGeneric = isGeneric,
                 InitialValue = initialValue,
@@ -259,19 +259,20 @@ namespace PapyrusDotNet.Common
 
         public static string GetString(object p)
         {
-            if (p is string) return (string)p;
+            if (p is string) return (string) p;
             return "";
         }
 
         public static bool IsConditional(Code code)
         {
-            return code == Code.Ceq || code == Code.Cgt || code == Code.Clt || code == Code.Cgt_Un || code == Code.Clt_Un;
+            return code == Code.Ceq || code == Code.Cgt || code == Code.Clt || code == Code.Cgt_Un ||
+                   code == Code.Clt_Un;
         }
 
         public static bool IsBranch(Code code)
         {
             return code == Code.Br || code == Code.Br_S || code == Code.Brfalse_S || code == Code.Brtrue_S
-                    || code == Code.Brfalse || code == Code.Brtrue;
+                   || code == Code.Brfalse || code == Code.Brtrue;
         }
 
         public static string GetPapyrusReturnType(TypeReference reference, bool stripGenericMarkers)
@@ -294,14 +295,16 @@ namespace PapyrusDotNet.Common
 
         public static string GetPapyrusReturnType(string reference)
         {
-            return GetPapyrusReturnType(reference.Split('.').LastOrDefault(), reference.Remove(reference.LastIndexOf('.')));
+            return GetPapyrusReturnType(reference.Split('.').LastOrDefault(),
+                reference.Remove(reference.LastIndexOf('.')));
         }
 
         public static string GetPapyrusBaseType(TypeReference typeRef)
         {
             var name = typeRef.Name;
             var Namespace = typeRef.Namespace;
-            if (name == "Object" || Namespace.ToLower().Equals("system") || Namespace.ToLower().StartsWith("system.")) return "";
+            if (name == "Object" || Namespace.ToLower().Equals("system") || Namespace.ToLower().StartsWith("system."))
+                return "";
 
             if (Namespace.ToLower().StartsWith("papyrusdotnet.core.") || Namespace.StartsWith("PapyrusDotNet.System"))
             {
@@ -326,8 +329,8 @@ namespace PapyrusDotNet.Common
                     return "";
             }
 
-            string name = fullName;
-            string Namespace = "";
+            var name = fullName;
+            var Namespace = "";
 
             if (fullName.Contains("."))
             {
@@ -361,10 +364,10 @@ namespace PapyrusDotNet.Common
         {
             //create Timespan by subtracting the value provided from
             //the Unix Epoch
-            TimeSpan span = (value - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime());
+            var span = value - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
 
             //return the total seconds (which is a UNIX timestamp)
-            return (int)span.TotalSeconds;
+            return (int) span.TotalSeconds;
         }
 
         public static string GetPapyrusReturnType(string type, string Namespace)
@@ -394,12 +397,13 @@ namespace PapyrusDotNet.Common
             }
             if (isArray)
             {
-                swtype = swtype.Split(new[] { "[]" }, StringSplitOptions.None)[0];
+                swtype = swtype.Split(new[] {"[]"}, StringSplitOptions.None)[0];
             }
             switch (swtype.ToLower())
             {
                 // for now..
-                case "enum": return "";
+                case "enum":
+                    return "";
                 case "none":
                 case "nil":
                 case "nnull":
@@ -424,14 +428,14 @@ namespace PapyrusDotNet.Common
                     return "Float" + (isArray ? "[]" : "");
                 default:
                     return swExt + type;
-                    // case "Bool":
+                // case "Bool":
             }
         }
 
         public static string Indent(int indents, string line, bool newLine = true)
         {
-            string output = "";
-            for (int j = 0; j < indents; j++) output += '\t';
+            var output = "";
+            for (var j = 0; j < indents; j++) output += '\t';
             output += line;
 
             if (newLine) output += Environment.NewLine;
@@ -444,13 +448,14 @@ namespace PapyrusDotNet.Common
         {
             if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))
             {
-                if (op is int || op is float || op is short || op is double || op is long || op is byte) return ((int)double.Parse(op.ToString()) == 1);
-                if (op is bool) return (bool)op;
-                if (op is string) return (string)op == "1" || op.ToString().ToLower() == "true";
+                if (op is int || op is float || op is short || op is double || op is long || op is byte)
+                    return (int) double.Parse(op.ToString()) == 1;
+                if (op is bool) return (bool) op;
+                if (op is string) return (string) op == "1" || op.ToString().ToLower() == "true";
             }
             if (typeName.ToLower().StartsWith("string") || typeName.ToLower().StartsWith("system.string"))
             {
-                if (!op.ToString().Contains("\"")) return "\"" + op.ToString() + "\"";
+                if (!op.ToString().Contains("\"")) return "\"" + op + "\"";
             }
             else if (op is float || op is decimal || op is double)
             {
@@ -475,7 +480,7 @@ namespace PapyrusDotNet.Common
             // "V_0"
             return "V_" + instruction.Operand;
         }
-      
+
         public static string OptimizeLabels(string input)
         {
             var output = input;
@@ -486,7 +491,7 @@ namespace PapyrusDotNet.Common
 
         public static string RemoveUnusedLabels(string output)
         {
-            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
 
             var codeBlocks = ParseCodeBlocks(rows);
 
@@ -496,7 +501,7 @@ namespace PapyrusDotNet.Common
             {
                 foreach (var lbl in block.Labels)
                 {
-                    bool isCalled = false;
+                    var isCalled = false;
                     foreach (var ulbl in block.UsedLabels)
                     {
                         if (lbl.Name == ulbl.Name)
@@ -531,7 +536,7 @@ namespace PapyrusDotNet.Common
         {
             var codeBlocks = new List<CodeBlock>();
             CodeBlock latestCodeBlock = null;
-            int rowI = 0;
+            var rowI = 0;
 
             foreach (var row in rows)
             {
@@ -552,11 +557,13 @@ namespace PapyrusDotNet.Common
                 {
                     if (row.Replace("\t", "").StartsWith("_") && row.Trim().EndsWith(":"))
                     {
-                        latestCodeBlock.Labels.Add(new PapyrusLabelDefinition(rowI, row.Replace("\t", "").Trim()));
+                        latestCodeBlock.Labels.Add(new LabelDefinition(rowI, row.Replace("\t", "").Trim()));
                     }
-                    else if (row.Replace("\t", "").Contains("_label") /* && !row.Contains(":")*/ && row.ToLower().Contains("jump"))
+                    else if (row.Replace("\t", "").Contains("_label") /* && !row.Contains(":")*/&&
+                             row.ToLower().Contains("jump"))
                     {
-                        latestCodeBlock.UsedLabels.Add(new PapyrusLabelReference(row.Substring(row.IndexOf("_label")).Split(' ')[0] + ":", rowI));
+                        latestCodeBlock.UsedLabels.Add(
+                            new LabelReference(row.Substring(row.IndexOf("_label")).Split(' ')[0] + ":", rowI));
                     }
                 }
                 rowI++;
@@ -565,26 +572,26 @@ namespace PapyrusDotNet.Common
         }
 
 
-
         public static string RemoveUnnecessaryLabels(string output)
         {
-            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
-            var labelReplacements = new List<ObjectReplacementHolder<PapyrusLabelDefinition, PapyrusLabelDefinition, PapyrusLabelReference>>();
+            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
+            var labelReplacements =
+                new List<ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>>();
             var codeBlocks = ParseCodeBlocks(rows);
-            var lastReplacement = new ObjectReplacementHolder<PapyrusLabelDefinition, PapyrusLabelDefinition, PapyrusLabelReference>();
+            var lastReplacement = new ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>();
             foreach (var codeBlock in codeBlocks)
             {
-
-                for (int i = 0; i < codeBlock.Labels.Count; i++)
+                for (var i = 0; i < codeBlock.Labels.Count; i++)
                 {
                     var currentLabel = codeBlock.Labels[i];
 
-                    int lastRowIndex = currentLabel.Row;
+                    var lastRowIndex = currentLabel.Row;
                     while (i + 1 < codeBlock.Labels.Count)
                     {
                         if (lastReplacement == null)
                         {
-                            lastReplacement = new ObjectReplacementHolder<PapyrusLabelDefinition, PapyrusLabelDefinition, PapyrusLabelReference>();
+                            lastReplacement =
+                                new ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>();
                         }
 
                         var label = codeBlock.GetLabelDefinition(lastRowIndex + 1);
@@ -603,11 +610,9 @@ namespace PapyrusDotNet.Common
 
                             lastRowIndex = label.Row;
                             // We have a previous label one row behind us.
-
                         }
                         else
                         {
-
                             break;
                         }
                         i++;
@@ -617,13 +622,11 @@ namespace PapyrusDotNet.Common
                         labelReplacements.Add(lastReplacement);
                         lastReplacement = null;
                     }
-
                 }
             }
             var rowsToRemove = new List<int>();
             foreach (var replacer in labelReplacements)
             {
-
                 foreach (var old in replacer.ToReplace)
                 {
                     rows[old.Row] = rows[old.Row].Replace(old.Name, replacer.Replacement.Name);
@@ -632,7 +635,8 @@ namespace PapyrusDotNet.Common
                 foreach (var old in replacer.ToReplaceSecondary)
                 {
                     rows[old.RowReference] = rows[old.RowReference].Replace(
-                        old.Name.Remove(old.Name.Length - 1), replacer.Replacement.Name.Remove(replacer.Replacement.Name.Length - 1));
+                        old.Name.Remove(old.Name.Length - 1),
+                        replacer.Replacement.Name.Remove(replacer.Replacement.Name.Length - 1));
                 }
             }
 
@@ -644,12 +648,13 @@ namespace PapyrusDotNet.Common
             return string.Join(Environment.NewLine, rows.ToArray());
         }
 
-        public static string InjectTempVariables(string output, int indentDepth, List<PapyrusVariableReference> TempVariables)
+        public static string InjectTempVariables(string output, int indentDepth, List<VariableReference> TempVariables)
         {
-            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
 
             // foreach(var )
-            int insertIndex = Array.IndexOf(rows.ToArray(), rows.FirstOrDefault(r => r.ToLower().Contains(".endlocaltable")));
+            var insertIndex = Array.IndexOf(rows.ToArray(),
+                rows.FirstOrDefault(r => r.ToLower().Contains(".endlocaltable")));
 
 
             foreach (var variable in TempVariables)
@@ -727,7 +732,7 @@ namespace PapyrusDotNet.Common
 
         public static string GetPropertyName(string p)
         {
-            string outName = p;
+            var outName = p;
             if (p.StartsWith("::"))
             {
                 outName = outName.Substring(2);
@@ -735,12 +740,13 @@ namespace PapyrusDotNet.Common
             return "p" + outName;
         }
 
-        public static bool IsCallMethodInsideNamespace(Instruction instruction, string targetNamespace, out MethodReference methodRef)
+        public static bool IsCallMethodInsideNamespace(Instruction instruction, string targetNamespace,
+            out MethodReference methodRef)
         {
             methodRef = null;
             if (InstructionHelper.IsCallMethod(instruction.OpCode.Code))
             {
-                var method = (instruction.Operand as MethodReference);
+                var method = instruction.Operand as MethodReference;
                 if (method != null && method.FullName.Contains(targetNamespace))
                 {
                     methodRef = method;

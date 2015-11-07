@@ -18,17 +18,10 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
-	public class AutoReadOnlyAttribute : Attribute
-	{
-		public AutoReadOnlyAttribute()
-		{
-
-		}
-	}
+    public class AutoReadOnlyAttribute : Attribute
+    {
+    }
 }

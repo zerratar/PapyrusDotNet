@@ -19,20 +19,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Mono;
+using System.IO;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
+using PowerArgs;
 
 namespace PapyrusDotNet
 {
-    using System.IO;
-
-    using Common;
-
-    using PowerArgs;
-
     public class PapyrusDotNetArgs
     {
         [ArgShortcut("o")]
@@ -43,7 +35,8 @@ namespace PapyrusDotNet
         [ArgPosition(0)]
         public string InputFile { get; set; }
     }
-    class Program
+
+    internal class Program
     {
         public static bool HandleConstructorAsOnInit = false;
 
@@ -53,9 +46,8 @@ namespace PapyrusDotNet
 
         public static string inputFile;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-
             outputFolder = @".\output";
             inputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
             try
@@ -99,7 +91,7 @@ namespace PapyrusDotNet
                 PapyrusAsmWriter.GenerateCallStack(asm);
             }
             PapyrusAsmWriter.GenerateCallStack(CurrentAssembly);
-         
+
             /* Generate all papyrus code */
             foreach (var asm in asmReferences)
             {
@@ -128,7 +120,8 @@ namespace PapyrusDotNet
             }
         }
 
-        // st codes are to store to the stack
         // ld is to load from stack and assign its value to either function, variable or return
+
+        // st codes are to store to the stack
     }
 }

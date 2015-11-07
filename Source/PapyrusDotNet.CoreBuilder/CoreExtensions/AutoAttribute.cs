@@ -18,17 +18,10 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PapyrusDotNet.CoreBuilder.CoreExtensions
 {
-	public class AutoAttribute : Attribute
-	{
-		public AutoAttribute()
-		{
-			
-		}
-	}
+    public class AutoAttribute : Attribute
+    {
+    }
 }

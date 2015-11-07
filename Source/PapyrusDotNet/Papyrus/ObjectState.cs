@@ -23,15 +23,15 @@ namespace PapyrusDotNet.Papyrus
 {
     public class ObjectState
     {
+        public ObjectState()
+        {
+            Functions = new List<Function>();
+        }
+
         public string Name { get; set; }
 
         public bool IsAuto { get; set; }
 
         public List<Function> Functions { get; set; }
-
-        public ObjectState()
-        {
-            Functions = new List<Function>();
-        }
     }
 }

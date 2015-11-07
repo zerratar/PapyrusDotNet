@@ -17,20 +17,18 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
+using System;
 using System.IO;
 using PapyrusDotNet.CoreBuilder.Interfaces;
+using PowerArgs;
 
 namespace PapyrusDotNet.CoreBuilder
 {
-    using System;
-
-    using PowerArgs;
-
-    class Program
+    internal class Program
     {
         private static IPapyrusCilAssemblyBuilder coreAssemblyBuilder;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.Title = "PapyrusDotNet";
 
@@ -38,7 +36,7 @@ namespace PapyrusDotNet.CoreBuilder
             var inputExtensionFilter = "*.pas";
             var inputSourceType = "assembly";
 
-            PapyrusDotNetArgs parsed = new PapyrusDotNetArgs()
+            var parsed = new PapyrusDotNetArgs
             {
                 InputFolder = inputDirectory,
                 InputType = "script"

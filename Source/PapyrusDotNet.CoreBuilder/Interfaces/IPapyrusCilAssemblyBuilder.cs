@@ -23,48 +23,43 @@ using Mono.Cecil;
 namespace PapyrusDotNet.CoreBuilder.Interfaces
 {
     /// <summary>
-    /// Used for building .NET Assemblies using Papyrus as input
+    ///     Used for building .NET Assemblies using Papyrus as input
     /// </summary>
     public interface IPapyrusCilAssemblyBuilder
     {
         /// <summary>
-        /// The root/main Module used in the output Assembly
+        ///     The root/main Module used in the output Assembly
         /// </summary>
         ModuleDefinition MainModule { get; set; }
 
         /// <summary>
-        /// Builds a .NET Assembly using the input Papyrus Source
+        /// </summary>
+        List<string> ReservedTypeNames { get; set; }
+
+        /// <summary>
+        /// </summary>
+        List<TypeReference> AddedTypeReferences { get; set; }
+
+        /// <summary>
+        ///     Builds a .NET Assembly using the input Papyrus Source
         /// </summary>
         /// <param name="inputSourceFiles"></param>
         void BuildAssembly(string[] inputSourceFiles);
 
         /// <summary>
-        /// 
-        /// </summary>        
+        /// </summary>
         /// <param name="forType"></param>
         void AddEmptyConstructor(TypeDefinition forType);
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="forType"></param>
         void AddVirtualOnInit(TypeDefinition forType);
 
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="function"></param>
         void CreateEmptyFunctionBody(ref MethodDefinition function);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        List<string> ReservedTypeNames { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        List<TypeReference> AddedTypeReferences { get; set; }
     }
 }

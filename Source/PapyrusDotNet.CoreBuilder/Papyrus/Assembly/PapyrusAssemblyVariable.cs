@@ -23,10 +23,6 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
 {
     public class PapyrusAssemblyVariable
     {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public bool IsArray { get; set; }
-
         public PapyrusAssemblyVariable(string name, string type)
         {
             Name = name;
@@ -43,5 +39,9 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
                 Type = char.ToUpper(type[0]) + type.Substring(1);
             }
         }
+
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public bool IsArray { get; set; }
     }
 }

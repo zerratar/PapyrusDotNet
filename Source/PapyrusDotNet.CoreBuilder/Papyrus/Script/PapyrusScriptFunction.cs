@@ -17,12 +17,22 @@
 	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
  */
 
- using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
 {
     public class PapyrusScriptFunction
     {
+        public PapyrusScriptFunction()
+        {
+        }
+
+        public PapyrusScriptFunction(string name, string stateName)
+        {
+            Name = name;
+            StateName = stateName;
+        }
+
         public string Name { get; set; }
 
         public string StateName { get; set; }
@@ -36,15 +46,5 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
         public bool IsNative { get; set; }
 
         public bool IsEvent { get; set; }
-
-        public PapyrusScriptFunction()
-        {
-        }
-
-        public PapyrusScriptFunction(string name, string stateName)
-        {
-            Name = name;
-            StateName = stateName;
-        }
     }
 }
