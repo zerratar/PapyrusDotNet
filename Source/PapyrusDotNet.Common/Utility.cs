@@ -369,10 +369,9 @@ namespace PapyrusDotNet.Common
 
         public static string GetPapyrusReturnType(string type, string Namespace)
         {
-
             var swtype = type;
             var swExt = "";
-            bool isArray = swtype.Contains("[]");
+            var isArray = swtype.Contains("[]");
 
             if (!string.IsNullOrEmpty(Namespace))
             {
@@ -426,7 +425,6 @@ namespace PapyrusDotNet.Common
                 default:
                     return swExt + type;
                     // case "Bool":
-
             }
         }
 
@@ -446,7 +444,6 @@ namespace PapyrusDotNet.Common
         {
             if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))
             {
-
                 if (op is int || op is float || op is short || op is double || op is long || op is byte) return ((int)double.Parse(op.ToString()) == 1);
                 if (op is bool) return (bool)op;
                 if (op is string) return (string)op == "1" || op.ToString().ToLower() == "true";
@@ -478,10 +475,7 @@ namespace PapyrusDotNet.Common
             // "V_0"
             return "V_" + instruction.Operand;
         }
-
-
       
-
         public static string OptimizeLabels(string input)
         {
             var output = input;
@@ -496,7 +490,7 @@ namespace PapyrusDotNet.Common
 
             var codeBlocks = ParseCodeBlocks(rows);
 
-            Dictionary<int, string> labelsToRemove = new Dictionary<int, string>();
+            var labelsToRemove = new Dictionary<int, string>();
 
             foreach (var block in codeBlocks)
             {
