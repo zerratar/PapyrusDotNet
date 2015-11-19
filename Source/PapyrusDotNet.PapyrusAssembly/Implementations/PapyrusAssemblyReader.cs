@@ -1,0 +1,329 @@
+#region License
+
+//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
+#endregion
+
+#region
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Net.Http.Headers;
+using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly.Interfaces;
+using PapyrusDotNet.PapyrusAssembly.IO;
+using PapyrusDotNet.PapyrusAssembly.Structs;
+
+#endregion
+
+namespace PapyrusDotNet.PapyrusAssembly.Implementations
+{
+    internal class PapyrusAssemblyReader : IPapyrusAssemblyReader, IDisposable
+    {
+        private readonly PexReader pexReader;
+
+        private bool isDisposed;
+
+        public PapyrusAssemblyReader(string pex)
+        {
+            pexReader = new PexReader(pex);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        public PapyrusAssemblyDefinition Read()
+        {
+            var asm = new PapyrusAssemblyDefinition();
+            asm.Header = ReadHeader(asm);
+
+            //var start = pexReader.Position;
+            //var dummy = 0;
+            //while ((dummy = pexReader.ReadByte()) != 5) ;
+            //var end = pexReader.Position - 1 - 2;
+            //var sizeofDebugTable = (end - start);
+            //pexReader.Position = end;
+
+            var stringTable = pexReader.StringTable;
+
+
+
+
+            if (asm.Header.HasDebugTable)
+            {
+                asm.DebugTable = ReadDebugTable(asm);
+            }
+
+
+            var userflagCount = pexReader.ReadInt16();
+            for (var userflagIndex = 0; userflagIndex < userflagCount; userflagIndex++)
+            {
+                asm.Header.UserflagReferenceHeader.Add(pexReader.ReadString(), pexReader.ReadByte());
+            }
+
+            asm.Types = ReadTypes(asm);
+
+            return asm;
+        }
+
+        public PapyrusHeader ReadHeader(PapyrusAssemblyDefinition asm)
+        {
+            var header = new PapyrusHeader();
+            header.HeaderIdentifier = pexReader.ReadUInt32();
+            switch (header.HeaderIdentifier)
+            {
+                case PapyrusHeader.Fallout4PapyrusHeaderIdentifier:
+                    header.VersionTarget = PapyrusVersionTargets.Fallout4;
+                    ReadFallout4Header(header);
+                    break;
+                default:
+                    header.VersionTarget = PapyrusVersionTargets.Skyrim;
+                    ReadSkyrimHeader(header);
+                    break;
+            }
+
+            //   pexReader.Position -= 48;
+            //   var test = pexReader.ReadChars(100);
+            var stringTableLength = pexReader.ReadInt16();
+            var stringTable = new List<string>();
+
+            for (var i = 0; i < stringTableLength; i++)
+            {
+                stringTable.Add(pexReader.ReadString());
+            }
+            pexReader.SetStringTable(stringTable);
+
+            header.HasDebugTable = pexReader.ReadByte() == 1;
+
+            return header;
+        }
+
+        public PapyrusDebugTable ReadDebugTable(PapyrusAssemblyDefinition asm)
+        {
+            var debugTable = new PapyrusDebugTable();
+            //pexReader.Position -= 1;
+            // var data = pexReader.ReadChars(100);
+            var debugTime = pexReader.ReadInt64();
+            var functionCount = pexReader.ReadInt16();
+
+            var debugFunctionList = new List<PapyrusDebugFunctionDefinition>();
+            for (var i = 0; i < functionCount; i++)
+            {
+                var dbgfunc = new PapyrusDebugFunctionDefinition();
+                dbgfunc.ObjectName = pexReader.ReadString();
+                dbgfunc.StateName = pexReader.ReadString();
+                dbgfunc.FunctionName = pexReader.ReadString();
+                dbgfunc.FunctionType = (PapyrusFunctionTypes)pexReader.ReadByte();
+                dbgfunc.FunctionLineNumbers = new List<int>();
+                var lineNumberCount = pexReader.ReadInt16();
+                for (var j = 0; j < lineNumberCount; j++)
+                {
+                    dbgfunc.FunctionLineNumbers.Add(pexReader.ReadInt16());
+                }
+                debugFunctionList.Add(dbgfunc);
+            }
+
+            var propertyGroupCount = pexReader.ReadInt16();
+            var debugPropertyGroups = new List<PapyrusDebugPropertyGroupDefinition>();
+            for (var i = 0; i < propertyGroupCount; i++)
+            {
+                var groupInfo = new PapyrusDebugPropertyGroupDefinition();
+                groupInfo.ObjectName = pexReader.ReadString();
+                groupInfo.GroupName = pexReader.ReadString();
+                groupInfo.GroupDocumentation = pexReader.ReadString();
+                groupInfo.Userflags = pexReader.ReadInt32();
+                var propertyNameCount = pexReader.ReadInt16();
+                for (var j = 0; j < propertyNameCount; j++)
+                {
+                    groupInfo.PropertyNames.Add(pexReader.ReadString());
+                }
+                debugPropertyGroups.Add(groupInfo);
+            }
+
+            var structureOrderCount = pexReader.ReadInt16();
+
+            //m_vDebugStructOrderInfo.reserve(structOrderCount);
+            //for (int i = 0; i < structOrderCount; i++)
+            //{
+            //    CDebugStructOrderInfo soi;
+            //    soi.m_sObjName = readStrUsingIndex();
+            //    soi.m_sOrderName = readStrUsingIndex();
+            //    Int16 count = reaInt32();
+            //    soi.m_vVarNames.reserve(count);
+            //    for (int j = 0; j < count; j++)
+            //        soi.m_vVarNames.push_back(readStrUsingIndex());
+            //    m_vDebugStructOrderInfo.push_back(soi);
+            //}
+
+            return debugTable;
+        }
+
+        public Collection<PapyrusTypeDefinition> ReadTypes(PapyrusAssemblyDefinition asm)
+        {
+            var types = new List<PapyrusTypeDefinition>();
+
+            var classCount = pexReader.ReadInt16();
+            for (var j = 0; j < classCount; j++)
+            {
+                var typeDef = new PapyrusTypeDefinition();
+                typeDef.IsClass = true;
+                typeDef.Name = pexReader.ReadString();
+                typeDef.Size = pexReader.ReadInt32();
+                typeDef.ParentClass = pexReader.ReadString();
+                typeDef.ConstFlag = pexReader.ReadByte();
+                typeDef.Documentation = pexReader.ReadString();
+                typeDef.UserFlags = pexReader.ReadInt32();
+                typeDef.AutoStateName = pexReader.ReadString();
+
+                if (asm.Header.VersionTarget == PapyrusVersionTargets.Fallout4)
+                {
+                    var structCount = pexReader.ReadInt16();
+                    for (var i = 0; i < structCount; i++)
+                    {
+                        var structDef = new PapyrusTypeDefinition();
+                        structDef.IsStruct = true;
+                        structDef.Name = pexReader.ReadString();
+
+                        var variableCount = pexReader.ReadInt16();
+                        for (var l = 0; l < variableCount; l++)
+                        {
+                            var field = new PapyrusFieldDefinition();
+
+                            ReadStructField();
+#warning Do Something With The Field Value Stuff
+
+                            structDef.Fields.Add(field);
+                        }
+                        typeDef.NestedTypes.Add(structDef);
+                    }
+                }
+
+                var fieldCount = pexReader.ReadInt16();
+                for (var i = 0; i < fieldCount; i++)
+                {
+                    ReadFieldDefinition();
+                }
+            }
+
+            return new Collection<PapyrusTypeDefinition>(types);
+        }
+
+        private void ReadFallout4Header(PapyrusHeader header)
+        {
+            pexReader.SetVersionTarget(PapyrusVersionTargets.Fallout4);
+
+            var majorVersion = pexReader.ReadByte();
+            var minorVersion = pexReader.ReadByte();
+            var gameId = pexReader.ReadInt16();
+            var compileTime = pexReader.ReadInt64();
+            var source = pexReader.ReadString();
+            var user = pexReader.ReadString();
+            var computer = pexReader.ReadString();
+
+            header.SourceHeader = new PapyrusSourceHeader(
+                majorVersion, minorVersion,
+                gameId, compileTime, source, user, computer
+            );
+        }
+
+
+        private void ReadSkyrimHeader(PapyrusHeader header)
+        {
+            pexReader.SetVersionTarget(PapyrusVersionTargets.Skyrim);
+
+            var majorVersion = pexReader.ReadByte();
+            var minorVersion = pexReader.ReadByte();
+            var gameId = pexReader.ReadInt16();
+            var compileTime = pexReader.ReadInt64();
+
+            if (pexReader.ReadByte() != 0) throw new Exception("Invalid Header Format");
+
+            var computer = pexReader.ReadString();
+            var source = pexReader.ReadString();
+            var user = pexReader.ReadString();
+
+            header.SourceHeader = new PapyrusSourceHeader(
+                majorVersion, minorVersion,
+                gameId, compileTime, source, user, computer
+            );
+        }
+
+        private void ReadStructField()
+        {
+            ReadFieldDefinition();
+            var documentation = pexReader.ReadString();
+        }
+
+        private void ReadFieldDefinition()
+        {
+            // Field Definition
+            var name = pexReader.ReadString();
+            var typeName = pexReader.ReadString();
+            var userflags = pexReader.ReadInt32();
+            {
+                // Type Reference
+                ReadTypeReference();
+            }
+            var isConst = pexReader.ReadByte();
+        }
+
+        private void ReadTypeReference()
+        {
+            var typeReference = new
+            {
+                PrimitiveType = (PapyrusPrimitiveType)pexReader.ReadByte(),
+                unknownString = pexReader.ReadString(),
+                unknownInteger = pexReader.ReadInt32(),
+                unknownFloat = pexReader.ReadSingle()
+            };
+        }
+
+        ~PapyrusAssemblyReader()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isDisposed) return;
+            if (disposing)
+            {
+                pexReader.Dispose();
+            }
+            isDisposed = true;
+        }
+    }
+
+    public class PapyrusDebugPropertyGroupDefinition
+    {
+        public string ObjectName { get; set; }
+        public string GroupName { get; set; }
+        public string GroupDocumentation { get; set; }
+        public int Userflags { get; set; }
+        public List<string> PropertyNames { get; set; }
+
+        public PapyrusDebugPropertyGroupDefinition()
+        {
+            PropertyNames = new List<string>();
+        }
+    }
+}

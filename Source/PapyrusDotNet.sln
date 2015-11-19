@@ -15,6 +15,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.System", "Pap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.CoreBuilder.Tests", "PapyrusDotNet.CoreBuilder.Tests\PapyrusDotNet.CoreBuilder.Tests.csproj", "{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PapyrusAssembly", "PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj", "{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PapyrusAssembly.Tests", "PapyrusDotNet.PapyrusAssembly.Tests\PapyrusDotNet.PapyrusAssembly.Tests.csproj", "{E53819BD-3427-4DB1-96CD-6CA5E81AF756}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.ConsoleTests", "PapyrusDotNet.ConsoleTests\PapyrusDotNet.ConsoleTests.csproj", "{BD15920E-26D2-49EC-AD79-EB565858A6AA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dummy", "Dummy", "{2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\Spel\Fallout 4 Scripts\scripts\AbCourserSpeedScript.pex = ..\..\..\Spel\Fallout 4 Scripts\scripts\AbCourserSpeedScript.pex
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +56,18 @@ Global
 		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
