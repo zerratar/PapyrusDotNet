@@ -24,9 +24,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http.Headers;
 using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly.Extensions;
 using PapyrusDotNet.PapyrusAssembly.Interfaces;
 using PapyrusDotNet.PapyrusAssembly.IO;
 using PapyrusDotNet.PapyrusAssembly.Structs;
@@ -56,33 +58,25 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var asm = new PapyrusAssemblyDefinition();
             asm.Header = ReadHeader(asm);
 
-            //var start = pexReader.Position;
-            //var dummy = 0;
-            //while ((dummy = pexReader.ReadByte()) != 5) ;
-            //var end = pexReader.Position - 1 - 2;
-            //var sizeofDebugTable = (end - start);
-            //pexReader.Position = end;
-
-            var stringTable = pexReader.StringTable;
-
-
-
-
-            if (asm.Header.HasDebugTable)
+            if (asm.Header.HasDescriptionTable)
             {
-                asm.DebugTable = ReadDebugTable(asm);
+                asm.DescriptionTable = ReadDescriptionTable(asm);
             }
 
+            ReadHeaderUserflags(asm);
 
+            asm.Types = ReadTypeDefinitions(asm);
+
+            return asm;
+        }
+
+        private void ReadHeaderUserflags(PapyrusAssemblyDefinition asm)
+        {
             var userflagCount = pexReader.ReadInt16();
             for (var userflagIndex = 0; userflagIndex < userflagCount; userflagIndex++)
             {
                 asm.Header.UserflagReferenceHeader.Add(pexReader.ReadString(), pexReader.ReadByte());
             }
-
-            asm.Types = ReadTypes(asm);
-
-            return asm;
         }
 
         public PapyrusHeader ReadHeader(PapyrusAssemblyDefinition asm)
@@ -101,8 +95,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     break;
             }
 
-            //   pexReader.Position -= 48;
-            //   var test = pexReader.ReadChars(100);
             var stringTableLength = pexReader.ReadInt16();
             var stringTable = new List<string>();
 
@@ -112,41 +104,43 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             }
             pexReader.SetStringTable(stringTable);
 
-            header.HasDebugTable = pexReader.ReadByte() == 1;
+            header.HasDescriptionTable = pexReader.ReadByte() == 1;
 
             return header;
         }
 
-        public PapyrusDebugTable ReadDebugTable(PapyrusAssemblyDefinition asm)
+        public PapyrusTypeDescriptionTable ReadDescriptionTable(PapyrusAssemblyDefinition asm)
         {
-            var debugTable = new PapyrusDebugTable();
-            //pexReader.Position -= 1;
-            // var data = pexReader.ReadChars(100);
+            var descriptionTable = new PapyrusTypeDescriptionTable();
+
             var debugTime = pexReader.ReadInt64();
+            descriptionTable.DescriptionTime = debugTime;
             var functionCount = pexReader.ReadInt16();
 
-            var debugFunctionList = new List<PapyrusDebugFunctionDefinition>();
+            var methodDescriptions = new List<PapyrusMethodDecription>();
             for (var i = 0; i < functionCount; i++)
             {
-                var dbgfunc = new PapyrusDebugFunctionDefinition();
-                dbgfunc.ObjectName = pexReader.ReadString();
+                var dbgfunc = new PapyrusMethodDecription();
+                dbgfunc.DeclaringTypeName = pexReader.ReadString();
                 dbgfunc.StateName = pexReader.ReadString();
-                dbgfunc.FunctionName = pexReader.ReadString();
-                dbgfunc.FunctionType = (PapyrusFunctionTypes)pexReader.ReadByte();
-                dbgfunc.FunctionLineNumbers = new List<int>();
+                dbgfunc.Name = pexReader.ReadString();
+                dbgfunc.MethodType = (PapyrusMethodTypes)pexReader.ReadByte();
+                dbgfunc.BodyLineNumbers = new List<int>();
                 var lineNumberCount = pexReader.ReadInt16();
                 for (var j = 0; j < lineNumberCount; j++)
                 {
-                    dbgfunc.FunctionLineNumbers.Add(pexReader.ReadInt16());
+                    dbgfunc.BodyLineNumbers.Add(pexReader.ReadInt16());
                 }
-                debugFunctionList.Add(dbgfunc);
+                methodDescriptions.Add(dbgfunc);
             }
 
+            descriptionTable.MethodDescriptions = methodDescriptions;
+
             var propertyGroupCount = pexReader.ReadInt16();
-            var debugPropertyGroups = new List<PapyrusDebugPropertyGroupDefinition>();
+            var propertyDescriptions = new List<PapyrusPropertyDescriptions>();
             for (var i = 0; i < propertyGroupCount; i++)
             {
-                var groupInfo = new PapyrusDebugPropertyGroupDefinition();
+                var groupInfo = new PapyrusPropertyDescriptions();
                 groupInfo.ObjectName = pexReader.ReadString();
                 groupInfo.GroupName = pexReader.ReadString();
                 groupInfo.GroupDocumentation = pexReader.ReadString();
@@ -156,30 +150,34 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 {
                     groupInfo.PropertyNames.Add(pexReader.ReadString());
                 }
-                debugPropertyGroups.Add(groupInfo);
+                propertyDescriptions.Add(groupInfo);
             }
+            descriptionTable.PropertyDescriptions = propertyDescriptions;
 
             var structureOrderCount = pexReader.ReadInt16();
 
-            //m_vDebugStructOrderInfo.reserve(structOrderCount);
-            //for (int i = 0; i < structOrderCount; i++)
-            //{
-            //    CDebugStructOrderInfo soi;
-            //    soi.m_sObjName = readStrUsingIndex();
-            //    soi.m_sOrderName = readStrUsingIndex();
-            //    Int16 count = reaInt32();
-            //    soi.m_vVarNames.reserve(count);
-            //    for (int j = 0; j < count; j++)
-            //        soi.m_vVarNames.push_back(readStrUsingIndex());
-            //    m_vDebugStructOrderInfo.push_back(soi);
-            //}
+            var structDescriptions = new List<PapyrusStructDescription>();
+            for (var i = 0; i < structureOrderCount; i++)
+            {
+                var structDescription = new PapyrusStructDescription();
+                structDescription.ObjectName = pexReader.ReadString();
+                structDescription.OrderName = pexReader.ReadString();
+                var fieldCount = pexReader.ReadInt16();
+                for (var j = 0; j < fieldCount; j++)
+                {
 
-            return debugTable;
+                    structDescription.FieldNames.Add(pexReader.ReadString());
+                }
+                structDescriptions.Add(structDescription);
+            }
+            descriptionTable.StructDescriptions = structDescriptions;
+
+            return descriptionTable;
         }
 
-        public Collection<PapyrusTypeDefinition> ReadTypes(PapyrusAssemblyDefinition asm)
+        public Collection<PapyrusTypeDefinition> ReadTypeDefinitions(PapyrusAssemblyDefinition asm)
         {
-            var types = new List<PapyrusTypeDefinition>();
+            var types = new Collection<PapyrusTypeDefinition>();
 
             var classCount = pexReader.ReadInt16();
             for (var j = 0; j < classCount; j++)
@@ -206,12 +204,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                         var variableCount = pexReader.ReadInt16();
                         for (var l = 0; l < variableCount; l++)
                         {
-                            var field = new PapyrusFieldDefinition();
-
-                            ReadStructField();
-#warning Do Something With The Field Value Stuff
-
-                            structDef.Fields.Add(field);
+                            structDef.Fields.Add(ReadDocumentedField());
                         }
                         typeDef.NestedTypes.Add(structDef);
                     }
@@ -220,11 +213,147 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 var fieldCount = pexReader.ReadInt16();
                 for (var i = 0; i < fieldCount; i++)
                 {
-                    ReadFieldDefinition();
+                    typeDef.Fields.Add(ReadFieldDefinition());
+                }
+                var propDefs = new Collection<PapyrusPropertyDefinition>();
+                var propertyCount = pexReader.ReadInt16();
+                for (var i = 0; i < propertyCount; i++)
+                {
+                    var prop = new PapyrusPropertyDefinition();
+                    prop.Name = pexReader.ReadString();
+                    prop.TypeName = pexReader.ReadString();
+                    prop.Documentation = pexReader.ReadString();
+                    prop.Userflags = pexReader.ReadInt32();
+                    prop.Flags = pexReader.ReadByte();
+                    if (prop.IsAuto)
+                    {
+                        // if isAuto then the getter and setter is not defined
+                        prop.AutoName = pexReader.ReadString();
+                    }
+                    else
+                    {
+                        if (prop.HasGetter)
+                        {
+                            prop.GetMethod = ReadMethod(asm);
+                        }
+                        if (prop.HasSetter)
+                        {
+                            prop.SetMethod = ReadMethod(asm);
+                        }
+                    }
+                    propDefs.Add(prop);
+                }
+                typeDef.Properties = propDefs;
+
+                var stateCount = pexReader.ReadInt16();
+
+                for (var i = 0; i < stateCount; i++)
+                {
+                    var state = new PapyrusStateDefinition();
+                    state.Name = pexReader.ReadString();
+                    var methodCount = pexReader.ReadInt16();
+                    for (var k = 0; k < methodCount; k++)
+                    {
+                        var name = pexReader.ReadString();
+                        var method = ReadMethod(asm);
+                        method.Name = name;
+                        state.Methods.Add(method);
+                    }
+                    typeDef.States.Add(state);
+                }
+
+                types.Add(typeDef);
+            }
+            return types;
+        }
+
+        public PapyrusMethodDefinition ReadMethod(PapyrusAssemblyDefinition asm)
+        {
+            var method = new PapyrusMethodDefinition();
+            method.ReturnTypeName = pexReader.ReadString();
+            method.Documentation = pexReader.ReadString();
+            method.UserFlags = pexReader.ReadInt32();
+            method.Flags = pexReader.ReadByte();
+
+            var parameterCount = pexReader.ReadInt16();
+            for (var i = 0; i < parameterCount; i++)
+            {
+                method.Parameters.Add(ReadParameter());
+            }
+
+            var localVariableCount = pexReader.ReadInt16();
+            if (localVariableCount > 0 && !method.HasBody)
+            {
+                method.Body = new PapyrusMethodBody(method);
+            }
+            for (var i = 0; i < localVariableCount; i++)
+            {
+                method.Body.Variables.Add(ReadVariable());
+            }
+
+
+            var instructionCount = pexReader.ReadInt16();
+            if (instructionCount > 0 && !method.HasBody)
+            {
+                method.Body = new PapyrusMethodBody(method);
+            }
+            for (var i = 0; i < instructionCount; i++)
+            {
+                method.Body.Instructions.Add(ReadInstruction());
+            }
+            return method;
+        }
+
+        private PapyrusInstruction ReadInstruction()
+        {
+            var instruction = new PapyrusInstruction();
+
+            var opcode = pexReader.ReadByte();
+
+            instruction.OpCode = (PapyrusInstructionOpCodes)opcode;
+
+            var desc = PapyrusInstructionOpCodeDescription.FromOpCode(instruction.OpCode);
+
+            var references = new List<PapyrusTypeReference>();
+            var instructionParamSize = desc.ParamSize;
+            for (var p = 0; p < instructionParamSize; p++)
+            {
+                references.Add(ReadTypeReference());
+            }
+
+            if (desc.IsCall)
+            {
+                var typeRef = ReadTypeReference();
+                if (typeRef.ValueType == PapyrusPrimitiveType.Integer)
+                {
+                    var argCount = (int)typeRef.Value;
+                    for (var i = 0; i < argCount; i++)
+                    {
+                        instruction.VariableArguments.Add(ReadTypeReference());
+                    }
                 }
             }
 
-            return new Collection<PapyrusTypeDefinition>(types);
+            instruction.Operand = references;
+            return instruction;
+        }
+
+        public PapyrusVariableDefinition ReadVariable()
+        {
+            return new PapyrusVariableDefinition
+            {
+                Name = pexReader.ReadString(),
+                TypeName = pexReader.ReadString()
+            };
+        }
+
+        public PapyrusParameterDefinition ReadParameter()
+        {
+            return new PapyrusParameterDefinition
+            {
+                Name = pexReader.ReadString(),
+                TypeName = pexReader.ReadString()
+            };
         }
 
         private void ReadFallout4Header(PapyrusHeader header)
@@ -267,34 +396,57 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             );
         }
 
-        private void ReadStructField()
+        private PapyrusFieldDefinition ReadDocumentedField()
         {
-            ReadFieldDefinition();
-            var documentation = pexReader.ReadString();
+            var sfd = ReadFieldDefinition();
+            sfd.Documentation = pexReader.ReadString();
+            return sfd;
         }
 
-        private void ReadFieldDefinition()
+        private PapyrusFieldDefinition ReadFieldDefinition()
         {
+            var fd = new PapyrusFieldDefinition();
             // Field Definition
-            var name = pexReader.ReadString();
-            var typeName = pexReader.ReadString();
-            var userflags = pexReader.ReadInt32();
+
+            fd.Name = pexReader.ReadString();
+            fd.TypeName = pexReader.ReadString();
+            fd.UserFlags = pexReader.ReadInt32();
             {
                 // Type Reference
-                ReadTypeReference();
+                fd.FieldType = ReadTypeReference(fd.TypeName);
             }
-            var isConst = pexReader.ReadByte();
+            fd.IsConst = pexReader.ReadByte() == 1;
+            return fd;
         }
 
-        private void ReadTypeReference()
+        private PapyrusTypeReference ReadTypeReference(string name = null)
         {
-            var typeReference = new
+            var tr = new PapyrusTypeReference();
+            tr.Name = name;
+            tr.ValueType = (PapyrusPrimitiveType)pexReader.ReadByte();
+            switch (tr.ValueType)
             {
-                PrimitiveType = (PapyrusPrimitiveType)pexReader.ReadByte(),
-                unknownString = pexReader.ReadString(),
-                unknownInteger = pexReader.ReadInt32(),
-                unknownFloat = pexReader.ReadSingle()
-            };
+                case PapyrusPrimitiveType.Reference:
+                    tr.Value = pexReader.ReadString();
+                    break;
+                case PapyrusPrimitiveType.String:
+                    tr.Value = pexReader.ReadString();
+                    break;
+                case PapyrusPrimitiveType.Boolean:
+                    tr.Value = pexReader.ReadByte();
+                    break;
+                case PapyrusPrimitiveType.Float:
+                    tr.Value = pexReader.ReadSingle();
+                    break;
+                case PapyrusPrimitiveType.Integer:
+                    tr.Value = pexReader.ReadInt32();
+                    break;
+
+                default:
+                case PapyrusPrimitiveType.None:
+                    break;
+            }
+            return tr;
         }
 
         ~PapyrusAssemblyReader()
@@ -310,20 +462,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 pexReader.Dispose();
             }
             isDisposed = true;
-        }
-    }
-
-    public class PapyrusDebugPropertyGroupDefinition
-    {
-        public string ObjectName { get; set; }
-        public string GroupName { get; set; }
-        public string GroupDocumentation { get; set; }
-        public int Userflags { get; set; }
-        public List<string> PropertyNames { get; set; }
-
-        public PapyrusDebugPropertyGroupDefinition()
-        {
-            PropertyNames = new List<string>();
         }
     }
 }

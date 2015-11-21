@@ -19,10 +19,21 @@
 
 #endregion
 
+#region
+
+using System.Collections.Generic;
+using PapyrusDotNet.PapyrusAssembly.Enums;
+
+#endregion
+
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusTypeReference
+    public class PapyrusMethodDecription
     {
+        public PapyrusMethodTypes MethodType { get; set; }
         public string Name { get; set; }
+        public string StateName { get; set; }
+        public string DeclaringTypeName { get; set; }
+        public List<int> BodyLineNumbers { get; set; }
     }
 }

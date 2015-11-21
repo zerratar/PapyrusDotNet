@@ -48,7 +48,7 @@ namespace PapyrusDotNet.PapyrusAssembly
 
         public PapyrusHeader Header { get; internal set; }
 
-        public PapyrusDebugTable DebugTable { get; set; }
+        public PapyrusTypeDescriptionTable DescriptionTable { get; set; }
 
         public Collection<PapyrusTypeDefinition> Types { get; set; }
 

@@ -24,7 +24,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Enums
     public enum PapyrusPrimitiveType : byte
     {
         None,
-        Id,
+        Reference,
         String,
         Integer,
         Float,

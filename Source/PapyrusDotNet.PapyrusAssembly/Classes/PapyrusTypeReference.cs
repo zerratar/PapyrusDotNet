@@ -19,21 +19,14 @@
 
 #endregion
 
-#region
-
-using System.Collections.Generic;
 using PapyrusDotNet.PapyrusAssembly.Enums;
-
-#endregion
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusDebugFunctionDefinition
+    public class PapyrusTypeReference
     {
-        public PapyrusFunctionTypes FunctionType { get; set; }
-        public string FunctionName { get; set; }
-        public string StateName { get; set; }
-        public string ObjectName { get; set; }
-        public List<int> FunctionLineNumbers { get; set; }
+        public string Name { get; set; }
+        public object Value { get; set; }
+        public PapyrusPrimitiveType ValueType { get; set; }
     }
 }

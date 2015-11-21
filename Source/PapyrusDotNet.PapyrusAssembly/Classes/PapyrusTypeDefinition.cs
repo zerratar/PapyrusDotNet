@@ -21,7 +21,9 @@
 
 #region
 
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using PapyrusDotNet.PapyrusAssembly.Implementations;
 
 #endregion
 
@@ -33,6 +35,8 @@ namespace PapyrusDotNet.PapyrusAssembly
         {
             Fields = new Collection<PapyrusFieldDefinition>();
             NestedTypes = new Collection<PapyrusTypeDefinition>();
+            Properties = new Collection<PapyrusPropertyDefinition>();
+            States = new Collection<PapyrusStateDefinition>();
         }
 
         public int Size { get; set; }
@@ -45,5 +49,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         public bool IsStruct { get; set; }
         public Collection<PapyrusFieldDefinition> Fields { get; set; }
         public Collection<PapyrusTypeDefinition> NestedTypes { get; set; }
+        public Collection<PapyrusPropertyDefinition> Properties { get; set; }
+        public Collection<PapyrusStateDefinition> States { get; set; }
     }
 }

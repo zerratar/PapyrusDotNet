@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 //     This file is part of PapyrusDotNet.
 // 
@@ -19,9 +19,12 @@
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly
+namespace PapyrusDotNet.PapyrusAssembly.Enums
 {
-    public class PapyrusDebugTable
+    public enum PapyrusMethodTypes
     {
+        Method,
+        Getter,
+        Setter
     }
 }

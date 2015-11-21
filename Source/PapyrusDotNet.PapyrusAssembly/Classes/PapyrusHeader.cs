@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 //     This file is part of PapyrusDotNet.
 // 
@@ -19,13 +19,24 @@
 
 #endregion
 
+#region
+
+using System.Collections.Generic;
+using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly.Structs;
+
+#endregion
+
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusFieldDefinition : PapyrusFieldReference
+    public class PapyrusHeader
     {
-        public string Name { get; set; }
-        public int UserFlags { get; set; }
-        public PapyrusTypeDefinition DeclaringType { get; set; }
-        public string Documentation { get; set; }
+        public const uint Fallout4PapyrusHeaderIdentifier = 0xFA57C0DE;
+
+        public PapyrusSourceHeader SourceHeader { get; set; } = new PapyrusSourceHeader();
+        public Dictionary<string, object> UserflagReferenceHeader { get; set; } = new Dictionary<string, object>();
+        public PapyrusVersionTargets VersionTarget { get; set; }
+        public uint HeaderIdentifier { get; set; }
+        public bool HasDescriptionTable { get; set; }
     }
 }
