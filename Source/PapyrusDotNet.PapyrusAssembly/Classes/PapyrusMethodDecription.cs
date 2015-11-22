@@ -26,7 +26,7 @@ using PapyrusDotNet.PapyrusAssembly.Enums;
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusMethodDecription
     {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PapyrusDotNet.PapyrusAssembly.Implementations
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusMethodBody
     {

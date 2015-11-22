@@ -1,19 +1,19 @@
 using System.Collections.Generic;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 
-namespace PapyrusDotNet.PapyrusAssembly
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusInstructionOpCodeDescription
     {
         public int ParamSize { get; }
-        public bool IsCall { get; }
+        public bool HasVariableArguments { get; }
 
         private static readonly Dictionary<PapyrusInstructionOpCodes, PapyrusInstructionOpCodeDescription> Descriptions;
 
-        public PapyrusInstructionOpCodeDescription(int paramSize, bool isCall)
+        public PapyrusInstructionOpCodeDescription(int paramSize, bool hasVariableArguments)
         {
             ParamSize = paramSize;
-            IsCall = isCall;
+            HasVariableArguments = hasVariableArguments;
         }
 
         public static PapyrusInstructionOpCodeDescription FromOpCode(PapyrusInstructionOpCodes opcode)

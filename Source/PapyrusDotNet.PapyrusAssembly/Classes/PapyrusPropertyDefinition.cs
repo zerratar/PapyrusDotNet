@@ -1,4 +1,4 @@
-namespace PapyrusDotNet.PapyrusAssembly.Implementations
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusPropertyDefinition : PapyrusPropertyReference
     {

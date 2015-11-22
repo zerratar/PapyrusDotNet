@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 
-namespace PapyrusDotNet.PapyrusAssembly.Implementations
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusInstruction
     {

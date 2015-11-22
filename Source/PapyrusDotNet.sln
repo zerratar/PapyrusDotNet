@@ -21,10 +21,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PapyrusAssemb
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.ConsoleTests", "PapyrusDotNet.ConsoleTests\PapyrusDotNet.ConsoleTests.csproj", "{BD15920E-26D2-49EC-AD79-EB565858A6AA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dummy", "Dummy", "{2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Temp", "Temp", "{2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\Spel\Fallout 4 Scripts\scripts\AbCourserSpeedScript.pex = ..\..\..\Spel\Fallout 4 Scripts\scripts\AbCourserSpeedScript.pex
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Unit Tests", "Unit Tests", "{8F01FC55-0D09-42F5-B04D-93463B86E105}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extended Framework", "Extended Framework", "{3D43E2F5-59B9-4917-9578-8000DA86597D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{6DFFF8A9-3932-4EFD-BA8F-7C6AB9DDFD24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Papyrus2Clr", "PapyrusDotNet.Papyrus2Clr\PapyrusDotNet.Converters.Papyrus2Clr.csproj", "{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Clr2Papyrus", "PapyrusDotNet.Clr2Papyrus\PapyrusDotNet.Converters.Clr2Papyrus.csproj", "{8547F068-C90E-4245-A9F8-20A98797E92B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Old Projects", "Old Projects", "{7017ED49-D123-4EC8-894E-73CA02B972A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,8 +80,24 @@ Global
 		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8547F068-C90E-4245-A9F8-20A98797E92B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8547F068-C90E-4245-A9F8-20A98797E92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8547F068-C90E-4245-A9F8-20A98797E92B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8547F068-C90E-4245-A9F8-20A98797E92B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{54B3F2D8-7510-4445-8A4C-420A73994D03} = {7017ED49-D123-4EC8-894E-73CA02B972A4}
+		{58CA8F82-6071-4212-A745-51C4B4FA0544} = {6DFFF8A9-3932-4EFD-BA8F-7C6AB9DDFD24}
+		{CAAF38B3-8033-4B23-9B50-0059306EAFAC} = {3D43E2F5-59B9-4917-9578-8000DA86597D}
+		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
 	EndGlobalSection
 EndGlobal

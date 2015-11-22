@@ -33,15 +33,32 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 {
     public class PexReader : BinaryReader
     {
-        public List<string> StringTable = null;
+        /// <summary>
+        /// Gets or sets the string table.
+        /// </summary>
+        /// <value>
+        /// The string table.
+        /// </value>
+        public List<string> StringTable { get; set; }
+
         private PapyrusVersionTargets papyrusVersionTarget;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PexReader"/> class.
+        /// </summary>
+        /// <param name="inputPexFile">The input pex file.</param>
         public PexReader(string inputPexFile) : base(new MemoryStream(File.ReadAllBytes(inputPexFile)))
         {
         }
 
         private MemoryStream BaseMemoryStream => BaseStream as MemoryStream;
 
+        /// <summary>
+        /// Gets or sets the position of the stream.
+        /// </summary>
+        /// <value>
+        /// The position.
+        /// </value>
         public long Position
         {
             get { return BaseMemoryStream.Position; }
@@ -55,15 +72,27 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
         /// </summary>
         public bool UseStringTable { get; set; } = true;
 
+        /// <summary>
+        /// Reads a 2-byte signed integer from the current stream and advances the current position of the stream by two bytes.
+        /// </summary>
+        /// <returns>
+        /// A 2-byte signed integer read from the current stream.
+        /// </returns>
+        /// <exception cref="T:System.IO.EndOfStreamException">The end of the stream is reached. </exception><exception cref="T:System.ObjectDisposedException">The stream is closed. </exception><exception cref="T:System.IO.IOException">An I/O error occurs. </exception><filterpriority>2</filterpriority>
         public override short ReadInt16()
         {
             // return base.ReadInt16();
-            var a = ReadByte();
-            // if (size != 0)
-            var b = ReadByte(); // Dummy
-            return BitConverter.ToInt16(new byte[] { a, b }, 0);
+            return BitConverter.ToInt16(new[] { ReadByte(), ReadByte() }, 0);
         }
 
+        /// <summary>
+        /// Reads a string from the current stream. The string is prefixed with the length, encoded as an integer seven bits at a time.
+        /// ... Add more specific comments later regarding what is actually happening ...
+        /// </summary>
+        /// <returns>
+        /// The string being read.
+        /// </returns>
+        /// <exception cref="T:System.IO.EndOfStreamException">The end of the stream is reached. </exception><exception cref="T:System.ObjectDisposedException">The stream is closed. </exception><exception cref="T:System.IO.IOException">An I/O error occurs. </exception><filterpriority>2</filterpriority>
         public override string ReadString()
         {
             var outputString = "";
@@ -73,7 +102,13 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
                     ? ReadInt16()
                     : ReadByte();
 
-                if (index > StringTable.Count) throw new IndexOutOfRangeException("The index read from the stream was not within the bound sof the string table.");
+                if (index > StringTable.Count || index < 0)
+                {
+                    index = StringTable.Count - 1;
+                    IsCorrupted = true;
+                }
+                // throw new IndexOutOfRangeException("The index read from the stream was not within the bounds of the string table.");
+
                 return StringTable[index];
             }
 
@@ -98,11 +133,21 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
             // return base.ReadString();
         }
 
+        public bool IsCorrupted { get; set; }
+
+        /// <summary>
+        /// Sets the string table.
+        /// </summary>
+        /// <param name="stringTable">The string table.</param>
         public void SetStringTable(List<string> stringTable)
         {
             this.StringTable = stringTable;
         }
 
+        /// <summary>
+        /// Sets the version target.
+        /// </summary>
+        /// <param name="papyrusVersionTarget">The papyrus version target.</param>
         public void SetVersionTarget(PapyrusVersionTargets papyrusVersionTarget)
         {
             this.papyrusVersionTarget = papyrusVersionTarget;

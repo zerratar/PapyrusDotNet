@@ -21,7 +21,7 @@
 
 using PapyrusDotNet.PapyrusAssembly.Enums;
 
-namespace PapyrusDotNet.PapyrusAssembly
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusTypeReference
     {

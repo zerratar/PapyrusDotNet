@@ -20,9 +20,8 @@
 #endregion
 
 using System.Collections.Generic;
-using PapyrusDotNet.PapyrusAssembly.Implementations;
 
-namespace PapyrusDotNet.PapyrusAssembly
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusTypeDescriptionTable
     {

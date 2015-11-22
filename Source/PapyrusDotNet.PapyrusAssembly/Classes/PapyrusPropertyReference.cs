@@ -1,6 +1,6 @@
 using PapyrusDotNet.PapyrusAssembly.Enums;
 
-namespace PapyrusDotNet.PapyrusAssembly.Implementations
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusPropertyReference
     {

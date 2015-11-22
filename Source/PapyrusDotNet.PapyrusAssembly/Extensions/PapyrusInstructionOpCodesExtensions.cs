@@ -1,4 +1,5 @@
-﻿using PapyrusDotNet.PapyrusAssembly.Enums;
+﻿using PapyrusDotNet.PapyrusAssembly.Classes;
+using PapyrusDotNet.PapyrusAssembly.Enums;
 
 namespace PapyrusDotNet.PapyrusAssembly.Extensions
 {

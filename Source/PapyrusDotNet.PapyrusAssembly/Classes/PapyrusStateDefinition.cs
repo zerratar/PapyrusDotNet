@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace PapyrusDotNet.PapyrusAssembly.Implementations
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusStateDefinition : PapyrusStateReference
     {

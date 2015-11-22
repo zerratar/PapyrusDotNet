@@ -23,16 +23,50 @@ namespace PapyrusDotNet.PapyrusAssembly.Structs
 {
     public struct PapyrusSourceHeader
     {
+        /// <summary>
+        /// The source
+        /// </summary>
         public string Source;
+        /// <summary>
+        /// The modify time
+        /// </summary>
         public long ModifyTime;
+        /// <summary>
+        /// The compile time
+        /// </summary>
         public long CompileTime;
+        /// <summary>
+        /// The user
+        /// </summary>
         public string User;
+        /// <summary>
+        /// The computer
+        /// </summary>
         public string Computer;
 
+        /// <summary>
+        /// The major version
+        /// </summary>
         public byte MajorVersion;
+        /// <summary>
+        /// The minor version
+        /// </summary>
         public byte MinorVersion;
+        /// <summary>
+        /// The game identifier
+        /// </summary>
         public int GameId;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PapyrusSourceHeader"/> struct.
+        /// </summary>
+        /// <param name="majorVersion">The major version.</param>
+        /// <param name="minorVersion">The minor version.</param>
+        /// <param name="gameId">The game identifier.</param>
+        /// <param name="compileTime">The compile time.</param>
+        /// <param name="source">The source.</param>
+        /// <param name="user">The user.</param>
+        /// <param name="computer">The computer.</param>
         public PapyrusSourceHeader(byte majorVersion, byte minorVersion, int gameId, long compileTime, string source,
             string user, string computer) : this()
         {

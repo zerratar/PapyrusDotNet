@@ -21,13 +21,11 @@
 
 #region
 
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using PapyrusDotNet.PapyrusAssembly.Implementations;
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusTypeDefinition : PapyrusTypeReference
     {
@@ -40,7 +38,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
         public int Size { get; set; }
-        public string ParentClass { get; set; }
+        public string BaseClass { get; set; }
         public byte ConstFlag { get; set; }
         public string Documentation { get; set; }
         public int UserFlags { get; set; }

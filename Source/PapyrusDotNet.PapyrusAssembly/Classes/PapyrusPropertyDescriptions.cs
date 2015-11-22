@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace PapyrusDotNet.PapyrusAssembly.Implementations
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusPropertyDescriptions
     {

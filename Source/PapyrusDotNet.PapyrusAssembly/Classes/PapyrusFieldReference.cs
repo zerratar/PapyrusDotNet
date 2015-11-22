@@ -19,7 +19,7 @@
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusFieldReference
     {

@@ -22,6 +22,7 @@
 #region
 
 using System.Collections.ObjectModel;
+using PapyrusDotNet.PapyrusAssembly.Classes;
 
 #endregion
 

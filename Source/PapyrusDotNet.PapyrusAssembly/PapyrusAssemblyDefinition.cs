@@ -22,6 +22,7 @@
 #region
 
 using System.Collections.ObjectModel;
+using PapyrusDotNet.PapyrusAssembly.Classes;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 using PapyrusDotNet.PapyrusAssembly.Implementations;
 using PapyrusDotNet.PapyrusAssembly.Interfaces;
@@ -46,25 +47,61 @@ namespace PapyrusDotNet.PapyrusAssembly
             this.versionTarget = versionTarget;
         }
 
+        /// <summary>
+        /// Gets the header.
+        /// </summary>
+        /// <value>
+        /// The header.
+        /// </value>
         public PapyrusHeader Header { get; internal set; }
 
+        /// <summary>
+        /// Gets or sets the description table.
+        /// </summary>
+        /// <value>
+        /// The description table.
+        /// </value>
         public PapyrusTypeDescriptionTable DescriptionTable { get; set; }
 
+        /// <summary>
+        /// Gets or sets the types.
+        /// </summary>
+        /// <value>
+        /// The types.
+        /// </value>
         public Collection<PapyrusTypeDefinition> Types { get; set; }
 
+        /// <summary>
+        /// Creates the assembly.
+        /// </summary>
+        /// <param name="versionTarget">The version target.</param>
+        /// <returns></returns>
         public static PapyrusAssemblyDefinition CreateAssembly(PapyrusVersionTargets versionTarget)
         {
             return new PapyrusAssemblyDefinition(versionTarget);
         }
 
+        /// <summary>
+        /// Loads the assembly.
+        /// </summary>
+        /// <param name="pexFile">The pex file.</param>
+        /// <returns></returns>
         public static PapyrusAssemblyDefinition LoadAssembly(string pexFile)
         {
             using (var reader = new PapyrusAssemblyReader(pexFile))
             {
-                return reader.Read();
+                var def = reader.Read();
+                def.IsCorrupted = reader.IsCorrupted;
+                return def;
             }
         }
 
+        public bool IsCorrupted { get; set; }
+
+        /// <summary>
+        /// Writes the specified output file.
+        /// </summary>
+        /// <param name="outputFile">The output file.</param>
         public void Write(string outputFile)
         {
             writer.Write(outputFile);
