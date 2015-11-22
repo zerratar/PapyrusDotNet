@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BD15920E-26D2-49EC-AD79-EB565858A6AA}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{CEDA785C-79BD-457B-9A25-3EC69CD29042}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PapyrusDotNet.ConsoleTests</RootNamespace>
-    <AssemblyName>PapyrusDotNet.ConsoleTests</AssemblyName>
+    <RootNamespace>Fallout4Example</RootNamespace>
+    <AssemblyName>Fallout4Example</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,9 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Binaries\Mono.Cecil.dll</HintPath>
+    <Reference Include="PapyrusDotNet.Core">
+      <HintPath>..\..\Source\PapyrusDotNet.ConsoleTests\bin\Debug\PapyrusDotNet.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,25 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
-      <Project>{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}</Project>
-      <Name>PapyrusDotNet.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PapyrusDotNet.Papyrus2Clr\PapyrusDotNet.Converters.Papyrus2Clr.csproj">
-      <Project>{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}</Project>
-      <Name>PapyrusDotNet.Converters.Papyrus2Clr</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">
-      <Project>{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}</Project>
-      <Name>PapyrusDotNet.PapyrusAssembly</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

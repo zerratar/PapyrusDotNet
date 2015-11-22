@@ -42,13 +42,16 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
         public List<string> StringTable { get; set; }
 
         private PapyrusVersionTargets papyrusVersionTarget;
+        private readonly bool throwsExceptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PexReader"/> class.
         /// </summary>
         /// <param name="inputPexFile">The input pex file.</param>
-        public PexReader(string inputPexFile) : base(new MemoryStream(File.ReadAllBytes(inputPexFile)))
+        /// <param name="throwsExceptions">Whether or not to throw unhandled exceptions.</param>
+        public PexReader(string inputPexFile, bool throwsExceptions = false) : base(new MemoryStream(File.ReadAllBytes(inputPexFile)))
         {
+            this.throwsExceptions = throwsExceptions;
         }
 
         private MemoryStream BaseMemoryStream => BaseStream as MemoryStream;
@@ -104,11 +107,12 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 
                 if (index > StringTable.Count || index < 0)
                 {
+                    if (throwsExceptions)
+                        throw new IndexOutOfRangeException("The index read from the stream was not within the bounds of the string table.");
+
                     index = StringTable.Count - 1;
                     IsCorrupted = true;
                 }
-                // throw new IndexOutOfRangeException("The index read from the stream was not within the bounds of the string table.");
-
                 return StringTable[index];
             }
 

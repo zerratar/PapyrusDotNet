@@ -85,10 +85,26 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// Loads the assembly.
         /// </summary>
         /// <param name="pexFile">The pex file.</param>
+        /// <param name="throwsException">Whether or not to throw exceptions.</param>
+        /// <returns></returns>
+        public static PapyrusAssemblyDefinition LoadAssembly(string pexFile, bool throwsException)
+        {
+            using (var reader = new PapyrusAssemblyReader(pexFile, throwsException))
+            {
+                var def = reader.Read();
+                def.IsCorrupted = reader.IsCorrupted;
+                return def;
+            }
+        }
+
+        /// <summary>
+        /// Loads the assembly.
+        /// </summary>
+        /// <param name="pexFile">The pex file.</param>
         /// <returns></returns>
         public static PapyrusAssemblyDefinition LoadAssembly(string pexFile)
         {
-            using (var reader = new PapyrusAssemblyReader(pexFile))
+            using (var reader = new PapyrusAssemblyReader(pexFile, false))
             {
                 var def = reader.Read();
                 def.IsCorrupted = reader.IsCorrupted;

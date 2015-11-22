@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Papyrus2Clr.Base;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
@@ -63,9 +64,21 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             var newType = new TypeDefinition(NamespaceResolver.Resolve(name), name,
                 TypeAttributes.Public | TypeAttributes.Class);
 
+            AddEmptyConstructor(newType);
+
+            if (!string.IsNullOrEmpty(type.BaseClass))
+            {
+                var baseType = ResolveTypeReference(null, type.BaseClass);
+                if (baseType != null)
+                {
+                    newType.BaseType = baseType;
+                }
+            }
+
             foreach (var prop in type.Properties)
             {
                 var typeRef = ResolveTypeReference(null, prop.TypeName);
+
                 var propDef = new PropertyDefinition(prop.Name, PropertyAttributes.None, typeRef);
                 newType.Properties.Add(propDef);
             }
@@ -75,7 +88,15 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                 var fieldType = field.FieldType;
                 var typeName = fieldType.Name;
                 var typeRef = ResolveTypeReference(null, typeName);
-                var fieldDef = new FieldDefinition(field.Name, FieldAttributes.Public, typeRef);
+
+                var attributes = FieldAttributes.Public;
+
+                if (field.IsConst)
+                {
+                    attributes |= FieldAttributes.InitOnly;
+                }
+
+                var fieldDef = new FieldDefinition(field.Name.Replace("::", ""), attributes, typeRef);
                 newType.Fields.Add(fieldDef);
             }
 
@@ -89,8 +110,19 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                 foreach (var method in state.Methods)
                 {
                     var typeRef = ResolveTypeReference(null, method.ReturnTypeName);
-                    var methodDef = new MethodDefinition(method.Name, MethodAttributes.Public, typeRef);
+                    var attributes = MethodAttributes.Public;
 
+                    if (method.IsGlobal || method.IsNative)
+                    {
+                        attributes |= MethodAttributes.Static;
+                    }
+                    else if (method.IsEvent)
+                    {
+                        attributes |= MethodAttributes.Virtual;
+                    }
+
+                    var methodDef = new MethodDefinition(method.Name, attributes, typeRef);
+                    methodDef.IsNative = method.IsNative;
                     foreach (var param in method.Parameters)
                     {
                         var paramTypeRef = ResolveTypeReference(null, param.TypeName);
@@ -105,8 +137,26 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             return newType;
         }
 
+        public void AddEmptyConstructor(TypeDefinition type)
+        {
+            var method = new MethodDefinition(".ctor", MethodAttributes.Public | MethodAttributes.HideBySig |
+                                                       MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, mainModule.TypeSystem.Void);
+
+            //TODO: might need to fix this later so that PEVERIFY can verify the outputted library properly.
+            // var baseEmptyConstructor = new MethodReference(".ctor", MainModule.TypeSystem.Void, MainModule.TypeSystem.Object);// MainModule.TypeSystem.Object
+            // method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+            // method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, baseEmptyConstructor));
+
+
+            method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            type.Methods.Add(method);
+        }
         public void CreateEmptyFunctionBody(ref MethodDefinition function)
         {
+            if (function.Body == null)
+            {
+                function.Body = new MethodBody(function);
+            }
             var fnl = function.ReturnType.FullName.ToLower();
             if (fnl.Equals("system.void"))
             {
