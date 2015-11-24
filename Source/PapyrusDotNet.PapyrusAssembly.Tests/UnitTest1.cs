@@ -37,13 +37,13 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
             var sourceScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
             var destinationScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex_new";
 
-            var src = PapyrusAssemblyDefinition.LoadAssembly(sourceScript);
+            var src = PapyrusAssemblyDefinition.ReadAssembly(sourceScript);
             Assert.IsNotNull(src);
             Assert.IsNotNull(src.Header.SourceHeader.Source);
 
             src.Write(destinationScript);
 
-            var dest = PapyrusAssemblyDefinition.LoadAssembly(destinationScript);
+            var dest = PapyrusAssemblyDefinition.ReadAssembly(destinationScript);
             Assert.IsNotNull(src);
             Assert.IsNotNull(dest.Header.SourceHeader.Source);
 
@@ -54,7 +54,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
         public void TestFallout4Papyrus()
         {
             var falloutScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
-            var assembly = PapyrusAssemblyDefinition.LoadAssembly(falloutScript);
+            var assembly = PapyrusAssemblyDefinition.ReadAssembly(falloutScript);
             Assert.IsNotNull(assembly.Header.SourceHeader.Source);
         }
 
@@ -62,7 +62,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
         public void TestSkyrimPapyrus()
         {
             var str = @"C:\CreationKit\Data\scripts\activemagiceffect.pex";
-            var assembly = PapyrusAssemblyDefinition.LoadAssembly(str);
+            var assembly = PapyrusAssemblyDefinition.ReadAssembly(str);
             Assert.IsNotNull(assembly.Header.SourceHeader.Source);
             Assert.AreNotEqual(0, assembly.Types.Count);
         }
@@ -74,7 +74,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
             var success = 0;
             foreach (var script in scripts)
             {
-                var assembly = PapyrusAssemblyDefinition.LoadAssembly(script);
+                var assembly = PapyrusAssemblyDefinition.ReadAssembly(script);
                 Assert.IsNotNull(assembly.Header.SourceHeader.Source);
                 Assert.AreNotEqual(0, assembly.Types.Count);
                 success++;

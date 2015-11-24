@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 //     This file is part of PapyrusDotNet.
 // 
@@ -19,17 +19,17 @@
 
 #endregion
 
-namespace PapyrusDotNet.Papyrus
+namespace PapyrusDotNet.Old
 {
-    public class Header
+    public class GenericTypeReference
     {
-        public Header()
+        public GenericTypeReference(string t, string c = null)
         {
-            SourceInfo = new SourceInfo();
-            UserFlagReferenceRef = new UserFlagsReference();
+            Type = t;
+            SourceClass = c;
         }
 
-        public SourceInfo SourceInfo { get; set; }
-        public UserFlagsReference UserFlagReferenceRef { get; set; }
+        public string SourceClass { get; set; }
+        public string Type { get; set; }
     }
 }

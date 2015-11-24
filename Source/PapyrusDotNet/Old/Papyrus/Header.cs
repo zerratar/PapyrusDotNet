@@ -19,11 +19,17 @@
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Enums
+namespace PapyrusDotNet.Old.Papyrus
 {
-    public enum PapyrusVersionTargets : int
+    public class Header
     {
-        Skyrim = 1,
-        Fallout4 = 2
+        public Header()
+        {
+            SourceInfo = new SourceInfo();
+            UserFlagReferenceRef = new UserFlagsReference();
+        }
+
+        public SourceInfo SourceInfo { get; set; }
+        public UserFlagsReference UserFlagReferenceRef { get; set; }
     }
 }

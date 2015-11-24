@@ -26,7 +26,7 @@ using System.Collections.Generic;
 
 #endregion
 
-namespace PapyrusDotNet.Papyrus
+namespace PapyrusDotNet.Old.Papyrus
 {
     public class UserFlagsReference
     {

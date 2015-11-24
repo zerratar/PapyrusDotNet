@@ -63,9 +63,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
             WriteStringTable();
 
-            pexWriter.Write(Assembly.Header.HasDebugInfo);
+            pexWriter.Write(Assembly.HasDebugInfo);
 
-            if (Assembly.Header.HasDebugInfo)
+            if (Assembly.HasDebugInfo)
             {
                 WriteDebugInfo();
             }

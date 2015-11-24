@@ -31,7 +31,7 @@ using PapyrusDotNet.Common.Papyrus;
 
 #endregion
 
-namespace PapyrusDotNet.Papyrus
+namespace PapyrusDotNet.Old.Papyrus
 {
     public class Function
     {

@@ -26,7 +26,7 @@ using PapyrusDotNet.Common;
 
 #endregion
 
-namespace PapyrusDotNet.Papyrus
+namespace PapyrusDotNet.Old.Papyrus
 {
     public class SourceInfo
     {

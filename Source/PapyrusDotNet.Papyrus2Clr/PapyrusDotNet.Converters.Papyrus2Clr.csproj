@@ -57,8 +57,8 @@
     <Compile Include="Implementations\ClrTypeReferenceResolver.cs" />
     <Compile Include="Implementations\PapyrusAssemblyInput.cs" />
     <Compile Include="Implementations\ClrTypeNameResolver.cs" />
-    <Compile Include="PapyrusToClrConverter.cs" />
-    <Compile Include="Base\PapyrusToClrConverterBase.cs" />
+    <Compile Include="Papyrus2ClrConverter.cs" />
+    <Compile Include="Base\Papyrus2ClrConverterBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

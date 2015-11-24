@@ -71,6 +71,14 @@ namespace PapyrusDotNet.PapyrusAssembly
         public PapyrusHeader Header { get; internal set; } = new PapyrusHeader();
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance has debug information.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has debug information; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasDebugInfo { get; set; }
+
+        /// <summary>
         /// Gets or sets the debug information.
         /// </summary>
         /// <value>
@@ -105,12 +113,12 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
         /// <summary>
-        /// Loads the assembly.
+        /// Reads the papyrus assembly.
         /// </summary>
         /// <param name="pexFile">The pex file.</param>
         /// <param name="throwsException">Whether or not to throw exceptions.</param>
         /// <returns></returns>
-        public static PapyrusAssemblyDefinition LoadAssembly(string pexFile, bool throwsException)
+        public static PapyrusAssemblyDefinition ReadAssembly(string pexFile, bool throwsException)
         {
             using (var reader = new PapyrusAssemblyReader(pexFile, throwsException))
             {
@@ -121,11 +129,11 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
         /// <summary>
-        /// Loads the assembly.
+        /// Reads the papyrus assembly.
         /// </summary>
         /// <param name="pexFile">The pex file.</param>
         /// <returns></returns>
-        public static PapyrusAssemblyDefinition LoadAssembly(string pexFile)
+        public static PapyrusAssemblyDefinition ReadAssembly(string pexFile)
         {
             using (var reader = new PapyrusAssemblyReader(pexFile, false))
             {

@@ -22,34 +22,22 @@
 #region
 
 using System.Collections.Generic;
-using PapyrusDotNet.Common.Papyrus;
 
 #endregion
 
-namespace PapyrusDotNet.Papyrus
+namespace PapyrusDotNet.Old.Papyrus
 {
-    public class ObjectTable
+    public class ObjectState
     {
-        public ObjectTable()
+        public ObjectState()
         {
-            Info = new FieldAttributes();
-            VariableTable = new List<VariableReference>();
-            PropertyTable = new List<VariableReference>();
-            StateTable = new List<ObjectState>();
+            Functions = new List<Function>();
         }
 
         public string Name { get; set; }
 
-        public string BaseType { get; set; }
+        public bool IsAuto { get; set; }
 
-        public FieldAttributes Info { get; set; }
-
-        public string AutoState { get; set; }
-
-        public List<VariableReference> VariableTable { get; set; }
-
-        public List<VariableReference> PropertyTable { get; set; }
-
-        public List<ObjectState> StateTable { get; set; }
+        public List<Function> Functions { get; set; }
     }
 }

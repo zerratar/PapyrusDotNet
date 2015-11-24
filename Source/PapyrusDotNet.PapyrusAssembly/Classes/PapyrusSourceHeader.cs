@@ -19,44 +19,68 @@
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Structs
+using System;
+
+namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
-    public struct PapyrusSourceHeader
+    public class PapyrusSourceHeader
     {
         /// <summary>
         /// The source
         /// </summary>
-        public string Source;
+        public string Source { get; set; }
         /// <summary>
         /// The modify time
         /// </summary>
-        public long ModifyTime;
+        public long ModifyTime { get; set; }
         /// <summary>
         /// The compile time
         /// </summary>
-        public long CompileTime;
+        public long CompileTime { get; set; }
         /// <summary>
         /// The user
         /// </summary>
-        public string User;
+        public string User { get; set; }
         /// <summary>
         /// The computer
         /// </summary>
-        public string Computer;
-
+        public string Computer { get; set; }
         /// <summary>
         /// The major version
         /// </summary>
-        public byte MajorVersion;
+        public byte MajorVersion { get; set; }
         /// <summary>
         /// The minor version
         /// </summary>
-        public byte MinorVersion;
+        public byte MinorVersion { get; set; }
+        /// <summary>
+        /// Gets or sets the version.
+        /// </summary>
+        /// <value>
+        /// The version.
+        /// </value>
+        public Version Version
+        {
+            get
+            {
+                return new Version(MajorVersion, MinorVersion);
+            }
+            set
+            {
+                if (value == null) return;
+                MajorVersion = (byte)value.Major;
+                MinorVersion = (byte)value.Minor;
+            }
+        }
+
         /// <summary>
         /// The game identifier
         /// </summary>
-        public short GameId;
-
+        public short GameId { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PapyrusSourceHeader"/> class.
+        /// </summary>
+        public PapyrusSourceHeader() { }
         /// <summary>
         /// Initializes a new instance of the <see cref="PapyrusSourceHeader"/> struct.
         /// </summary>
@@ -68,7 +92,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Structs
         /// <param name="user">The user.</param>
         /// <param name="computer">The computer.</param>
         public PapyrusSourceHeader(byte majorVersion, byte minorVersion, short gameId, long compileTime, string source,
-            string user, string computer) : this()
+            string user, string computer)
         {
             MajorVersion = majorVersion;
             MinorVersion = minorVersion;

@@ -4,14 +4,14 @@ using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 
 namespace PapyrusDotNet.Converters.Papyrus2Clr.Base
 {
-    public abstract class PapyrusToClrConverterBase : IPapyrusOutputConverter
+    public abstract class Papyrus2ClrConverterBase : IPapyrusOutputConverter
     {
         protected abstract ClrAssemblyOutput ConvertAssembly(PapyrusAssemblyInput input);
 
         protected INamespaceResolver NamespaceResolver { get; }
         protected ITypeReferenceResolver TypeReferenceResolver { get; }
 
-        protected PapyrusToClrConverterBase(INamespaceResolver namespaceResolver, ITypeReferenceResolver typeReferenceResolver)
+        protected Papyrus2ClrConverterBase(INamespaceResolver namespaceResolver, ITypeReferenceResolver typeReferenceResolver)
         {
             NamespaceResolver = namespaceResolver;
             TypeReferenceResolver = typeReferenceResolver;

@@ -21,9 +21,9 @@
 
 #region
 
+using System;
 using System.Collections.Generic;
 using PapyrusDotNet.PapyrusAssembly.Enums;
-using PapyrusDotNet.PapyrusAssembly.Structs;
 
 #endregion
 
@@ -32,9 +32,12 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
     public class PapyrusHeader
     {
         public const uint Fallout4PapyrusHeaderIdentifier = 0xFA57C0DE;
+        public const uint SkyrimPapyrusHeaderIdentifier = 0xDEC057FA;
+        public static readonly Version SkyrimPapyrusVersion = new Version(3, 2);
+        public static readonly Version Fallout4PapyrusVersion = new Version(3, 9);
+
         public PapyrusSourceHeader SourceHeader { get; set; } = new PapyrusSourceHeader();
         public Dictionary<string, byte> UserflagReferenceHeader { get; set; } = new Dictionary<string, byte>();
         public uint HeaderIdentifier { get; set; }
-        public bool HasDebugInfo { get; set; }
     }
 }

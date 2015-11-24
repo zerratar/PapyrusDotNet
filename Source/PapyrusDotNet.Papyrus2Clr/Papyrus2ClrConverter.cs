@@ -12,7 +12,7 @@ using PapyrusDotNet.PapyrusAssembly.Classes;
 
 namespace PapyrusDotNet.Converters.Papyrus2Clr
 {
-    public class PapyrusToClrConverter : PapyrusToClrConverterBase
+    public class Papyrus2ClrConverter : Papyrus2ClrConverterBase
     {
         public IList<TypeReference> AddedTypeReferences = new List<TypeReference>();
         public IList<string> ReservedTypeNames = new List<string>();
@@ -195,7 +195,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             return TypeReferenceResolver.Resolve(ref ReservedTypeNames, ref AddedTypeReferences, mainModule, newType, targetTypeName);
         }
 
-        public PapyrusToClrConverter(INamespaceResolver namespaceResolver, ITypeReferenceResolver typeReferenceResolver) : base(namespaceResolver, typeReferenceResolver)
+        public Papyrus2ClrConverter(INamespaceResolver namespaceResolver, ITypeReferenceResolver typeReferenceResolver) : base(namespaceResolver, typeReferenceResolver)
         {
         }
     }

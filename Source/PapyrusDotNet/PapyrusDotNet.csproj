@@ -64,17 +64,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyHelper.cs" />
-    <Compile Include="GenericTypeReference.cs" />
-    <Compile Include="MethodCallPair.cs" />
-    <Compile Include="Papyrus\Assembly.cs" />
-    <Compile Include="Papyrus\Function.cs" />
-    <Compile Include="Papyrus\Header.cs" />
-    <Compile Include="Papyrus\SourceInfo.cs" />
-    <Compile Include="Papyrus\ObjectState.cs" />
-    <Compile Include="Papyrus\ObjectTable.cs" />
-    <Compile Include="Papyrus\UserFlagsReference.cs" />
-    <Compile Include="PapyrusAsmWriter.cs" />
+    <Compile Include="Old\AssemblyHelper.cs" />
+    <Compile Include="Old\GenericTypeReference.cs" />
+    <Compile Include="Old\MethodCallPair.cs" />
+    <Compile Include="Old\Papyrus\Assembly.cs" />
+    <Compile Include="Old\Papyrus\Function.cs" />
+    <Compile Include="Old\Papyrus\Header.cs" />
+    <Compile Include="Old\Papyrus\SourceInfo.cs" />
+    <Compile Include="Old\Papyrus\ObjectState.cs" />
+    <Compile Include="Old\Papyrus\ObjectTable.cs" />
+    <Compile Include="Old\Papyrus\UserFlagsReference.cs" />
+    <Compile Include="Old\PapyrusAsmWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -83,9 +83,21 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PapyrusDotNet.Clr2Papyrus\PapyrusDotNet.Converters.Clr2Papyrus.csproj">
+      <Project>{8547F068-C90E-4245-A9F8-20A98797E92B}</Project>
+      <Name>PapyrusDotNet.Converters.Clr2Papyrus</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
       <Project>{6b35b6ab-ea3b-42b0-b40f-66e490e59a15}</Project>
       <Name>PapyrusDotNet.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PapyrusDotNet.Papyrus2Clr\PapyrusDotNet.Converters.Papyrus2Clr.csproj">
+      <Project>{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}</Project>
+      <Name>PapyrusDotNet.Converters.Papyrus2Clr</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">
+      <Project>{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}</Project>
+      <Name>PapyrusDotNet.PapyrusAssembly</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

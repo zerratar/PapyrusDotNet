@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 //     This file is part of PapyrusDotNet.
 // 
@@ -21,21 +21,35 @@
 
 #region
 
-using Mono.Cecil;
+using System.Collections.Generic;
+using PapyrusDotNet.Common.Papyrus;
 
 #endregion
 
-namespace PapyrusDotNet
+namespace PapyrusDotNet.Old.Papyrus
 {
-    public struct MethodCallPair
+    public class ObjectTable
     {
-        public MethodDefinition CallerMethod;
-        public MethodReference TargetMethod;
-
-        public MethodCallPair(MethodDefinition cm, MethodReference tm)
+        public ObjectTable()
         {
-            CallerMethod = cm;
-            TargetMethod = tm;
+            Info = new FieldAttributes();
+            VariableTable = new List<VariableReference>();
+            PropertyTable = new List<VariableReference>();
+            StateTable = new List<ObjectState>();
         }
+
+        public string Name { get; set; }
+
+        public string BaseType { get; set; }
+
+        public FieldAttributes Info { get; set; }
+
+        public string AutoState { get; set; }
+
+        public List<VariableReference> VariableTable { get; set; }
+
+        public List<VariableReference> PropertyTable { get; set; }
+
+        public List<ObjectState> StateTable { get; set; }
     }
 }

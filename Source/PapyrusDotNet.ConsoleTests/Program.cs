@@ -44,13 +44,13 @@ namespace PapyrusDotNet.ConsoleTests
             var sourceScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
             var destinationScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex_new";
 
-            var src = PapyrusAssemblyDefinition.LoadAssembly(sourceScript);
+            var src = PapyrusAssemblyDefinition.ReadAssembly(sourceScript);
             Assert.IsNotNull(src);
             Assert.IsNotNull(src.Header.SourceHeader.Source);
 
             src.Write(destinationScript);
 
-            var dest = PapyrusAssemblyDefinition.LoadAssembly(destinationScript);
+            var dest = PapyrusAssemblyDefinition.ReadAssembly(destinationScript);
             Assert.IsNotNull(src);
             Assert.IsNotNull(dest.Header.SourceHeader.Source);
 
@@ -90,7 +90,7 @@ namespace PapyrusDotNet.ConsoleTests
             var success = 0;
             foreach (var script in scripts)
             {
-                var assembly = PapyrusAssemblyDefinition.LoadAssembly(script);
+                var assembly = PapyrusAssemblyDefinition.ReadAssembly(script);
                 if (assembly == null || assembly.IsCorrupted)
                 {
                     throw new Exception($"TEST FAILED AT {success}!");

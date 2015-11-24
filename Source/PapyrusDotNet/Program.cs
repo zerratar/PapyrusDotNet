@@ -24,7 +24,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using Mono.Cecil;
+using PapyrusDotNet.Common.Interfaces;
+using PapyrusDotNet.Converters.Clr2Papyrus;
+using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
+using PapyrusDotNet.Converters.Papyrus2Clr;
+using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
+using PapyrusDotNet.Old;
+using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly.Enums;
 using PowerArgs;
 
 #endregion
@@ -42,20 +52,98 @@ namespace PapyrusDotNet
         public string InputFile { get; set; }
     }
 
-    internal class Program
+    public class Program
     {
         public static bool HandleConstructorAsOnInit = false;
 
         public static AssemblyDefinition CurrentAssembly;
 
-        public static string outputFolder;
+        public static string OutputFolder;
 
-        public static string inputFile;
+        public static string InputFile;
 
         private static void Main(string[] args)
         {
-            outputFolder = @".\output";
-            inputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
+            Console.Clear();
+            Console.WriteLine("PapyrusDotNet v0.2");
+
+            IAssemblyConverter converter;
+            IAssemblyInput inputData;
+
+            var clr2Papyrus = true;
+            var output = "";
+            var input = "";
+
+            if (args.Length < 2)
+            {
+                Console.WriteLine("Missing Important Arguments.");
+                PrintHelp();
+                return;
+            }
+
+            input = args[0];
+            output = args[1];
+
+            if (args.Length >= 3)
+            {
+                clr2Papyrus = args[2].ToLower() != "-clr";
+            }
+
+            if (clr2Papyrus)
+            {
+                var targetVersion = PapyrusVersionTargets.Fallout4;
+                if (args.Length >= 4)
+                {
+                    targetVersion = args[3].ToLower() == "-fo4"
+                        ? PapyrusVersionTargets.Fallout4
+                        : PapyrusVersionTargets.Skyrim;
+                }
+
+                converter = new Clr2PapyrusConverter();
+                inputData = new ClrAssemblyInput(AssemblyDefinition.ReadAssembly(input), targetVersion);
+            }
+            else
+            {
+                var nsResolver = new ClrNamespaceResolver();
+
+                converter = new Papyrus2ClrConverter(nsResolver,
+                    new ClrTypeReferenceResolver(nsResolver, new ClrTypeNameResolver()));
+
+                inputData = new PapyrusAssemblyInput(
+                        Directory.GetFiles(input, "*.pex", SearchOption.AllDirectories)
+                        .Select(PapyrusAssemblyDefinition.ReadAssembly)
+                        .ToArray()
+                    );
+            }
+
+            var outputData = converter.Convert(inputData);
+
+            if (outputData != null)
+            {
+                // Do something...
+            }
+
+            // MainOld(args);
+        }
+
+        private static void PrintHelp()
+        {
+            Console.WriteLine("Usage: PapyrusDotNet.exe <input> <output> [option] [<target papyrus version (-fo4 | -skyrim)>]");
+            Console.WriteLine("Options:");
+            Console.WriteLine("\t-papyrus :: [Default] Converts a .NET .dll into .pex files. Each class will be a separate .pex file.");
+            Console.WriteLine("\t\t<input> :: file (.dll)");
+            Console.WriteLine("\t\t<output> :: folder");
+            Console.WriteLine("\t\t<target version> :: [Fallout 4 is default] -fo4 or -skyrim");
+            Console.WriteLine("\t-clr :: Converts a .pex or folder containg .pex files into a .NET library usable when modding.");
+            Console.WriteLine("\t\t<input> :: .pex file or folder");
+            Console.WriteLine("\t\t<output> :: folder (File will be named PapyrusDotNet.Core.dll)");
+        }
+
+        #region Old Program Start
+        private static void MainOld(string[] args)
+        {
+            OutputFolder = @".\output";
+            InputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
             try
             {
                 var parsed = Args.Parse<PapyrusDotNetArgs>(args);
@@ -63,16 +151,16 @@ namespace PapyrusDotNet
                 {
                     // Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
                     if (parsed.OutputFolder != null)
-                        outputFolder = parsed.OutputFolder;
-                    inputFile = parsed.InputFile;
-                    if (outputFolder.Contains("\""))
+                        OutputFolder = parsed.OutputFolder;
+                    InputFile = parsed.InputFile;
+                    if (OutputFolder.Contains("\""))
                     {
-                        outputFolder = outputFolder.Replace("\"", "");
+                        OutputFolder = OutputFolder.Replace("\"", "");
                     }
 
-                    if (inputFile.Contains("\""))
+                    if (InputFile.Contains("\""))
                     {
-                        inputFile = inputFile.Replace("\"", "");
+                        InputFile = InputFile.Replace("\"", "");
                     }
 
                     Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.InputFile, parsed.OutputFolder);
@@ -87,7 +175,7 @@ namespace PapyrusDotNet
 
 
             var outputPasFiles = new Dictionary<string, string>();
-            CurrentAssembly = AssemblyDefinition.ReadAssembly(inputFile);
+            CurrentAssembly = AssemblyDefinition.ReadAssembly(InputFile);
 
             var asmReferences = AssemblyHelper.GetAssemblyReferences(CurrentAssembly);
 
@@ -110,24 +198,25 @@ namespace PapyrusDotNet
             {
                 try
                 {
-                    if (!Directory.Exists(outputFolder)) Directory.CreateDirectory(outputFolder);
+                    if (!Directory.Exists(OutputFolder)) Directory.CreateDirectory(OutputFolder);
 
-                    Console.WriteLine("Saving " + Path.Combine(outputFolder, pas.Key) + "...");
-                    File.WriteAllText(Path.Combine(outputFolder, pas.Key), pas.Value);
+                    Console.WriteLine("Saving " + Path.Combine(OutputFolder, pas.Key) + "...");
+                    File.WriteAllText(Path.Combine(OutputFolder, pas.Key), pas.Value);
                 }
                 catch (Exception exc)
                 {
                     Console.WriteLine("----------------");
-                    Console.WriteLine(outputFolder);
+                    Console.WriteLine(OutputFolder);
                     Console.WriteLine(pas.Key);
                     Console.WriteLine(exc);
                     Console.ReadKey();
                 }
             }
         }
-
+        #endregion
         // ld is to load from stack and assign its value to either function, variable or return
 
         // st codes are to store to the stack
     }
+
 }

@@ -28,7 +28,6 @@ using PapyrusDotNet.PapyrusAssembly.Classes;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 using PapyrusDotNet.PapyrusAssembly.Interfaces;
 using PapyrusDotNet.PapyrusAssembly.IO;
-using PapyrusDotNet.PapyrusAssembly.Structs;
 
 #endregion
 
@@ -59,7 +58,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             asm.Header = ReadHeader(asm);
             try
             {
-                if (asm.Header.HasDebugInfo)
+                if (asm.HasDebugInfo)
                 {
                     asm.DebugInfo = ReadDebugInfo(asm);
                 }
@@ -116,7 +115,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
             var hasDebugInfoByte = pexReader.ReadByte();
 
-            header.HasDebugInfo = hasDebugInfoByte == 1;
+            asm.HasDebugInfo = hasDebugInfoByte == 1;
 
             return header;
         }

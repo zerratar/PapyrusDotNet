@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 //     This file is part of PapyrusDotNet.
 // 
@@ -21,23 +21,21 @@
 
 #region
 
-using System.Collections.Generic;
+using Mono.Cecil;
 
 #endregion
 
-namespace PapyrusDotNet.Papyrus
+namespace PapyrusDotNet.Old
 {
-    public class ObjectState
+    public struct MethodCallPair
     {
-        public ObjectState()
+        public MethodDefinition CallerMethod;
+        public MethodReference TargetMethod;
+
+        public MethodCallPair(MethodDefinition cm, MethodReference tm)
         {
-            Functions = new List<Function>();
+            CallerMethod = cm;
+            TargetMethod = tm;
         }
-
-        public string Name { get; set; }
-
-        public bool IsAuto { get; set; }
-
-        public List<Function> Functions { get; set; }
     }
 }
