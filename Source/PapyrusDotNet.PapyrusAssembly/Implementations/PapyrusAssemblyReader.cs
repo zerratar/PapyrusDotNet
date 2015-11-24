@@ -238,7 +238,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     typeDef.Documentation = pexReader.ReadString();
                     typeDef.UserFlags = pexReader.ReadInt32();
                     typeDef.AutoStateName = pexReader.ReadString();
-                    
+
                     // Bad from here.
                     ReadFields(typeDef);
 
@@ -432,6 +432,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var minorVersion = pexReader.ReadByte();
             var gameId = pexReader.ReadInt16();
             var compileTime = pexReader.ReadInt64();
+
             var source = pexReader.ReadString();
             var user = pexReader.ReadString();
             var computer = pexReader.ReadString();

@@ -101,7 +101,7 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
         public override long ReadInt64()
         {
             if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
-                return base.ReadInt32();
+                return base.ReadInt64();
             return BitConverter.ToInt64(ReadBytesReversed(8), 0);
         }
 
@@ -124,17 +124,21 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
         public override string ReadString()
         {
             var outputString = "";
+
+            if (DEBUGGING)
+            {
+                // var manyDummies = ReadChars(100);
+                //var dummy = ReadBytesReversed(2);
+                //var dummy2 = BitConverter.ToInt16(dummy, 0);
+            }
+
             if (StringTable != null && UseStringTable)
             {
                 //int index = papyrusVersionTarget == PapyrusVersionTargets.Fallout4
                 //    ? ReadInt16()
                 //    : BitConverter.ToInt16(ReadBytes(2), 0);
 
-                if (DEBUGGING)
-                {
-                    //var dummy = ReadBytesReversed(2);
-                    //var dummy2 = BitConverter.ToInt16(dummy, 0);
-                }
+
 
 
                 var index = ReadInt16();

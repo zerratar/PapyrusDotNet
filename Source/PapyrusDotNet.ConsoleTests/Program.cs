@@ -37,23 +37,47 @@ namespace PapyrusDotNet.ConsoleTests
     {
         private static void Main(string[] args)
         {
+
+
+         //   TestManySkyrimPapyrus();
+
             var startTime = DateTime.Now;
             var fallout4ScriptFolder = @"D:\Spel\Fallout 4 Scripts\scripts\";
             var fallout4Script = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
             var skyrimScript = @"C:\CreationKit\Data\scripts\activemagiceffect.pex";
 
-            var assembly = PapyrusAssemblyDefinition.LoadAssembly(skyrimScript, true);
+            //var assembly = PapyrusAssemblyDefinition.LoadAssembly(skyrimScript, true);
 
             var allScriptFiles = Directory.GetFiles(fallout4ScriptFolder, "*.pex", SearchOption.AllDirectories);
 
             var assemblies = allScriptFiles.Select(PapyrusAssemblyDefinition.LoadAssembly);
 
             var namespaceResolver = new ClrNamespaceResolver();
-            var converter = new PapyrusToClrConverter(namespaceResolver, new ClrTypeReferenceResolver(namespaceResolver, new ClrTypeNameResolver()));
+            var converter = new PapyrusToClrConverter(namespaceResolver,
+                new ClrTypeReferenceResolver(namespaceResolver, new ClrTypeNameResolver()));
             var output = converter.Convert(new PapyrusAssemblyInput(assemblies.ToArray()));
             var clr = output as ClrAssemblyOutput;
-            clr.OutputAssembly.Write(@"D:\Git\PapyrusDotNet\Source\PapyrusDotNet.ConsoleTests\bin\Debug\PapyrusDotNet.Core.dll");
+            clr.OutputAssembly.Write(
+                @"D:\Git\PapyrusDotNet\Source\PapyrusDotNet.ConsoleTests\bin\Debug\PapyrusDotNet.Core.dll");
             Console.WriteLine("Build Time: " + (DateTime.Now - startTime).TotalSeconds + " seconds.");
+
+
+
+        }
+
+        public static void TestManySkyrimPapyrus()
+        {
+            var scripts = Directory.GetFiles(@"C:\CreationKit\Data\scripts\", "*.pex", SearchOption.AllDirectories);
+            var success = 0;
+            foreach (var script in scripts)
+            {
+                var assembly = PapyrusAssemblyDefinition.LoadAssembly(script);
+                if (assembly == null || assembly.IsCorrupted)
+                {
+                    throw new Exception($"TEST FAILED AT {success}!");
+                }
+                success++;
+            }
         }
     }
 }

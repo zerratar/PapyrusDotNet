@@ -21,6 +21,7 @@
 
 #region
 
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 #endregion
@@ -45,6 +46,21 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
             var assembly = PapyrusAssemblyDefinition.LoadAssembly(str);
             Assert.IsNotNull(assembly.Header.SourceHeader.Source);
             Assert.AreNotEqual(0, assembly.Types.Count);
+        }
+
+        [TestMethod]
+        public void TestManySkyrimPapyrus()
+        {
+            var scripts = Directory.GetFiles(@"C:\CreationKit\Data\scripts\", "*.pex", SearchOption.AllDirectories);
+            var success = 0;
+            foreach (var script in scripts)
+            {
+                var assembly = PapyrusAssemblyDefinition.LoadAssembly(script);
+                Assert.IsNotNull(assembly.Header.SourceHeader.Source);
+                Assert.AreNotEqual(0, assembly.Types.Count);
+                success++;
+            }
+            Assert.AreNotEqual(0, success);
         }
     }
 }
