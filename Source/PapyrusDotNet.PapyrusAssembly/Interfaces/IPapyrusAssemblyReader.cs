@@ -32,7 +32,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Interfaces
     {
         PapyrusAssemblyDefinition Read();
         PapyrusHeader ReadHeader(PapyrusAssemblyDefinition asm);
-        PapyrusTypeDescriptionTable ReadDescriptionTable(PapyrusAssemblyDefinition asm);
+        PapyrusTypeDebugInfo ReadDebugInfo(PapyrusAssemblyDefinition asm);
         Collection<PapyrusTypeDefinition> ReadTypeDefinitions(PapyrusAssemblyDefinition asm);
     }
 }

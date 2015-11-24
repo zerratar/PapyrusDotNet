@@ -24,6 +24,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Temp", "Temp", "{2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\Spel\Fallout 4 Scripts\scripts\AbCourserSpeedScript.pex = ..\..\..\Spel\Fallout 4 Scripts\scripts\AbCourserSpeedScript.pex
+		C:\CreationKit\Data\scripts\activemagiceffect.pex = C:\CreationKit\Data\scripts\activemagiceffect.pex
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Unit Tests", "Unit Tests", "{8F01FC55-0D09-42F5-B04D-93463B86E105}"
@@ -39,6 +40,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Old Projects", "Old Projects", "{7017ED49-D123-4EC8-894E-73CA02B972A4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fallout4Example", "..\Examples\Fallout4Example\Fallout4Example.csproj", "{CEDA785C-79BD-457B-9A25-3EC69CD29042}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Skyrim", "Skyrim", "{D47C236E-5E6B-4E75-A3CD-DF63CB99F00D}"
+	ProjectSection(SolutionItems) = preProject
+		C:\CreationKit\Data\scripts\activemagiceffect.pex = C:\CreationKit\Data\scripts\activemagiceffect.pex
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -106,5 +112,6 @@ Global
 		{E53819BD-3427-4DB1-96CD-6CA5E81AF756} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
 		{BD15920E-26D2-49EC-AD79-EB565858A6AA} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
 		{CEDA785C-79BD-457B-9A25-3EC69CD29042} = {6DFFF8A9-3932-4EFD-BA8F-7C6AB9DDFD24}
+		{D47C236E-5E6B-4E75-A3CD-DF63CB99F00D} = {2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}
 	EndGlobalSection
 EndGlobal

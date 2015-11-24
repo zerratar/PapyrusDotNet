@@ -23,7 +23,7 @@ using System.Collections.Generic;
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
-    public class PapyrusTypeDescriptionTable
+    public class PapyrusTypeDebugInfo
     {
         public bool HasMethodDescriptions => MethodDescriptions != null && MethodDescriptions.Count > 0;
         public List<PapyrusMethodDecription> MethodDescriptions { get; set; }
@@ -33,7 +33,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public List<PapyrusStructDescription> StructDescriptions { get; set; }
         public long DescriptionTime { get; set; }
 
-        public PapyrusTypeDescriptionTable()
+        public PapyrusTypeDebugInfo()
         {
             MethodDescriptions = new List<PapyrusMethodDecription>();
             PropertyDescriptions = new List<PapyrusPropertyDescriptions>();

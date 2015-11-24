@@ -42,7 +42,7 @@ namespace PapyrusDotNet.ConsoleTests
             var fallout4Script = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
             var skyrimScript = @"C:\CreationKit\Data\scripts\activemagiceffect.pex";
 
-            // var assembly = PapyrusAssemblyDefinition.LoadAssembly(fallout4Script, true);
+            var assembly = PapyrusAssemblyDefinition.LoadAssembly(skyrimScript, true);
 
             var allScriptFiles = Directory.GetFiles(fallout4ScriptFolder, "*.pex", SearchOption.AllDirectories);
 

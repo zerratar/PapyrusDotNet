@@ -57,7 +57,7 @@
     <Compile Include="Classes\PapyrusPropertyReference.cs" />
     <Compile Include="Classes\PapyrusStructDescription.cs" />
     <Compile Include="Classes\PapyrusMethodDecription.cs" />
-    <Compile Include="Classes\PapyrusTypeDescriptionTable.cs" />
+    <Compile Include="Classes\PapyrusTypeDebugInfo.cs" />
     <Compile Include="Classes\PapyrusFieldDefinition.cs" />
     <Compile Include="Classes\PapyrusFieldReference.cs" />
     <Compile Include="Classes\PapyrusTypeReference.cs" />

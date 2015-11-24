@@ -37,6 +37,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public Dictionary<string, object> UserflagReferenceHeader { get; set; } = new Dictionary<string, object>();
         public PapyrusVersionTargets VersionTarget { get; set; }
         public uint HeaderIdentifier { get; set; }
-        public bool HasDescriptionTable { get; set; }
+        public bool HasDebugInfo { get; set; }
     }
 }

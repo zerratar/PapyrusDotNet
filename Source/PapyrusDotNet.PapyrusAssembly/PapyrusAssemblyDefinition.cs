@@ -56,12 +56,12 @@ namespace PapyrusDotNet.PapyrusAssembly
         public PapyrusHeader Header { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the description table.
+        /// Gets or sets the debug information.
         /// </summary>
         /// <value>
-        /// The description table.
+        /// The debug information.
         /// </value>
-        public PapyrusTypeDescriptionTable DescriptionTable { get; set; }
+        public PapyrusTypeDebugInfo DebugInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the types.

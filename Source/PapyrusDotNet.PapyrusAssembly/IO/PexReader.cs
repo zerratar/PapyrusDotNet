@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 
@@ -84,10 +85,34 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
         /// <exception cref="T:System.IO.EndOfStreamException">The end of the stream is reached. </exception><exception cref="T:System.ObjectDisposedException">The stream is closed. </exception><exception cref="T:System.IO.IOException">An I/O error occurs. </exception><filterpriority>2</filterpriority>
         public override short ReadInt16()
         {
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+                return BitConverter.ToInt16(new[] { ReadByte(), ReadByte() }, 0);
+            return BitConverter.ToInt16(ReadBytesReversed(2), 0);
             // return base.ReadInt16();
-            return BitConverter.ToInt16(new[] { ReadByte(), ReadByte() }, 0);
         }
 
+        public override int ReadInt32()
+        {
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+                return base.ReadInt32();
+            return BitConverter.ToInt32(ReadBytesReversed(4), 0);
+        }
+
+        public override long ReadInt64()
+        {
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+                return base.ReadInt32();
+            return BitConverter.ToInt64(ReadBytesReversed(8), 0);
+        }
+
+        private byte[] ReadBytesReversed(int count)
+        {
+            var bytes = ReadBytes(count).ToList();
+            bytes.Reverse();
+            return bytes.ToArray();
+        }
+
+        public bool DEBUGGING;
         /// <summary>
         /// Reads a string from the current stream. The string is prefixed with the length, encoded as an integer seven bits at a time.
         /// ... Add more specific comments later regarding what is actually happening ...
@@ -99,39 +124,49 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
         public override string ReadString()
         {
             var outputString = "";
-            if (StringTable != null)
+            if (StringTable != null && UseStringTable)
             {
-                int index = papyrusVersionTarget == PapyrusVersionTargets.Fallout4
-                    ? ReadInt16()
-                    : ReadByte();
+                //int index = papyrusVersionTarget == PapyrusVersionTargets.Fallout4
+                //    ? ReadInt16()
+                //    : BitConverter.ToInt16(ReadBytes(2), 0);
+
+                if (DEBUGGING)
+                {
+                    //var dummy = ReadBytesReversed(2);
+                    //var dummy2 = BitConverter.ToInt16(dummy, 0);
+                }
+
+
+                var index = ReadInt16();
 
                 if (index > StringTable.Count || index < 0)
                 {
                     if (throwsExceptions)
                         throw new IndexOutOfRangeException("The index read from the stream was not within the bounds of the string table.");
 
-                    index = StringTable.Count - 1;
+                    index = (short)(StringTable.Count - 1);
                     IsCorrupted = true;
                 }
                 return StringTable[index];
             }
 
-            var size = papyrusVersionTarget == PapyrusVersionTargets.Fallout4
-                ? ReadInt16()
-                : ReadByte();
+            var size = ReadInt16();
+            //papyrusVersionTarget == PapyrusVersionTargets.Fallout4
+            //? ReadInt16()
+            //: ReadByte();
 
             for (var i = 0; i < size; i++)
             {
                 outputString += ReadChar();
-                if (papyrusVersionTarget == PapyrusVersionTargets.Skyrim)
-                {
-                    var next = PeekChar();
-                    if (next == '\0')
-                    {
-                        ReadByte();
-                        break;
-                    }
-                }
+                //if (papyrusVersionTarget == PapyrusVersionTargets.Skyrim)
+                //{
+                //    var next = PeekChar();
+                //    if (next == '\0')
+                //    {
+                //        ReadByte();
+                //        break;
+                //    }
+                //}
             }
             return outputString;
             // return base.ReadString();

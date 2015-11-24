@@ -31,12 +31,19 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
     public class PapyrusAssemblyDefinitionTests
     {
         [TestMethod]
-        public void TestMethod1()
+        public void TestFallout4Papyrus()
+        {
+            var falloutScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
+            var assembly = PapyrusAssemblyDefinition.LoadAssembly(falloutScript);
+            Assert.IsNotNull(assembly.Header.SourceHeader.Source);
+        }
+
+        [TestMethod]
+        public void TestSkyrimPapyrus()
         {
             var str = @"C:\CreationKit\Data\scripts\activemagiceffect.pex";
             var assembly = PapyrusAssemblyDefinition.LoadAssembly(str);
             Assert.IsNotNull(assembly.Header.SourceHeader.Source);
-
             Assert.AreNotEqual(0, assembly.Types.Count);
         }
     }
