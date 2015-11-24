@@ -32,10 +32,8 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
     public class PapyrusHeader
     {
         public const uint Fallout4PapyrusHeaderIdentifier = 0xFA57C0DE;
-
         public PapyrusSourceHeader SourceHeader { get; set; } = new PapyrusSourceHeader();
-        public Dictionary<string, object> UserflagReferenceHeader { get; set; } = new Dictionary<string, object>();
-        public PapyrusVersionTargets VersionTarget { get; set; }
+        public Dictionary<string, byte> UserflagReferenceHeader { get; set; } = new Dictionary<string, byte>();
         public uint HeaderIdentifier { get; set; }
         public bool HasDebugInfo { get; set; }
     }

@@ -31,7 +31,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public List<PapyrusPropertyDescriptions> PropertyDescriptions { get; set; }
         public bool HasStructDescriptions => StructDescriptions != null && StructDescriptions.Count > 0;
         public List<PapyrusStructDescription> StructDescriptions { get; set; }
-        public long DescriptionTime { get; set; }
+        public long DebugTime { get; set; }
 
         public PapyrusTypeDebugInfo()
         {

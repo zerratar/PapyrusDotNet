@@ -21,6 +21,7 @@
 
 #region
 
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PapyrusDotNet.PapyrusAssembly.Classes;
 using PapyrusDotNet.PapyrusAssembly.Enums;
@@ -33,13 +34,11 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusAssemblyDefinition
     {
-        private readonly IPapyrusAssemblyWriter writer;
 
         private PapyrusVersionTargets versionTarget;
 
         internal PapyrusAssemblyDefinition()
         {
-            writer = new PapyrusAssemblyWriter();
         }
 
         internal PapyrusAssemblyDefinition(PapyrusVersionTargets versionTarget) : this()
@@ -48,12 +47,28 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
         /// <summary>
+        /// Gets or sets the version target.
+        /// </summary>
+        /// <value>
+        /// The version target.
+        /// </value>
+        public PapyrusVersionTargets VersionTarget { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is corrupted.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is corrupted; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCorrupted { get; set; }
+
+        /// <summary>
         /// Gets the header.
         /// </summary>
         /// <value>
         /// The header.
         /// </value>
-        public PapyrusHeader Header { get; internal set; }
+        public PapyrusHeader Header { get; internal set; } = new PapyrusHeader();
 
         /// <summary>
         /// Gets or sets the debug information.
@@ -61,7 +76,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// <value>
         /// The debug information.
         /// </value>
-        public PapyrusTypeDebugInfo DebugInfo { get; set; }
+        public PapyrusTypeDebugInfo DebugInfo { get; set; } = new PapyrusTypeDebugInfo();
 
         /// <summary>
         /// Gets or sets the types.
@@ -69,7 +84,15 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// <value>
         /// The types.
         /// </value>
-        public Collection<PapyrusTypeDefinition> Types { get; set; }
+        public Collection<PapyrusTypeDefinition> Types { get; set; } = new Collection<PapyrusTypeDefinition>();
+
+        /// <summary>
+        /// Gets or sets the string table.
+        /// </summary>
+        /// <value>
+        /// The string table.
+        /// </value>
+        public List<string> StringTable { get; set; } = new List<string>();
 
         /// <summary>
         /// Creates the assembly.
@@ -112,15 +135,16 @@ namespace PapyrusDotNet.PapyrusAssembly
             }
         }
 
-        public bool IsCorrupted { get; set; }
-
         /// <summary>
-        /// Writes the specified output file.
+        /// Writes the specified output file. Overwrites if already exists.
         /// </summary>
         /// <param name="outputFile">The output file.</param>
         public void Write(string outputFile)
         {
-            writer.Write(outputFile);
+            using (var writer = new PapyrusAssemblyWriter(this))
+            {
+                writer.Write(outputFile);
+            }
         }
     }
 }

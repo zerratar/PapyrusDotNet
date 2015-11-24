@@ -55,7 +55,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Structs
         /// <summary>
         /// The game identifier
         /// </summary>
-        public int GameId;
+        public short GameId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PapyrusSourceHeader"/> struct.
@@ -67,7 +67,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Structs
         /// <param name="source">The source.</param>
         /// <param name="user">The user.</param>
         /// <param name="computer">The computer.</param>
-        public PapyrusSourceHeader(byte majorVersion, byte minorVersion, int gameId, long compileTime, string source,
+        public PapyrusSourceHeader(byte majorVersion, byte minorVersion, short gameId, long compileTime, string source,
             string user, string computer) : this()
         {
             MajorVersion = majorVersion;

@@ -19,20 +19,10 @@
 
 #endregion
 
-#region
-
-using System.Collections.ObjectModel;
-using PapyrusDotNet.PapyrusAssembly.Classes;
-
-#endregion
-
 namespace PapyrusDotNet.PapyrusAssembly.Interfaces
 {
     internal interface IPapyrusAssemblyReader
     {
         PapyrusAssemblyDefinition Read();
-        PapyrusHeader ReadHeader(PapyrusAssemblyDefinition asm);
-        PapyrusTypeDebugInfo ReadDebugInfo(PapyrusAssemblyDefinition asm);
-        Collection<PapyrusTypeDefinition> ReadTypeDefinitions(PapyrusAssemblyDefinition asm);
     }
 }

@@ -23,6 +23,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusFieldReference
     {
-        public PapyrusTypeReference FieldType { get; set; }
+        public PapyrusValueReference FieldValue { get; set; }
     }
 }

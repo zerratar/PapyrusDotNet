@@ -21,7 +21,11 @@
 
 #region
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using PapyrusDotNet.PapyrusAssembly.Enums;
 
 #endregion
 
@@ -29,13 +33,116 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 {
     public class PexWriter : BinaryWriter
     {
+        private PapyrusVersionTargets papyrusVersionTarget;
+
         public PexWriter(Stream output) : base(output)
         {
         }
 
+        public bool UseStringTable { get; set; }
+        public List<string> StringTable { get; set; }
+
+        public void WriteReversedBytes(byte[] bytes, int offset, int count)
+        {
+            var b = bytes.ToList();
+            b.Reverse();
+            Write(b.ToArray(), offset, count);
+        }
+
+        public void WriteReversedBytes(byte[] bytes)
+        {
+            var b = bytes.ToList();
+            b.Reverse();
+            Write(b.ToArray(), 0, b.Count);
+        }
+
+        public override void Write(bool s)
+        {
+            base.Write(s ? (byte)1 : (byte)0);
+        }
+
         public override void Write(string value)
         {
-            base.Write(value);
+            if (UseStringTable)
+            {
+                if (StringTable == null) throw new NullReferenceException(nameof(StringTable));
+                Write((short)StringTable.IndexOf(value));
+                return;
+            }
+
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            {
+                base.Write((short)value.Length);
+                base.Write(value.ToCharArray());
+            }
+            else
+            {
+                WriteReversedBytes(BitConverter.GetBytes((short)value.Length));
+                base.Write(value.ToCharArray());
+            }
+        }
+
+        public override void Write(short s)
+        {
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+                base.Write(s);
+            else
+                WriteReversedBytes(BitConverter.GetBytes(s));
+        }
+
+        public override void Write(int s)
+        {
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            {
+                var buffer = BitConverter.GetBytes(s);
+                base.Write(buffer);
+            }
+            else
+                WriteReversedBytes(BitConverter.GetBytes(s));
+        }
+
+        public override void Write(uint s)
+        {
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+                base.Write(s);
+            else
+                WriteReversedBytes(BitConverter.GetBytes(s));
+        }
+
+        public override void Write(long s)
+        {
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            {
+                var buffer = BitConverter.GetBytes(s);
+                base.Write(buffer);
+            }
+            else
+                WriteReversedBytes(BitConverter.GetBytes(s));
+        }
+
+        public override void Write(float s)
+        {
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+                base.Write(s);
+            else
+                WriteReversedBytes(BitConverter.GetBytes(s));
+        }
+
+        public override void Write(double s)
+        {
+            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+                base.Write(s);
+            else
+                WriteReversedBytes(BitConverter.GetBytes(s));
+        }
+
+        /// <summary>
+        /// Sets the version target.
+        /// </summary>
+        /// <param name="papyrusVersionTarget">The papyrus version target.</param>
+        public void SetVersionTarget(PapyrusVersionTargets papyrusVersionTarget)
+        {
+            this.papyrusVersionTarget = papyrusVersionTarget;
         }
     }
 }

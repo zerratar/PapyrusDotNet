@@ -23,7 +23,7 @@ using PapyrusDotNet.PapyrusAssembly.Enums;
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
-    public class PapyrusTypeReference
+    public class PapyrusValueReference
     {
         public string Name { get; set; }
         public object Value { get; set; }

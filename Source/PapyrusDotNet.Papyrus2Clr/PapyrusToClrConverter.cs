@@ -66,9 +66,9 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             AddEmptyConstructor(newType);
 
-            if (!string.IsNullOrEmpty(type.BaseClass))
+            if (!string.IsNullOrEmpty(type.BaseTypeName))
             {
-                var baseType = ResolveTypeReference(null, type.BaseClass);
+                var baseType = ResolveTypeReference(null, type.BaseTypeName);
                 if (baseType != null)
                 {
                     newType.BaseType = baseType;
@@ -85,7 +85,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             foreach (var field in type.Fields)
             {
-                var fieldType = field.FieldType;
+                var fieldType = field.FieldValue;
                 var typeName = fieldType.Name;
                 var typeRef = ResolveTypeReference(null, typeName);
 

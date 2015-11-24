@@ -34,6 +34,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public string Name { get; set; }
         public string StateName { get; set; }
         public string DeclaringTypeName { get; set; }
-        public List<int> BodyLineNumbers { get; set; }
+        public List<short> BodyLineNumbers { get; set; }
     }
 }

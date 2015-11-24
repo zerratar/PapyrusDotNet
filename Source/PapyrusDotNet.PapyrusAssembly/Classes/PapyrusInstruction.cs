@@ -7,15 +7,15 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
     {
         public PapyrusInstruction()
         {
-            VariableArguments = new List<PapyrusTypeReference>();
+            Arguments = new List<PapyrusValueReference>();
+            VariableArguments = new List<PapyrusValueReference>();
         }
 
         public int Offset { get; set; }
         public PapyrusInstructionOpCodes OpCode { get; set; }
-        public object Operand { get; set; }
+        public List<PapyrusValueReference> Arguments { get; set; }
         public PapyrusInstruction Previous { get; set; }
         public PapyrusInstruction Next { get; set; }
-        public List<PapyrusTypeReference> VariableArguments { get; set; }
-
+        public List<PapyrusValueReference> VariableArguments { get; set; }
     }
 }

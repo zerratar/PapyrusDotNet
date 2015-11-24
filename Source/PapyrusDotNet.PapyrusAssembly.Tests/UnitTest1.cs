@@ -32,6 +32,25 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
     public class PapyrusAssemblyDefinitionTests
     {
         [TestMethod]
+        public void Fo4_ReadPex_SaveTheAssembly_ReadAgain_Compare_ReturnsEqual()
+        {
+            var sourceScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
+            var destinationScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex_new";
+
+            var src = PapyrusAssemblyDefinition.LoadAssembly(sourceScript);
+            Assert.IsNotNull(src);
+            Assert.IsNotNull(src.Header.SourceHeader.Source);
+
+            src.Write(destinationScript);
+
+            var dest = PapyrusAssemblyDefinition.LoadAssembly(destinationScript);
+            Assert.IsNotNull(src);
+            Assert.IsNotNull(dest.Header.SourceHeader.Source);
+
+            Assert.AreEqual(src.Header.SourceHeader.Source, dest.Header.SourceHeader.Source);
+        }
+
+        [TestMethod]
         public void TestFallout4Papyrus()
         {
             var falloutScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";

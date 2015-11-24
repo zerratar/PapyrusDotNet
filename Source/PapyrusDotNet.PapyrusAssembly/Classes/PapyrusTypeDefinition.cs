@@ -27,7 +27,7 @@ using System.Collections.ObjectModel;
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
-    public class PapyrusTypeDefinition : PapyrusTypeReference
+    public class PapyrusTypeDefinition : PapyrusValueReference
     {
         public PapyrusTypeDefinition()
         {
@@ -38,7 +38,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         }
 
         public int Size { get; set; }
-        public string BaseClass { get; set; }
+        public string BaseTypeName { get; set; }
         public byte ConstFlag { get; set; }
         public string Documentation { get; set; }
         public int UserFlags { get; set; }

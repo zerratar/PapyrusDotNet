@@ -60,7 +60,7 @@
     <Compile Include="Classes\PapyrusTypeDebugInfo.cs" />
     <Compile Include="Classes\PapyrusFieldDefinition.cs" />
     <Compile Include="Classes\PapyrusFieldReference.cs" />
-    <Compile Include="Classes\PapyrusTypeReference.cs" />
+    <Compile Include="Classes\PapyrusValueReference.cs" />
     <Compile Include="Classes\PapyrusTypeDefinition.cs" />
     <Compile Include="IO\PexReader.cs" />
     <Compile Include="IO\PexWriter.cs" />

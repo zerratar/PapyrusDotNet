@@ -21,6 +21,46 @@
 
 namespace PapyrusDotNet.PapyrusAssembly.Enums
 {
+    //public enum Opcode : byte
+    //{
+    //    ArrayCreate = 30,
+    //    ArrayFindelement = 34,
+    //    ArrayGetelement = 32,
+    //    ArrayLength = 31,
+    //    ArrayRfindelement = 35,
+    //    ArraySetelement = 33,
+    //    Assign = 13,
+    //    Callmethod = 23,
+    //    Callparent = 24,
+    //    Callstatic = 25,
+    //    Cast = 14,
+    //    CmpEq = 15,
+    //    CmpGe = 19,
+    //    CmpGt = 18,
+    //    CmpLe = 17,
+    //    CmpLt = 16,
+    //    Fadd = 2,
+    //    Fdiv = 8,
+    //    Fmul = 6,
+    //    Fneg = 12,
+    //    Fsub = 4,
+    //    Iadd = 1,
+    //    Idiv = 7,
+    //    Imod = 9,
+    //    Imul = 5,
+    //    Ineg = 11,
+    //    Isub = 3,
+    //    Jmp = 20,
+    //    Jmpf = 22,
+    //    Jmpt = 21,
+    //    Nop = 0,
+    //    Not = 10,
+    //    OpReturn = 26,
+    //    Propget = 28,
+    //    Propset = 29,
+    //    Strcat = 27
+    //}
+
     public enum PapyrusInstructionOpCodes : byte
     {
         Nop,

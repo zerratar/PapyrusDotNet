@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PapyrusDotNet.Converters.Papyrus2Clr;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.PapyrusAssembly;
@@ -39,27 +40,45 @@ namespace PapyrusDotNet.ConsoleTests
         {
 
 
-         //   TestManySkyrimPapyrus();
 
-            var startTime = DateTime.Now;
-            var fallout4ScriptFolder = @"D:\Spel\Fallout 4 Scripts\scripts\";
-            var fallout4Script = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
-            var skyrimScript = @"C:\CreationKit\Data\scripts\activemagiceffect.pex";
+            var sourceScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
+            var destinationScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex_new";
 
-            //var assembly = PapyrusAssemblyDefinition.LoadAssembly(skyrimScript, true);
+            var src = PapyrusAssemblyDefinition.LoadAssembly(sourceScript);
+            Assert.IsNotNull(src);
+            Assert.IsNotNull(src.Header.SourceHeader.Source);
 
-            var allScriptFiles = Directory.GetFiles(fallout4ScriptFolder, "*.pex", SearchOption.AllDirectories);
+            src.Write(destinationScript);
 
-            var assemblies = allScriptFiles.Select(PapyrusAssemblyDefinition.LoadAssembly);
+            var dest = PapyrusAssemblyDefinition.LoadAssembly(destinationScript);
+            Assert.IsNotNull(src);
+            Assert.IsNotNull(dest.Header.SourceHeader.Source);
 
-            var namespaceResolver = new ClrNamespaceResolver();
-            var converter = new PapyrusToClrConverter(namespaceResolver,
-                new ClrTypeReferenceResolver(namespaceResolver, new ClrTypeNameResolver()));
-            var output = converter.Convert(new PapyrusAssemblyInput(assemblies.ToArray()));
-            var clr = output as ClrAssemblyOutput;
-            clr.OutputAssembly.Write(
-                @"D:\Git\PapyrusDotNet\Source\PapyrusDotNet.ConsoleTests\bin\Debug\PapyrusDotNet.Core.dll");
-            Console.WriteLine("Build Time: " + (DateTime.Now - startTime).TotalSeconds + " seconds.");
+            Assert.AreEqual(src.Header.SourceHeader.Source, dest.Header.SourceHeader.Source);
+
+
+
+            //   TestManySkyrimPapyrus();
+
+            //var startTime = DateTime.Now;
+            //var fallout4ScriptFolder = @"D:\Spel\Fallout 4 Scripts\scripts\";
+            //var fallout4Script = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
+            //var skyrimScript = @"C:\CreationKit\Data\scripts\activemagiceffect.pex";
+
+            ////var assembly = PapyrusAssemblyDefinition.LoadAssembly(skyrimScript, true);
+
+            //var allScriptFiles = Directory.GetFiles(fallout4ScriptFolder, "*.pex", SearchOption.AllDirectories);
+
+            //var assemblies = allScriptFiles.Select(PapyrusAssemblyDefinition.LoadAssembly);
+
+            //var namespaceResolver = new ClrNamespaceResolver();
+            //var converter = new PapyrusToClrConverter(namespaceResolver,
+            //    new ClrTypeReferenceResolver(namespaceResolver, new ClrTypeNameResolver()));
+            //var output = converter.Convert(new PapyrusAssemblyInput(assemblies.ToArray()));
+            //var clr = output as ClrAssemblyOutput;
+            //clr.OutputAssembly.Write(
+            //    @"D:\Git\PapyrusDotNet\Source\PapyrusDotNet.ConsoleTests\bin\Debug\PapyrusDotNet.Core.dll");
+            //Console.WriteLine("Build Time: " + (DateTime.Now - startTime).TotalSeconds + " seconds.");
 
 
 
