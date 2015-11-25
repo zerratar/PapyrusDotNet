@@ -3,7 +3,7 @@ using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Base
 {
-    public abstract class ClrToPapyrusConverterBase : IPapyrusOutputConverter
+    public abstract class Clr2PapyrusConverterBase : IPapyrusOutputConverter
     {
         protected abstract PapyrusAssemblyOutput ConvertAssembly(ClrAssemblyInput input);
 

@@ -54,7 +54,7 @@
   <ItemGroup>
     <Compile Include="Implementations\ClrAssemblyInput.cs" />
     <Compile Include="Clr2PapyrusConverter.cs" />
-    <Compile Include="Base\ClrToPapyrusConverterBase.cs" />
+    <Compile Include="Base\Clr2PapyrusConverterBase.cs" />
     <Compile Include="Implementations\PapyrusAssemblyOutput.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,3 +1,5 @@
+using PapyrusDotNet.PapyrusAssembly.Enums;
+
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusPropertyDefinition : PapyrusPropertyReference
@@ -15,5 +17,12 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public string AutoName { get; set; }
         public PapyrusMethodDefinition GetMethod { get; set; }
         public PapyrusMethodDefinition SetMethod { get; set; }
+
+        public PapyrusPropertyDefinition() { }
+
+        public PapyrusPropertyDefinition(string name, string typeName) : base(name, null, PapyrusPrimitiveType.None)
+        {
+            TypeName = typeName;
+        }
     }
 }

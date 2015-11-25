@@ -10,7 +10,7 @@ using PapyrusDotNet.PapyrusAssembly.Enums;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus
 {
-    public class Clr2PapyrusConverter : ClrToPapyrusConverterBase
+    public class Clr2PapyrusConverter : Clr2PapyrusConverterBase
     {
         protected override PapyrusAssemblyOutput ConvertAssembly(ClrAssemblyInput input)
         {
@@ -20,18 +20,44 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             var papyrusAssemblies = new List<PapyrusAssemblyDefinition>();
             foreach (var type in mainModule.Types)
             {
+                // We will skip this one for now
+                // as it will not really provide us with any necessary information at this early stage.
+                if (type.Name == "<Module>") continue;
+
                 var pex = PapyrusAssemblyDefinition.CreateAssembly(input.TargetPapyrusVersion);
 
                 SetHeaderInfo(input, pex, type);
 
 #warning TODO: THIS!
 
+
                 // Dummy for now.
                 // We want to load these by getting the available attributes used on the type.
                 pex.Header.UserflagReferenceHeader.Add("hidden", 0);
-                pex.Header.UserflagReferenceHeader.Add("conditional", 0);
+                pex.Header.UserflagReferenceHeader.Add("conditional", 1);
 
 
+                pex.HasDebugInfo = true;
+
+                var newType = new PapyrusTypeDefinition();
+
+                newType.Name = type.Name;
+                newType.AutoStateName = "";
+
+                if (type.BaseType != null)
+                    newType.BaseTypeName = type.BaseType.Name;
+
+                foreach (var prop in type.Properties)
+                {
+                    newType.Properties.Add(new PapyrusPropertyDefinition(prop.Name, prop.PropertyType.Name));
+                }
+
+                foreach (var field in type.Fields)
+                {
+                    newType.Fields.Add(new PapyrusFieldDefinition(field.Name, field.FieldType.Name));
+                }
+
+                pex.Types.Add(newType);
 
 
                 // pex.Header

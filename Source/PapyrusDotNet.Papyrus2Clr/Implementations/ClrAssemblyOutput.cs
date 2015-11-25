@@ -11,5 +11,9 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr.Implementations
         }
 
         public AssemblyDefinition OutputAssembly { get; }
+
+        public void Save(string output)
+        {
+        }
     }
 }

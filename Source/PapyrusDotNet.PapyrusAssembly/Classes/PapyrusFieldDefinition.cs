@@ -29,5 +29,13 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public string Documentation { get; set; }
         internal string TypeName { get; set; }
         public bool IsConst { get; set; }
+
+        public PapyrusFieldDefinition() { }
+
+        public PapyrusFieldDefinition(string name, string typeName)
+        {
+            Name = name;
+            TypeName = typeName;
+        }
     }
 }
