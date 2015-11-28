@@ -38,11 +38,11 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         }
 
         public int Size { get; set; }
-        public string BaseTypeName { get; set; }
+        public PapyrusStringRef BaseTypeName { get; set; }
         public byte ConstFlag { get; set; }
-        public string Documentation { get; set; }
+        public PapyrusStringRef Documentation { get; set; }
         public int UserFlags { get; set; }
-        public string AutoStateName { get; set; }
+        public PapyrusStringRef AutoStateName { get; set; }
         public bool IsClass { get; set; }
         public bool IsStruct { get; set; }
         public Collection<PapyrusFieldDefinition> Fields { get; set; }

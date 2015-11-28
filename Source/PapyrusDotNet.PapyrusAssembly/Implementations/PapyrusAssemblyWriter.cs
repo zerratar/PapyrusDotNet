@@ -45,7 +45,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
             Assembly = assembly;
             outputStream = new MemoryStream();
-            pexWriter = new PexWriter(outputStream);
+            pexWriter = new PexWriter(assembly, outputStream);
         }
 
         public void Dispose()
@@ -56,8 +56,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         public void Write(string outputFile)
         {
             if (outputFile == null) throw new ArgumentNullException(nameof(outputFile));
-
-            pexWriter.SetVersionTarget(Assembly.VersionTarget);
 
             WriteHeader();
 
@@ -351,7 +349,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 pexWriter.Write(s);
             }
             pexWriter.UseStringTable = true;
-            pexWriter.StringTable = Assembly.StringTable;
         }
 
         private void WriteHeader()

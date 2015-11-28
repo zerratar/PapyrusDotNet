@@ -26,6 +26,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mono.Cecil;
+using Newtonsoft.Json;
+using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
 using PapyrusDotNet.Converters.Papyrus2Clr;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.PapyrusAssembly;
@@ -39,22 +42,31 @@ namespace PapyrusDotNet.ConsoleTests
         private static void Main(string[] args)
         {
 
+            var converter = new PapyrusDotNet.Converters.Clr2Papyrus.Clr2PapyrusConverter();
+            var value = converter.Convert(
+                new ClrAssemblyInput(
+                    AssemblyDefinition.ReadAssembly(
+                        @"D:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
+                    PapyrusDotNet.PapyrusAssembly.Enums.PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
 
+            var val = JsonConvert.SerializeObject(value.Assemblies, Formatting.Indented);
 
-            var sourceScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
-            var destinationScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex_new";
+            var dummy = val;
 
-            var src = PapyrusAssemblyDefinition.ReadAssembly(sourceScript);
-            Assert.IsNotNull(src);
-            Assert.IsNotNull(src.Header.SourceHeader.Source);
+            //var sourceScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
+            //var destinationScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex_new";
 
-            src.Write(destinationScript);
+            //var src = PapyrusAssemblyDefinition.ReadAssembly(sourceScript);
+            //Assert.IsNotNull(src);
+            //Assert.IsNotNull(src.Header.SourceHeader.Source);
 
-            var dest = PapyrusAssemblyDefinition.ReadAssembly(destinationScript);
-            Assert.IsNotNull(src);
-            Assert.IsNotNull(dest.Header.SourceHeader.Source);
+            //src.Write(destinationScript);
 
-            Assert.AreEqual(src.Header.SourceHeader.Source, dest.Header.SourceHeader.Source);
+            //var dest = PapyrusAssemblyDefinition.ReadAssembly(destinationScript);
+            //Assert.IsNotNull(src);
+            //Assert.IsNotNull(dest.Header.SourceHeader.Source);
+
+            //Assert.AreEqual(src.Header.SourceHeader.Source, dest.Header.SourceHeader.Source);
 
 
 

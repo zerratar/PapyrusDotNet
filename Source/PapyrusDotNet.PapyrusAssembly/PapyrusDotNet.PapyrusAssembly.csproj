@@ -47,8 +47,10 @@
     <Compile Include="Classes\PapyrusParameterDefinition.cs" />
     <Compile Include="Classes\PapyrusStateDefinition.cs" />
     <Compile Include="Classes\PapyrusStateReference.cs" />
+    <Compile Include="Classes\PapyrusStringRef.cs" />
     <Compile Include="Classes\PapyrusVariableDefinition.cs" />
     <Compile Include="Classes\PapyrusInstructionOpCodeDescription.cs" />
+    <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\PapyrusInstructionOpCodesExtensions.cs" />
     <Compile Include="Enums\PapyrusMethodTypes.cs" />
     <Compile Include="Enums\PapyrusPrimitiveType.cs" />

@@ -31,13 +31,53 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusHeader
     {
+        private readonly PapyrusAssemblyDefinition assembly;
         public const uint Fallout4PapyrusHeaderIdentifier = 0xFA57C0DE;
         public const uint SkyrimPapyrusHeaderIdentifier = 0xDEC057FA;
         public static readonly Version SkyrimPapyrusVersion = new Version(3, 2);
         public static readonly Version Fallout4PapyrusVersion = new Version(3, 9);
 
         public PapyrusSourceHeader SourceHeader { get; set; } = new PapyrusSourceHeader();
-        public Dictionary<string, byte> UserflagReferenceHeader { get; set; } = new Dictionary<string, byte>();
+        public PapyrusHeaderUserflagCollection UserflagReferenceHeader { get; set; }
         public uint HeaderIdentifier { get; set; }
+
+        public PapyrusHeader(PapyrusAssemblyDefinition assembly)
+        {
+            this.assembly = assembly;
+            UserflagReferenceHeader = new PapyrusHeaderUserflagCollection(assembly);
+        }
+    }
+
+    public class PapyrusHeaderUserflagCollection : Dictionary<PapyrusStringRef, byte>
+    {
+        private readonly PapyrusAssemblyDefinition asm;
+        public PapyrusHeaderUserflagCollection(PapyrusAssemblyDefinition asm)
+        {
+            this.asm = asm;
+        }
+
+        public void Add(string key, byte value)
+        {
+            Add((PapyrusStringRef)key, value);
+        }
+        public new void Add(PapyrusStringRef key, byte value)
+        {
+            if (asm.StringTable == null)
+            {
+                asm.StringTable = new List<string>();
+            }
+
+            if (!asm.StringTable.Contains(key.Value))
+            {
+                asm.StringTable.Add(key.Value);
+            }
+
+            base.Add(key, value);
+        }
+
+        public new void Remove(PapyrusStringRef key)
+        {
+            base.Remove(key);
+        }
     }
 }

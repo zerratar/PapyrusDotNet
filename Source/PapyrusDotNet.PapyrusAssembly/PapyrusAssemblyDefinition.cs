@@ -21,8 +21,10 @@
 
 #region
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using PapyrusDotNet.PapyrusAssembly.Classes;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 using PapyrusDotNet.PapyrusAssembly.Implementations;
@@ -32,13 +34,20 @@ using PapyrusDotNet.PapyrusAssembly.Interfaces;
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusAssemblyDefinition
+    public class PapyrusAssemblyDefinition : IDisposable
     {
+        private static readonly Dictionary<int, PapyrusAssemblyDefinition> AssemblyInstances
+            = new Dictionary<int, PapyrusAssemblyDefinition>();
 
         private PapyrusVersionTargets versionTarget;
 
         internal PapyrusAssemblyDefinition()
         {
+            Header = new PapyrusHeader(this);
+
+            var managedThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            if (!AssemblyInstances.ContainsKey(managedThreadId))
+                AssemblyInstances.Add(managedThreadId, this);
         }
 
         internal PapyrusAssemblyDefinition(PapyrusVersionTargets versionTarget) : this()
@@ -68,7 +77,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// <value>
         /// The header.
         /// </value>
-        public PapyrusHeader Header { get; internal set; } = new PapyrusHeader();
+        public PapyrusHeader Header { get; internal set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has debug information.
@@ -153,6 +162,35 @@ namespace PapyrusDotNet.PapyrusAssembly
             {
                 writer.Write(outputFile);
             }
+        }
+
+        internal static PapyrusAssemblyDefinition GetInternalInstance(int threadId)
+        {
+            if (AssemblyInstances.ContainsKey(threadId))
+                return AssemblyInstances[threadId];
+            return null;
+        }
+
+        private bool disposed = false;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
+            if (disposing)
+            {
+                if (AssemblyInstances == null) return;
+                if (!AssemblyInstances.ContainsValue(this)) return;
+                var item = AssemblyInstances.FirstOrDefault(i => i.Value == this);
+                AssemblyInstances.Remove(item.Key);
+            }
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        ~PapyrusAssemblyDefinition()
+        {
+            Dispose(false);
         }
     }
 }

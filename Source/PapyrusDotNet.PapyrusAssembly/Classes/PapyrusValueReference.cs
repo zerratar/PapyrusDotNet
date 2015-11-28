@@ -25,7 +25,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusValueReference
     {
-        public string Name { get; set; }
+        public PapyrusStringRef Name { get; set; }
         public object Value { get; set; }
         public PapyrusPrimitiveType ValueType { get; set; }
     }

@@ -4,13 +4,13 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusStructDescription
     {
-        public string ObjectName { get; set; }
-        public string OrderName { get; set; }
-        public List<string> FieldNames { get; set; }
+        public PapyrusStringRef ObjectName { get; set; }
+        public PapyrusStringRef OrderName { get; set; }
+        public List<PapyrusStringRef> FieldNames { get; set; }
 
         public PapyrusStructDescription()
         {
-            FieldNames = new List<string>();
+            FieldNames = new List<PapyrusStringRef>();
         }
     }
 }

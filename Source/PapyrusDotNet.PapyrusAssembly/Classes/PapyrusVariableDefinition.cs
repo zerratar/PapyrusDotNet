@@ -2,7 +2,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusVariableDefinition
     {
-        public string TypeName { get; set; }
-        public string Name { get; set; }
+        public PapyrusStringRef TypeName { get; set; }
+        public PapyrusStringRef Name { get; set; }
     }
 }

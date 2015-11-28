@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 //     This file is part of PapyrusDotNet.
 // 
@@ -19,23 +19,15 @@
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+#region
+
+using System;
+
+#endregion
+
+namespace PapyrusDotNet.Converters.Papyrus2Clr.Core.Attributes
 {
-    public class PapyrusFieldDefinition : PapyrusFieldReference
+    public class AutoReadOnlyAttribute : Attribute
     {
-        public PapyrusStringRef Name { get; set; }
-        public int UserFlags { get; set; }
-        public PapyrusTypeDefinition DeclaringType { get; set; }
-        public string Documentation { get; set; }
-        internal string TypeName { get; set; }
-        public bool IsConst { get; set; }
-
-        public PapyrusFieldDefinition() { }
-
-        public PapyrusFieldDefinition(string name, string typeName)
-        {
-            Name = (PapyrusStringRef)name;
-            TypeName = typeName;
-        }
     }
 }

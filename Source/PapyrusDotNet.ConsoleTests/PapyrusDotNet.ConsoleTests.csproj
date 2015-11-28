@@ -38,6 +38,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Binaries\Mono.Cecil.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,8 +57,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PapyrusDotNet.Clr2Papyrus\PapyrusDotNet.Converters.Clr2Papyrus.csproj">
+      <Project>{8547F068-C90E-4245-A9F8-20A98797E92B}</Project>
+      <Name>PapyrusDotNet.Converters.Clr2Papyrus</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
       <Project>{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}</Project>
       <Name>PapyrusDotNet.Common</Name>

@@ -4,15 +4,15 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusPropertyDescriptions
     {
-        public string ObjectName { get; set; }
-        public string GroupName { get; set; }
-        public string GroupDocumentation { get; set; }
+        public PapyrusStringRef ObjectName { get; set; }
+        public PapyrusStringRef GroupName { get; set; }
+        public PapyrusStringRef GroupDocumentation { get; set; }
         public int Userflags { get; set; }
-        public List<string> PropertyNames { get; set; }
+        public List<PapyrusStringRef> PropertyNames { get; set; }
 
         public PapyrusPropertyDescriptions()
         {
-            PropertyNames = new List<string>();
+            PropertyNames = new List<PapyrusStringRef>();
         }
     }
 }

@@ -9,9 +9,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             Parameters = new List<PapyrusParameterDefinition>();
             Body = new PapyrusMethodBody(this);
         }
-        public string Name { get; set; }
-        public string ReturnTypeName { get; set; }
-        public string Documentation { get; set; }
+        public PapyrusStringRef Name { get; set; }
+        public PapyrusStringRef ReturnTypeName { get; set; }
+        public PapyrusStringRef Documentation { get; set; }
 
         public PapyrusMethodBody Body { get; set; }
 

@@ -19,23 +19,27 @@
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+#region
+
+using System;
+using System.Linq;
+
+#endregion
+
+namespace PapyrusDotNet.Common
 {
-    public class PapyrusFieldDefinition : PapyrusFieldReference
+    public static class StringExtensions
     {
-        public PapyrusStringRef Name { get; set; }
-        public int UserFlags { get; set; }
-        public PapyrusTypeDefinition DeclaringType { get; set; }
-        public string Documentation { get; set; }
-        internal string TypeName { get; set; }
-        public bool IsConst { get; set; }
+        public static bool Contains(this string[] input, string val)
+            => input.Select(v => v.ToLower().Trim()).Any(b => b == val);
 
-        public PapyrusFieldDefinition() { }
+        public static bool AnyContains(this string[] input, string val)
+            => input.Select(v => v.ToLower().Trim()).Any(b => b.Contains(val));
 
-        public PapyrusFieldDefinition(string name, string typeName)
-        {
-            Name = (PapyrusStringRef)name;
-            TypeName = typeName;
-        }
+        public static int IndexOf(this string[] input, string val)
+            => Array.IndexOf(input.Select(d => d.ToLower().Trim()).ToArray(), val);
+
+        public static string[] TrimSplit(this string input, string val)
+            => input.Split(new[] {val}, StringSplitOptions.RemoveEmptyEntries);
     }
 }

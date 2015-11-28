@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using PapyrusDotNet.PapyrusAssembly.Classes;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 
 #endregion
@@ -33,14 +34,13 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 {
     public class PexWriter : BinaryWriter
     {
-        private PapyrusVersionTargets papyrusVersionTarget;
-
-        public PexWriter(Stream output) : base(output)
+        private readonly PapyrusAssemblyDefinition Assembly;
+        public PexWriter(PapyrusAssemblyDefinition asm, Stream output) : base(output)
         {
+            Assembly = asm;
         }
 
         public bool UseStringTable { get; set; }
-        public List<string> StringTable { get; set; }
 
         public void WriteReversedBytes(byte[] bytes, int offset, int count)
         {
@@ -61,16 +61,29 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
             base.Write(s ? (byte)1 : (byte)0);
         }
 
+        public void Write(PapyrusStringRef value)
+        {
+            if (Assembly.StringTable == null)
+            {
+                Assembly.StringTable = new List<string>();
+            }
+            if (!Assembly.StringTable.Contains(value.Value))
+            {
+                Assembly.StringTable.Add(value.Value);
+            }
+            Write(value.Value);
+        }
+
         public override void Write(string value)
         {
             if (UseStringTable)
             {
-                if (StringTable == null) throw new NullReferenceException(nameof(StringTable));
-                Write((short)StringTable.IndexOf(value));
+                if (Assembly.StringTable == null) throw new NullReferenceException(nameof(Assembly.StringTable));
+                Write((short)Assembly.StringTable.IndexOf(value));
                 return;
             }
 
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (Assembly.VersionTarget == PapyrusVersionTargets.Fallout4)
             {
                 base.Write((short)value.Length);
                 base.Write(value.ToCharArray());
@@ -84,7 +97,7 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 
         public override void Write(short s)
         {
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (Assembly.VersionTarget == PapyrusVersionTargets.Fallout4)
                 base.Write(s);
             else
                 WriteReversedBytes(BitConverter.GetBytes(s));
@@ -92,7 +105,7 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 
         public override void Write(int s)
         {
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (Assembly.VersionTarget == PapyrusVersionTargets.Fallout4)
             {
                 var buffer = BitConverter.GetBytes(s);
                 base.Write(buffer);
@@ -103,7 +116,7 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 
         public override void Write(uint s)
         {
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (Assembly.VersionTarget == PapyrusVersionTargets.Fallout4)
                 base.Write(s);
             else
                 WriteReversedBytes(BitConverter.GetBytes(s));
@@ -111,7 +124,7 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 
         public override void Write(long s)
         {
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (Assembly.VersionTarget == PapyrusVersionTargets.Fallout4)
             {
                 var buffer = BitConverter.GetBytes(s);
                 base.Write(buffer);
@@ -122,7 +135,7 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 
         public override void Write(float s)
         {
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (Assembly.VersionTarget == PapyrusVersionTargets.Fallout4)
                 base.Write(s);
             else
                 WriteReversedBytes(BitConverter.GetBytes(s));
@@ -130,19 +143,10 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 
         public override void Write(double s)
         {
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (Assembly.VersionTarget == PapyrusVersionTargets.Fallout4)
                 base.Write(s);
             else
                 WriteReversedBytes(BitConverter.GetBytes(s));
-        }
-
-        /// <summary>
-        /// Sets the version target.
-        /// </summary>
-        /// <param name="papyrusVersionTarget">The papyrus version target.</param>
-        public void SetVersionTarget(PapyrusVersionTargets papyrusVersionTarget)
-        {
-            this.papyrusVersionTarget = papyrusVersionTarget;
         }
     }
 }

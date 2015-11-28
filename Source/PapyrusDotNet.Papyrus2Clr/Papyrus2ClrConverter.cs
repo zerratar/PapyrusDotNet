@@ -1,14 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using PapyrusDotNet.Common.Extensions;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Papyrus2Clr.Base;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Classes;
+using EventAttributes = Mono.Cecil.EventAttributes;
+using FieldAttributes = Mono.Cecil.FieldAttributes;
+using MethodAttributes = Mono.Cecil.MethodAttributes;
+using MethodBody = Mono.Cecil.Cil.MethodBody;
+using ParameterAttributes = Mono.Cecil.ParameterAttributes;
+using PropertyAttributes = Mono.Cecil.PropertyAttributes;
+using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace PapyrusDotNet.Converters.Papyrus2Clr
 {
@@ -22,6 +31,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
         protected override ClrAssemblyOutput ConvertAssembly(PapyrusAssemblyInput input)
         {
+            var exeAsm = Assembly.GetExecutingAssembly();
             var name = "Core";
             clrAssembly = AssemblyDefinition.CreateAssembly(
                 new AssemblyNameDefinition(NamespaceResolver.Resolve(name),
@@ -40,7 +50,108 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                     mainModule.Types.Add(ResolveTypeDefinition(type.Name, type));
                 }
             }
+
+            exeAsm.FindTypes("attribute")
+                  .ForEach(attr => ImportType(mainModule, attr));
+
             return new ClrAssemblyOutput(clrAssembly);
+        }
+
+        /// <summary>
+        ///     Imports the Type specified to the target module
+        /// </summary>
+        /// <param name="mainModule"></param>
+        /// <param name="typeToImport"></param>
+        public void ImportType(ModuleDefinition mainModule, Type typeToImport)
+        {
+            try
+            {
+                var reference = mainModule.Import(typeToImport);
+
+                var definition = reference.Resolve();
+
+                var newType = new TypeDefinition("PapyrusDotNet.Core", definition.Name,
+                    TypeAttributes.Class)
+                {
+                    IsPublic = true,
+                    BaseType = definition.BaseType
+                };
+
+                foreach (var field in definition.Fields)
+                {
+                    var newField = new FieldDefinition(field.Name, FieldAttributes.Public, field.FieldType);
+                    newType.Fields.Add(newField);
+                }
+
+                foreach (var field in definition.Events)
+                {
+                    var newField = new EventDefinition(field.Name, EventAttributes.None, field.EventType);
+                    newType.Events.Add(newField);
+                }
+
+                var constructor = definition.Methods.FirstOrDefault(m => m.IsConstructor);
+                if (constructor != null)
+                    mainModule.Import(constructor);
+
+                if (definition.BaseType != null)
+                {
+                    try
+                    {
+                        var baseDef = definition.BaseType.Resolve();
+                        constructor = baseDef.Methods.FirstOrDefault(m => m.IsConstructor);
+                        if (constructor != null)
+                            mainModule.Import(constructor);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                // if (constructor != null && !constructor.HasParameters)
+                AddEmptyConstructor(newType);
+
+                foreach (var field in definition.Methods)
+                {
+                    if (field.IsConstructor && !field.HasParameters) continue;
+
+                    var newField = new MethodDefinition(field.Name, field.Attributes, field.ReturnType);
+
+                    mainModule.Import(field);
+
+                    foreach (var fp in field.Parameters)
+                    {
+                        if (fp.Name.Contains("<"))
+                        {
+                        }
+                        var newParam = new ParameterDefinition(fp.Name, fp.Attributes, fp.ParameterType);
+                        newField.Parameters.Add(newParam);
+                    }
+                    /*	
+                        if (field.HasBody)
+                        {
+                            foreach (var inst in field.Body.Instructions)
+                            {
+                                if (inst.Operand is MethodReference)
+                                    MainModule.Import(inst.Operand as MethodReference);
+                                if (inst.Operand is FieldReference)
+                                    MainModule.Import(inst.Operand as FieldReference);
+
+                            
+                                // newField.Body.Instructions.Add(inst);
+                            }
+                        }*/
+
+                    CreateEmptyFunctionBody(ref newField);
+                    newType.Methods.Add(newField);
+                }
+
+                mainModule.Types.Add(newType);
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         private void AddAssemblyReferences(PapyrusAssemblyDefinition papyrusAssembly)
@@ -59,6 +170,11 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             }
         }
 
+        private TypeDefinition ResolveTypeDefinition(PapyrusStringRef name, PapyrusTypeDefinition type)
+        {
+            return ResolveTypeDefinition(name.Value, type);
+        }
+
         private TypeDefinition ResolveTypeDefinition(string name, PapyrusTypeDefinition type)
         {
             var newType = new TypeDefinition(NamespaceResolver.Resolve(name), name,
@@ -66,9 +182,9 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             AddEmptyConstructor(newType);
 
-            if (!string.IsNullOrEmpty(type.BaseTypeName))
+            if (!string.IsNullOrEmpty(type.BaseTypeName.Value))
             {
-                var baseType = ResolveTypeReference(null, type.BaseTypeName);
+                var baseType = ResolveTypeReference(null, type.BaseTypeName.Value);
                 if (baseType != null)
                 {
                     newType.BaseType = baseType;
@@ -79,7 +195,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             {
                 var typeRef = ResolveTypeReference(null, prop.TypeName);
 
-                var propDef = new PropertyDefinition(prop.Name, PropertyAttributes.None, typeRef);
+                var propDef = new PropertyDefinition(prop.Name.Value, PropertyAttributes.None, typeRef);
                 newType.Properties.Add(propDef);
             }
 
@@ -96,7 +212,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                     attributes |= FieldAttributes.InitOnly;
                 }
 
-                var fieldDef = new FieldDefinition(field.Name.Replace("::", ""), attributes, typeRef);
+                var fieldDef = new FieldDefinition(field.Name.Value.Replace("::", ""), attributes, typeRef);
                 newType.Fields.Add(fieldDef);
             }
 
@@ -121,12 +237,12 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                         attributes |= MethodAttributes.Virtual;
                     }
 
-                    var methodDef = new MethodDefinition(method.Name, attributes, typeRef);
+                    var methodDef = new MethodDefinition(method.Name.Value, attributes, typeRef);
                     methodDef.IsNative = method.IsNative;
                     foreach (var param in method.Parameters)
                     {
                         var paramTypeRef = ResolveTypeReference(null, param.TypeName);
-                        var paramDef = new ParameterDefinition(param.Name, ParameterAttributes.None, paramTypeRef);
+                        var paramDef = new ParameterDefinition(param.Name.Value, ParameterAttributes.None, paramTypeRef);
                         methodDef.Parameters.Add(paramDef);
                     }
 
@@ -188,6 +304,10 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
 
             function.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        }
+        public TypeReference ResolveTypeReference(TypeDefinition newType, PapyrusStringRef targetTypeName = null)
+        {
+            return ResolveTypeReference(newType, targetTypeName?.Value);
         }
 
         public TypeReference ResolveTypeReference(TypeDefinition newType, string targetTypeName = null)

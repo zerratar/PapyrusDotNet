@@ -52,6 +52,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Attributes\AutoAttribute.cs" />
+    <Compile Include="Core\Attributes\AutoReadOnlyAttribute.cs" />
+    <Compile Include="Core\Attributes\ConditionalAttribute.cs" />
+    <Compile Include="Core\Attributes\DocStringAttribute.cs" />
+    <Compile Include="Core\Attributes\GenericIgnoreAttribute.cs" />
+    <Compile Include="Core\Attributes\GenericMemberAttribute.cs" />
+    <Compile Include="Core\Attributes\GenericTypeAttribute.cs" />
+    <Compile Include="Core\Attributes\HiddenAttribute.cs" />
+    <Compile Include="Core\Attributes\InitialValueAttribute.cs" />
+    <Compile Include="Core\Attributes\NativeAttribute.cs" />
+    <Compile Include="Core\Attributes\PropertyAttribute.cs" />
     <Compile Include="Implementations\ClrAssemblyOutput.cs" />
     <Compile Include="Implementations\ClrNamespaceResolver.cs" />
     <Compile Include="Implementations\ClrTypeReferenceResolver.cs" />

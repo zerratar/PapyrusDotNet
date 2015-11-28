@@ -31,9 +31,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
     public class PapyrusMethodDecription
     {
         public PapyrusMethodTypes MethodType { get; set; }
-        public string Name { get; set; }
-        public string StateName { get; set; }
-        public string DeclaringTypeName { get; set; }
+        public PapyrusStringRef Name { get; set; }
+        public PapyrusStringRef StateName { get; set; }
+        public PapyrusStringRef DeclaringTypeName { get; set; }
         public List<short> BodyLineNumbers { get; set; }
     }
 }

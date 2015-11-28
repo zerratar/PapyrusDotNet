@@ -4,8 +4,8 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusPropertyDefinition : PapyrusPropertyReference
     {
-        public string TypeName { get; set; }
-        public string Documentation { get; set; }
+        public PapyrusStringRef TypeName { get; set; }
+        public PapyrusStringRef Documentation { get; set; }
         public int Userflags { get; set; }
         public byte Flags { get; set; }
 
@@ -20,9 +20,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 
         public PapyrusPropertyDefinition() { }
 
-        public PapyrusPropertyDefinition(string name, string typeName) : base(name, null, PapyrusPrimitiveType.None)
+        public PapyrusPropertyDefinition(string name, string typeName) : base((PapyrusStringRef)name, null, PapyrusPrimitiveType.None)
         {
-            TypeName = typeName;
+            TypeName = (PapyrusStringRef)typeName;
         }
     }
 }

@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 //     This file is part of PapyrusDotNet.
 // 
@@ -19,23 +19,32 @@
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+#region
+
+using System;
+
+#endregion
+
+namespace PapyrusDotNet.Converters.Papyrus2Clr.Core.Attributes
 {
-    public class PapyrusFieldDefinition : PapyrusFieldReference
+    public class GenericMemberAttribute : Attribute
     {
-        public PapyrusStringRef Name { get; set; }
-        public int UserFlags { get; set; }
-        public PapyrusTypeDefinition DeclaringType { get; set; }
-        public string Documentation { get; set; }
-        internal string TypeName { get; set; }
-        public bool IsConst { get; set; }
-
-        public PapyrusFieldDefinition() { }
-
-        public PapyrusFieldDefinition(string name, string typeName)
+        /// <summary>
+        ///     Specify to PapyrusDotNet that a copy will be made
+        ///     of this property to match the target/used type.
+        ///     The name will automatically be [typename]_[membername]
+        ///     This will automatically be resolved for your code.
+        /// </summary>
+        public GenericMemberAttribute()
         {
-            Name = (PapyrusStringRef)name;
-            TypeName = typeName;
+            // if none defined, an explicit copy of the member
+            // to all used types.
+        }
+
+        public GenericMemberAttribute(string targetType, string memberName)
+        {
+            // [GenericMember("Int", "Add")]
+            // 
         }
     }
 }

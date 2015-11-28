@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
 using PapyrusDotNet.Converters.Clr2Papyrus.Base;
@@ -12,6 +13,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 {
     public class Clr2PapyrusConverter : Clr2PapyrusConverterBase
     {
+        /// <summary>
+        /// Converts the assembly.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
         protected override PapyrusAssemblyOutput ConvertAssembly(ClrAssemblyInput input)
         {
             var clr = input.Assembly;
@@ -28,7 +34,21 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
                 SetHeaderInfo(input, pex, type);
 
+
 #warning TODO: THIS!
+
+
+                pex.HasDebugInfo = true;
+
+                var autoState = new PapyrusStateDefinition();
+                var newType = new PapyrusTypeDefinition();
+
+                newType.Name = (PapyrusStringRef)type.Name;
+                newType.AutoStateName = (PapyrusStringRef)"";
+
+                if (type.BaseType != null)
+                    newType.BaseTypeName = (PapyrusStringRef)type.BaseType.Name;
+
 
 
                 // Dummy for now.
@@ -36,20 +56,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                 pex.Header.UserflagReferenceHeader.Add("hidden", 0);
                 pex.Header.UserflagReferenceHeader.Add("conditional", 1);
 
-
-                pex.HasDebugInfo = true;
-
-                var newType = new PapyrusTypeDefinition();
-
-                newType.Name = type.Name;
-                newType.AutoStateName = "";
-
-                if (type.BaseType != null)
-                    newType.BaseTypeName = type.BaseType.Name;
-
                 foreach (var prop in type.Properties)
                 {
-                    newType.Properties.Add(new PapyrusPropertyDefinition(prop.Name, prop.PropertyType.Name));
+                    var papyrusPropertyDefinition = new PapyrusPropertyDefinition(prop.Name, prop.PropertyType.Name);
+                    newType.Properties.Add(papyrusPropertyDefinition);
                 }
 
                 foreach (var field in type.Fields)
@@ -57,6 +67,25 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                     newType.Fields.Add(new PapyrusFieldDefinition(field.Name, field.FieldType.Name));
                 }
 
+                autoState.Methods = new Collection<PapyrusMethodDefinition>();
+                foreach (var method in type.Methods)
+                {
+                    var m = new PapyrusMethodDefinition();
+                    m.Name = (PapyrusStringRef)method.Name;
+                    m.ReturnTypeName = (PapyrusStringRef)method.ReturnType.Name;
+                    m.Parameters = new List<PapyrusParameterDefinition>();
+                    foreach (var p in method.Parameters)
+                    {
+                        m.Parameters.Add(new PapyrusParameterDefinition
+                        {
+                            Name = (PapyrusStringRef)p.Name,
+                            TypeName = (PapyrusStringRef)p.ParameterType.Name
+                        });
+                    }
+
+                    autoState.Methods.Add(m);
+                }
+                newType.States.Add(autoState);
                 pex.Types.Add(newType);
 
 

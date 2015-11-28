@@ -4,7 +4,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusPropertyReference
     {
-        public string Name { get; set; }
+        public PapyrusStringRef Name { get; set; }
         public object Value { get; set; }
         public PapyrusPrimitiveType ValueType { get; set; }
 
@@ -12,7 +12,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         {
         }
 
-        public PapyrusPropertyReference(string name, object value, PapyrusPrimitiveType valueType)
+        public PapyrusPropertyReference(PapyrusStringRef name, object value, PapyrusPrimitiveType valueType)
         {
             Name = name;
             Value = value;

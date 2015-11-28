@@ -9,7 +9,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             Methods = new Collection<PapyrusMethodDefinition>();
         }
 
-        public string Name { get; set; }
+        public PapyrusStringRef Name { get; set; }
         public Collection<PapyrusMethodDefinition> Methods { get; set; }
     }
 }
