@@ -1,9 +1,11 @@
 using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusPropertyDefinition : PapyrusPropertyReference
     {
+        private readonly PapyrusAssemblyDefinition assembly;
         public PapyrusStringRef TypeName { get; set; }
         public PapyrusStringRef Documentation { get; set; }
         public int Userflags { get; set; }
@@ -18,11 +20,15 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public PapyrusMethodDefinition GetMethod { get; set; }
         public PapyrusMethodDefinition SetMethod { get; set; }
 
-        public PapyrusPropertyDefinition() { }
-
-        public PapyrusPropertyDefinition(string name, string typeName) : base((PapyrusStringRef)name, null, PapyrusPrimitiveType.None)
+        public PapyrusPropertyDefinition(PapyrusAssemblyDefinition assembly)
         {
-            TypeName = (PapyrusStringRef)typeName;
+            this.assembly = assembly;
+        }
+
+        public PapyrusPropertyDefinition(PapyrusAssemblyDefinition assembly, string name, string typeName) : base(new PapyrusStringRef(assembly, name), null, PapyrusPrimitiveType.None)
+        {
+            this.assembly = assembly;
+            TypeName = typeName.Ref(assembly);
         }
     }
 }

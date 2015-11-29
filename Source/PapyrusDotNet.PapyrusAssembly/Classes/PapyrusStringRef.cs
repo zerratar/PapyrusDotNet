@@ -4,6 +4,28 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusStringRef
     {
+        private readonly PapyrusAssemblyDefinition assembly;
+
+        public PapyrusStringRef(PapyrusAssemblyDefinition assembly, string value, int index)
+        {
+            this.assembly = assembly;
+            Value = value;
+            Index = index;
+        }
+
+        public PapyrusStringRef(PapyrusAssemblyDefinition assembly, string value) : this(assembly, value, -1)
+        {
+        }
+
+        public PapyrusStringRef(PapyrusAssemblyDefinition assembly) : this(assembly, null, -1)
+        {
+        }
+
+        public PapyrusStringRef Ref(string value)
+        {
+            return new PapyrusStringRef(assembly, value);
+        }
+
         private string value;
         private int index;
 
@@ -12,9 +34,14 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             get { return index; }
             set
             {
+                // If the value isnt null, we do not want to
+                // set the index from here. Otherwise we might overwrite the index
+                // whenever we set a new string value.
+                if (this.value != null) return;
+
                 index = value;
                 var asm = GetAssemblyDefinition();
-                if (asm != null && this.value == null)
+                if (asm != null && this.value == null && value >= 0)
                 {
                     if (asm.StringTable.Count > value)
                     {
@@ -29,41 +56,34 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             get { return value; }
             set
             {
+                if (value == null)
+                    value = string.Empty;
+
                 this.value = value;
                 var asm = GetAssemblyDefinition();
                 asm?.StringTable.EnsureAdd(value);
+                if (asm != null)
+                {
+                    index = asm.StringTable.IndexOf(value);
+                }
             }
         }
 
-        private static PapyrusAssemblyDefinition GetAssemblyDefinition()
+        private PapyrusAssemblyDefinition GetAssemblyDefinition()
         {
-            var threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            var asm = PapyrusAssemblyDefinition.GetInternalInstance(threadId);
-            return asm;
+            //var threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            //var asm = PapyrusAssemblyDefinition.GetInternalInstance(threadId);
+            return assembly;
         }
 
-        public PapyrusStringRef(string value, int index)
+        public override string ToString()
         {
-            Value = value;
-            Index = index;
-        }
-
-        public PapyrusStringRef(string value) : this(value, -1)
-        {
-        }
-
-        public PapyrusStringRef() : this(null, -1)
-        {
+            return Value + " [" + Index + "]";
         }
 
         public static explicit operator string (PapyrusStringRef r)
         {
             return r.Value;
-        }
-
-        public static explicit operator PapyrusStringRef(string s)
-        {
-            return new PapyrusStringRef(s);
-        }
+        } 
     }
 }

@@ -19,10 +19,14 @@
 
 #endregion
 
+using PapyrusDotNet.PapyrusAssembly.Extensions;
+
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusFieldDefinition : PapyrusFieldReference
     {
+        private readonly PapyrusAssemblyDefinition assembly;
+
         public PapyrusStringRef Name { get; set; }
         public int UserFlags { get; set; }
         public PapyrusTypeDefinition DeclaringType { get; set; }
@@ -30,11 +34,15 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         internal string TypeName { get; set; }
         public bool IsConst { get; set; }
 
-        public PapyrusFieldDefinition() { }
-
-        public PapyrusFieldDefinition(string name, string typeName)
+        public PapyrusFieldDefinition(PapyrusAssemblyDefinition assembly)
         {
-            Name = (PapyrusStringRef)name;
+            this.assembly = assembly;
+        }
+
+        public PapyrusFieldDefinition(PapyrusAssemblyDefinition assembly, string name, string typeName)
+            : this(assembly)
+        {
+            Name = name.Ref(assembly);
             TypeName = typeName;
         }
     }

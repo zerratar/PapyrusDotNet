@@ -76,6 +76,10 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 
         public override void Write(string value)
         {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (value == null)
+                value = String.Empty;
+
             if (UseStringTable)
             {
                 if (Assembly.StringTable == null) throw new NullReferenceException(nameof(Assembly.StringTable));

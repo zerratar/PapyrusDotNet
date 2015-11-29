@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 #endregion
 
@@ -58,7 +59,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 
         public void Add(string key, byte value)
         {
-            Add((PapyrusStringRef)key, value);
+            Add(key.Ref(asm), value);
         }
         public new void Add(PapyrusStringRef key, byte value)
         {

@@ -61,7 +61,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Enums
     //    Strcat = 27
     //}
 
-    public enum PapyrusInstructionOpCodes : byte
+    public enum PapyrusOpCode : byte
     {
         Nop,
         Iadd,

@@ -26,13 +26,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using PapyrusDotNet.PapyrusAssembly.Classes;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 
 #endregion
 
 namespace PapyrusDotNet.PapyrusAssembly.IO
 {
-    public class PexReader : BinaryReader
+    internal class PexReader : BinaryReader
     {
         /// <summary>
         /// Gets or sets the string table.
@@ -43,15 +44,19 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
         public List<string> StringTable { get; set; }
 
         private PapyrusVersionTargets papyrusVersionTarget;
+        private readonly PapyrusAssemblyDefinition assembly;
         private readonly bool throwsExceptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PexReader"/> class.
         /// </summary>
+        /// <param name="assembly"></param>
         /// <param name="inputPexFile">The input pex file.</param>
         /// <param name="throwsExceptions">Whether or not to throw unhandled exceptions.</param>
-        public PexReader(string inputPexFile, bool throwsExceptions = false) : base(new MemoryStream(File.ReadAllBytes(inputPexFile)))
+        public PexReader(PapyrusAssemblyDefinition assembly, string inputPexFile, bool throwsExceptions = false)
+            : base(new MemoryStream(File.ReadAllBytes(inputPexFile)))
         {
+            this.assembly = assembly;
             this.throwsExceptions = throwsExceptions;
         }
 
@@ -112,6 +117,11 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
             return bytes.ToArray();
         }
 
+        public PapyrusStringRef ReadStringRef()
+        {
+            return new PapyrusStringRef(assembly, ReadString());
+        }
+
         public bool DEBUGGING;
         /// <summary>
         /// Reads a string from the current stream. The string is prefixed with the length, encoded as an integer seven bits at a time.
@@ -137,9 +147,6 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
                 //int index = papyrusVersionTarget == PapyrusVersionTargets.Fallout4
                 //    ? ReadInt16()
                 //    : BitConverter.ToInt16(ReadBytes(2), 0);
-
-
-
 
                 var index = ReadInt16();
 

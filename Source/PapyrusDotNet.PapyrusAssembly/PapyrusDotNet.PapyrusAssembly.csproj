@@ -55,7 +55,7 @@
     <Compile Include="Enums\PapyrusMethodTypes.cs" />
     <Compile Include="Enums\PapyrusPrimitiveType.cs" />
     <Compile Include="Classes\PapyrusPropertyDefinition.cs" />
-    <Compile Include="Classes\PapyrusPropertyDescriptions.cs" />
+    <Compile Include="Classes\PapyrusStatePropertyDescriptions.cs" />
     <Compile Include="Classes\PapyrusPropertyReference.cs" />
     <Compile Include="Classes\PapyrusStructDescription.cs" />
     <Compile Include="Classes\PapyrusMethodDecription.cs" />
@@ -64,6 +64,7 @@
     <Compile Include="Classes\PapyrusFieldReference.cs" />
     <Compile Include="Classes\PapyrusValueReference.cs" />
     <Compile Include="Classes\PapyrusTypeDefinition.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="IO\PexReader.cs" />
     <Compile Include="IO\PexWriter.cs" />
     <Compile Include="Interfaces\IPapyrusAssemblyReader.cs" />
@@ -72,7 +73,7 @@
     <Compile Include="Classes\PapyrusHeader.cs" />
     <Compile Include="PapyrusAssemblyDefinition.cs" />
     <Compile Include="Implementations\PapyrusAssemblyWriter.cs" />
-    <Compile Include="Enums\PapyrusInstructionOpCodes.cs" />
+    <Compile Include="Enums\PapyrusOpCode.cs" />
     <Compile Include="Classes\PapyrusSourceHeader.cs" />
     <Compile Include="Enums\PapyrusVersionTargets.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

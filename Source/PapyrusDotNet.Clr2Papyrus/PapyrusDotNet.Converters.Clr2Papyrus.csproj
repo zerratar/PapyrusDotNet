@@ -52,6 +52,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Clr2PapyrusInstructionProcessor.cs" />
+    <Compile Include="Interfaces\IClr2PapyrusInstructionProcessor.cs" />
     <Compile Include="Implementations\ClrAssemblyInput.cs" />
     <Compile Include="Clr2PapyrusConverter.cs" />
     <Compile Include="Base\Clr2PapyrusConverterBase.cs" />

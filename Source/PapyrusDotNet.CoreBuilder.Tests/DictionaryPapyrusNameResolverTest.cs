@@ -53,7 +53,7 @@ namespace PapyrusDotNet.CoreBuilder.Tests
 
             var targetName = nameResolver.Resolve("awesomestring");
 
-            Assert.AreEqual("Awesomestring", targetName);
+            Assert.AreEqual("AwesomeString", targetName);
         }
 
         [TestMethod]

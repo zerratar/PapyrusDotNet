@@ -8,7 +8,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public int ParamSize { get; }
         public bool HasVariableArguments { get; }
 
-        private static readonly Dictionary<PapyrusInstructionOpCodes, PapyrusInstructionOpCodeDescription> Descriptions;
+        private static readonly Dictionary<PapyrusOpCode, PapyrusInstructionOpCodeDescription> Descriptions;
 
         public PapyrusInstructionOpCodeDescription(int paramSize, bool hasVariableArguments)
         {
@@ -16,7 +16,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             HasVariableArguments = hasVariableArguments;
         }
 
-        public static PapyrusInstructionOpCodeDescription FromOpCode(PapyrusInstructionOpCodes opcode)
+        public static PapyrusInstructionOpCodeDescription FromOpCode(PapyrusOpCode opcode)
         {
             if (Descriptions.ContainsKey(opcode))
                 return Descriptions[opcode];
@@ -25,53 +25,53 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 
         static PapyrusInstructionOpCodeDescription()
         {
-            Descriptions = new Dictionary<PapyrusInstructionOpCodes, PapyrusInstructionOpCodeDescription>();
-            Descriptions.Add(PapyrusInstructionOpCodes.Nop, new PapyrusInstructionOpCodeDescription(0, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Iadd, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Fadd, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Isub, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Fsub, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Imul, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Fmul, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Idiv, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Fdiv, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Imod, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Not, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Ineg, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Fneg, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Assign, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Cast, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.CmpEq, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.CmpLt, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.CmpLte, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.CmpGt, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.CmpGte, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Jmp, new PapyrusInstructionOpCodeDescription(1, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Jmpt, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Jmpf, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Callmethod, new PapyrusInstructionOpCodeDescription(3, true));
-            Descriptions.Add(PapyrusInstructionOpCodes.Callparent, new PapyrusInstructionOpCodeDescription(2, true));
-            Descriptions.Add(PapyrusInstructionOpCodes.Callstatic, new PapyrusInstructionOpCodeDescription(3, true));
-            Descriptions.Add(PapyrusInstructionOpCodes.Return, new PapyrusInstructionOpCodeDescription(1, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Strcat, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Propget, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Propset, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayCreate, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayLength, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayGetelement, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArraySetelement, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayFindelement, new PapyrusInstructionOpCodeDescription(4, false));
+            Descriptions = new Dictionary<PapyrusOpCode, PapyrusInstructionOpCodeDescription>();
+            Descriptions.Add(PapyrusOpCode.Nop, new PapyrusInstructionOpCodeDescription(0, false));
+            Descriptions.Add(PapyrusOpCode.Iadd, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Fadd, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Isub, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Fsub, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Imul, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Fmul, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Idiv, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Fdiv, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Imod, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Not, new PapyrusInstructionOpCodeDescription(2, false));
+            Descriptions.Add(PapyrusOpCode.Ineg, new PapyrusInstructionOpCodeDescription(2, false));
+            Descriptions.Add(PapyrusOpCode.Fneg, new PapyrusInstructionOpCodeDescription(2, false));
+            Descriptions.Add(PapyrusOpCode.Assign, new PapyrusInstructionOpCodeDescription(2, false));
+            Descriptions.Add(PapyrusOpCode.Cast, new PapyrusInstructionOpCodeDescription(2, false));
+            Descriptions.Add(PapyrusOpCode.CmpEq, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.CmpLt, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.CmpLte, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.CmpGt, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.CmpGte, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Jmp, new PapyrusInstructionOpCodeDescription(1, false));
+            Descriptions.Add(PapyrusOpCode.Jmpt, new PapyrusInstructionOpCodeDescription(2, false));
+            Descriptions.Add(PapyrusOpCode.Jmpf, new PapyrusInstructionOpCodeDescription(2, false));
+            Descriptions.Add(PapyrusOpCode.Callmethod, new PapyrusInstructionOpCodeDescription(3, true));
+            Descriptions.Add(PapyrusOpCode.Callparent, new PapyrusInstructionOpCodeDescription(2, true));
+            Descriptions.Add(PapyrusOpCode.Callstatic, new PapyrusInstructionOpCodeDescription(3, true));
+            Descriptions.Add(PapyrusOpCode.Return, new PapyrusInstructionOpCodeDescription(1, false));
+            Descriptions.Add(PapyrusOpCode.Strcat, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Propget, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.Propset, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.ArrayCreate, new PapyrusInstructionOpCodeDescription(2, false));
+            Descriptions.Add(PapyrusOpCode.ArrayLength, new PapyrusInstructionOpCodeDescription(2, false));
+            Descriptions.Add(PapyrusOpCode.ArrayGetelement, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.ArraySetelement, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.ArrayFindelement, new PapyrusInstructionOpCodeDescription(4, false));
             //Descriptions.Add(PapyrusInstructionOpCodes.ArrayFindelement, new PapyrusInstructionOpCodeDescription(4, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.Is, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.StructCreate, new PapyrusInstructionOpCodeDescription(1, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.StructGet, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.StructSet, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayFindstruct, new PapyrusInstructionOpCodeDescription(5, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayAddelements, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayInsertelement, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayRemovelastelement, new PapyrusInstructionOpCodeDescription(1, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayRemoveelements, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusInstructionOpCodes.ArrayClearelements, new PapyrusInstructionOpCodeDescription(1, false));
+            Descriptions.Add(PapyrusOpCode.Is, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.StructCreate, new PapyrusInstructionOpCodeDescription(1, false));
+            Descriptions.Add(PapyrusOpCode.StructGet, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.StructSet, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.ArrayFindstruct, new PapyrusInstructionOpCodeDescription(5, false));
+            Descriptions.Add(PapyrusOpCode.ArrayAddelements, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.ArrayInsertelement, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.ArrayRemovelastelement, new PapyrusInstructionOpCodeDescription(1, false));
+            Descriptions.Add(PapyrusOpCode.ArrayRemoveelements, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCode.ArrayClearelements, new PapyrusInstructionOpCodeDescription(1, false));
         }
     }
 }

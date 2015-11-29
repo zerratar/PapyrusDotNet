@@ -300,8 +300,8 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             pexWriter.Write((short)ms.Count);
             foreach (var strct in ms)
             {
-                pexWriter.Write(strct.ObjectName);
-                pexWriter.Write(strct.OrderName);
+                pexWriter.Write(strct.DeclaringTypeName);
+                pexWriter.Write(strct.Name);
                 pexWriter.Write((short)strct.FieldNames.Count);
                 foreach (var l in strct.FieldNames)
                     pexWriter.Write(l);

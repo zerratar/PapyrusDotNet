@@ -29,12 +29,21 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusTypeDefinition : PapyrusValueReference
     {
+        private PapyrusAssemblyDefinition assembly;
+
         public PapyrusTypeDefinition()
         {
             Fields = new Collection<PapyrusFieldDefinition>();
             NestedTypes = new Collection<PapyrusTypeDefinition>();
             Properties = new Collection<PapyrusPropertyDefinition>();
             States = new Collection<PapyrusStateDefinition>();
+        }
+
+        public PapyrusTypeDefinition(PapyrusAssemblyDefinition assembly)
+            : this()
+        {
+            this.assembly = assembly;
+            this.assembly.Types.Add(this);
         }
 
         public int Size { get; set; }

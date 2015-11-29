@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
-    public class PapyrusPropertyDescriptions
+    public class PapyrusStatePropertyDescriptions
     {
         public PapyrusStringRef ObjectName { get; set; }
         public PapyrusStringRef GroupName { get; set; }
@@ -10,7 +10,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public int Userflags { get; set; }
         public List<PapyrusStringRef> PropertyNames { get; set; }
 
-        public PapyrusPropertyDescriptions()
+        public PapyrusStatePropertyDescriptions()
         {
             PropertyNames = new List<PapyrusStringRef>();
         }

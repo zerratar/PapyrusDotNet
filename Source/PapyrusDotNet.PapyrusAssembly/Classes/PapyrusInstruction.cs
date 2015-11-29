@@ -12,7 +12,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         }
 
         public int Offset { get; set; }
-        public PapyrusInstructionOpCodes OpCode { get; set; }
+        public PapyrusOpCode OpCode { get; set; }
         public List<PapyrusValueReference> Arguments { get; set; }
         public PapyrusInstruction Previous { get; set; }
         public PapyrusInstruction Next { get; set; }

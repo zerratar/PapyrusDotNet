@@ -99,7 +99,7 @@ namespace PapyrusDotNet
                         : PapyrusVersionTargets.Skyrim;
                 }
 
-                converter = new Clr2PapyrusConverter();
+                converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor());
                 inputData = new ClrAssemblyInput(AssemblyDefinition.ReadAssembly(input), targetVersion);
             }
             else

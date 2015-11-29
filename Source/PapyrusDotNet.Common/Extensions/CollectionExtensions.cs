@@ -4,11 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mono.Collections.Generic;
 
 namespace PapyrusDotNet.Common.Extensions
 {
     public static class CollectionExtensions
     {
+        public static bool Contains<T>(this Collection<T> collection, Func<T, bool> predicate)
+        {
+            return collection.Any(predicate);
+        }
+        public static bool Contains<T>(this IEnumerable<T> collection, Func<T, bool> predicate)
+        {
+            return collection.Any(predicate);
+        }
         public static void EnsureAdd<T>(this List<T> collection, T value)
         {
             if (collection == null) throw new NullReferenceException();

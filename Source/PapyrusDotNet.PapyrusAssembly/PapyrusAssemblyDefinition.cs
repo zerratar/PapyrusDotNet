@@ -36,23 +36,31 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusAssemblyDefinition : IDisposable
     {
-        private static readonly Dictionary<int, PapyrusAssemblyDefinition> AssemblyInstances
-            = new Dictionary<int, PapyrusAssemblyDefinition>();
-
-        private PapyrusVersionTargets versionTarget;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PapyrusAssemblyDefinition"/> class.
+        /// </summary>
         internal PapyrusAssemblyDefinition()
         {
             Header = new PapyrusHeader(this);
-
-            var managedThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            if (!AssemblyInstances.ContainsKey(managedThreadId))
-                AssemblyInstances.Add(managedThreadId, this);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PapyrusAssemblyDefinition"/> class.
+        /// </summary>
+        /// <param name="versionTarget">The version target.</param>
         internal PapyrusAssemblyDefinition(PapyrusVersionTargets versionTarget) : this()
         {
-            this.versionTarget = versionTarget;
+            VersionTarget = versionTarget;
+        }
+
+        /// <summary>
+        /// Creates the string reference.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public PapyrusStringRef CreateStringRef(string value)
+        {
+            return new PapyrusStringRef(this, value);
         }
 
         /// <summary>
@@ -83,9 +91,13 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// Gets or sets a value indicating whether this instance has debug information.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance has debug information; otherwise, <c>false</c>.
+        /// <c>true</c> if this instance has debug information; otherwise, <c>false</c>.
         /// </value>
-        public bool HasDebugInfo { get; set; }
+        public bool HasDebugInfo
+        {
+            get { return hasDebugInfo || DebugInfo != null && DebugInfo.DebugTime > 0; }
+            set { hasDebugInfo = value; }
+        }
 
         /// <summary>
         /// Gets or sets the debug information.
@@ -129,7 +141,8 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// <returns></returns>
         public static PapyrusAssemblyDefinition ReadAssembly(string pexFile, bool throwsException)
         {
-            using (var reader = new PapyrusAssemblyReader(pexFile, throwsException))
+            using (var reader = new PapyrusAssemblyReader(new PapyrusAssemblyDefinition(),
+                pexFile, throwsException))
             {
                 var def = reader.Read();
                 def.IsCorrupted = reader.IsCorrupted;
@@ -144,7 +157,8 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// <returns></returns>
         public static PapyrusAssemblyDefinition ReadAssembly(string pexFile)
         {
-            using (var reader = new PapyrusAssemblyReader(pexFile, false))
+            var asm = new PapyrusAssemblyDefinition();
+            using (var reader = new PapyrusAssemblyReader(asm, pexFile))
             {
                 var def = reader.Read();
                 def.IsCorrupted = reader.IsCorrupted;
@@ -164,30 +178,33 @@ namespace PapyrusDotNet.PapyrusAssembly
             }
         }
 
-        internal static PapyrusAssemblyDefinition GetInternalInstance(int threadId)
-        {
-            if (AssemblyInstances.ContainsKey(threadId))
-                return AssemblyInstances[threadId];
-            return null;
-        }
-
         private bool disposed = false;
+        private bool hasDebugInfo;
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing">
+        ///   <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposed) return;
             if (disposing)
             {
-                if (AssemblyInstances == null) return;
-                if (!AssemblyInstances.ContainsValue(this)) return;
-                var item = AssemblyInstances.FirstOrDefault(i => i.Value == this);
-                AssemblyInstances.Remove(item.Key);
             }
         }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="PapyrusAssemblyDefinition" /> class.
+        /// </summary>
         ~PapyrusAssemblyDefinition()
         {
             Dispose(false);

@@ -28,7 +28,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public bool HasMethodDescriptions => MethodDescriptions != null && MethodDescriptions.Count > 0;
         public List<PapyrusMethodDecription> MethodDescriptions { get; set; }
         public bool HasPropertyDescriptions => PropertyDescriptions != null && PropertyDescriptions.Count > 0;
-        public List<PapyrusPropertyDescriptions> PropertyDescriptions { get; set; }
+        public List<PapyrusStatePropertyDescriptions> PropertyDescriptions { get; set; }
         public bool HasStructDescriptions => StructDescriptions != null && StructDescriptions.Count > 0;
         public List<PapyrusStructDescription> StructDescriptions { get; set; }
         public long DebugTime { get; set; }
@@ -36,7 +36,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public PapyrusTypeDebugInfo()
         {
             MethodDescriptions = new List<PapyrusMethodDecription>();
-            PropertyDescriptions = new List<PapyrusPropertyDescriptions>();
+            PropertyDescriptions = new List<PapyrusStatePropertyDescriptions>();
             StructDescriptions = new List<PapyrusStructDescription>();
         }
     }

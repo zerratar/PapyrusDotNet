@@ -29,8 +29,9 @@ using System.Text;
 using Microsoft.Win32;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 using PapyrusDotNet.Common.Papyrus;
-using FieldAttributes = PapyrusDotNet.Common.Papyrus.FieldAttributes;
+using MemberAttributes = PapyrusDotNet.Common.Papyrus.FieldAttributes;
 using VariableReference = PapyrusDotNet.Common.Papyrus.VariableReference;
 
 #endregion
@@ -81,72 +82,6 @@ namespace PapyrusDotNet.Common
             return null;
         }
 
-        public static FieldAttributes GetFlagsAndProperties(TypeDefinition variable)
-        {
-            string initialValue = null,
-                docString = null;
-            bool isProperty = false,
-                isAuto = false,
-                isAutoReadOnly = false,
-                isHidden = false,
-                isConditional = false,
-                isGeneric = false;
-
-            if (variable.HasGenericParameters)
-            {
-                isGeneric = true;
-                var genericParameters = variable.GenericParameters;
-            }
-
-            foreach (var varAttr in variable.CustomAttributes)
-            {
-                if (varAttr.AttributeType.Name.Equals("PropertyAttribute"))
-                    isProperty = true;
-
-                if (varAttr.AttributeType.Name.Equals("GenericTypeAttribute"))
-                {
-                    isGeneric = true;
-                    foreach (var arg in varAttr.ConstructorArguments)
-                    {
-                        // Not implemented yet
-                    }
-                }
-
-                if (varAttr.AttributeType.Name.Equals("DocStringAttribute"))
-                {
-                    docString = CustomAttributeValue(varAttr);
-                }
-
-
-                if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
-                {
-                    initialValue = CustomAttributeValue(varAttr);
-                }
-                if (varAttr.AttributeType.Name.Equals("AutoAttribute"))
-                    isAuto = true;
-
-                if (varAttr.AttributeType.Name.Equals("AutoReadOnlyAttribute"))
-                    isAutoReadOnly = true;
-
-                if (varAttr.AttributeType.Name.Equals("HiddenAttribute"))
-                    isHidden = true;
-
-
-                if (varAttr.AttributeType.Name.Equals("ConditionalAttribute"))
-                    isConditional = true;
-            }
-            return new FieldAttributes
-            {
-                IsGeneric = isGeneric,
-                InitialValue = initialValue,
-                IsAuto = isAuto,
-                IsAutoReadOnly = isAutoReadOnly,
-                IsConditional = isConditional,
-                IsHidden = isHidden,
-                IsProperty = isProperty,
-                DocString = docString
-            };
-        }
 
         public static string InitialValue(FieldDefinition variable)
         {
@@ -188,7 +123,7 @@ namespace PapyrusDotNet.Common
             {
                 if (ctrArg.Value is CustomAttributeArgument)
                 {
-                    var arg = (CustomAttributeArgument) ctrArg.Value;
+                    var arg = (CustomAttributeArgument)ctrArg.Value;
                     var val = arg.Value;
 
                     return TypeValueConvert(arg.Type.Name, val).ToString();
@@ -197,10 +132,57 @@ namespace PapyrusDotNet.Common
             }
             return null;
         }
-
-        public static FieldAttributes GetFlagsAndProperties(FieldDefinition variable)
+        public static MemberAttributes GetFlagsAndProperties(TypeDefinition variable)
         {
-            string initialValue = null;
+            var attributes = GetFlagsAndProperties(variable.CustomAttributes);
+
+            if (variable.HasGenericParameters)
+            {
+                attributes.IsGeneric = true;
+                var genericParameters = variable.GenericParameters;
+            }
+
+            foreach (var varAttr in variable.CustomAttributes)
+            {
+                if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
+                {
+                    attributes.InitialValue = CustomAttributeValue(varAttr);
+                }
+            }
+            return attributes;
+        }
+
+        public static MemberAttributes GetFlagsAndProperties(FieldDefinition variable)
+        {
+            var attributes = GetFlagsAndProperties(variable.CustomAttributes);
+
+            if (variable.FieldType.Name == "T") attributes.IsGeneric = true;
+
+            return attributes;
+        }
+
+        public static MemberAttributes GetFlagsAndProperties(PropertyDefinition variable)
+        {
+            var attributes = GetFlagsAndProperties(variable.CustomAttributes);
+
+            if (variable.PropertyType.Name == "T") attributes.IsGeneric = true;
+
+            return attributes;
+        }
+
+
+        public static MemberAttributes GetFlagsAndProperties(MethodDefinition method)
+        {
+            var attributes = GetFlagsAndProperties(method.CustomAttributes);
+
+            //if (variable.FieldType.Name == "T") attributes.IsGeneric = true;
+
+            return attributes;
+        }
+
+        public static MemberAttributes GetFlagsAndProperties(Collection<CustomAttribute> customAttributes)
+        {
+            string initialValue = null, docString = null;
             bool isProperty = false,
                 isAuto = false,
                 isAutoReadOnly = false,
@@ -208,9 +190,7 @@ namespace PapyrusDotNet.Common
                 isConditional = false,
                 isGeneric = false;
 
-            if (variable.FieldType.Name == "T") isGeneric = true;
-
-            foreach (var varAttr in variable.CustomAttributes)
+            foreach (var varAttr in customAttributes)
             {
                 if (varAttr.AttributeType.Name.Equals("PropertyAttribute"))
                     isProperty = true;
@@ -222,6 +202,10 @@ namespace PapyrusDotNet.Common
                         // Not implemented yet
                     }
                 }
+                if (varAttr.AttributeType.Name.Equals("DocStringAttribute"))
+                {
+                    docString = CustomAttributeValue(varAttr);
+                }
                 if (varAttr.AttributeType.Name.Equals("InitialValueAttribute"))
                 {
                     var ctrArg = varAttr.ConstructorArguments.FirstOrDefault();
@@ -229,7 +213,7 @@ namespace PapyrusDotNet.Common
                     {
                         if (ctrArg.Value is CustomAttributeArgument)
                         {
-                            var arg = (CustomAttributeArgument) ctrArg.Value;
+                            var arg = (CustomAttributeArgument)ctrArg.Value;
                             var val = arg.Value;
 
                             initialValue = TypeValueConvert(arg.Type.Name, val).ToString();
@@ -247,14 +231,14 @@ namespace PapyrusDotNet.Common
                 if (varAttr.AttributeType.Name.Equals("HiddenAttribute"))
                     isHidden = true;
 
-
                 if (varAttr.AttributeType.Name.Equals("ConditionalAttribute"))
                     isConditional = true;
             }
-            return new FieldAttributes
+            return new MemberAttributes
             {
                 IsGeneric = isGeneric,
                 InitialValue = initialValue,
+                DocString = docString,
                 IsAuto = isAuto,
                 IsAutoReadOnly = isAutoReadOnly,
                 IsConditional = isConditional,
@@ -263,9 +247,11 @@ namespace PapyrusDotNet.Common
             };
         }
 
+
+
         public static string GetString(object p)
         {
-            if (p is string) return (string) p;
+            if (p is string) return (string)p;
             return "";
         }
 
@@ -373,7 +359,7 @@ namespace PapyrusDotNet.Common
             var span = value - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
 
             //return the total seconds (which is a UNIX timestamp)
-            return (int) span.TotalSeconds;
+            return (int)span.TotalSeconds;
         }
 
         public static string GetPapyrusReturnType(string type, string Namespace)
@@ -403,7 +389,7 @@ namespace PapyrusDotNet.Common
             }
             if (isArray)
             {
-                swtype = swtype.Split(new[] {"[]"}, StringSplitOptions.None)[0];
+                swtype = swtype.Split(new[] { "[]" }, StringSplitOptions.None)[0];
             }
             switch (swtype.ToLower())
             {
@@ -434,7 +420,7 @@ namespace PapyrusDotNet.Common
                     return "Float" + (isArray ? "[]" : "");
                 default:
                     return swExt + type;
-                // case "Bool":
+                    // case "Bool":
             }
         }
 
@@ -455,9 +441,9 @@ namespace PapyrusDotNet.Common
             if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))
             {
                 if (op is int || op is float || op is short || op is double || op is long || op is byte)
-                    return (int) double.Parse(op.ToString()) == 1;
-                if (op is bool) return (bool) op;
-                if (op is string) return (string) op == "1" || op.ToString().ToLower() == "true";
+                    return (int)double.Parse(op.ToString()) == 1;
+                if (op is bool) return (bool)op;
+                if (op is string) return (string)op == "1" || op.ToString().ToLower() == "true";
             }
             if (typeName.ToLower().StartsWith("string") || typeName.ToLower().StartsWith("system.string"))
             {
@@ -497,7 +483,7 @@ namespace PapyrusDotNet.Common
 
         public static string RemoveUnusedLabels(string output)
         {
-            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
 
             var codeBlocks = ParseCodeBlocks(rows);
 
@@ -580,7 +566,7 @@ namespace PapyrusDotNet.Common
 
         public static string RemoveUnnecessaryLabels(string output)
         {
-            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
             var labelReplacements =
                 new List<ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>>();
             var codeBlocks = ParseCodeBlocks(rows);
@@ -656,7 +642,7 @@ namespace PapyrusDotNet.Common
 
         public static string InjectTempVariables(string output, int indentDepth, List<VariableReference> TempVariables)
         {
-            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
 
             // foreach(var )
             var insertIndex = Array.IndexOf(rows.ToArray(),

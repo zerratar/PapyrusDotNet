@@ -28,6 +28,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
 using Newtonsoft.Json;
+using PapyrusDotNet.Converters.Clr2Papyrus;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
 using PapyrusDotNet.Converters.Papyrus2Clr;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
@@ -42,7 +43,7 @@ namespace PapyrusDotNet.ConsoleTests
         private static void Main(string[] args)
         {
 
-            var converter = new PapyrusDotNet.Converters.Clr2Papyrus.Clr2PapyrusConverter();
+            var converter = new PapyrusDotNet.Converters.Clr2Papyrus.Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor());
             var value = converter.Convert(
                 new ClrAssemblyInput(
                     AssemblyDefinition.ReadAssembly(
