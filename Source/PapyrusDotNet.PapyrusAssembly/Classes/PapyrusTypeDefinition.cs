@@ -1,5 +1,3 @@
-#region License
-
 //     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -17,8 +15,6 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
-
 #region
 
 using System.Collections.ObjectModel;
@@ -29,7 +25,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusTypeDefinition : PapyrusValueReference
     {
-        private PapyrusAssemblyDefinition assembly;
+        private readonly PapyrusAssemblyDefinition assembly;
 
         public PapyrusTypeDefinition()
         {

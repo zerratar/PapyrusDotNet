@@ -1,5 +1,3 @@
-#region License
-
 //     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -16,8 +14,6 @@
 //     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
-
-#endregion
 
 #region
 
@@ -41,14 +37,15 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
         private bool isDisposed;
 
-        public bool IsCorrupted => pexReader.IsCorrupted;
-        public bool ThrowsExceptions { get; }
         public PapyrusAssemblyReader(PapyrusAssemblyDefinition assembly, string pex, bool throwsException = false)
         {
             this.assembly = assembly;
             ThrowsExceptions = throwsException;
             pexReader = new PexReader(assembly, pex, throwsException);
         }
+
+        public bool IsCorrupted => pexReader.IsCorrupted;
+        public bool ThrowsExceptions { get; }
 
         public void Dispose()
         {
@@ -154,7 +151,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 dbgfunc.DeclaringTypeName = pexReader.ReadStringRef();
                 dbgfunc.StateName = pexReader.ReadStringRef();
                 dbgfunc.Name = pexReader.ReadStringRef();
-                dbgfunc.MethodType = (PapyrusMethodTypes)pexReader.ReadByte();
+                dbgfunc.MethodType = (PapyrusMethodTypes) pexReader.ReadByte();
                 dbgfunc.BodyLineNumbers = new List<short>();
                 var lineNumberCount = pexReader.ReadInt16();
                 for (var j = 0; j < lineNumberCount; j++)
@@ -196,7 +193,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     var fieldCount = pexReader.ReadInt16();
                     for (var j = 0; j < fieldCount; j++)
                     {
-
                         structDescription.FieldNames.Add(pexReader.ReadStringRef());
                     }
                     structDescriptions.Add(structDescription);
@@ -243,7 +239,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     ReadProperties(asm, typeDef);
 
                     ReadStates(asm, typeDef);
-
                 }
                 types.Add(typeDef);
             }
@@ -252,7 +247,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
         private void ReadTypeInfo(PapyrusAssemblyDefinition asm, PapyrusTypeDefinition typeDef)
         {
-
             typeDef.Name = pexReader.ReadStringRef();
             typeDef.Size = pexReader.ReadInt32();
             typeDef.BaseTypeName = pexReader.ReadStringRef();
@@ -395,7 +389,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         {
             var instruction = new PapyrusInstruction();
 
-            instruction.OpCode = (PapyrusOpCode)pexReader.ReadByte();
+            instruction.OpCode = (PapyrusOpCode) pexReader.ReadByte();
 
             var desc = PapyrusInstructionOpCodeDescription.FromOpCode(instruction.OpCode);
 
@@ -411,7 +405,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 var typeRef = ReadValueReference(asm);
                 if (typeRef.ValueType == PapyrusPrimitiveType.Integer)
                 {
-                    var argCount = (int)typeRef.Value;
+                    var argCount = (int) typeRef.Value;
                     for (var i = 0; i < argCount; i++)
                     {
                         instruction.VariableArguments.Add(ReadValueReference(asm));
@@ -461,7 +455,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             header.SourceHeader = new PapyrusSourceHeader(
                 majorVersion, minorVersion,
                 gameId, compileTime, source, user, computer
-            );
+                );
         }
 
         private PapyrusFieldDefinition ReadDocumentedField(PapyrusAssemblyDefinition asm)
@@ -491,7 +485,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         {
             var tr = new PapyrusValueReference();
             tr.Name = new PapyrusStringRef(asm, name);
-            tr.ValueType = (PapyrusPrimitiveType)pexReader.ReadByte();
+            tr.ValueType = (PapyrusPrimitiveType) pexReader.ReadByte();
             switch (tr.ValueType)
             {
                 case PapyrusPrimitiveType.Reference:

@@ -1,6 +1,4 @@
-﻿#region License
-
-//     This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -16,8 +14,6 @@
 //     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
-
-#endregion
 
 #region
 
@@ -68,7 +64,7 @@ namespace PapyrusDotNet.Old
             this.type = type;
             evaluationStack = new Stack<EvaluationStackItem>();
 
-            function = new Function { Fields = fields };
+            function = new Function {Fields = fields};
         }
 
         private static void GetCallStack(TypeDefinition type)
@@ -296,7 +292,7 @@ namespace PapyrusDotNet.Old
                     // We will have to format it properly and add each instruction to our function.
                     if (value.Contains(Environment.NewLine))
                     {
-                        var rows = value.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                        var rows = value.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
                         foreach (var row in rows)
                         {
                             var codeInstruction = Utility.Indent(indentDepth, row, false);
@@ -337,7 +333,7 @@ namespace PapyrusDotNet.Old
 
             var ptype = Utility.GetPapyrusBaseType(asm.GenericTypeReplacement);
 
-            var papyrusRow = papyrus.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var papyrusRow = papyrus.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
 
             for (var j = 0; j < papyrusRow.Length; j++)
             {
@@ -884,9 +880,9 @@ namespace PapyrusDotNet.Old
             if (InstructionHelper.IsLoadArgs(instruction.OpCode.Code))
             {
                 var index = IntValue(instruction);
-                if (targetMethod.IsStatic && (int)index == 0 && targetMethod.Parameters.Count == 0)
+                if (targetMethod.IsStatic && (int) index == 0 && targetMethod.Parameters.Count == 0)
                 {
-                    evaluationStack.Push(new EvaluationStackItem { IsThis = true, Value = type, TypeName = type.FullName });
+                    evaluationStack.Push(new EvaluationStackItem {IsThis = true, Value = type, TypeName = type.FullName});
                 }
                 else
                 {
@@ -895,8 +891,8 @@ namespace PapyrusDotNet.Old
                     {
                         evaluationStack.Push(new EvaluationStackItem
                         {
-                            Value = function.Parameters[(int)index],
-                            TypeName = function.Parameters[(int)index].TypeName
+                            Value = function.Parameters[(int) index],
+                            TypeName = function.Parameters[(int) index].TypeName
                         });
                     }
                 }
@@ -904,12 +900,12 @@ namespace PapyrusDotNet.Old
             if (InstructionHelper.IsLoadInteger(instruction.OpCode.Code))
             {
                 var index = IntValue(instruction);
-                evaluationStack.Push(new EvaluationStackItem { Value = index, TypeName = "Int" });
+                evaluationStack.Push(new EvaluationStackItem {Value = index, TypeName = "Int"});
             }
 
             if (InstructionHelper.IsLoadNull(instruction.OpCode.Code))
             {
-                evaluationStack.Push(new EvaluationStackItem { Value = "None", TypeName = "None" });
+                evaluationStack.Push(new EvaluationStackItem {Value = "None", TypeName = "None"});
             }
 
             if (InstructionHelper.IsLoadField(instruction.OpCode.Code))
@@ -940,8 +936,8 @@ namespace PapyrusDotNet.Old
                 {
                     evaluationStack.Push(new EvaluationStackItem
                     {
-                        Value = function.AllVariables[(int)index],
-                        TypeName = function.AllVariables[(int)index].TypeName
+                        Value = function.AllVariables[(int) index],
+                        TypeName = function.AllVariables[(int) index].TypeName
                     });
                 }
             }
@@ -950,7 +946,7 @@ namespace PapyrusDotNet.Old
             {
                 var value = Utility.GetString(instruction.Operand);
 
-                evaluationStack.Push(new EvaluationStackItem { Value = "\"" + value + "\"", TypeName = "String" });
+                evaluationStack.Push(new EvaluationStackItem {Value = "\"" + value + "\"", TypeName = "String"});
             }
 
 
@@ -992,18 +988,18 @@ namespace PapyrusDotNet.Old
                         if (heapObj.Value is VariableReference)
                         {
                             var varRef = heapObj.Value as VariableReference;
-                            function.AllVariables[(int)index].Value = varRef.Value;
-                            return "Assign " + function.AllVariables[(int)index].Name + " " + varRef.Name;
+                            function.AllVariables[(int) index].Value = varRef.Value;
+                            return "Assign " + function.AllVariables[(int) index].Name + " " + varRef.Name;
                         }
 
 
-                        function.AllVariables[(int)index].Value =
-                            Utility.TypeValueConvert(function.AllVariables[(int)index].TypeName, heapObj.Value);
+                        function.AllVariables[(int) index].Value =
+                            Utility.TypeValueConvert(function.AllVariables[(int) index].TypeName, heapObj.Value);
                     }
-                    var valout = function.AllVariables[(int)index].Value;
+                    var valout = function.AllVariables[(int) index].Value;
                     var valoutStr = valout + "";
                     if (string.IsNullOrEmpty(valoutStr)) valoutStr = "None";
-                    return "Assign " + function.AllVariables[(int)index].Name + " " + valoutStr;
+                    return "Assign " + function.AllVariables[(int) index].Name + " " + valoutStr;
                 }
             }
 
@@ -1222,7 +1218,7 @@ namespace PapyrusDotNet.Old
                             var fName = methodRef.FullName;
                             if (fName.Contains("::"))
                             {
-                                var values = fName.Split(new[] { "::" }, StringSplitOptions.None)[0];
+                                var values = fName.Split(new[] {"::"}, StringSplitOptions.None)[0];
                                 if (values.Contains("."))
                                 {
                                     values = values.Split('.').LastOrDefault();
@@ -1535,8 +1531,8 @@ namespace PapyrusDotNet.Old
                     var index = IntValue(whereToPlace);
                     if (index < function.AllVariables.Count)
                     {
-                        targetVar = function.AllVariables[(int)index].Name;
-                        LastSaughtTypeName = function.AllVariables[(int)index].TypeName;
+                        targetVar = function.AllVariables[(int) index].Name;
+                        LastSaughtTypeName = function.AllVariables[(int) index].TypeName;
                     }
                 }
                 skipNextInstruction = true;
@@ -1560,7 +1556,7 @@ namespace PapyrusDotNet.Old
                         !string.IsNullOrEmpty(fallbackType) ? fallbackType : methodRef.ReturnType.FullName,
                         methodRef);
                 targetVar = tVar.Name;
-                evaluationStack.Push(new EvaluationStackItem { Value = tVar, TypeName = tVar.TypeName });
+                evaluationStack.Push(new EvaluationStackItem {Value = tVar, TypeName = tVar.TypeName});
                 LastSaughtTypeName = tVar.TypeName;
             }
             else
@@ -1634,7 +1630,7 @@ namespace PapyrusDotNet.Old
                         var methodRef = instruction.Operand as MethodReference;
                         var tVar = function.CreateTempVariable(methodRef.ReturnType.FullName);
                         var targetVar = tVar.Name;
-                        evaluationStack.Push(new EvaluationStackItem { Value = tVar, TypeName = tVar.TypeName });
+                        evaluationStack.Push(new EvaluationStackItem {Value = tVar, TypeName = tVar.TypeName});
                         return targetVar + " " + value2 + " " + value1;
                     }
 
@@ -1654,7 +1650,7 @@ namespace PapyrusDotNet.Old
                     }
 
 
-                    varIndex = (int)IntValue(next);
+                    varIndex = (int) IntValue(next);
                 }
 
                 return vars[varIndex].Name + " " + value2 + " " + value1;
@@ -1674,7 +1670,7 @@ namespace PapyrusDotNet.Old
 
             if (next != null)
             {
-                varIndex = (int)IntValue(next);
+                varIndex = (int) IntValue(next);
                 skipToOffset = next.Offset;
             }
             return next;
@@ -1747,7 +1743,7 @@ namespace PapyrusDotNet.Old
         public static bool IsVoid(TypeReference typeReference)
         {
             return typeReference.FullName.ToLower().Equals("system.void")
-                || typeReference.Name.ToLower().Equals("void");
+                   || typeReference.Name.ToLower().Equals("void");
         }
 
 

@@ -1,6 +1,24 @@
-﻿using System;
+﻿//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
+#region
+
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
@@ -12,19 +30,25 @@ using PapyrusDotNet.PapyrusAssembly.Classes;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
 
+#endregion
+
 namespace PapyrusDotNet.Converters.Clr2Papyrus
 {
     public class Clr2PapyrusConverter : Clr2PapyrusConverterBase
     {
         private readonly IClr2PapyrusInstructionProcessor instructionProcessor;
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Clr2PapyrusConverter" /> class.
+        /// </summary>
+        /// <param name="instructionProcessor">The instruction processor.</param>
         public Clr2PapyrusConverter(IClr2PapyrusInstructionProcessor instructionProcessor)
         {
             this.instructionProcessor = instructionProcessor;
         }
 
         /// <summary>
-        /// Converts the assembly.
+        ///     Converts the assembly.
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
@@ -72,7 +96,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             // Create Properties
             CreateProperties(type, pex).ForEach(newType.Properties.Add);
 
-            // Create Properties
+            // Create Fields
             CreateFields(type, pex).ForEach(newType.Fields.Add);
 
             // Create Methods
@@ -126,10 +150,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
             foreach (var prop in type.Properties)
             {
-                // For Each State, add the following thingy
-                //
-                //property.
-                //debug.PropertyDescriptions.Add(property);
+                // TODO: This
                 stateProperties.PropertyNames.Add(prop.Name.Ref(pex));
             }
             debug.PropertyDescriptions.Add(stateProperties);
@@ -138,8 +159,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         private void UpdateUserFlags(TypeDefinition type, PapyrusAssemblyDefinition pex)
         {
             var props = Utility.GetFlagsAndProperties(type);
-            pex.Header.UserflagReferenceHeader.Add("hidden", (byte)(props.IsHidden ? 1 : 0));
-            pex.Header.UserflagReferenceHeader.Add("conditional", (byte)(props.IsConditional ? 1 : 0));
+            pex.Header.UserflagReferenceHeader.Add("hidden", (byte) (props.IsHidden ? 1 : 0));
+            pex.Header.UserflagReferenceHeader.Add("conditional", (byte) (props.IsConditional ? 1 : 0));
         }
 
         private List<PapyrusMethodDefinition> CreateMethods(TypeDefinition type, PapyrusAssemblyDefinition pex)
@@ -185,7 +206,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             return fields;
         }
 
-        private PapyrusMethodDefinition CreatePapyrusMethodDefinition(PapyrusAssemblyDefinition asm, MethodDefinition method)
+        private PapyrusMethodDefinition CreatePapyrusMethodDefinition(PapyrusAssemblyDefinition asm,
+            MethodDefinition method)
         {
             var m = new PapyrusMethodDefinition(asm);
             m.UserFlags = Utility.GetFlagsAndProperties(method).UserFlagsValue;
@@ -213,17 +235,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
         private void ProcessInstructions(MethodDefinition method, PapyrusMethodDefinition m)
         {
-            foreach (var instruction in method.Body.Instructions)
-            {
-
-            }
             var papyrusInstructions =
                 instructionProcessor.ProcessInstructions(method, method.Body, method.Body.Instructions);
 
             m.Body.Instructions.AddRange(papyrusInstructions);
         }
 
-        private static void SetHeaderInfo(ClrAssemblyInput input, PapyrusAssemblyDefinition pex, TypeDefinition type)
+        private void SetHeaderInfo(ClrAssemblyInput input, PapyrusAssemblyDefinition pex, TypeDefinition type)
         {
             pex.Header.HeaderIdentifier = input.TargetPapyrusVersion == PapyrusVersionTargets.Fallout4
                 ? PapyrusHeader.Fallout4PapyrusHeaderIdentifier
@@ -236,7 +254,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
             pex.Header.SourceHeader.User = Environment.UserName;
             pex.Header.SourceHeader.Computer = Environment.MachineName;
-            pex.Header.SourceHeader.GameId = (short)input.TargetPapyrusVersion;
+            pex.Header.SourceHeader.GameId = (short) input.TargetPapyrusVersion;
             pex.Header.SourceHeader.CompileTime = Utility.ConvertToTimestamp(DateTime.Now);
             pex.Header.SourceHeader.ModifyTime = Utility.ConvertToTimestamp(DateTime.Now);
         }

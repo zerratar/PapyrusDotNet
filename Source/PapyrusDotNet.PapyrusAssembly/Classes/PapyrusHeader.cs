@@ -1,6 +1,4 @@
-﻿#region License
-
-//     This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -17,13 +15,10 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
-
 #region
 
 using System;
 using System.Collections.Generic;
-using PapyrusDotNet.PapyrusAssembly.Enums;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 #endregion
@@ -32,26 +27,27 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusHeader
     {
-        private readonly PapyrusAssemblyDefinition assembly;
         public const uint Fallout4PapyrusHeaderIdentifier = 0xFA57C0DE;
         public const uint SkyrimPapyrusHeaderIdentifier = 0xDEC057FA;
         public static readonly Version SkyrimPapyrusVersion = new Version(3, 2);
         public static readonly Version Fallout4PapyrusVersion = new Version(3, 9);
-
-        public PapyrusSourceHeader SourceHeader { get; set; } = new PapyrusSourceHeader();
-        public PapyrusHeaderUserflagCollection UserflagReferenceHeader { get; set; }
-        public uint HeaderIdentifier { get; set; }
+        private readonly PapyrusAssemblyDefinition assembly;
 
         public PapyrusHeader(PapyrusAssemblyDefinition assembly)
         {
             this.assembly = assembly;
             UserflagReferenceHeader = new PapyrusHeaderUserflagCollection(assembly);
         }
+
+        public PapyrusSourceHeader SourceHeader { get; set; } = new PapyrusSourceHeader();
+        public PapyrusHeaderUserflagCollection UserflagReferenceHeader { get; set; }
+        public uint HeaderIdentifier { get; set; }
     }
 
     public class PapyrusHeaderUserflagCollection : Dictionary<PapyrusStringRef, byte>
     {
         private readonly PapyrusAssemblyDefinition asm;
+
         public PapyrusHeaderUserflagCollection(PapyrusAssemblyDefinition asm)
         {
             this.asm = asm;
@@ -61,6 +57,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         {
             Add(key.Ref(asm), value);
         }
+
         public new void Add(PapyrusStringRef key, byte value)
         {
             if (asm.StringTable == null)

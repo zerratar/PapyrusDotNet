@@ -1,6 +1,4 @@
-﻿#region License
-
-//     This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -17,11 +15,9 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
-
 namespace PapyrusDotNet.PapyrusAssembly.Enums
 {
-    public enum PapyrusVersionTargets : int
+    public enum PapyrusVersionTargets
     {
         Skyrim = 1,
         Fallout4 = 2

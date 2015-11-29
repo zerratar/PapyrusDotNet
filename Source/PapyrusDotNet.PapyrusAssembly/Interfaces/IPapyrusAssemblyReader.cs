@@ -1,5 +1,3 @@
-#region License
-
 //     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -17,12 +15,14 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
-
 namespace PapyrusDotNet.PapyrusAssembly.Interfaces
 {
     internal interface IPapyrusAssemblyReader
     {
+        /// <summary>
+        ///     Reads a papyrus assemlby file.
+        /// </summary>
+        /// <returns></returns>
         PapyrusAssemblyDefinition Read();
     }
 }

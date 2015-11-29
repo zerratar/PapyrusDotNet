@@ -1,5 +1,3 @@
-#region License
-
 //     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -17,22 +15,17 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
+#region
 
 using PapyrusDotNet.PapyrusAssembly.Extensions;
+
+#endregion
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusFieldDefinition : PapyrusFieldReference
     {
         private readonly PapyrusAssemblyDefinition assembly;
-
-        public PapyrusStringRef Name { get; set; }
-        public int UserFlags { get; set; }
-        public PapyrusTypeDefinition DeclaringType { get; set; }
-        public string Documentation { get; set; }
-        internal string TypeName { get; set; }
-        public bool IsConst { get; set; }
 
         public PapyrusFieldDefinition(PapyrusAssemblyDefinition assembly)
         {
@@ -45,5 +38,12 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             Name = name.Ref(assembly);
             TypeName = typeName;
         }
+
+        public PapyrusStringRef Name { get; set; }
+        public int UserFlags { get; set; }
+        public PapyrusTypeDefinition DeclaringType { get; set; }
+        public string Documentation { get; set; }
+        internal string TypeName { get; set; }
+        public bool IsConst { get; set; }
     }
 }

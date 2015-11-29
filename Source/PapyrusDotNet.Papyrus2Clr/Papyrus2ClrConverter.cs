@@ -1,10 +1,28 @@
-﻿using System;
+﻿//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
+#region
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 using PapyrusDotNet.Common.Extensions;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Papyrus2Clr.Base;
@@ -19,15 +37,22 @@ using ParameterAttributes = Mono.Cecil.ParameterAttributes;
 using PropertyAttributes = Mono.Cecil.PropertyAttributes;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
 
+#endregion
+
 namespace PapyrusDotNet.Converters.Papyrus2Clr
 {
     public class Papyrus2ClrConverter : Papyrus2ClrConverterBase
     {
         public IList<TypeReference> AddedTypeReferences = new List<TypeReference>();
-        public IList<string> ReservedTypeNames = new List<string>();
         private AssemblyDefinition clrAssembly;
         // private PapyrusAssemblyDefinition papyrusAssembly;
         private ModuleDefinition mainModule;
+        public IList<string> ReservedTypeNames = new List<string>();
+
+        public Papyrus2ClrConverter(INamespaceResolver namespaceResolver, ITypeReferenceResolver typeReferenceResolver)
+            : base(namespaceResolver, typeReferenceResolver)
+        {
+        }
 
         protected override ClrAssemblyOutput ConvertAssembly(PapyrusAssemblyInput input)
         {
@@ -52,7 +77,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             }
 
             exeAsm.FindTypes("attribute")
-                  .ForEach(attr => ImportType(mainModule, attr));
+                .ForEach(attr => ImportType(mainModule, attr));
 
             return new ClrAssemblyOutput(clrAssembly);
         }
@@ -256,7 +281,8 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
         public void AddEmptyConstructor(TypeDefinition type)
         {
             var method = new MethodDefinition(".ctor", MethodAttributes.Public | MethodAttributes.HideBySig |
-                                                       MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, mainModule.TypeSystem.Void);
+                                                       MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
+                mainModule.TypeSystem.Void);
 
             //TODO: might need to fix this later so that PEVERIFY can verify the outputted library properly.
             // var baseEmptyConstructor = new MethodReference(".ctor", MainModule.TypeSystem.Void, MainModule.TypeSystem.Object);// MainModule.TypeSystem.Object
@@ -267,6 +293,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             type.Methods.Add(method);
         }
+
         public void CreateEmptyFunctionBody(ref MethodDefinition function)
         {
             if (function.Body == null)
@@ -305,6 +332,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             function.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
         }
+
         public TypeReference ResolveTypeReference(TypeDefinition newType, PapyrusStringRef targetTypeName = null)
         {
             return ResolveTypeReference(newType, targetTypeName?.Value);
@@ -312,11 +340,8 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
         public TypeReference ResolveTypeReference(TypeDefinition newType, string targetTypeName = null)
         {
-            return TypeReferenceResolver.Resolve(ref ReservedTypeNames, ref AddedTypeReferences, mainModule, newType, targetTypeName);
-        }
-
-        public Papyrus2ClrConverter(INamespaceResolver namespaceResolver, ITypeReferenceResolver typeReferenceResolver) : base(namespaceResolver, typeReferenceResolver)
-        {
+            return TypeReferenceResolver.Resolve(ref ReservedTypeNames, ref AddedTypeReferences, mainModule, newType,
+                targetTypeName);
         }
     }
 }

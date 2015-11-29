@@ -1,27 +1,32 @@
+//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
+#region
+
 using System.Collections.Generic;
 using PapyrusDotNet.PapyrusAssembly.Enums;
+
+#endregion
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusInstructionOpCodeDescription
     {
-        public int ParamSize { get; }
-        public bool HasVariableArguments { get; }
-
         private static readonly Dictionary<PapyrusOpCode, PapyrusInstructionOpCodeDescription> Descriptions;
-
-        public PapyrusInstructionOpCodeDescription(int paramSize, bool hasVariableArguments)
-        {
-            ParamSize = paramSize;
-            HasVariableArguments = hasVariableArguments;
-        }
-
-        public static PapyrusInstructionOpCodeDescription FromOpCode(PapyrusOpCode opcode)
-        {
-            if (Descriptions.ContainsKey(opcode))
-                return Descriptions[opcode];
-            return null;
-        }
 
         static PapyrusInstructionOpCodeDescription()
         {
@@ -72,6 +77,22 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             Descriptions.Add(PapyrusOpCode.ArrayRemovelastelement, new PapyrusInstructionOpCodeDescription(1, false));
             Descriptions.Add(PapyrusOpCode.ArrayRemoveelements, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCode.ArrayClearelements, new PapyrusInstructionOpCodeDescription(1, false));
+        }
+
+        public PapyrusInstructionOpCodeDescription(int paramSize, bool hasVariableArguments)
+        {
+            ParamSize = paramSize;
+            HasVariableArguments = hasVariableArguments;
+        }
+
+        public int ParamSize { get; }
+        public bool HasVariableArguments { get; }
+
+        public static PapyrusInstructionOpCodeDescription FromOpCode(PapyrusOpCode opcode)
+        {
+            if (Descriptions.ContainsKey(opcode))
+                return Descriptions[opcode];
+            return null;
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿#region License
-
-//     This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -16,8 +14,6 @@
 //     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
-
-#endregion
 
 #region
 
@@ -123,7 +119,7 @@ namespace PapyrusDotNet.Common
             {
                 if (ctrArg.Value is CustomAttributeArgument)
                 {
-                    var arg = (CustomAttributeArgument)ctrArg.Value;
+                    var arg = (CustomAttributeArgument) ctrArg.Value;
                     var val = arg.Value;
 
                     return TypeValueConvert(arg.Type.Name, val).ToString();
@@ -132,6 +128,7 @@ namespace PapyrusDotNet.Common
             }
             return null;
         }
+
         public static MemberAttributes GetFlagsAndProperties(TypeDefinition variable)
         {
             var attributes = GetFlagsAndProperties(variable.CustomAttributes);
@@ -213,7 +210,7 @@ namespace PapyrusDotNet.Common
                     {
                         if (ctrArg.Value is CustomAttributeArgument)
                         {
-                            var arg = (CustomAttributeArgument)ctrArg.Value;
+                            var arg = (CustomAttributeArgument) ctrArg.Value;
                             var val = arg.Value;
 
                             initialValue = TypeValueConvert(arg.Type.Name, val).ToString();
@@ -248,10 +245,9 @@ namespace PapyrusDotNet.Common
         }
 
 
-
         public static string GetString(object p)
         {
-            if (p is string) return (string)p;
+            if (p is string) return (string) p;
             return "";
         }
 
@@ -359,7 +355,7 @@ namespace PapyrusDotNet.Common
             var span = value - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
 
             //return the total seconds (which is a UNIX timestamp)
-            return (int)span.TotalSeconds;
+            return (int) span.TotalSeconds;
         }
 
         public static string GetPapyrusReturnType(string type, string Namespace)
@@ -389,7 +385,7 @@ namespace PapyrusDotNet.Common
             }
             if (isArray)
             {
-                swtype = swtype.Split(new[] { "[]" }, StringSplitOptions.None)[0];
+                swtype = swtype.Split(new[] {"[]"}, StringSplitOptions.None)[0];
             }
             switch (swtype.ToLower())
             {
@@ -420,7 +416,7 @@ namespace PapyrusDotNet.Common
                     return "Float" + (isArray ? "[]" : "");
                 default:
                     return swExt + type;
-                    // case "Bool":
+                // case "Bool":
             }
         }
 
@@ -441,9 +437,9 @@ namespace PapyrusDotNet.Common
             if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))
             {
                 if (op is int || op is float || op is short || op is double || op is long || op is byte)
-                    return (int)double.Parse(op.ToString()) == 1;
-                if (op is bool) return (bool)op;
-                if (op is string) return (string)op == "1" || op.ToString().ToLower() == "true";
+                    return (int) double.Parse(op.ToString()) == 1;
+                if (op is bool) return (bool) op;
+                if (op is string) return (string) op == "1" || op.ToString().ToLower() == "true";
             }
             if (typeName.ToLower().StartsWith("string") || typeName.ToLower().StartsWith("system.string"))
             {
@@ -483,7 +479,7 @@ namespace PapyrusDotNet.Common
 
         public static string RemoveUnusedLabels(string output)
         {
-            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
 
             var codeBlocks = ParseCodeBlocks(rows);
 
@@ -566,7 +562,7 @@ namespace PapyrusDotNet.Common
 
         public static string RemoveUnnecessaryLabels(string output)
         {
-            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
             var labelReplacements =
                 new List<ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>>();
             var codeBlocks = ParseCodeBlocks(rows);
@@ -642,7 +638,7 @@ namespace PapyrusDotNet.Common
 
         public static string InjectTempVariables(string output, int indentDepth, List<VariableReference> TempVariables)
         {
-            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
 
             // foreach(var )
             var insertIndex = Array.IndexOf(rows.ToArray(),

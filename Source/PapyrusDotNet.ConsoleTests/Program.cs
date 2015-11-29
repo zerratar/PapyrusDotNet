@@ -1,6 +1,4 @@
-﻿#region License
-
-//     This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -17,22 +15,16 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
-
 #region
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
 using Newtonsoft.Json;
 using PapyrusDotNet.Converters.Clr2Papyrus;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
-using PapyrusDotNet.Converters.Papyrus2Clr;
-using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly.Enums;
 
 #endregion
 
@@ -42,13 +34,12 @@ namespace PapyrusDotNet.ConsoleTests
     {
         private static void Main(string[] args)
         {
-
-            var converter = new PapyrusDotNet.Converters.Clr2Papyrus.Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor());
+            var converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor());
             var value = converter.Convert(
                 new ClrAssemblyInput(
                     AssemblyDefinition.ReadAssembly(
                         @"D:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
-                    PapyrusDotNet.PapyrusAssembly.Enums.PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
+                    PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
 
             var val = JsonConvert.SerializeObject(value.Assemblies, Formatting.Indented);
 
@@ -68,7 +59,6 @@ namespace PapyrusDotNet.ConsoleTests
             //Assert.IsNotNull(dest.Header.SourceHeader.Source);
 
             //Assert.AreEqual(src.Header.SourceHeader.Source, dest.Header.SourceHeader.Source);
-
 
 
             //   TestManySkyrimPapyrus();
@@ -92,9 +82,6 @@ namespace PapyrusDotNet.ConsoleTests
             //clr.OutputAssembly.Write(
             //    @"D:\Git\PapyrusDotNet\Source\PapyrusDotNet.ConsoleTests\bin\Debug\PapyrusDotNet.Core.dll");
             //Console.WriteLine("Build Time: " + (DateTime.Now - startTime).TotalSeconds + " seconds.");
-
-
-
         }
 
         public static void TestManySkyrimPapyrus()

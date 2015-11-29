@@ -1,5 +1,3 @@
-#region License
-
 //     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -17,9 +15,11 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
+#region
 
 using PapyrusDotNet.PapyrusAssembly.Enums;
+
+#endregion
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {

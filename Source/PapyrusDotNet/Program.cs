@@ -1,6 +1,4 @@
-﻿#region License
-
-//     This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -17,15 +15,12 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
-
 #region
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Mono.Cecil;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Clr2Papyrus;
@@ -110,7 +105,7 @@ namespace PapyrusDotNet
                     new ClrTypeReferenceResolver(nsResolver, new ClrTypeNameResolver()));
 
                 inputData = new PapyrusAssemblyInput(
-                        Directory.GetFiles(input, "*.pex", SearchOption.AllDirectories)
+                    Directory.GetFiles(input, "*.pex", SearchOption.AllDirectories)
                         .Select(PapyrusAssemblyDefinition.ReadAssembly)
                         .ToArray()
                     );
@@ -128,18 +123,22 @@ namespace PapyrusDotNet
 
         private static void PrintHelp()
         {
-            Console.WriteLine("Usage: PapyrusDotNet.exe <input> <output> [option] [<target papyrus version (-fo4 | -skyrim)>]");
+            Console.WriteLine(
+                "Usage: PapyrusDotNet.exe <input> <output> [option] [<target papyrus version (-fo4 | -skyrim)>]");
             Console.WriteLine("Options:");
-            Console.WriteLine("\t-papyrus :: [Default] Converts a .NET .dll into .pex files. Each class will be a separate .pex file.");
+            Console.WriteLine(
+                "\t-papyrus :: [Default] Converts a .NET .dll into .pex files. Each class will be a separate .pex file.");
             Console.WriteLine("\t\t<input> :: file (.dll)");
             Console.WriteLine("\t\t<output> :: folder");
             Console.WriteLine("\t\t<target version> :: [Fallout 4 is default] -fo4 or -skyrim");
-            Console.WriteLine("\t-clr :: Converts a .pex or folder containg .pex files into a .NET library usable when modding.");
+            Console.WriteLine(
+                "\t-clr :: Converts a .pex or folder containg .pex files into a .NET library usable when modding.");
             Console.WriteLine("\t\t<input> :: .pex file or folder");
             Console.WriteLine("\t\t<output> :: folder (File will be named PapyrusDotNet.Core.dll)");
         }
 
         #region Old Program Start
+
         private static void MainOld(string[] args)
         {
             OutputFolder = @".\output";
@@ -213,10 +212,10 @@ namespace PapyrusDotNet
                 }
             }
         }
+
         #endregion
-        // ld is to load from stack and assign its value to either function, variable or return
 
         // st codes are to store to the stack
+        // ld is to load from stack and assign its value to either function, variable or return
     }
-
 }

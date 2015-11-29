@@ -1,10 +1,34 @@
-﻿using PapyrusDotNet.PapyrusAssembly.Extensions;
+﻿//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
+#region
+
+using PapyrusDotNet.PapyrusAssembly.Extensions;
+
+#endregion
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusStringRef
     {
         private readonly PapyrusAssemblyDefinition assembly;
+        private int index;
+
+        private string value;
 
         public PapyrusStringRef(PapyrusAssemblyDefinition assembly, string value, int index)
         {
@@ -20,14 +44,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public PapyrusStringRef(PapyrusAssemblyDefinition assembly) : this(assembly, null, -1)
         {
         }
-
-        public PapyrusStringRef Ref(string value)
-        {
-            return new PapyrusStringRef(assembly, value);
-        }
-
-        private string value;
-        private int index;
 
         public int Index
         {
@@ -69,6 +85,11 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             }
         }
 
+        public PapyrusStringRef Ref(string value)
+        {
+            return new PapyrusStringRef(assembly, value);
+        }
+
         private PapyrusAssemblyDefinition GetAssemblyDefinition()
         {
             //var threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
@@ -81,9 +102,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             return Value + " [" + Index + "]";
         }
 
-        public static explicit operator string (PapyrusStringRef r)
+        public static explicit operator string(PapyrusStringRef r)
         {
             return r.Value;
-        } 
+        }
     }
 }

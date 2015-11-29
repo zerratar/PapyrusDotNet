@@ -1,10 +1,29 @@
-﻿using System;
+﻿//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
+#region
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Mono.Collections.Generic;
+
+#endregion
 
 namespace PapyrusDotNet.Common.Extensions
 {
@@ -14,10 +33,12 @@ namespace PapyrusDotNet.Common.Extensions
         {
             return collection.Any(predicate);
         }
+
         public static bool Contains<T>(this IEnumerable<T> collection, Func<T, bool> predicate)
         {
             return collection.Any(predicate);
         }
+
         public static void EnsureAdd<T>(this List<T> collection, T value)
         {
             if (collection == null) throw new NullReferenceException();
@@ -40,6 +61,7 @@ namespace PapyrusDotNet.Common.Extensions
                 a(c);
             }
         }
+
         public static void ForEach(this IEnumerable collection, Action<object> a)
         {
             if (a == null) return;

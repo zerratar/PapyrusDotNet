@@ -1,5 +1,3 @@
-#region License
-
 //     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
@@ -17,14 +15,23 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
+#region
 
 using System.Collections.Generic;
+
+#endregion
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusTypeDebugInfo
     {
+        public PapyrusTypeDebugInfo()
+        {
+            MethodDescriptions = new List<PapyrusMethodDecription>();
+            PropertyDescriptions = new List<PapyrusStatePropertyDescriptions>();
+            StructDescriptions = new List<PapyrusStructDescription>();
+        }
+
         public bool HasMethodDescriptions => MethodDescriptions != null && MethodDescriptions.Count > 0;
         public List<PapyrusMethodDecription> MethodDescriptions { get; set; }
         public bool HasPropertyDescriptions => PropertyDescriptions != null && PropertyDescriptions.Count > 0;
@@ -32,12 +39,5 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public bool HasStructDescriptions => StructDescriptions != null && StructDescriptions.Count > 0;
         public List<PapyrusStructDescription> StructDescriptions { get; set; }
         public long DebugTime { get; set; }
-
-        public PapyrusTypeDebugInfo()
-        {
-            MethodDescriptions = new List<PapyrusMethodDecription>();
-            PropertyDescriptions = new List<PapyrusStatePropertyDescriptions>();
-            StructDescriptions = new List<PapyrusStructDescription>();
-        }
     }
 }

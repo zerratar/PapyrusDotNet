@@ -1,6 +1,4 @@
-﻿#region License
-
-//     This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -17,72 +15,25 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#endregion
+#region
 
 using System;
+
+#endregion
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
     public class PapyrusSourceHeader
     {
         /// <summary>
-        /// The source
+        ///     Initializes a new instance of the <see cref="PapyrusSourceHeader" /> class.
         /// </summary>
-        public string Source { get; set; }
-        /// <summary>
-        /// The modify time
-        /// </summary>
-        public long ModifyTime { get; set; }
-        /// <summary>
-        /// The compile time
-        /// </summary>
-        public long CompileTime { get; set; }
-        /// <summary>
-        /// The user
-        /// </summary>
-        public string User { get; set; }
-        /// <summary>
-        /// The computer
-        /// </summary>
-        public string Computer { get; set; }
-        /// <summary>
-        /// The major version
-        /// </summary>
-        public byte MajorVersion { get; set; }
-        /// <summary>
-        /// The minor version
-        /// </summary>
-        public byte MinorVersion { get; set; }
-        /// <summary>
-        /// Gets or sets the version.
-        /// </summary>
-        /// <value>
-        /// The version.
-        /// </value>
-        public Version Version
+        public PapyrusSourceHeader()
         {
-            get
-            {
-                return new Version(MajorVersion, MinorVersion);
-            }
-            set
-            {
-                if (value == null) return;
-                MajorVersion = (byte)value.Major;
-                MinorVersion = (byte)value.Minor;
-            }
         }
 
         /// <summary>
-        /// The game identifier
-        /// </summary>
-        public short GameId { get; set; }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PapyrusSourceHeader"/> class.
-        /// </summary>
-        public PapyrusSourceHeader() { }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PapyrusSourceHeader"/> struct.
+        ///     Initializes a new instance of the <see cref="PapyrusSourceHeader" /> struct.
         /// </summary>
         /// <param name="majorVersion">The major version.</param>
         /// <param name="minorVersion">The minor version.</param>
@@ -102,5 +53,62 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             User = user;
             Computer = computer;
         }
+
+        /// <summary>
+        ///     The source
+        /// </summary>
+        public string Source { get; set; }
+
+        /// <summary>
+        ///     The modify time
+        /// </summary>
+        public long ModifyTime { get; set; }
+
+        /// <summary>
+        ///     The compile time
+        /// </summary>
+        public long CompileTime { get; set; }
+
+        /// <summary>
+        ///     The user
+        /// </summary>
+        public string User { get; set; }
+
+        /// <summary>
+        ///     The computer
+        /// </summary>
+        public string Computer { get; set; }
+
+        /// <summary>
+        ///     The major version
+        /// </summary>
+        public byte MajorVersion { get; set; }
+
+        /// <summary>
+        ///     The minor version
+        /// </summary>
+        public byte MinorVersion { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the version.
+        /// </summary>
+        /// <value>
+        ///     The version.
+        /// </value>
+        public Version Version
+        {
+            get { return new Version(MajorVersion, MinorVersion); }
+            set
+            {
+                if (value == null) return;
+                MajorVersion = (byte) value.Major;
+                MinorVersion = (byte) value.Minor;
+            }
+        }
+
+        /// <summary>
+        ///     The game identifier
+        /// </summary>
+        public short GameId { get; set; }
     }
 }

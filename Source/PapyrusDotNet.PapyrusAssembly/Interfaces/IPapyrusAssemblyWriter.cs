@@ -1,6 +1,4 @@
-﻿#region License
-
-//     This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -16,8 +14,6 @@
 //     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
-
-#endregion
 
 namespace PapyrusDotNet.PapyrusAssembly.Interfaces
 {
