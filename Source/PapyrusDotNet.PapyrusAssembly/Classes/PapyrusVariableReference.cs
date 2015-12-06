@@ -23,10 +23,27 @@ using PapyrusDotNet.PapyrusAssembly.Enums;
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
-    public class PapyrusValueReference
+    public class PapyrusVariableReference
     {
         public PapyrusStringRef Name { get; set; }
+        public PapyrusStringRef TypeName { get; set; }
         public object Value { get; set; }
         public PapyrusPrimitiveType ValueType { get; set; }
+
+        public PapyrusVariableReference()
+        {
+        }
+
+        public PapyrusVariableReference(PapyrusStringRef name, PapyrusPrimitiveType type)
+        {
+            ValueType = type;
+            Name = name;
+        }
+
+        public PapyrusVariableReference(PapyrusStringRef name, PapyrusStringRef variableTypeName)
+        {
+            Name = name;
+            TypeName = variableTypeName;
+        }
     }
 }

@@ -226,7 +226,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             foreach (var field in type.Fields)
             {
-                var fieldType = field.FieldValue;
+                var fieldType = field.FieldVariable;
                 var typeName = fieldType.Name;
                 var typeRef = ResolveTypeReference(null, typeName);
 

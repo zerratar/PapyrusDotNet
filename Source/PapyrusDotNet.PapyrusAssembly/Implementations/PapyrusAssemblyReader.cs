@@ -20,6 +20,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Security.Policy;
 using PapyrusDotNet.PapyrusAssembly.Classes;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
@@ -151,7 +153,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 dbgfunc.DeclaringTypeName = pexReader.ReadStringRef();
                 dbgfunc.StateName = pexReader.ReadStringRef();
                 dbgfunc.Name = pexReader.ReadStringRef();
-                dbgfunc.MethodType = (PapyrusMethodTypes) pexReader.ReadByte();
+                dbgfunc.MethodType = (PapyrusMethodTypes)pexReader.ReadByte();
                 dbgfunc.BodyLineNumbers = new List<short>();
                 var lineNumberCount = pexReader.ReadInt16();
                 for (var j = 0; j < lineNumberCount; j++)
@@ -297,6 +299,21 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 }
                 typeDef.States.Add(state);
             }
+
+            UpdateOperands(typeDef.States);
+        }
+
+        private void UpdateOperands(Collection<PapyrusStateDefinition> states)
+        {
+            // Sets the operand to its proper target
+
+            var allMethods = states
+                .SelectMany(s => s.Methods).ToList();
+            foreach (var m in allMethods
+                    .Where(m => m.HasBody))
+            {
+                m.Body.Instructions.ForEach(inst => UpdateOperand(inst, m.Body.Instructions, allMethods));
+            }
         }
 
         private void ReadProperties(PapyrusAssemblyDefinition asm, PapyrusTypeDefinition typeDef)
@@ -363,7 +380,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var instructionCount = pexReader.ReadInt16();
             for (var i = 0; i < instructionCount; i++)
             {
-                method.Body.Instructions.Add(ReadInstruction(asm));
+                var instruction = ReadInstruction(asm);
+                instruction.Offset = i;
+                method.Body.Instructions.Add(instruction);
             }
 
             for (var i = 0; i < instructionCount; i++)
@@ -382,18 +401,70 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     next.Previous = instruction;
                 }
             }
+
+            var last = method.Body.Instructions.LastOrDefault();
+            if (last != null)
+            {
+                if (last.OpCode != PapyrusOpCode.Return)
+                {
+                    var ret = new PapyrusInstruction()
+                    {
+                        OpCode = PapyrusOpCode.Return,
+                        Previous = last,
+                        Offset = last.Offset + 1,
+                        TemporarilyInstruction = true,
+                        Arguments = new List<PapyrusVariableReference>(),
+                        OperandArguments = new List<PapyrusVariableReference>()
+                    };
+                    last.Next = ret;
+                    if (IsJump(last.OpCode))
+                    {
+                        last.Operand = ret;
+                    }
+                    method.Body.Instructions.Add(ret);
+                }
+            }
+
             return method;
+        }
+        private bool IsJump(PapyrusOpCode opCode)
+        {
+            return opCode == PapyrusOpCode.Jmp || opCode == PapyrusOpCode.Jmpf || opCode == PapyrusOpCode.Jmpt;
+        }
+        private void UpdateOperand(PapyrusInstruction instruction, List<PapyrusInstruction> instructions, IEnumerable<PapyrusMethodDefinition> allmethods)
+        {
+            var papyrusMethodDefinitions = allmethods.ToList();
+            var i = instruction;
+            if (i.OpCode == PapyrusOpCode.Jmpt || i.OpCode == PapyrusOpCode.Jmpf)
+            {
+                i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + int.Parse(i.GetArg(1)));
+            }
+            if (i.OpCode == PapyrusOpCode.Jmp)
+            {
+                i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + int.Parse(i.GetArg(0)));
+            }
+
+            if (i.OpCode == PapyrusOpCode.Callmethod)
+            {
+                i.Operand = papyrusMethodDefinitions
+                            .FirstOrDefault(m => m.Name.Value == i.GetArg(0));
+            }
+            if (i.OpCode == PapyrusOpCode.Callstatic)
+            {
+                i.Operand = papyrusMethodDefinitions
+                            .FirstOrDefault(m => m.Name.Value == i.GetArg(0));
+            }
         }
 
         private PapyrusInstruction ReadInstruction(PapyrusAssemblyDefinition asm)
         {
             var instruction = new PapyrusInstruction();
 
-            instruction.OpCode = (PapyrusOpCode) pexReader.ReadByte();
+            instruction.OpCode = (PapyrusOpCode)pexReader.ReadByte();
 
             var desc = PapyrusInstructionOpCodeDescription.FromOpCode(instruction.OpCode);
 
-            var references = new List<PapyrusValueReference>();
+            var references = new List<PapyrusVariableReference>();
             var instructionParamSize = desc.ParamSize;
             for (var p = 0; p < instructionParamSize; p++)
             {
@@ -405,10 +476,10 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 var typeRef = ReadValueReference(asm);
                 if (typeRef.ValueType == PapyrusPrimitiveType.Integer)
                 {
-                    var argCount = (int) typeRef.Value;
+                    var argCount = (int)typeRef.Value;
                     for (var i = 0; i < argCount; i++)
                     {
-                        instruction.VariableArguments.Add(ReadValueReference(asm));
+                        instruction.OperandArguments.Add(ReadValueReference(asm));
                     }
                 }
             }
@@ -417,13 +488,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             return instruction;
         }
 
-        public PapyrusVariableDefinition ReadVariable(PapyrusAssemblyDefinition asm)
+        public PapyrusVariableReference ReadVariable(PapyrusAssemblyDefinition asm)
         {
-            return new PapyrusVariableDefinition
-            {
-                Name = pexReader.ReadStringRef(),
-                TypeName = pexReader.ReadStringRef()
-            };
+            return new PapyrusVariableReference(pexReader.ReadStringRef(), pexReader.ReadStringRef());
         }
 
         public PapyrusParameterDefinition ReadParameter(PapyrusAssemblyDefinition asm)
@@ -475,17 +542,17 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             fd.UserFlags = pexReader.ReadInt32();
             {
                 // Type Reference
-                fd.FieldValue = ReadValueReference(asm, fd.TypeName);
+                fd.FieldVariable = ReadValueReference(asm, fd.TypeName);
             }
             fd.IsConst = pexReader.ReadByte() == 1;
             return fd;
         }
 
-        private PapyrusValueReference ReadValueReference(PapyrusAssemblyDefinition asm, string name = null)
+        private PapyrusVariableReference ReadValueReference(PapyrusAssemblyDefinition asm, string name = null)
         {
-            var tr = new PapyrusValueReference();
-            tr.Name = new PapyrusStringRef(asm, name);
-            tr.ValueType = (PapyrusPrimitiveType) pexReader.ReadByte();
+            var tr = new PapyrusVariableReference(new PapyrusStringRef(asm, name),
+                (PapyrusPrimitiveType)pexReader.ReadByte());
+
             switch (tr.ValueType)
             {
                 case PapyrusPrimitiveType.Reference:

@@ -32,12 +32,19 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         {
             this.method = method;
             Instructions = new List<PapyrusInstruction>();
-            Variables = new List<PapyrusVariableDefinition>();
+            Variables = new List<PapyrusVariableReference>();
+            Fields = new List<PapyrusVariableReference>();
+            TempVariables = new List<PapyrusVariableReference>();
         }
 
         public bool HasVariables => Variables.Any();
         public bool IsEmpty => !Instructions.Any();
-        public List<PapyrusVariableDefinition> Variables { get; set; }
+
+        public List<PapyrusVariableReference> Variables { get; set; }
+
+        public List<PapyrusVariableReference> Fields { get; set; }
+
+        public List<PapyrusVariableReference> TempVariables { get; set; }
 
         public List<PapyrusInstruction> Instructions { get; set; }
 

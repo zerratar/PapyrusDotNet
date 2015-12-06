@@ -102,8 +102,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             return Value + " [" + Index + "]";
         }
 
-        public static explicit operator string(PapyrusStringRef r)
+        public static explicit operator string (PapyrusStringRef r)
         {
+            if (r == null) return null;
             return r.Value;
         }
     }

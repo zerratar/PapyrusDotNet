@@ -21,6 +21,8 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
+using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
+using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Classes;
 
 #endregion
@@ -32,11 +34,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// <summary>
         ///     Processes the instructions.
         /// </summary>
+        /// <param name="papyrusAssembly"></param>
+        /// <param name="papyrusType"></param>
+        /// <param name="papyrusMethod"></param>
         /// <param name="method">The method.</param>
         /// <param name="body">The body.</param>
         /// <param name="instructions">The instructions.</param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        IEnumerable<PapyrusInstruction> ProcessInstructions(MethodDefinition method, MethodBody body,
-            Collection<Instruction> instructions);
+        IEnumerable<PapyrusInstruction> ProcessInstructions(PapyrusAssemblyDefinition papyrusAssembly, PapyrusTypeDefinition papyrusType, PapyrusMethodDefinition papyrusMethod, MethodDefinition method, MethodBody body,
+            Collection<Instruction> instructions, PapyrusCompilerOptions options);
     }
 }

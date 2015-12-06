@@ -23,7 +23,7 @@ using System.Collections.ObjectModel;
 
 namespace PapyrusDotNet.PapyrusAssembly.Classes
 {
-    public class PapyrusTypeDefinition : PapyrusValueReference
+    public class PapyrusTypeDefinition : PapyrusVariableReference
     {
         private readonly PapyrusAssemblyDefinition assembly;
 

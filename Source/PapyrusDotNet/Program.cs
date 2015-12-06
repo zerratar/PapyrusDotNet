@@ -24,6 +24,7 @@ using System.Linq;
 using Mono.Cecil;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Clr2Papyrus;
+using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
 using PapyrusDotNet.Converters.Papyrus2Clr;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
@@ -59,15 +60,11 @@ namespace PapyrusDotNet
 
         private static void Main(string[] args)
         {
-            Console.Clear();
+            // Console.Clear();
             Console.WriteLine("PapyrusDotNet v0.2");
 
             IAssemblyConverter converter;
             IAssemblyInput inputData;
-
-            var clr2Papyrus = true;
-            var output = "";
-            var input = "";
 
             if (args.Length < 2)
             {
@@ -76,25 +73,19 @@ namespace PapyrusDotNet
                 return;
             }
 
-            input = args[0];
-            output = args[1];
-
-            if (args.Length >= 3)
-            {
-                clr2Papyrus = args[2].ToLower() != "-clr";
-            }
+            var clr2Papyrus = !args.Contains("-clr");
+            var input = args[0];
+            var output = args[1];
 
             if (clr2Papyrus)
             {
-                var targetVersion = PapyrusVersionTargets.Fallout4;
-                if (args.Length >= 4)
-                {
-                    targetVersion = args[3].ToLower() == "-fo4"
-                        ? PapyrusVersionTargets.Fallout4
-                        : PapyrusVersionTargets.Skyrim;
-                }
+                var targetVersion = args.Contains("-skyrim") ? PapyrusVersionTargets.Skyrim
+                        : PapyrusVersionTargets.Fallout4;
 
-                converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor());
+                var compilerOptions = !args.Contains("-easy") ? PapyrusCompilerOptions.Strict
+                    : PapyrusCompilerOptions.Easy;
+
+                converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), compilerOptions);
                 inputData = new ClrAssemblyInput(AssemblyDefinition.ReadAssembly(input), targetVersion);
             }
             else
@@ -115,6 +106,8 @@ namespace PapyrusDotNet
 
             if (outputData != null)
             {
+                outputData.Save(output);
+                
                 // Do something...
             }
 
@@ -124,13 +117,14 @@ namespace PapyrusDotNet
         private static void PrintHelp()
         {
             Console.WriteLine(
-                "Usage: PapyrusDotNet.exe <input> <output> [option] [<target papyrus version (-fo4 | -skyrim)>]");
+                "Usage: PapyrusDotNet.exe <input> <output> [option] [<target papyrus version (-fo4 | -skyrim)>] [<compiler settings (-strict|-easy)>]");
             Console.WriteLine("Options:");
             Console.WriteLine(
                 "\t-papyrus :: [Default] Converts a .NET .dll into .pex files. Each class will be a separate .pex file.");
             Console.WriteLine("\t\t<input> :: file (.dll)");
             Console.WriteLine("\t\t<output> :: folder");
             Console.WriteLine("\t\t<target version> :: [Fallout 4 is default] -fo4 or -skyrim");
+            Console.WriteLine("\t\t<compiler options> :: [Strict is default] -strict or -easy determines how the compiler will react on features known to not work in papyrus. -strict will throw a build exception while -easy may let it slide and just remove the usage but may cause problems with the final script.");
             Console.WriteLine(
                 "\t-clr :: Converts a .pex or folder containg .pex files into a .NET library usable when modding.");
             Console.WriteLine("\t\t<input> :: .pex file or folder");

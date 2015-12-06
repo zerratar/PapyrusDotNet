@@ -35,6 +35,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public PapyrusFieldDefinition(PapyrusAssemblyDefinition assembly, string name, string typeName)
             : this(assembly)
         {
+            name = "::" + name.Replace('<', '_').Replace('>', '_');
             Name = name.Ref(assembly);
             TypeName = typeName;
         }
@@ -43,7 +44,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public int UserFlags { get; set; }
         public PapyrusTypeDefinition DeclaringType { get; set; }
         public string Documentation { get; set; }
-        internal string TypeName { get; set; }
+        public string TypeName { get; set; }
         public bool IsConst { get; set; }
     }
 }

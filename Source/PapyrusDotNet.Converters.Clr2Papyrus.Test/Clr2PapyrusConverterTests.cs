@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
+using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
 using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Classes;
@@ -56,7 +57,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Test
         [TestMethod]
         public void Clr2PapyrusConverter_Convert()
         {
-            var papyrusCompiler = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor());
+            var papyrusCompiler = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), PapyrusCompilerOptions.Strict);
             var value = papyrusCompiler.Convert(new ClrAssemblyInput(
                 AssemblyDefinition.ReadAssembly(
                     @"D:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\Fallout4Example.dll"),

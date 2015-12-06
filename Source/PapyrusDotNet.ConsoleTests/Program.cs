@@ -21,8 +21,12 @@ using System;
 using System.IO;
 using Mono.Cecil;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using PapyrusDotNet.Converters.Clr2Papyrus;
+using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
+using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
+using PapyrusDotNet.Converters.Papyrus2CSharp;
 using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Enums;
 
@@ -34,16 +38,68 @@ namespace PapyrusDotNet.ConsoleTests
     {
         private static void Main(string[] args)
         {
-            var converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor());
+            var converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), PapyrusCompilerOptions.Strict);
             var value = converter.Convert(
                 new ClrAssemblyInput(
                     AssemblyDefinition.ReadAssembly(
                         @"D:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
                     PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
 
+            JsonConvert.DefaultSettings = (() =>
+            {
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
+                return settings;
+            });
+
             var val = JsonConvert.SerializeObject(value.Assemblies, Formatting.Indented);
 
             var dummy = val;
+
+
+
+            var folder = @"D:\Spel\Fallout 4 Scripts\scripts\";
+            var pexFile1 = folder + @"companionaffinityeventquestscript.pex";
+            var pexFile2 = folder + @"BobbleheadStandContainerScript.pex";
+            var pexFile3 = folder + @"mq203script.pex";
+
+            var pexAssemblies = new[]
+            {
+                PapyrusAssemblyDefinition.ReadAssembly(pexFile1),
+                PapyrusAssemblyDefinition.ReadAssembly(pexFile2),
+                PapyrusAssemblyDefinition.ReadAssembly(pexFile3)
+            };
+
+            var pexFile2Size = new FileInfo(pexFile2).Length;
+
+            pexAssemblies[1].Write(pexFile2 + ".new");
+
+            var pexFile2SizeAfter = new FileInfo(pexFile2 + ".new").Length;
+
+            //if (pexFile2Size == pexFile2SizeAfter)
+            //{
+
+            //}
+            //else
+            //{
+            //    throw new Exception("ERROR ERROR! FILE SIZE MISMATCH!");
+            //}
+
+            var clrNamespaceResolver = new ClrNamespaceResolver();
+            var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
+                new ClrTypeReferenceResolver(clrNamespaceResolver, new ClrTypeNameResolver()));
+
+
+            var output = csharpConverter.Convert(new PapyrusAssemblyInput(pexAssemblies)) as MultiCSharpOutput;
+
+            var targetOutputFolder = "c:\\PapyrusDotNet\\Output";
+            if (!Directory.Exists(targetOutputFolder))
+            {
+                Directory.CreateDirectory(targetOutputFolder);
+            }
+
+            output.Save(targetOutputFolder);
+            value.Save(targetOutputFolder);
 
             //var sourceScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
             //var destinationScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex_new";

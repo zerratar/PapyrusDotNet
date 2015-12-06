@@ -30,6 +30,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public PapyrusStringRef Name { get; set; }
         public PapyrusStringRef StateName { get; set; }
         public PapyrusStringRef DeclaringTypeName { get; set; }
-        public List<short> BodyLineNumbers { get; set; }
+        public List<short> BodyLineNumbers { get; set; } = new List<short>();
     }
 }

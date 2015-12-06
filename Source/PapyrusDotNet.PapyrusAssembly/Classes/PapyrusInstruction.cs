@@ -28,15 +28,69 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
     {
         public PapyrusInstruction()
         {
-            Arguments = new List<PapyrusValueReference>();
-            VariableArguments = new List<PapyrusValueReference>();
+            Arguments = new List<PapyrusVariableReference>();
+            OperandArguments = new List<PapyrusVariableReference>();
         }
 
         public int Offset { get; set; }
         public PapyrusOpCode OpCode { get; set; }
-        public List<PapyrusValueReference> Arguments { get; set; }
+        public List<PapyrusVariableReference> Arguments { get; set; }
         public PapyrusInstruction Previous { get; set; }
         public PapyrusInstruction Next { get; set; }
-        public List<PapyrusValueReference> VariableArguments { get; set; }
+        public List<PapyrusVariableReference> OperandArguments { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instruction is temporarily added or not.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instruction should be omitted from being written to the output assembly; otherwise, <c>false</c>.
+        /// </value>
+        internal bool TemporarilyInstruction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the instruction operand, not necessary when writing but will be available when reading a papyrus assembly.
+        /// hence optional.
+        /// </summary>
+        public object Operand { get; set; }
+
+        public string GetArg(int index)
+        {
+            var arg = Arguments[index];
+            if (arg == null) return null;
+            switch (arg.ValueType)
+            {
+                case PapyrusPrimitiveType.Reference:
+                    return arg.Value?.ToString();
+                case PapyrusPrimitiveType.String:
+                    return "\"" + arg.Value + "\"";
+                case PapyrusPrimitiveType.Boolean:
+                    {
+                        if (arg.Value != null)
+                        {
+                            return arg.Value.Equals(1) ? "true" : "false";
+                        }
+                    }
+                    break;
+                case PapyrusPrimitiveType.Integer:
+                    if (arg.Value != null)
+                    {
+                        return ((int)arg.Value).ToString();
+                    }
+                    break;
+                case PapyrusPrimitiveType.Float:
+                    if (arg.Value != null)
+                    {
+                        return ((float)arg.Value).ToString().Replace(",", ".") + "f";
+                    }
+                    break;
+            }
+
+            if (arg.Name != null)
+            {
+                return (string)arg.Name;
+            }
+            return null;
+        }
+
     }
 }

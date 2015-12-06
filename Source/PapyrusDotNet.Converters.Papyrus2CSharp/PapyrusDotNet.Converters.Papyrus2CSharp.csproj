@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BD15920E-26D2-49EC-AD79-EB565858A6AA}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{0F72BF82-253B-4588-9029-7C091C104118}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PapyrusDotNet.ConsoleTests</RootNamespace>
-    <AssemblyName>PapyrusDotNet.ConsoleTests</AssemblyName>
+    <RootNamespace>PapyrusDotNet.Converters.Papyrus2CSharp</RootNamespace>
+    <AssemblyName>PapyrusDotNet.Converters.Papyrus2CSharp</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,15 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Binaries\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -52,25 +40,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="FlowAnalyzer\PapyrusControlFlowEdge.cs" />
+    <Compile Include="FlowAnalyzer\PapyrusControlFlowGraph.cs" />
+    <Compile Include="FlowAnalyzer\PapyrusControlFlowGraphBuilder.cs" />
+    <Compile Include="FlowAnalyzer\PapyrusControlFlowNode.cs" />
+    <Compile Include="FlowAnalyzer\PapyrusControlFlowNodeType.cs" />
+    <Compile Include="Papyrus2CSharpConverter.cs" />
+    <Compile Include="CSharpOutput.cs" />
+    <Compile Include="Papyrus2CSharpConverterBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PapyrusDotNet.Clr2Papyrus\PapyrusDotNet.Converters.Clr2Papyrus.csproj">
-      <Project>{8547F068-C90E-4245-A9F8-20A98797E92B}</Project>
-      <Name>PapyrusDotNet.Converters.Clr2Papyrus</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
       <Project>{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}</Project>
       <Name>PapyrusDotNet.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PapyrusDotNet.Converters.Papyrus2CSharp\PapyrusDotNet.Converters.Papyrus2CSharp.csproj">
-      <Project>{0F72BF82-253B-4588-9029-7C091C104118}</Project>
-      <Name>PapyrusDotNet.Converters.Papyrus2CSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\PapyrusDotNet.Papyrus2Clr\PapyrusDotNet.Converters.Papyrus2Clr.csproj">
       <Project>{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}</Project>

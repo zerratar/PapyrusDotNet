@@ -29,11 +29,19 @@ namespace Fallout4Example
 
         public bool HelloThere { get; set; }
 
+        public int Return0() => 0;
+
+        public int Return1() => 1;
+
+        public int Return10() => 10;
+
         public override void OnInit()
         {
             Debug.MessageBox("Hello");
+            
+            var stringMessage = "asd";
 
-            base.OnInit();
+            Debug.MessageBox(stringMessage);
         }
     }
 }

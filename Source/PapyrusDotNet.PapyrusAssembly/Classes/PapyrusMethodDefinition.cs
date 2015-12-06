@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 #endregion
 
@@ -49,7 +50,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 
         public bool IsGlobal
         {
-            get { return (Flags & (byte) PapyrusMethodFlags.Global) > 0; }
+            get { return (Flags & (byte)PapyrusMethodFlags.Global) > 0; }
             set
             {
                 if (value)
@@ -65,7 +66,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 
         public bool IsNative
         {
-            get { return (Flags & (byte) PapyrusMethodFlags.Native) > 0; }
+            get { return (Flags & (byte)PapyrusMethodFlags.Native) > 0; }
             set
             {
                 if (value)
@@ -83,12 +84,17 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 
         public void SetFlags(PapyrusMethodFlags flags)
         {
-            Flags = (byte) flags;
+            Flags = (byte)flags;
         }
 
         public PapyrusMethodFlags GetFlags()
         {
-            return (PapyrusMethodFlags) Flags;
+            return (PapyrusMethodFlags)Flags;
+        }
+
+        public List<PapyrusVariableReference> GetVariables()
+        {
+            return Body.Variables.ToList(); // We only want a readonly list
         }
     }
 
