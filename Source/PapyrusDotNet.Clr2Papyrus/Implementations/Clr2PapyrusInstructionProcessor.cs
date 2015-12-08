@@ -108,85 +108,23 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (InstructionHelper.IsStore(code))
             {
-                var allVariables = papyrusMethod.GetVariables();
-                if (InstructionHelper.IsStoreLocalVariable(instruction.OpCode.Code) ||
-                InstructionHelper.IsStoreField(instruction.OpCode.Code))
-                {
-                    if (instruction.Operand is FieldReference)
-                    {
-                        var fref = instruction.Operand as FieldReference;
-                        // if the evaluationStack.Count == 0
-                        // The previous instruction might have been a call that returned a value
-                        // Something we did not store...
-                        if (evaluationStack.Count > 0)
-                        {
-                            var obj = evaluationStack.Pop();
-
-                            var definedField =
-                                papyrusType.Fields.FirstOrDefault(
-                                    f => f.Name.Value == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
-                            if (definedField != null)
-                            {
-                                if (obj.Value is PapyrusParameterDefinition)
-                                {
-                                    var varRef = obj.Value as PapyrusParameterDefinition;
-                                    // definedField.FieldVariable = varRef.;
-                                    return new[]
-                                    {
-                                        // CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField.Name.Value, varRef.Name.Value)
-                                        CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField, varRef.Name.Value)
-                                    }; // "Assign " + definedField.Name + " " + varRef.Name;
-                                }
-                                if (obj.Value is PapyrusVariableReference)
-                                {
-                                    var varRef = obj.Value as PapyrusVariableReference;
-                                    // definedField.Value = varRef.Value;
-                                    definedField.FieldVariable = varRef;
-                                    return new[]
-                                    {
-                                        // CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField.Name.Value, varRef.Name.Value)
-                                        CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField, varRef)
-                                    }; // "Assign " + definedField.Name + " " + varRef.Name;
-                                }
-                                definedField.FieldVariable.Value = Utility.TypeValueConvert(definedField.FieldVariable.TypeName.Value, obj.Value);
-                                return new[] {
-                                    CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField, definedField.FieldVariable.Value)
-                                };
-
-                                // "Assign " + definedField.Name + " " + definedField.Value;
-                            }
-                        }
-                    }
-                    var index = GetNumericValue(instruction);
-                    if (index < allVariables.Count)
-                    {
-                        if (evaluationStack.Count > 0)
-                        {
-                            var heapObj = evaluationStack.Pop();
-                            if (heapObj.Value is PapyrusVariableReference)
-                            {
-                                var varRef = heapObj.Value as PapyrusVariableReference;
-                                allVariables[(int)index].Value = varRef.Value;
-                                // "Assign " + allVariables[(int)index].Name.Value + " " + varRef.Name.Value;
-                                return new[] {
-                                    CreatePapyrusInstruction(PapyrusOpCode.Assign, allVariables[(int)index].Name.Value, varRef.Name.Value)
-                                };
-                            }
-
-                            allVariables[(int)index].Value =
-                                Utility.TypeValueConvert(allVariables[(int)index].TypeName.Value, heapObj.Value);
-                        }
-                        var valout = allVariables[(int)index].Value;
-                        var valoutStr = valout + "";
-                        if (string.IsNullOrEmpty(valoutStr)) valoutStr = "None";
-                        // "Assign " + allVariables[(int)index].Name.Value + " " + valoutStr;
-                        return new[] {
-                                    CreatePapyrusInstruction(PapyrusOpCode.Assign, allVariables[(int)index].Name.Value, valoutStr)
-                                };
-                    }
-                }
+                var instructions = ParseStoreInstruction(instruction);
+                output.AddRange(instructions);
+                return output;
             }
 
+            if (InstructionHelper.IsCallMethod(instruction.OpCode.Code))
+            {
+                var methodRef = instruction.Operand as MethodReference;
+                if (methodRef != null)
+                {
+
+                }
+                else
+                {
+                    
+                }
+            }
             if (instruction.OpCode.Code == Code.Ret)
             {
                 if (IsVoid(targetMethod.ReturnType))
@@ -204,7 +142,33 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                         var variable = topValue.Value as VariableReference;
                         // return "Return " + variable.Name;
                         return new List<PapyrusInstruction>(new[] {
-                            PapyrusReturnVariable(variable.Name)
+                            CreatePapyrusInstruction(PapyrusOpCode.Return, variable) // PapyrusReturnVariable(variable.Name)
+                        });
+                    }
+                    else if (topValue.Value is PapyrusFieldDefinition)
+                    {
+                        var variable = topValue.Value as PapyrusFieldDefinition;
+                        // return "Return " + variable.Name;
+                        return new List<PapyrusInstruction>(new[] {
+                            CreatePapyrusInstruction(PapyrusOpCode.Return, variable)
+                        });
+                    }
+                    else if (IsConstantValue(topValue.Value))
+                    {
+                        var val = topValue.Value;
+
+                        var typeName = topValue.TypeName;
+                        var newValue = Utility.TypeValueConvert(typeName, val);
+                        var papyrusVariableReference = new PapyrusVariableReference
+                        {
+                            TypeName = typeName.Ref(papyrusAssembly),
+                            Value = newValue,
+                            ValueType = Utility.GetPapyrusValueType(typeName)
+                        };
+                        return new List<PapyrusInstruction>(new[] {
+                            CreatePapyrusInstruction(PapyrusOpCode.Return,
+                            papyrusVariableReference
+                            )
                         });
                     }
                 }
@@ -218,6 +182,110 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return output;
         }
 
+        private IEnumerable<PapyrusInstruction> ParseStoreInstruction(Instruction instruction)
+        {
+            var allVariables = papyrusMethod.GetVariables();
+            var isStoreLocalVariable = InstructionHelper.IsStoreLocalVariable(instruction.OpCode.Code);
+            var isStoreField = InstructionHelper.IsStoreField(instruction.OpCode.Code);
+            if (isStoreLocalVariable || isStoreField)
+            {
+                if (instruction.Operand is FieldReference)
+                {
+                    var fref = instruction.Operand as FieldReference;
+                    // if the evaluationStack.Count == 0
+                    // The previous instruction might have been a call that returned a value
+                    // Something we did not store...
+                    if (evaluationStack.Count > 0)
+                    {
+                        var obj = evaluationStack.Pop();
+
+                        var definedField =
+                            papyrusType.Fields.FirstOrDefault(
+                                f => f.Name.Value == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+                        if (definedField != null)
+                        {
+                            if (obj.Value is PapyrusParameterDefinition)
+                            {
+                                var varRef = obj.Value as PapyrusParameterDefinition;
+                                // definedField.FieldVariable = varRef.;
+                                {
+                                    return new[]
+                                    {
+                                        // CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField.Name.Value, varRef.Name.Value)
+                                        CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField, varRef)
+                                    };
+                                }
+                            }
+                            if (obj.Value is PapyrusVariableReference)
+                            {
+                                var varRef = obj.Value as PapyrusVariableReference;
+                                // definedField.Value = varRef.Value;
+                                definedField.FieldVariable = varRef;
+                                {
+                                    return new[]
+                                    {
+                                        // CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField.Name.Value, varRef.Name.Value)
+                                        CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField, varRef)
+                                    };
+                                }
+                            }
+                            definedField.FieldVariable.Value =
+                                Utility.TypeValueConvert(definedField.FieldVariable.TypeName.Value, obj.Value);
+                            {
+                                return new[]
+                                {
+                                    CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField,
+                                        definedField.FieldVariable.Value)
+                                };
+                            }
+
+                            // "Assign " + definedField.Name + " " + definedField.Value;
+                        }
+                    }
+                }
+                var index = GetNumericValue(instruction);
+                if (index < allVariables.Count)
+                {
+                    if (evaluationStack.Count > 0)
+                    {
+                        var heapObj = evaluationStack.Pop();
+                        if (heapObj.Value is PapyrusVariableReference)
+                        {
+                            var varRef = heapObj.Value as PapyrusVariableReference;
+                            allVariables[(int)index].Value = varRef.Value;
+                            // "Assign " + allVariables[(int)index].Name.Value + " " + varRef.Name.Value;
+                            {
+                                return new[]
+                                {
+                                    CreatePapyrusInstruction(PapyrusOpCode.Assign, allVariables[(int) index].Name.Value,
+                                        varRef.Name.Value)
+                                };
+                            }
+                        }
+
+                        allVariables[(int)index].Value =
+                            Utility.TypeValueConvert(allVariables[(int)index].TypeName.Value, heapObj.Value);
+                    }
+                    var valout = allVariables[(int)index].Value;
+                    var valoutStr = valout + "";
+                    if (string.IsNullOrEmpty(valoutStr)) valoutStr = "None";
+                    // "Assign " + allVariables[(int)index].Name.Value + " " + valoutStr;
+                    {
+                        return new[]
+                        {
+                            CreatePapyrusInstruction(PapyrusOpCode.Assign, allVariables[(int) index], valoutStr)
+                        };
+                    }
+                }
+            }
+            return new PapyrusInstruction[0];
+        }
+
+        private bool IsConstantValue(object value)
+        {
+            return value is int || value is byte || value is short || value is long || value is double || value is float || value is string || value is bool;
+        }
+
         private PapyrusInstruction CreatePapyrusInstruction(PapyrusOpCode papyrusOpCode, params object[] values)
         {
             var args = new List<PapyrusVariableReference>();
@@ -225,6 +293,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             {
                 var varRef = val as PapyrusVariableReference;
                 var fieldDef = val as PapyrusFieldDefinition;
+                var paramDef = val as PapyrusParameterDefinition;
                 if (varRef != null)
                 {
                     args.Add(varRef);
@@ -233,16 +302,25 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 {
                     args.Add(fieldDef.FieldVariable);
                 }
+                else if (paramDef != null)
+                {
+                    args.Add(CreateVariableReferenceFromName(paramDef.Name.Value));
+                }
                 else
                 {
+                    var vars = papyrusMethod.GetVariables();
                     var varName = val as string;
                     if (varName != null)
                     {
-                        args.Add(new PapyrusVariableReference()
+                        if (vars.Any(v => v.Name.Value == varName))
                         {
-                            Name = varName.Ref(papyrusAssembly),
-                            ValueType = PapyrusPrimitiveType.Reference
-                        });
+                            args.Add(CreateVariableReferenceFromName(varName));
+                        }
+                        else
+                        {
+                            args.Add(CreateVariableReference(PapyrusPrimitiveType.String, varName.Trim(
+                                '"')));
+                        }
                     }
                     else
                     {
@@ -268,6 +346,26 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     Name = name.Ref(papyrusAssembly),
                     ValueType = PapyrusPrimitiveType.Reference
                 }})*/
+        }
+
+        private PapyrusVariableReference CreateVariableReference(PapyrusPrimitiveType papyrusPrimitiveType, object value)
+        {
+            return new PapyrusVariableReference
+            {
+                Value = value,
+                ValueType = papyrusPrimitiveType
+            };
+        }
+
+        private PapyrusVariableReference CreateVariableReferenceFromName(string varName)
+        {
+            var nameRef = varName.Ref(papyrusAssembly);
+            return new PapyrusVariableReference()
+            {
+                Name = nameRef,
+                Value = nameRef.Value,
+                ValueType = PapyrusPrimitiveType.Reference
+            };
         }
 
         private PapyrusInstruction PapyrusReturnVariable(string name)
@@ -347,6 +445,26 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 var value = Utility.GetString(instruction.Operand);
 
                 evaluationStack.Push(new EvaluationStackItem { Value = "\"" + value + "\"", TypeName = "String" });
+            }
+
+            if (InstructionHelper.IsLoadField(instruction.OpCode.Code))
+            {
+                if (instruction.Operand is FieldReference)
+                {
+                    var fref = instruction.Operand as FieldReference;
+
+                    var definedField =
+                        papyrusType.Fields.FirstOrDefault(
+                            f => f.Name.Value == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+                    if (definedField != null)
+                    {
+                        evaluationStack.Push(new EvaluationStackItem
+                        {
+                            Value = definedField,
+                            TypeName = definedField.TypeName
+                        });
+                    }
+                }
             }
         }
 

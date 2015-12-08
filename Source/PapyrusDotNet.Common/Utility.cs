@@ -27,6 +27,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using PapyrusDotNet.Common.Papyrus;
+using PapyrusDotNet.PapyrusAssembly.Enums;
 using MemberAttributes = PapyrusDotNet.Common.Papyrus.FieldAttributes;
 using VariableReference = PapyrusDotNet.Common.Papyrus.VariableReference;
 
@@ -119,7 +120,7 @@ namespace PapyrusDotNet.Common
             {
                 if (ctrArg.Value is CustomAttributeArgument)
                 {
-                    var arg = (CustomAttributeArgument) ctrArg.Value;
+                    var arg = (CustomAttributeArgument)ctrArg.Value;
                     var val = arg.Value;
 
                     return TypeValueConvert(arg.Type.Name, val).ToString();
@@ -210,7 +211,7 @@ namespace PapyrusDotNet.Common
                     {
                         if (ctrArg.Value is CustomAttributeArgument)
                         {
-                            var arg = (CustomAttributeArgument) ctrArg.Value;
+                            var arg = (CustomAttributeArgument)ctrArg.Value;
                             var val = arg.Value;
 
                             initialValue = TypeValueConvert(arg.Type.Name, val).ToString();
@@ -247,7 +248,7 @@ namespace PapyrusDotNet.Common
 
         public static string GetString(object p)
         {
-            if (p is string) return (string) p;
+            if (p is string) return (string)p;
             return "";
         }
 
@@ -355,7 +356,7 @@ namespace PapyrusDotNet.Common
             var span = value - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
 
             //return the total seconds (which is a UNIX timestamp)
-            return (int) span.TotalSeconds;
+            return (int)span.TotalSeconds;
         }
 
         public static string GetPapyrusReturnType(string type, string Namespace)
@@ -385,7 +386,7 @@ namespace PapyrusDotNet.Common
             }
             if (isArray)
             {
-                swtype = swtype.Split(new[] {"[]"}, StringSplitOptions.None)[0];
+                swtype = swtype.Split(new[] { "[]" }, StringSplitOptions.None)[0];
             }
             switch (swtype.ToLower())
             {
@@ -407,6 +408,7 @@ namespace PapyrusDotNet.Common
                 case "int32":
                 case "integer":
                 case "integer32":
+                case "int":
                     return "Int" + (isArray ? "[]" : "");
                 case "float":
                 case "float32":
@@ -414,9 +416,11 @@ namespace PapyrusDotNet.Common
                 case "double32":
                 case "single":
                     return "Float" + (isArray ? "[]" : "");
+                case "string":
+                    return "String" + (isArray ? "[]" : "");
                 default:
                     return swExt + type;
-                // case "Bool":
+                    // case "Bool":
             }
         }
 
@@ -437,9 +441,9 @@ namespace PapyrusDotNet.Common
             if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))
             {
                 if (op is int || op is float || op is short || op is double || op is long || op is byte)
-                    return (int) double.Parse(op.ToString()) == 1;
-                if (op is bool) return (bool) op;
-                if (op is string) return (string) op == "1" || op.ToString().ToLower() == "true";
+                    return (int)double.Parse(op.ToString()) == 1;
+                if (op is bool) return (bool)op;
+                if (op is string) return (string)op == "1" || op.ToString().ToLower() == "true";
             }
             if (typeName.ToLower().StartsWith("string") || typeName.ToLower().StartsWith("system.string"))
             {
@@ -479,7 +483,7 @@ namespace PapyrusDotNet.Common
 
         public static string RemoveUnusedLabels(string output)
         {
-            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
 
             var codeBlocks = ParseCodeBlocks(rows);
 
@@ -562,7 +566,7 @@ namespace PapyrusDotNet.Common
 
         public static string RemoveUnnecessaryLabels(string output)
         {
-            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
             var labelReplacements =
                 new List<ObjectReplacementHolder<LabelDefinition, LabelDefinition, LabelReference>>();
             var codeBlocks = ParseCodeBlocks(rows);
@@ -638,7 +642,7 @@ namespace PapyrusDotNet.Common
 
         public static string InjectTempVariables(string output, int indentDepth, List<VariableReference> TempVariables)
         {
-            var rows = output.Split(new[] {Environment.NewLine}, StringSplitOptions.None).ToList();
+            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
 
             // foreach(var )
             var insertIndex = Array.IndexOf(rows.ToArray(),
@@ -742,6 +746,20 @@ namespace PapyrusDotNet.Common
                 }
             }
             return false;
+        }
+
+        public static PapyrusPrimitiveType GetPapyrusValueType(string name)
+        {
+            var s = name.ToLower();
+            if (s.StartsWith("bool"))
+                return PapyrusPrimitiveType.Boolean;
+            if (s.StartsWith("string"))
+                return PapyrusPrimitiveType.String;
+            if (s.StartsWith("float"))
+                return PapyrusPrimitiveType.Float;
+            if (s.StartsWith("int"))
+                return PapyrusPrimitiveType.Integer;
+            return PapyrusPrimitiveType.Reference;
         }
     }
 }

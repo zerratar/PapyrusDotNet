@@ -246,6 +246,21 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                 });
             }
 
+            var clrVariables = method.Body.Variables;
+
+            foreach (var clrVar in clrVariables)
+            {
+                var varName = (!string.IsNullOrEmpty(clrVar.Name)
+                    ? clrVar.Name
+                    : clrVar.ToString()).Ref(asm);
+                m.Body.Variables.Add(
+                        new PapyrusVariableReference(varName,
+                            Utility.GetPapyrusReturnType(clrVar.VariableType.FullName)
+                            .Ref(asm)
+                        )
+                    );
+            }
+
             if (method.HasBody)
             {
                 ProcessInstructions(method, asm, papyrusType, m, options);

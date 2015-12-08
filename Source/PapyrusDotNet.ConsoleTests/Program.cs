@@ -18,6 +18,7 @@
 #region
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Mono.Cecil;
 using Newtonsoft.Json;
@@ -63,18 +64,23 @@ namespace PapyrusDotNet.ConsoleTests
             var pexFile2 = folder + @"BobbleheadStandContainerScript.pex";
             var pexFile3 = folder + @"mq203script.pex";
 
-            var pexAssemblies = new[]
-            {
-                PapyrusAssemblyDefinition.ReadAssembly(pexFile1),
-                PapyrusAssemblyDefinition.ReadAssembly(pexFile2),
-                PapyrusAssemblyDefinition.ReadAssembly(pexFile3)
-            };
+            var pexAssemblies = new PapyrusAssemblyDefinition[0];
+            //{
+            //    PapyrusAssemblyDefinition.ReadAssembly(pexFile1),
+            //    PapyrusAssemblyDefinition.ReadAssembly(pexFile2),
+            //    PapyrusAssemblyDefinition.ReadAssembly(pexFile3)
+            //};
 
-            var pexFile2Size = new FileInfo(pexFile2).Length;
+            var asm = value.Assemblies;
 
-            pexAssemblies[1].Write(pexFile2 + ".new");
+            var defs = new List<PapyrusAssemblyDefinition>(pexAssemblies);
+            defs.AddRange(asm);
 
-            var pexFile2SizeAfter = new FileInfo(pexFile2 + ".new").Length;
+            //var pexFile2Size = new FileInfo(pexFile2).Length;
+
+            //pexAssemblies[1].Write(pexFile2 + ".new");
+
+            //var pexFile2SizeAfter = new FileInfo(pexFile2 + ".new").Length;
 
             //if (pexFile2Size == pexFile2SizeAfter)
             //{
@@ -90,7 +96,7 @@ namespace PapyrusDotNet.ConsoleTests
                 new ClrTypeReferenceResolver(clrNamespaceResolver, new ClrTypeNameResolver()));
 
 
-            var output = csharpConverter.Convert(new PapyrusAssemblyInput(pexAssemblies)) as MultiCSharpOutput;
+            var output = csharpConverter.Convert(new PapyrusAssemblyInput(defs.ToArray())) as MultiCSharpOutput;
 
             var targetOutputFolder = "c:\\PapyrusDotNet\\Output";
             if (!Directory.Exists(targetOutputFolder))
@@ -100,6 +106,8 @@ namespace PapyrusDotNet.ConsoleTests
 
             output.Save(targetOutputFolder);
             value.Save(targetOutputFolder);
+
+
 
             //var sourceScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex";
             //var destinationScript = "D:\\Spel\\Fallout 4 Scripts\\scripts\\Actor.pex_new";

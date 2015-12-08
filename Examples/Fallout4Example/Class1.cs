@@ -35,13 +35,19 @@ namespace Fallout4Example
 
         public int Return10() => 10;
 
+        public int Return100() => 100;
+
         public override void OnInit()
         {
             Debug.MessageBox("Hello");
-            
+
             var stringMessage = "asd";
 
             Debug.MessageBox(stringMessage);
+
+            var asd2 = stringMessage + "2";
+
+            Debug.MessageBox(asd2);
         }
     }
 }

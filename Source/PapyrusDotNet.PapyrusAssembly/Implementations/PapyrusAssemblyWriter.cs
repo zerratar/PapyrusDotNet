@@ -245,10 +245,10 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     pexWriter.Write((byte)fieldVariable.Value);
                     break;
                 case PapyrusPrimitiveType.Float:
-                    pexWriter.Write((float)fieldVariable.Value);
+                    pexWriter.Write((float)float.Parse(fieldVariable.Value.ToString()));
                     break;
                 case PapyrusPrimitiveType.Integer:
-                    pexWriter.Write((int)fieldVariable.Value);
+                    pexWriter.Write((int)int.Parse(fieldVariable.Value.ToString()));
                     break;
 
                 default:

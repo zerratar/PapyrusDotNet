@@ -164,7 +164,7 @@ namespace PapyrusDotNet.Common
 
         public static bool IsLoad(Code code)
         {
-            return IsLoadArgs(code) || IsLoadInteger(code) || IsLoadLocalVariable(code) || IsLoadString(code);
+            return IsLoadArgs(code) || IsLoadInteger(code) || IsLoadLocalVariable(code) || IsLoadString(code) || IsLoadField(code) || IsLoadStaticField(code);
         }
 
         public static bool IsStore(Code code)
