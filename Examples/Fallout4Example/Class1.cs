@@ -29,25 +29,32 @@ namespace Fallout4Example
 
         public bool HelloThere { get; set; }
 
-        public int Return0() => 0;
+        //public int Return0() => 0;
 
-        public int Return1() => 1;
+        //public int Return1() => 1;
 
-        public int Return10() => 10;
+        //public int Return10() => 10;
 
-        public int Return100() => 100;
+        //public int Return100() => 100;
 
+        public int testInteger1 = 0;
+        public int asda = 0;
         public override void OnInit()
         {
+            asda = 0;
+            testInteger1++;
+
             Debug.MessageBox("Hello");
 
             var stringMessage = "asd";
 
             Debug.MessageBox(stringMessage);
 
-            var asd2 = stringMessage + "2";
+            var asd2 = stringMessage + "25" + 58;
 
             Debug.MessageBox(asd2);
+
+            testInteger1 += 100;
         }
     }
 }

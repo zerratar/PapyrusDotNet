@@ -183,6 +183,11 @@ namespace PapyrusDotNet.Common
                    || code == Code.Stloc_3 || code == Code.Stloc_S;
         }
 
+        public static bool IsGreaterThanOrEqual(Code code)
+        {
+            return code == Code.Cgt || code == Code.Cgt_Un;
+        }
+
         public static bool IsGreaterThan(Code code)
         {
             return code == Code.Cgt || code == Code.Cgt_Un;

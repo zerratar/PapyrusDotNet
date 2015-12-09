@@ -21,8 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Mono.Cecil;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using PapyrusDotNet.Converters.Clr2Papyrus;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
@@ -46,50 +44,25 @@ namespace PapyrusDotNet.ConsoleTests
                         @"D:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
                     PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
 
-            JsonConvert.DefaultSettings = (() =>
-            {
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
-                return settings;
-            });
-
-            var val = JsonConvert.SerializeObject(value.Assemblies, Formatting.Indented);
-
-            var dummy = val;
-
-
-
-            var folder = @"D:\Spel\Fallout 4 Scripts\scripts\";
-            var pexFile1 = folder + @"companionaffinityeventquestscript.pex";
+            var folder = @"C:\git\PapyrusDotNet\Source\Test Scripts\Fallout 4\";
+            var pexFile1 = folder + @"AssaultronHeadModStealthScript.pex";
             var pexFile2 = folder + @"BobbleheadStandContainerScript.pex";
-            var pexFile3 = folder + @"mq203script.pex";
+            var pexFile3 = folder + @"DN035QuestScript.pex";
 
-            var pexAssemblies = new PapyrusAssemblyDefinition[0];
+            //var pexAssemblies = new PapyrusAssemblyDefinition[]
             //{
             //    PapyrusAssemblyDefinition.ReadAssembly(pexFile1),
             //    PapyrusAssemblyDefinition.ReadAssembly(pexFile2),
             //    PapyrusAssemblyDefinition.ReadAssembly(pexFile3)
             //};
 
+
+            var pexAssemblies = new PapyrusAssemblyDefinition[0];
+
             var asm = value.Assemblies;
 
             var defs = new List<PapyrusAssemblyDefinition>(pexAssemblies);
             defs.AddRange(asm);
-
-            //var pexFile2Size = new FileInfo(pexFile2).Length;
-
-            //pexAssemblies[1].Write(pexFile2 + ".new");
-
-            //var pexFile2SizeAfter = new FileInfo(pexFile2 + ".new").Length;
-
-            //if (pexFile2Size == pexFile2SizeAfter)
-            //{
-
-            //}
-            //else
-            //{
-            //    throw new Exception("ERROR ERROR! FILE SIZE MISMATCH!");
-            //}
 
             var clrNamespaceResolver = new ClrNamespaceResolver();
             var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,

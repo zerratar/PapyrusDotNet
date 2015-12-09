@@ -214,10 +214,17 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
                 var properties = Utility.GetFlagsAndProperties(field);
                 var fieldType = Utility.GetPapyrusReturnType(field.FieldType);
+                var nameRef = papyrusFriendlyName.Ref(pex);
                 var papyrusFieldDefinition = new PapyrusFieldDefinition(pex, field.Name,
                     fieldType)
                 {
-                    FieldVariable = new PapyrusVariableReference() { Name = papyrusFriendlyName.Ref(pex), TypeName = fieldType.Ref(pex) },
+                    FieldVariable = new PapyrusVariableReference()
+                    {
+                        Name = nameRef,
+                        TypeName = fieldType.Ref(pex),
+                        Value = nameRef.Value,
+                        ValueType = PapyrusPrimitiveType.Reference
+                    },
                     UserFlags = properties.UserFlagsValue
                 };
                 fields.Add(papyrusFieldDefinition);
@@ -258,12 +265,17 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                             Utility.GetPapyrusReturnType(clrVar.VariableType.FullName)
                             .Ref(asm)
                         )
+                        {
+                            Value = varName
+                        }
                     );
             }
 
             if (method.HasBody)
             {
                 ProcessInstructions(method, asm, papyrusType, m, options);
+
+                m.Body.Instructions.RecalculateOffsets();
             }
 
             return m;

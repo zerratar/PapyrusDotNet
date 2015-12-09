@@ -94,9 +94,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public void RecalculateOffsets()
         {
             // TODO: Call RecalculateOffset(); whenever the Method has been finalized.
-            for (var offset = 1; offset <= items.Count; offset++)
+            for (var offset = 0; offset < items.Count; offset++)
             {
-                items[offset - 1].Offset = offset;
+                items[offset].Offset = offset;
             }
             // TODO: Update any instructions with operand of another instruction
             // now that the instructions have new offsets, the Parameters needs to be updated.

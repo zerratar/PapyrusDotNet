@@ -1011,7 +1011,7 @@ namespace PapyrusDotNet.Old
                     // Make sure we have a temp variable if necessary
                     var concatTargetVar = GetTargetVariable(instruction, null, "Int");
 
-                    // Equiviliant Papyrus: StrCat <output> <val1> <val2>
+                    // Equiviliant Papyrus: <MathOperator> <output> <val1> <val2>
 
                     string cast;
                     var value = GetConditional(instruction, out cast);

@@ -286,7 +286,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     }
                     foreach (var var in method.GetVariables())
                     {
-                        if (var.Name.Value == "::nonevar") continue;
+                        if (var.Name.Value.ToLower() == "::nonevar") continue;
                         AppendLine((string)var.TypeName + " " + (string)var.Name + ";", 1);
                     }
 
@@ -387,7 +387,10 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         if (assignee != null)
                         {
                             assignee += " = ";
-                            assignee = assignee.Replace("::none = ", "").Replace("::nonevar = ", "");
+                            if (assignee.ToLower().Contains("::nonevar"))
+                            {
+                                assignee = string.Empty;
+                            }
                         }
                         AppendLine(assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");", 0, i);
 
@@ -406,7 +409,10 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         if (assignee != null)
                         {
                             assignee += " = ";
-                            assignee = assignee.Replace("::none = ", "").Replace("::nonevar = ", "");
+                            if (assignee.ToLower().Contains("::nonevar"))
+                            {
+                                assignee = string.Empty;
+                            }
                         }
 
                         AppendLine(assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");", 0, i);

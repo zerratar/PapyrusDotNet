@@ -17,4 +17,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Exceptions
             this.Offset = offset;
         }
     }
+
+    public class StackUnderflowException : Exception
+    {
+        public MethodDefinition Method { get; }
+        public Instruction Instruction { get; }
+        public StackUnderflowException() { }
+        public StackUnderflowException(MethodDefinition method, Instruction instruction)
+        {
+            this.Method = method;
+            this.Instruction = instruction;
+        }
+    }
 }

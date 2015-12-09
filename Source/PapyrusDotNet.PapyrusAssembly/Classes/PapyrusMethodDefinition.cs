@@ -94,7 +94,13 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 
         public List<PapyrusVariableReference> GetVariables()
         {
-            return Body.Variables.ToList(); // We only want a readonly list
+            var vars = Body.Variables;
+            var tempVars = Body.TempVariables;
+            var output = new List<PapyrusVariableReference>();
+            output.AddRange(vars);
+            output.AddRange(tempVars);
+
+            return output; // We only want a readonly list
         }
     }
 

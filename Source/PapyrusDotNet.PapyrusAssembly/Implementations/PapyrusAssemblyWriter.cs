@@ -236,7 +236,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             switch (fieldVariable.ValueType)
             {
                 case PapyrusPrimitiveType.Reference:
-                    pexWriter.Write((string)fieldVariable.Value);
+                        pexWriter.Write((string)fieldVariable.Value);
                     break;
                 case PapyrusPrimitiveType.String:
                     pexWriter.Write((string)fieldVariable.Value);
@@ -245,9 +245,11 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     pexWriter.Write((byte)fieldVariable.Value);
                     break;
                 case PapyrusPrimitiveType.Float:
-                    pexWriter.Write((float)float.Parse(fieldVariable.Value.ToString()));
+                    pexWriter.Write((float)fieldVariable.Value);
+                    //pexWriter.Write((float)float.Parse(fieldVariable.Value.ToString()));
                     break;
                 case PapyrusPrimitiveType.Integer:
+#warning TODO: The value to write should NEVER need to be parsed.
                     pexWriter.Write((int)int.Parse(fieldVariable.Value.ToString()));
                     break;
 

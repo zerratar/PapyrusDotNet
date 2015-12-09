@@ -62,7 +62,13 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
                 case PapyrusPrimitiveType.Reference:
                     return arg.Value?.ToString();
                 case PapyrusPrimitiveType.String:
-                    return "\"" + arg.Value + "\"";
+                    {
+                        if (!arg.Value.ToString().StartsWith("\""))
+                        {
+                            return "\"" + arg.Value + "\"";
+                        }
+                        return arg.Value.ToString();
+                    }
                 case PapyrusPrimitiveType.Boolean:
                     {
                         if (arg.Value != null)

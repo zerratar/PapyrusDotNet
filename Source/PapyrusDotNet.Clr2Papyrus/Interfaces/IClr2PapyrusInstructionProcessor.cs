@@ -34,15 +34,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// <summary>
         ///     Processes the instructions.
         /// </summary>
-        /// <param name="papyrusAssembly"></param>
-        /// <param name="papyrusType"></param>
-        /// <param name="papyrusMethod"></param>
+        /// <param name="targetPapyrusAssembly"></param>
+        /// <param name="targetPapyrusType"></param>
+        /// <param name="targetPapyrusMethod"></param>
         /// <param name="method">The method.</param>
         /// <param name="body">The body.</param>
         /// <param name="instructions">The instructions.</param>
         /// <param name="options"></param>
         /// <returns></returns>
-        IEnumerable<PapyrusInstruction> ProcessInstructions(PapyrusAssemblyDefinition papyrusAssembly, PapyrusTypeDefinition papyrusType, PapyrusMethodDefinition papyrusMethod, MethodDefinition method, MethodBody body,
+        IEnumerable<PapyrusInstruction> ProcessInstructions(PapyrusAssemblyDefinition targetPapyrusAssembly, PapyrusTypeDefinition targetPapyrusType, PapyrusMethodDefinition targetPapyrusMethod, MethodDefinition method, MethodBody body,
             Collection<Instruction> instructions, PapyrusCompilerOptions options);
     }
 }

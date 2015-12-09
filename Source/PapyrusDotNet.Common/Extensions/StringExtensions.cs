@@ -26,6 +26,9 @@ namespace PapyrusDotNet.Common
 {
     public static class StringExtensions
     {
+        public static string[] Split(this string input, string val) => 
+            input.Split(new[] {val}, StringSplitOptions.None);
+
         public static bool Contains(this string[] input, string val)
             => input.Select(v => v.ToLower().Trim()).Any(b => b == val);
 

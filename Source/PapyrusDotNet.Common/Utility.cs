@@ -457,6 +457,14 @@ namespace PapyrusDotNet.Common
                 }
             }
 
+            if (typeName.ToLower().StartsWith("int"))
+            {
+                if (op is int || op is float || op is short || op is double || op is long || op is byte)
+                {
+                    return int.Parse(op.ToString());
+                }
+            }
+
             return op;
         }
 
@@ -714,7 +722,6 @@ namespace PapyrusDotNet.Common
             }
         }
 
-
         public static bool IsLoadLength(Code code)
         {
             //throw new NotImplementedException();
@@ -757,7 +764,7 @@ namespace PapyrusDotNet.Common
                 return PapyrusPrimitiveType.String;
             if (s.StartsWith("float"))
                 return PapyrusPrimitiveType.Float;
-            if (s.StartsWith("int"))
+            if (s.StartsWith("int") || s.StartsWith("sbyte") || s.StartsWith("short") || s.StartsWith("long"))
                 return PapyrusPrimitiveType.Integer;
             return PapyrusPrimitiveType.Reference;
         }
