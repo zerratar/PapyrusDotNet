@@ -90,11 +90,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             return new PapyrusAssemblyOutput(papyrusAssemblies.ToArray());
         }
 
-        private void CreateType(PapyrusAssemblyDefinition pex, TypeDefinition type, PapyrusCompilerOptions options)
+        private PapyrusTypeDefinition CreateType(PapyrusAssemblyDefinition pex, TypeDefinition type, PapyrusCompilerOptions options, bool isStruct = false)
         {
-            var papyrusType = new PapyrusTypeDefinition(pex);
-            var autoState = new PapyrusStateDefinition(papyrusType);
-            autoState.Name = "".Ref(pex);
+            var papyrusType = new PapyrusTypeDefinition(pex, isStruct);
+
+
+            if (isStruct)
+            {
+                papyrusType.IsStruct = true;
+                papyrusType.IsClass = false;
+            }
 
             papyrusType.Name = type.Name.Ref(pex);
             papyrusType.AutoStateName = "".Ref(pex);
@@ -111,8 +116,27 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             // Create Fields
             CreateFields(type, pex).ForEach(papyrusType.Fields.Add);
 
-            // Create Methods
-            CreateMethods(type, papyrusType, pex, options).ForEach(autoState.Methods.Add);
+            // Create Structs
+            foreach (var nestedType in type.NestedTypes)
+            {
+                papyrusType.NestedTypes.Add(CreateStruct(nestedType, pex, options));
+            }
+            if (!isStruct)
+            {
+                var autoState = new PapyrusStateDefinition(papyrusType)
+                {
+                    Name = "".Ref(pex)
+                };
+                // Create Methods
+                CreateMethods(type, papyrusType, pex, options).ForEach(autoState.Methods.Add);
+            }
+            return papyrusType;
+        }
+
+        private PapyrusTypeDefinition CreateStruct(TypeDefinition structType,
+            PapyrusAssemblyDefinition asm, PapyrusCompilerOptions options)
+        {
+            return CreateType(asm, structType, options, true);
         }
 
         private void CreateDebugInfo(PapyrusAssemblyDefinition pex, TypeDefinition type)

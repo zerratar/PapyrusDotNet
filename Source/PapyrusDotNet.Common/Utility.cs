@@ -64,10 +64,10 @@ namespace PapyrusDotNet.Common
                 var ifo = "";
                 var ckfo = "";
 
-                if (!string.IsNullOrEmpty(installationFolder))
+                if (!String.IsNullOrEmpty(installationFolder))
                     ifo = Path.GetDirectoryName(installationFolder);
 
-                if (!string.IsNullOrEmpty(creationkitFolder))
+                if (!String.IsNullOrEmpty(creationkitFolder))
                     ckfo = Path.GetDirectoryName(creationkitFolder);
 
                 return new SkyrimInstallationPath(ifo, ckfo);
@@ -252,17 +252,6 @@ namespace PapyrusDotNet.Common
             return "";
         }
 
-        public static bool IsConditional(Code code)
-        {
-            return code == Code.Ceq || code == Code.Cgt || code == Code.Clt || code == Code.Cgt_Un ||
-                   code == Code.Clt_Un;
-        }
-
-        public static bool IsBranch(Code code)
-        {
-            return code == Code.Br || code == Code.Br_S || code == Code.Brfalse_S || code == Code.Brtrue_S
-                   || code == Code.Brfalse || code == Code.Brtrue;
-        }
 
         public static string GetPapyrusReturnType(TypeReference reference, bool stripGenericMarkers)
         {
@@ -304,7 +293,7 @@ namespace PapyrusDotNet.Common
                 return typeRef.Name;
             }
 
-            if (string.IsNullOrEmpty(Namespace))
+            if (String.IsNullOrEmpty(Namespace))
                 return name;
 
             return Namespace.Replace(".", "_") + "_" + name;
@@ -343,7 +332,7 @@ namespace PapyrusDotNet.Common
                 return name;
             }
 
-            if (string.IsNullOrEmpty(Namespace))
+            if (String.IsNullOrEmpty(Namespace))
                 return name;
 
             return Namespace.Replace(".", "_") + "_" + name;
@@ -365,7 +354,7 @@ namespace PapyrusDotNet.Common
             var swExt = "";
             var isArray = swtype.Contains("[]");
 
-            if (!string.IsNullOrEmpty(Namespace))
+            if (!String.IsNullOrEmpty(Namespace))
             {
                 if (Namespace.ToLower().StartsWith("system"))
                 {
@@ -441,7 +430,7 @@ namespace PapyrusDotNet.Common
             if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))
             {
                 if (op is int || op is float || op is short || op is double || op is long || op is byte)
-                    return (int)double.Parse(op.ToString()) == 1;
+                    return (int)Double.Parse(op.ToString()) == 1;
                 if (op is bool) return (bool)op;
                 if (op is string) return (string)op == "1" || op.ToString().ToLower() == "true";
             }
@@ -461,7 +450,7 @@ namespace PapyrusDotNet.Common
             {
                 if (op is int || op is float || op is short || op is double || op is long || op is byte)
                 {
-                    return int.Parse(op.ToString());
+                    return Int32.Parse(op.ToString());
                 }
             }
 
@@ -523,7 +512,7 @@ namespace PapyrusDotNet.Common
                 rows.RemoveAt(row.Key);
             }
 
-            return string.Join(Environment.NewLine, rows.ToArray());
+            return String.Join(Environment.NewLine, rows.ToArray());
         }
 
         public static CodeBlock ParseCodeBlock(string codeBlock)
@@ -645,7 +634,7 @@ namespace PapyrusDotNet.Common
                 rows.RemoveAt(r);
             }
 
-            return string.Join(Environment.NewLine, rows.ToArray());
+            return String.Join(Environment.NewLine, rows.ToArray());
         }
 
         public static string InjectTempVariables(string output, int indentDepth, List<VariableReference> TempVariables)
@@ -663,15 +652,16 @@ namespace PapyrusDotNet.Common
             }
 
 
-            return string.Join(Environment.NewLine, rows.ToArray());
+            return String.Join(Environment.NewLine, rows.ToArray());
         }
 
         public static int GetStackPopCount(StackBehaviour stackBehaviour)
         {
             switch (stackBehaviour)
             {
-                case StackBehaviour.Varpop:
                 case StackBehaviour.Pop0:
+                    return 0;
+                case StackBehaviour.Varpop:
                 case StackBehaviour.Popi:
                 case StackBehaviour.Pop1:
                 case StackBehaviour.Popref:
@@ -722,11 +712,7 @@ namespace PapyrusDotNet.Common
             }
         }
 
-        public static bool IsLoadLength(Code code)
-        {
-            //throw new NotImplementedException();
-            return code == Code.Ldlen;
-        }
+
 
 
         public static string GetPropertyName(string p)
@@ -767,6 +753,52 @@ namespace PapyrusDotNet.Common
             if (s.StartsWith("int") || s.StartsWith("sbyte") || s.StartsWith("short") || s.StartsWith("long"))
                 return PapyrusPrimitiveType.Integer;
             return PapyrusPrimitiveType.Reference;
+        }
+
+
+        public static PapyrusOpCode GetPapyrusMathOrEqualityOpCode(Code code, bool isFloat)
+        {
+            if (InstructionHelper.IsLessThan(code))
+            {
+                return PapyrusOpCode.CmpLt;
+            }
+            if (InstructionHelper.IsEqualTo(code))
+            {
+                return PapyrusOpCode.CmpEq;
+            }
+            if (InstructionHelper.IsGreaterThan(code))
+            {
+                return PapyrusOpCode.CmpGt;
+            }
+            switch (code)
+            {
+                case Code.Add_Ovf:
+                case Code.Add_Ovf_Un:
+                case Code.Add:
+                    return isFloat ? PapyrusOpCode.Fadd : PapyrusOpCode.Iadd;
+                case Code.Sub:
+                case Code.Sub_Ovf:
+                case Code.Sub_Ovf_Un:
+                    return isFloat ? PapyrusOpCode.Fsub : PapyrusOpCode.Isub;
+                case Code.Div_Un:
+                case Code.Div:
+                    return isFloat ? PapyrusOpCode.Fdiv : PapyrusOpCode.Idiv;
+                case Code.Mul:
+                case Code.Mul_Ovf:
+                case Code.Mul_Ovf_Un:
+                    return isFloat ? PapyrusOpCode.Fmul : PapyrusOpCode.Imul;
+                default:
+                    return isFloat ? PapyrusOpCode.Fadd : PapyrusOpCode.Iadd;
+            }
+        }
+
+        public static PapyrusPrimitiveType GetPrimitiveType(object val)
+        {
+            var type = val.GetType();
+
+            var typeName = GetPapyrusReturnType(type.FullName);
+
+            return GetPapyrusValueType(typeName);
         }
     }
 }

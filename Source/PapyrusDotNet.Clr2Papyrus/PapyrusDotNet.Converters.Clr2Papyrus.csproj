@@ -52,6 +52,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\MissingVariableException.cs" />
+    <Compile Include="Exceptions\StackUnderflowException.cs" />
     <Compile Include="Implementations\Clr2PapyrusInstructionProcessor.cs" />
     <Compile Include="Enums\PapyrusCompilerOptions.cs" />
     <Compile Include="Exceptions\ProhibitedCodingBehaviourException.cs" />

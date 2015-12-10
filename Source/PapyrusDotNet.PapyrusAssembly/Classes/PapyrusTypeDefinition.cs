@@ -35,11 +35,14 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
             States = new Collection<PapyrusStateDefinition>();
         }
 
-        public PapyrusTypeDefinition(PapyrusAssemblyDefinition assembly)
+        public PapyrusTypeDefinition(PapyrusAssemblyDefinition assembly, bool isStruct = false)
             : this()
         {
             this.assembly = assembly;
-            this.assembly.Types.Add(this);
+            if (!isStruct)
+            {
+                this.assembly.Types.Add(this);
+            }
         }
 
         public int Size { get; set; }

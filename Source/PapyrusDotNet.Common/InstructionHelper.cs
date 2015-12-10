@@ -25,6 +25,28 @@ namespace PapyrusDotNet.Common
 {
     public class InstructionHelper
     {
+        public static bool IsConditional(Code code)
+        {
+            return code == Code.Ceq || code == Code.Cgt || code == Code.Clt || code == Code.Cgt_Un ||
+                   code == Code.Clt_Un;
+        }
+
+        public static bool IsBranch(Code code)
+        {
+            return code == Code.Br || code == Code.Br_S || code == Code.Brfalse_S || code == Code.Brtrue_S
+                   || code == Code.Brfalse || code == Code.Brtrue;
+        }
+
+        public static bool IsBranchTrue(Code code)
+        {
+            return code == Code.Brtrue || code == Code.Brtrue_S;
+        }
+
+        public static bool IsBranchFalse(Code code)
+        {
+            return code == Code.Brfalse || code == Code.Brfalse_S;
+        }
+
         public static bool IsBranchConditionalEq(Code code)
         {
             return code == Code.Beq || code == Code.Beq_S;
@@ -60,6 +82,11 @@ namespace PapyrusDotNet.Common
                    || code == Code.Ble || code == Code.Ble_Un || code == Code.Ble_S || code == Code.Ble_Un_S ||
                    code == Code.Bge
                    || code == Code.Bge_Un || code == Code.Bge_S || code == Code.Bge_Un_S;
+        }
+
+        public static bool IsUnboxing(Code code)
+        {
+            return code == Code.Unbox || code == Code.Unbox_Any;
         }
 
         public static bool IsBoxing(Code code)
@@ -162,9 +189,15 @@ namespace PapyrusDotNet.Common
                    || code == Code.Ldloc_3 || code == Code.Ldloc_S;
         }
 
+        public static bool IsLoadLength(Code code)
+        {
+            //throw new NotImplementedException();
+            return code == Code.Ldlen;
+        }
+
         public static bool IsLoad(Code code)
         {
-            return IsLoadArgs(code) || IsLoadInteger(code) || IsLoadLocalVariable(code) || IsLoadString(code) || IsLoadField(code) || IsLoadStaticField(code);
+            return IsLoadArgs(code) || IsLoadInteger(code) || IsLoadLocalVariable(code) || IsLoadString(code) || IsLoadField(code) || IsLoadStaticField(code) || IsLoadElement(code) || IsLoadLength(code);
         }
 
         public static bool IsStore(Code code)

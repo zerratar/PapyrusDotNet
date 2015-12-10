@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
-using System.Threading.Tasks;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
-using PapyrusDotNet.Converters.Papyrus2CSharp.FlowAnalyzer;
 using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Classes;
 using PapyrusDotNet.PapyrusAssembly.Enums;
@@ -38,16 +34,16 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
     {
         private readonly StringBuilder sb = new StringBuilder();
         private readonly Dictionary<object, TextRange> location = new Dictionary<object, TextRange>();
-        int size = 0;
-        int currentLine = 0;
-        int currentColumn = 0;
+        private int size;
+        public int CurrentLine;
+        public int CurrentColumn;
         private bool lastWasAppend;
 
         public int Size => size;
 
-        public int Lines => currentLine;
+        public int Lines => CurrentLine;
 
-        public int Column => currentColumn;
+        public int Column => CurrentColumn;
 
         public override string ToString()
         {
@@ -65,31 +61,33 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
 
             if (key != null)
             {
-                location.Add(key, new TextRange(key, text, currentLine, currentColumn, text.Length));
+                location.Add(key, new TextRange(key, text, CurrentLine, CurrentColumn, text.Length));
             }
 
             size += text.Length;
-            currentColumn += text.Length;
+            CurrentColumn += text.Length;
             lastWasAppend = true;
         }
 
         public void AppendLine(string text, object key = null, int indent = 0)
         {
             if (!lastWasAppend)
+            {
                 text = Indent(text, indent);
+            }
             sb.AppendLine(text);
 
             if (key != null)
             {
                 if (!location.ContainsKey(key)) // Only the first occurence will be added.
                 {
-                    location.Add(key, new TextRange(key, text, currentLine, 0, text.Length));
+                    location.Add(key, new TextRange(key, text, CurrentLine, 0, text.Length));
                 }
             }
 
             size += text.Length;
-            currentLine++;
-            currentColumn = 0;
+            CurrentLine++;
+            CurrentColumn = 0;
             lastWasAppend = false;
         }
 
@@ -97,8 +95,8 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
         {
             sb.AppendLine();
             size += Environment.NewLine.Length;
-            currentLine++;
-            currentColumn = 0;
+            CurrentLine++;
+            CurrentColumn = 0;
             lastWasAppend = false;
         }
 
@@ -106,29 +104,31 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
         private string Indent(string text, int num)
         {
             string output = "";
-            return For(num, i => { return output += "\t"; }) + text;
-        }
-
-        private string For(int num, Func<int, string> func)
-        {
-            string output = "";
             for (var i = 0; i < num; i++)
             {
-                output += func(i);
+                output += '\t';
             }
-            return output;
+            return output + text.Trim('\t');
         }
+
+        //private string For(int num, Func<int, string> func)
+        //{
+        //    string output = "";
+        //    for (var i = 0; i < num; i++)
+        //    {
+        //        output += func(i);
+        //    }
+        //    return output;
+        //}
     }
 
     public class Papyrus2CSharpConverter : Papyrus2CSharpConverterBase
     {
         private SourceBuilder activeBuilder;
-        private int activeIndent;
 
         public Papyrus2CSharpConverter(INamespaceResolver namespaceResolver, ITypeReferenceResolver typeReferenceResolver)
             : base(namespaceResolver, typeReferenceResolver)
         {
-            StringBuilder sb;
         }
 
         protected override MultiCSharpOutput ConvertAssembly(PapyrusAssemblyInput input)
@@ -149,63 +149,78 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
         }
 
 
-        private string WriteType(SourceBuilder source, PapyrusAssemblyDefinition asm, PapyrusTypeDefinition type)
+        private string WriteType(SourceBuilder source, PapyrusAssemblyDefinition asm, PapyrusTypeDefinition type, int indent = 0)
         {
             activeBuilder = source;
 
             if (type.Documentation != null && !string.IsNullOrEmpty(type.Documentation.Value))
             {
-                WriteDoc(type.Documentation);
+                WriteDoc(type.Documentation, indent);
             }
 
-            source.Append("public class " + (string)type.Name);
+            if (type.IsStruct)
+            {
+                Append("public struct " + (string)type.Name + " ", indent);
+            }
+            else
+            {
+                Append("public class " + (string)type.Name + " ", indent);
+            }
 
             if (!RefIsNull(type.BaseTypeName))
-                source.Append(" : " + (string)type.BaseTypeName + Environment.NewLine);
-            source.AppendLine("{");
+            {
+                Append(": " + (string)type.BaseTypeName + Environment.NewLine);
+            }
 
+            AppendLine("{", indent);
+
+
+            foreach (var t in type.NestedTypes)
+            {
+                WriteType(source, asm, t, indent + 1);
+            }
 
             foreach (var field in type.Fields)
             {
                 if (field.Documentation != null && !string.IsNullOrEmpty(field.Documentation))
                 {
-                    WriteDoc(field.Documentation);
+                    WriteDoc(field.Documentation, indent + 1);
                 }
-                source.AppendLine("public " + (string)field.TypeName + " " + (string)field.Name + ";", null, 1);
+                AppendLine("public " + field.TypeName + " " + (string)field.Name + ";", indent + 1);
             }
 
             foreach (var prop in type.Properties)
             {
                 if (prop.Documentation != null && !string.IsNullOrEmpty(prop.Documentation.Value))
                 {
-                    WriteDoc(prop.Documentation);
+                    WriteDoc(prop.Documentation, indent + 1);
                 }
                 if (!string.IsNullOrEmpty(prop.AutoName))
                 {
-                    source.AppendLine("public " + (string)prop.TypeName + " " + (string)prop.Name + " { get; set; }", null, 1);
+                    AppendLine("public " + (string)prop.TypeName + " " + (string)prop.Name + " { get; set; }", indent + 1);
                 }
                 else
                 {
-                    source.Append("public " + (string)prop.TypeName + " " + (string)prop.Name, null, 1);
+                    Append("public " + (string)prop.TypeName + " " + (string)prop.Name, indent + 1);
                     if (!prop.HasSetter && !prop.HasGetter)
                     {
-                        source.AppendLine("{ get; set; }", null, 1);
+                        AppendLine("{ get; set; }", indent + 1);
                     }
                     else
                     {
-                        source.AppendLine();
-                        source.AppendLine("{", null, 1);
+                        AppendLine("");
+                        AppendLine("{", 1);
                         if (prop.HasGetter)
                         {
-                            source.AppendLine("get", null, 2);
-                            WriteMethod(source, 3, prop.GetMethod, type, asm, true);
+                            AppendLine("get", 2);
+                            WriteMethod(prop.GetMethod, type, asm, indent + 3, true);
                         }
                         if (prop.HasSetter)
                         {
-                            source.AppendLine("set", null, 2);
-                            WriteMethod(source, 3, prop.SetMethod, type, asm, false, true);
+                            AppendLine("set", 2);
+                            WriteMethod(prop.SetMethod, type, asm, indent + 3, false, true);
                         }
-                        source.AppendLine("}", null, 1);
+                        AppendLine("}", indent + 1);
                     }
                 }
             }
@@ -214,66 +229,69 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
             {
                 foreach (var m in s.Methods)
                 {
-                    WriteMethod(source, 1, m, type, asm);
+                    WriteMethod(m, type, asm, indent + 1);
+
                 }
             }
 
-            source.AppendLine("}");
+
+
+
+            AppendLine("}", indent);
 
             return source.ToString();
         }
 
-        private void WriteDoc(string doc)
+        private void WriteDoc(string doc, int indent)
         {
             var lines = doc.Split('\n');
-            AppendLine("/// <summary>");
-            lines.ForEach(i => AppendLine("/// " + i.Replace("\t", "")));
-            AppendLine("/// </summary>");
+            AppendLine("/// <summary>", indent);
+            lines.ForEach(i => AppendLine("/// " + i.Replace("\t", ""), indent));
+            AppendLine("/// </summary>", indent);
         }
-        private void WriteDoc(PapyrusStringRef doc)
+        private void WriteDoc(PapyrusStringRef doc, int indent)
         {
-            WriteDoc(doc.Value);
+            WriteDoc(doc.Value, indent);
         }
 
         /// <summary>
         /// Writes the method.
         /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="indent">The indent.</param>
         /// <param name="method">The method.</param>
         /// <param name="type">The type.</param>
         /// <param name="asm">The asm.</param>
+        /// <param name="indent">The indent.</param>
         /// <param name="isGetter">if set to <c>true</c> [is getter].</param>
         /// <param name="isSetter">if set to <c>true</c> [is setter].</param>
-        private void WriteMethod(SourceBuilder source, int indent, PapyrusMethodDefinition method, PapyrusTypeDefinition type, PapyrusAssemblyDefinition asm, bool isGetter = false, bool isSetter = false)
+        private void WriteMethod(PapyrusMethodDefinition method, PapyrusTypeDefinition type, PapyrusAssemblyDefinition asm, int indent, bool isGetter = false, bool isSetter = false)
         {
             // SetGlobalIndent(indent);
             if (!isGetter && !isSetter)
             {
                 if (method.Documentation != null && !string.IsNullOrEmpty(method.Documentation.Value))
                 {
-                    WriteDoc(method.Documentation);
+                    WriteDoc(method.Documentation, indent);
                 }
-                source.Append("public " +
+                Append("public " +
                               (method.IsGlobal ? "static " : "") +
                               (method.IsNative ? "extern " : "") +
                               ((string)method.ReturnTypeName).Replace("None", "void") + " " +
                               (string)method.Name
-                    , null, indent);
-                source.Append("(");
-                source.Append(string.Join(",",
+                    , indent);
+                Append("(");
+                Append(string.Join(",",
                     method.Parameters.Select(i => (string)i.TypeName + " " + (string)i.Name)));
-                source.AppendLine(")");
+                AppendLine(")");
             }
-            source.AppendLine("{", null, indent);
+            AppendLine("{", indent);
             if (isGetter)
             {
                 // type.Fields.FirstOrDefault(f=>f.Name.Value.Contains());
-                source.AppendLine("return <backing_field>;", null, indent + 1);
+                AppendLine("return <backing_field>;", indent + 1);
             }
             else if (isSetter)
             {
-                source.AppendLine("<backing_field> = value;", null, indent + 1);
+                AppendLine("<backing_field> = value;", indent + 1);
             }
             else
             {
@@ -282,12 +300,12 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     var debug = asm.DebugInfo.MethodDescriptions.FirstOrDefault(m => m.Name.Value == method.Name.Value);
                     if (debug != null)
                     {
-                        AppendLine("// DEBUG LINE NUMBER: " + string.Join(",", debug.BodyLineNumbers.ToArray()), 1);
+                        AppendLine("// DEBUG LINE NUMBER: " + string.Join(",", debug.BodyLineNumbers.ToArray()), indent + 1);
                     }
                     foreach (var var in method.GetVariables())
                     {
                         if (var.Name.Value.ToLower() == "::nonevar") continue;
-                        AppendLine((string)var.TypeName + " " + (string)var.Name + ";", 1);
+                        AppendLine((string)var.TypeName + " " + (string)var.Name + ";", indent + 1);
                     }
 
 
@@ -301,9 +319,11 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
 
                     foreach (var instruction in method.Body.Instructions)
                     {
-                        Append("/* " + instruction.Offset + " */ ", 1);
-
-                        WriteInstruction(indent, instruction, method, type, asm);
+                        var instructionString = WriteInstruction(instruction, method, type);
+                        foreach (var row in instructionString.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+                        {
+                            AppendLine("/* " + instruction.Offset + " */ " + row, indent + 1);
+                        }
                     }
 
                     //List<PapyrusInstruction> targetEnd = new List<PapyrusInstruction>();
@@ -338,7 +358,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     //}
                 }
             }
-            source.AppendLine("}", null, indent);
+            AppendLine("}", indent);
         }
 
         //private void WriteInstructionConditional(SourceBuilder source, int indent, PapyrusInstruction instruction, PapyrusMethodDefinition method, PapyrusTypeDefinition type, PapyrusAssemblyDefinition asm)
@@ -349,31 +369,29 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
         //    AppendLine("if (" + boolean + ")");
         //}
 
-        private bool IsJumpf(PapyrusOpCode opCode)
-        {
-            return opCode == PapyrusOpCode.Jmpf;
-        }
-        private bool IsJumpt(PapyrusOpCode opCode)
-        {
-            return opCode == PapyrusOpCode.Jmpt;
-        }
-        private bool IsJump(PapyrusOpCode opCode)
-        {
-            return opCode == PapyrusOpCode.Jmp || opCode == PapyrusOpCode.Jmpf || opCode == PapyrusOpCode.Jmpt;
-        }
+        //private bool IsJumpf(PapyrusOpCode opCode)
+        //{
+        //    return opCode == PapyrusOpCode.Jmpf;
+        //}
+        //private bool IsJumpt(PapyrusOpCode opCode)
+        //{
+        //    return opCode == PapyrusOpCode.Jmpt;
+        //}
+        //private bool IsJump(PapyrusOpCode opCode)
+        //{
+        //    return opCode == PapyrusOpCode.Jmp || opCode == PapyrusOpCode.Jmpf || opCode == PapyrusOpCode.Jmpt;
+        //}
 
-        private void WriteInstruction(int indent, PapyrusInstruction instruction, PapyrusMethodDefinition method, PapyrusTypeDefinition type, PapyrusAssemblyDefinition asm)
+        private string WriteInstruction(PapyrusInstruction instruction, PapyrusMethodDefinition method, PapyrusTypeDefinition type)
         {
             var i = instruction;
-            SetGlobalIndent(indent);
 
             switch (i.OpCode)
             {
                 case PapyrusOpCode.Nop:
                     {
-                        AppendLine("// Do Nothing Operator (NOP)");
+                        return ("// Do Nothing Operator (NOP)");
                     }
-                    break;
                 case PapyrusOpCode.Callstatic:
                     {
                         var val = string.Join(",", i.Arguments.Skip(2).Take(i.Arguments.Count - 3).Select(GetArgumentValue));
@@ -381,8 +399,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         var functionName = GetArgumentValue(i.Arguments[1]);
                         var assignee = GetArgumentValue(i.Arguments.LastOrDefault());
 
-                        var args = string.Join(",",
-                            new[] { val, string.Join(",", i.OperandArguments.Select(GetArgumentValue)) }).Trim(',');
+                        var args = string.Join(",", val, string.Join(",", i.OperandArguments.Select(GetArgumentValue))).Trim(',');
 
                         if (assignee != null)
                         {
@@ -392,10 +409,9 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                                 assignee = string.Empty;
                             }
                         }
-                        AppendLine(assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");", 0, i);
+                        return assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");";
 
                     }
-                    break;
                 case PapyrusOpCode.Callmethod:
                     {
                         var val = string.Join(",", i.Arguments.Skip(2).Take(i.Arguments.Count - 3).Select(GetArgumentValue));
@@ -403,8 +419,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         var functionName = GetArgumentValue(i.Arguments[0]);
                         var assignee = GetArgumentValue(i.Arguments.LastOrDefault());
 
-                        var args = string.Join(",",
-                            new[] { val, string.Join(",", i.OperandArguments.Select(GetArgumentValue)) }).Trim(',');
+                        var args = string.Join(",", val, string.Join(",", i.OperandArguments.Select(GetArgumentValue))).Trim(',');
 
                         if (assignee != null)
                         {
@@ -415,12 +430,11 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                             }
                         }
 
-                        AppendLine(assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");", 0, i);
+                        return assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");";
                     }
-                    break;
                 case PapyrusOpCode.Return:
                     {
-                        var val = "";
+                        string val;
                         var firstArg = GetArgumentValue(i.Arguments.FirstOrDefault());
                         var firstVarArg = GetArgumentValue(i.OperandArguments.FirstOrDefault());
                         if (firstArg != null)
@@ -430,10 +444,9 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         else
                             val = "";
 
-                        AppendLine(("return" + val).Trim() + ";", 0, i);
+                        return (("return" + val).Trim() + ";");
                         //WritePapyrusInstruction(i);
                     }
-                    break;
                 case PapyrusOpCode.Assign:
                     {
                         var val1 = GetArgumentValue(i.Arguments.FirstOrDefault());
@@ -441,40 +454,82 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         var val3 = GetArgumentValue(i.OperandArguments.FirstOrDefault());
                         var val4 = GetArgumentValue(i.OperandArguments.LastOrDefault());
 
-                        var var_0 = val1 ?? val3;
-                        var var_1 = val2 ?? val4;
-                        if (var_1 == null || var_1 == "")
+                        var var0 = val1 ?? val3;
+                        var var1 = val2 ?? val4;
+                        if (string.IsNullOrEmpty(var1))
                         {
-                            AppendLine(var_0 + " = null;", 0, i);
+                            return (var0 + " = null;");
                         }
-                        else
-                            AppendLine(var_0 + " = " + var_1 + ";", 0, i);
-
+                        return (var0 + " = " + var1 + ";");
                     }
-                    break;
+                case PapyrusOpCode.ArrayRemoveElements:
+                    {
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
+
+                        var array = GetArgumentValue(i.Arguments[0]);                        
+                        var index = GetArgumentValue(i.Arguments[1]);
+                        var count = GetArgumentValue(i.Arguments[2]);
+
+                        return comment + "Array.RemoveItems(" + array + ", " + index + ", " + count + ");";
+                    }
+                case PapyrusOpCode.ArrayFindElement:
+                    {
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
+
+                        var array = GetArgumentValue(i.Arguments[0]);
+                        var destination = GetArgumentValue(i.Arguments[1]);
+                        var elementToFind = GetArgumentValue(i.Arguments[2]);
+                        var startIndex = GetArgumentValue(i.Arguments[3]);
+                                               
+                        return comment + destination + " = Array.IndexOf(" + array + ", " + elementToFind + ", " + startIndex + ");";
+                    }
+                case PapyrusOpCode.ArrayFindStruct:
+                    {
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
+
+                        var array = GetArgumentValue(i.Arguments[0]);
+                        var destination = GetArgumentValue(i.Arguments[1]);
+                        var fieldToMatch = GetArgumentValue(i.Arguments[2]);
+                        var value = GetArgumentValue(i.Arguments[3]);
+                        var startIndex = GetArgumentValue(i.Arguments[4]);
+
+                        return comment + destination + " = Structs.IndexOf(" + array + ", " + fieldToMatch + ", " + value + ", " + startIndex + ");";
+                    }
+                case PapyrusOpCode.StructSet:
+                    {
+                        var structVar = GetArgumentValue(i.Arguments[0]);
+                        var structField = GetArgumentValue(i.Arguments[1]);
+                        var value = GetArgumentValue(i.Arguments[2]);
+                        return structVar + "." + structField + " = " + value + ";";
+                        // (value + "." + structField + " = " + structVar + "." + structField + ";");
+                    }
                 case PapyrusOpCode.StructGet:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var structVar = GetArgumentValue(i.Arguments[1]);
                         var structField = GetArgumentValue(i.Arguments[2]);
-                        AppendLine(asignee + " = " + structVar + "." + structField + ";", 0, i);
+                        return (asignee + " = " + structVar + "." + structField + ";");
                     }
-                    break;
-                case PapyrusOpCode.ArrayGetelement:
+                case PapyrusOpCode.ArraySetElement:
+                    {
+                        var array = GetArgumentValue(i.Arguments[0]);
+                        var index = GetArgumentValue(i.Arguments[1]);
+                        var value = GetArgumentValue(i.Arguments[2]);
+                        return (array + "[" + index + "] = " + value + ";");
+                    }
+                case PapyrusOpCode.ArrayGetElement:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var array = GetArgumentValue(i.Arguments[1]);
                         var index = GetArgumentValue(i.Arguments[2]);
-                        AppendLine(asignee + " = " + array + "[" + index + "];", 0, i);
+                        return (asignee + " = " + array + "[" + index + "];");
                     }
-                    break;
                 case PapyrusOpCode.ArrayLength:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var array = GetArgumentValue(i.Arguments[1]);
-                        AppendLine(asignee + " = " + array + ".Length;", 0, i);
+                        return (asignee + " = " + array + ".Length;");
                     }
-                    break;
                 case PapyrusOpCode.ArrayCreate:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
@@ -484,11 +539,11 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         var field = type.Fields.FirstOrDefault(v => v.Name.Value == asignee);
                         var prop = type.Properties.FirstOrDefault(v => v.Name.Value == asignee);
                         if (possibleVar != null)
-                            AppendLine(asignee + " = new " + possibleVar.TypeName.Value.Replace("[]", "") + "[" + size + "];", 0, i);
-                        else if (field != null)
-                            AppendLine(asignee + " = new " + field.TypeName.Replace("[]", "") + "[" + size + "];", 0, i);
-                        else if (prop != null)
-                            AppendLine(asignee + " = new " + prop.TypeName.Value.Replace("[]", "") + "[" + size + "];", 0, i);
+                            return (asignee + " = new " + possibleVar.TypeName.Value.Replace("[]", "") + "[" + size + "];");
+                        if (field != null)
+                            return (asignee + " = new " + field.TypeName.Replace("[]", "") + "[" + size + "];");
+                        if (prop != null)
+                            return (asignee + " = new " + prop.TypeName.Value.Replace("[]", "") + "[" + size + "];");
                     }
                     break;
                 case PapyrusOpCode.Strcat:
@@ -496,99 +551,86 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var str = GetArgumentValue(i.Arguments[1]);
                         var value = GetArgumentValue(i.Arguments[2]);
-                        AppendLine(asignee + " = " + str + " + " + value + ";", 0, i);
+                        return (asignee + " = " + str + " + " + value + ";");
                     }
-                    break;
                 case PapyrusOpCode.Fsub:
                 case PapyrusOpCode.Isub:
                     {
-                        DoMath(i, "-");
+                        return DoMath(i, "-");
                     }
-                    break;
                 case PapyrusOpCode.Fadd:
                 case PapyrusOpCode.Iadd:
                     {
-                        DoMath(i, "+");
+                        return DoMath(i, "+");
                     }
-                    break;
                 case PapyrusOpCode.Ineg:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var target = GetArgumentValue(i.Arguments[1]);
-                        AppendLine(asignee + " = " + target + " < 0;", 0, i);
+                        return (asignee + " = " + target + " < 0;");
                     }
-                    break;
                 case PapyrusOpCode.CmpEq:
                     {
-                        DoMath(i, "==");
+                        return DoMath(i, "==");
                     }
-                    break;
                 case PapyrusOpCode.CmpGt:
                     {
-                        DoMath(i, ">");
+                        return DoMath(i, ">");
                     }
-                    break;
-
                 case PapyrusOpCode.CmpGte:
                     {
-                        DoMath(i, ">=");
+                        return DoMath(i, ">=");
                     }
-                    break;
                 case PapyrusOpCode.CmpLt:
                     {
-                        DoMath(i, "<");
+                        return DoMath(i, "<");
                     }
-                    break;
                 case PapyrusOpCode.CmpLte:
                     {
-                        DoMath(i, "<=");
+                        return DoMath(i, "<=");
                     }
-                    break;
                 case PapyrusOpCode.Not:
                     {
                         var assignee = i.GetArg(0);
                         var target = i.GetArg(1);
-                        AppendLine(assignee + " = !" + target + ";", 0, i);
+                        return (assignee + " = !" + target + ";");
                     }
-                    break;
                 case PapyrusOpCode.Jmp:
                     {
                         var destination = GetArgumentValue(i.Arguments[0]);
-                        AppendLine("// " + i.OpCode + " " + destination + " (offset: " +
-                                   (i.Offset + int.Parse(destination)) + ")", 0, i);
+                        return ("// " + i.OpCode + " " + destination + " (offset: " +
+                                   (i.Offset + int.Parse(destination)) + ")");
                     }
-                    break;
                 case PapyrusOpCode.Jmpt:
                 case PapyrusOpCode.Jmpf:
                     {
                         var boolVal = GetArgumentValue(i.Arguments[0]);
                         var destination = GetArgumentValue(i.Arguments[1]);
-                        AppendLine("// " + i.OpCode + " " + boolVal + " " + destination + " (offset: " +
-                                   (i.Offset + int.Parse(destination)) + ")", 0, i);
+                        return ("// " + i.OpCode + " " + boolVal + " " + destination + " (offset: " +
+                                   (i.Offset + int.Parse(destination)) + ")");
                     }
-                    break;
                 default:
                     {
-                        WritePapyrusInstruction(i);
+                        return WritePapyrusInstruction(i);
                     }
-                    break;
             }
+            return null;
         }
 
-        private void WritePapyrusInstruction(PapyrusInstruction i)
+        private string WritePapyrusInstruction(PapyrusInstruction i)
         {
             var instructionParams = string.Join(" ", i.Arguments.Select(GetArgumentValue));
             var instructionObjectParams = string.Join(" ", i.OperandArguments.Select(GetArgumentValue));
 
-            AppendLine("// " + i.OpCode + " " + instructionParams + " " + instructionObjectParams, 0, i);
+            return ("// " + i.OpCode + " " + instructionParams + " " + instructionObjectParams);
         }
 
-        private void DoMath(PapyrusInstruction i, string op)
+        private string DoMath(PapyrusInstruction i, string op)
         {
             var asignee = GetArgumentValue(i.Arguments[0]);
             var target = GetArgumentValue(i.Arguments[1]);
             var value = GetArgumentValue(i.Arguments[2]);
-            AppendLine(asignee + " = " + target + " " + op + " " + value + ";", 0, i);
+            return (asignee + " = " + target + " " + op + " " + value + ";"); //, indent, i);
         }
 
         private string GetArgumentValue(PapyrusVariableReference arg)
@@ -629,29 +671,22 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
             return null;
         }
 
-        private void SetGlobalIndent(int startingIndent)
-        {
-            activeIndent = startingIndent;
-        }
+        /*
+                private void SetGlobalIndent(int startingIndent)
+                {
+                    activeIndent = startingIndent;
+                }
+        */
 
-        bool lastWasAppend = false;
+
         private void Append(string value, int indent = 0, PapyrusInstruction key = null)
         {
-            lastWasAppend = true;
-            activeBuilder.Append(value, key, activeIndent + indent);
+            activeBuilder.Append(value, key, indent);
         }
 
         private void AppendLine(string value, int indent = 0, PapyrusInstruction key = null)
         {
-            if (lastWasAppend)
-            {
-                activeBuilder.AppendLine(value, key, activeIndent + indent);
-            }
-            else
-            {
-                activeBuilder.AppendLine(value, key, activeIndent + indent);
-            }
-            lastWasAppend = false;
+            activeBuilder.AppendLine(value, key, indent);
         }
 
         private bool RefIsNull(PapyrusStringRef baseTypeName)

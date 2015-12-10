@@ -431,7 +431,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         {
             return opCode == PapyrusOpCode.Jmp || opCode == PapyrusOpCode.Jmpf || opCode == PapyrusOpCode.Jmpt;
         }
-        private void UpdateOperand(PapyrusInstruction instruction, InstructionCollection instructions, IEnumerable<PapyrusMethodDefinition> allmethods)
+        private void UpdateOperand(PapyrusInstruction instruction, PapyrusInstructionCollection instructions, IEnumerable<PapyrusMethodDefinition> allmethods)
         {
             var papyrusMethodDefinitions = allmethods.ToList();
             var i = instruction;

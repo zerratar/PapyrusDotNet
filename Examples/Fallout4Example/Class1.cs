@@ -25,6 +25,13 @@ namespace Fallout4Example
 {
     public class MyObjectReference : ObjectReference
     {
+
+        public struct MyTestStruct
+        {
+            public string StructString;
+            public int StructInteger;
+        }
+
         public string HelloWorld;
 
         public bool HelloThere { get; set; }
@@ -37,16 +44,34 @@ namespace Fallout4Example
 
         //public int Return100() => 100;
 
+        public void LoopTest()
+        {
+            for (var i = 0; i < 1000; i++)
+            {
+                Debug.MessageBox("This is message # " + i);
+            }
+        }
+
+
         public int testInteger1 = 0;
         public int asda = 0;
         public override void OnInit()
         {
+            //MyTestStruct meStruct;
+
+            //meStruct.StructInteger = 252;
+
             asda = 0;
             testInteger1++;
 
-            Debug.MessageBox("Hello");
+            int[] intArray = new int[9999];
 
-            var stringMessage = "asd";
+            intArray[0] = 9212;
+            intArray[22] = 10; // + meStruct.StructInteger;
+
+            Debug.MessageBox("Hello" + intArray[22]);
+
+            var stringMessage = "asd" + intArray.Length;
 
             Debug.MessageBox(stringMessage);
 
@@ -55,6 +80,11 @@ namespace Fallout4Example
             Debug.MessageBox(asd2);
 
             testInteger1 += 100;
+
+            if (HelloThere)
+            {
+                Debug.MessageBox("It is!");
+            }
         }
     }
 }

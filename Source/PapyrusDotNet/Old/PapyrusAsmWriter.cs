@@ -709,13 +709,6 @@ namespace PapyrusDotNet.Old
                         tar = sourceArray.Name;
                     }
 
-
-                    // Supports:
-                    // var obj = array[x]
-
-                    // Not yet supporting? note: i have not tried it yet.
-                    // Function(array[x],...)
-
                     if (InstructionHelper.IsCallMethod(instruction.Next.OpCode.Code))
                     {
                         var targetMethod = instruction.Next.Operand as MethodReference;
@@ -771,7 +764,7 @@ namespace PapyrusDotNet.Old
                 }
             }
 
-            if (Utility.IsLoadLength(instruction.OpCode.Code))
+            if (InstructionHelper.IsLoadLength(instruction.OpCode.Code))
             {
                 var popCount = Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop);
                 if (evaluationStack.Count >= popCount)
@@ -1335,7 +1328,7 @@ namespace PapyrusDotNet.Old
 
             EqualityCheck:
 
-            if (Utility.IsConditional(instruction.OpCode.Code) || passThroughConditional)
+            if (InstructionHelper.IsConditional(instruction.OpCode.Code) || passThroughConditional)
             {
                 if (InstructionHelper.IsGreaterThan(instruction.OpCode.Code))
                 {
@@ -1430,7 +1423,7 @@ namespace PapyrusDotNet.Old
                     return string.Join(Environment.NewLine, output.ToArray());
                 }
             }
-            else if (Utility.IsBranch(instruction.OpCode.Code))
+            else if (InstructionHelper.IsBranch(instruction.OpCode.Code))
             {
                 var heapStack = evaluationStack;
                 var target = instruction.Operand;
@@ -1544,7 +1537,7 @@ namespace PapyrusDotNet.Old
                      (InstructionHelper.IsLoad(whereToPlace.OpCode.Code) ||
                       InstructionHelper.IsCallMethod(whereToPlace.OpCode.Code) ||
                       InstructionHelper.IsBranchConditional(instruction.OpCode.Code)
-                      || Utility.IsLoadLength(instruction.OpCode.Code)))
+                      || InstructionHelper.IsLoadLength(instruction.OpCode.Code)))
             {
                 // Most likely this function call have a return value other than Void
                 // and is used for an additional method call, witout being assigned to a variable first.
