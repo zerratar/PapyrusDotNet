@@ -792,13 +792,46 @@ namespace PapyrusDotNet.Common
             }
         }
 
-        public static PapyrusPrimitiveType GetPrimitiveType(object val)
+        public static PapyrusPrimitiveType GetPrimitiveTypeFromType(TypeReference type)
+        {
+            var typeName = GetPapyrusReturnType(type.FullName);
+
+            return GetPapyrusValueType(typeName);
+        }
+
+        public static PapyrusPrimitiveType GetPrimitiveTypeFromType(Type type)
+        {
+            var typeName = GetPapyrusReturnType(type.FullName);
+
+            return GetPapyrusValueType(typeName);
+        }
+
+        public static PapyrusPrimitiveType GetPrimitiveTypeFromValue(object val)
         {
             var type = val.GetType();
 
             var typeName = GetPapyrusReturnType(type.FullName);
 
             return GetPapyrusValueType(typeName);
+        }
+
+        public static string PapyrusValueTypeToString(PapyrusPrimitiveType valueType)
+        {
+            switch (valueType)
+            {
+                case PapyrusPrimitiveType.Boolean:
+                    return "Bool";
+                case PapyrusPrimitiveType.Float:
+                    return "Float";
+                case PapyrusPrimitiveType.Integer:
+                    return "Int";
+                case PapyrusPrimitiveType.String:
+                    return "String";
+                default:
+                case PapyrusPrimitiveType.Reference:
+                case PapyrusPrimitiveType.None:
+                    return null;
+            }
         }
     }
 }

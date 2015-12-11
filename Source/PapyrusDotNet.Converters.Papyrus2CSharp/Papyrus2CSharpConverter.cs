@@ -466,7 +466,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     {
                         var comment = WritePapyrusInstruction(i) + Environment.NewLine;
 
-                        var array = GetArgumentValue(i.Arguments[0]);                        
+                        var array = GetArgumentValue(i.Arguments[0]);
                         var index = GetArgumentValue(i.Arguments[1]);
                         var count = GetArgumentValue(i.Arguments[2]);
 
@@ -480,7 +480,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         var destination = GetArgumentValue(i.Arguments[1]);
                         var elementToFind = GetArgumentValue(i.Arguments[2]);
                         var startIndex = GetArgumentValue(i.Arguments[3]);
-                                               
+
                         return comment + destination + " = Array.IndexOf(" + array + ", " + elementToFind + ", " + startIndex + ");";
                     }
                 case PapyrusOpCode.ArrayFindStruct:
@@ -494,6 +494,14 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         var startIndex = GetArgumentValue(i.Arguments[4]);
 
                         return comment + destination + " = Structs.IndexOf(" + array + ", " + fieldToMatch + ", " + value + ", " + startIndex + ");";
+                    }
+                case PapyrusOpCode.PropGet:
+                    {
+                        return WritePapyrusInstruction(i);
+                    }
+                case PapyrusOpCode.PropSet:
+                    {
+                        return WritePapyrusInstruction(i);
                     }
                 case PapyrusOpCode.StructSet:
                     {
@@ -646,7 +654,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     {
                         if (arg.Value != null)
                         {
-                            return arg.Value.Equals(1) ? "true" : "false";
+                            return (arg.Value.Equals(true) || arg.Value.Equals(1)) ? "true" : "false";
                         }
                     }
                     break;

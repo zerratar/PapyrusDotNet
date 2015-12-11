@@ -236,13 +236,24 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             switch (fieldVariable.ValueType)
             {
                 case PapyrusPrimitiveType.Reference:
-                        pexWriter.Write((string)fieldVariable.Value);
+                    pexWriter.Write((string)fieldVariable.Value);
                     break;
                 case PapyrusPrimitiveType.String:
                     pexWriter.Write((string)fieldVariable.Value);
                     break;
                 case PapyrusPrimitiveType.Boolean:
-                    pexWriter.Write((byte)fieldVariable.Value);
+                    {
+                        if (fieldVariable.Value is bool)
+                        {
+                            // I think this is Acceptable :p
+                            var value = (byte)(((bool)fieldVariable.Value) ? 1 : 0);
+                            pexWriter.Write(value);
+                        }
+                        else
+                        {
+                            pexWriter.Write((byte)fieldVariable.Value);
+                        }
+                    }
                     break;
                 case PapyrusPrimitiveType.Float:
                     pexWriter.Write((float)fieldVariable.Value);

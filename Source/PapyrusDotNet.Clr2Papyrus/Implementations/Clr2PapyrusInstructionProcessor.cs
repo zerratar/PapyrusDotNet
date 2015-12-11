@@ -380,6 +380,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     var isStaticCall = false;
                     var callerLocation = "";
                     var parameters = new List<object>();
+
+                    if (methodRef.HasThis)
+                    {
+                        callerLocation = "self";
+                        isThisCall = true;
+                    }
+
                     for (var paramIndex = 0; paramIndex < itemsToPop; paramIndex++)
                     {
                         var parameter = stack.Pop();
@@ -593,7 +600,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                             // this is so we avoid doing ex: cast ::temp0 55
                             // and instead we do: cast ::temp0 ::temp1
                             var valueToCastTemp = GetTargetVariable(instruction, methodRef, stackItem.TypeName, true);
-                            var valueToCast = CreateVariableReference(Utility.GetPrimitiveType(stackItem.Value),
+                            var valueToCast = CreateVariableReference(Utility.GetPrimitiveTypeFromValue(stackItem.Value),
                                 stackItem.Value);
 
                             // Assign our newly created tempvalue with our object.
@@ -636,13 +643,48 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         {
             var inst = new PapyrusInstruction();
             inst.OpCode = callOpCode;
-            inst.Arguments.AddRange(ParsePapyrusParameters(new object[] {
+
+            if (callOpCode == PapyrusOpCode.Callstatic)
+            {
+                inst.Arguments.AddRange(ParsePapyrusParameters(new object[] {
                 CreateVariableReference(PapyrusPrimitiveType.Reference, callerLocation),
                 CreateVariableReference(PapyrusPrimitiveType.Reference, methodRef.Name),
                 CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable)}));
-            inst.OperandArguments.AddRange(ParsePapyrusParameters(parameters.ToArray()));
+            }
+            else
+            {
+                inst.Arguments.AddRange(ParsePapyrusParameters(new object[] {
+                CreateVariableReference(PapyrusPrimitiveType.Reference, methodRef.Name),
+                CreateVariableReference(PapyrusPrimitiveType.Reference, callerLocation),
+                CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable)}));
+            }
+            inst.OperandArguments.AddRange(EnsureParameterTypes(methodRef.Parameters, ParsePapyrusParameters(parameters.ToArray())));
             inst.Operand = methodRef;
             return inst;
+        }
+
+        private IEnumerable<PapyrusVariableReference> EnsureParameterTypes(Collection<ParameterDefinition> parameters, List<PapyrusVariableReference> papyrusParams)
+        {
+            var varRefs = new List<PapyrusVariableReference>();
+            var i = 0;
+            foreach (var p in parameters)
+            {
+                var papyrusType = Utility.GetPapyrusReturnType(p.ParameterType);
+                if (p.ParameterType.IsValueType && Utility.PapyrusValueTypeToString(papyrusParams[i].ValueType) != papyrusType)
+                {
+                    papyrusParams[i].TypeName = papyrusType.Ref(papyrusAssembly);
+                    papyrusParams[i].ValueType = Utility.GetPrimitiveTypeFromType(p.ParameterType);
+                    papyrusParams[i].Value = Utility.TypeValueConvert(papyrusType, papyrusParams[i].Value);
+                    varRefs.Add(papyrusParams[i]);
+                }
+                else
+                {
+                    varRefs.Add(papyrusParams[i]);
+                }
+                i++;
+            }
+
+            return varRefs;
         }
 
         public IEnumerable<PapyrusInstruction> GetConditional(Instruction instruction)
@@ -695,7 +737,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 }
                 else
                 {
-                    numerator = CreateVariableReference(Utility.GetPrimitiveType(numeratorObject.Value), numeratorObject.Value);
+                    numerator = CreateVariableReference(Utility.GetPrimitiveTypeFromValue(numeratorObject.Value), numeratorObject.Value);
                 }
 
                 if (denumeratorObject.Value is PapyrusVariableReference)
@@ -719,7 +761,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 }
                 else
                 {
-                    denumerator = CreateVariableReference(Utility.GetPrimitiveType(numeratorObject.Value), denumeratorObject.Value);
+                    denumerator = CreateVariableReference(Utility.GetPrimitiveTypeFromValue(numeratorObject.Value), denumeratorObject.Value);
                 }
 
                 // if (Utility.IsGreaterThan(code) || Utility.IsLessThan(code))
@@ -1153,7 +1195,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     }
                     else
                     {
-                        var papyrusPrimitiveType = Utility.GetPrimitiveType(val);
+                        var papyrusPrimitiveType = Utility.GetPrimitiveTypeFromValue(val);
                         args.Add(CreateVariableReference(papyrusPrimitiveType, val));
                     }
                 }

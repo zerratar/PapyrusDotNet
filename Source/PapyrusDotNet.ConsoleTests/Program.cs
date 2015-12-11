@@ -41,10 +41,10 @@ namespace PapyrusDotNet.ConsoleTests
             var value = converter.Convert(
                 new ClrAssemblyInput(
                     AssemblyDefinition.ReadAssembly(
-                        @"c:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
+                        @"d:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
                     PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
-#if true
-            var folder = @"C:\git\PapyrusDotNet\Source\Test Scripts\Fallout 4\";
+#if false
+            var folder = @"d:\git\PapyrusDotNet\Source\Test Scripts\Fallout 4\";
             var pexFile1 = folder + @"AssaultronHeadModStealthScript.pex";
             var pexFile2 = folder + @"BobbleheadStandContainerScript.pex";
             var pexFile3 = folder + @"DN035QuestScript.pex";

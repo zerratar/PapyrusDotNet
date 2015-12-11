@@ -81,10 +81,14 @@ namespace Fallout4Example
 
             testInteger1 += 100;
 
+            HelloThere = true;
+
             if (HelloThere)
             {
                 Debug.MessageBox("It is!");
             }
+
+            LoopTest();
         }
     }
 }
