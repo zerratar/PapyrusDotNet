@@ -60,6 +60,9 @@ namespace Fallout4Example
             //MyTestStruct meStruct;
 
             //meStruct.StructInteger = 252;
+            int testint = 88;
+
+            TestSwitch(testint);
 
             asda = 0;
             testInteger1++;
@@ -89,6 +92,28 @@ namespace Fallout4Example
             }
 
             LoopTest();
+        }
+
+        public static void TestSwitch(int testint)
+        {
+            switch (testint)
+            {
+                case 0:
+                    Debug.MessageBox("0 wassit?");
+                    break;
+                case 1:
+                    Debug.MessageBox("1 wassit?");
+                    break;
+                case 2:
+                    Debug.MessageBox("2 wassit?");
+                    break;
+                case 88:
+                    Debug.MessageBox("88 wassit?");
+                    break;
+                case 928:
+                    Debug.MessageBox("928 hehehe");
+                    break;
+            }
         }
     }
 }

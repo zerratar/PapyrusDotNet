@@ -48,6 +48,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
 
         private Dictionary<Instruction, List<PapyrusInstruction>> InstructionReferences = new Dictionary<Instruction, List<PapyrusInstruction>>();
+        private bool invertedBranch;
+        private bool isInsideSwitch;
+        private Instruction[] switchTargetInstructions = new Instruction[0];
+        private Instruction switchEndInstruction;
+        private int switchTargetIndex;
+        private PapyrusVariableReference switchConditionalComparer;
 
 
         /// <summary>
@@ -88,6 +94,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
                     InstructionReferences.Add(i, new List<PapyrusInstruction>());
 
+                    // LEAVE FOR NOW:
+                    // Add a NOP if there is a NOP in the CIL
+                    // to try and maintain the same debugging information
+                    // this is not necessary though and can be skipped.
                     if (i.OpCode.Code == Code.Nop)
                     {
                         var nop = CreatePapyrusInstruction(PapyrusOpCode.Nop);
@@ -95,12 +105,17 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                         InstructionReferences[i].Add(nop);
                     }
 
+                    // If the next (this) instruction should be skipped,
+                    // this usually happens when the next instruction is not necessary
+                    // to generate the papyrus necessary
                     if (skipNextInstruction)
                     {
                         skipNextInstruction = false;
                         continue;
                     }
 
+                    // Skip a range of instructions
+                    // this happens when there are more than one instruction that are unecessary
                     if (skipToOffset > 0)
                     {
                         if (i.Offset <= skipToOffset)
@@ -110,7 +125,67 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                         skipToOffset = -1;
                     }
 
-                    var papyrusInstructions = ProcessInstruction(method, i).ToList();
+                    List<PapyrusInstruction> papyrusInstructions = new List<PapyrusInstruction>();
+
+                    bool skipThisInstruction = false;
+
+                    // if we are inside a switch, and this current instruction is a destination in the switch jump table
+                    // we will need to insert an equality check and conditional jumpf
+
+                    // the switch table will always be before any other if statements
+                    // so we need to insert the equality compare + jumps directly.
+                    // -------- FOREACH DESTINATION ------------
+                    // if true jump to case ------------(INSERT)
+                    // jump to end of switch -----------(INSERT-LAST)
+                    // ---- UNKNOWN INSTRUCTIONS IN BETWEEN ----
+                    // do case  ------------------------(EXISTS)
+                    // jump to end of switch -----------(EXISTS)
+                    if (isInsideSwitch)// && switchTargetInstructions.Contains(i))
+                    {
+                        // numeric to compare: switchConditionalComparer
+                        // final destination: switchEndInstruction
+                        // keep track on the destination index and used for comparing: switchTargetIndex
+                        //      EX: ::tempBool = switchConditionalComparer == switchTargetIndex
+                        //          Jumpf ::tempBool switchEndInstruction
+
+                        foreach (var dest in switchTargetInstructions)
+                        {
+                            // Create a temp variable
+                            var tmpBool = GetTargetVariable(i, null, "Bool");
+
+                            // Push the values to the stack
+                            evaluationStack.Push(new EvaluationStackItem { TypeName = switchConditionalComparer.TypeName.Value, Value = switchConditionalComparer });
+                            evaluationStack.Push(new EvaluationStackItem { TypeName = "Int", Value = switchTargetIndex++ });
+
+                            // Create the equality comparison
+                            var conditional = GetConditional(i, Code.Ceq, tmpBool);
+                            papyrusInstructions.AddRange(conditional);
+
+                            // Create the jump to case if true
+                            var jumpT = ConditionalJump(PapyrusOpCode.Jmpt, CreateVariableReferenceFromName(tmpBool), dest);
+                            papyrusInstructions.Add(jumpT);
+                        }
+
+                        if (switchTargetIndex >= switchTargetInstructions.Length)
+                        {
+                            //// create the jump to end
+                            //var jump = CreatePapyrusInstruction(PapyrusOpCode.Jmp, switchEndInstruction);
+                            //jump.Operand = switchEndInstruction;
+                            //papyrusInstructions.Add(jump);
+
+                            // Stop switch
+                            switchConditionalComparer = null;
+                            switchTargetIndex = 0;
+                            switchTargetInstructions = new Instruction[0];
+                            switchEndInstruction = null;
+                            isInsideSwitch = false;
+                            skipThisInstruction = InstructionHelper.IsBranch(i.OpCode.Code); // skip the this instruction if it's branching
+                        }
+                    }
+
+
+                    if (!skipThisInstruction)
+                        papyrusInstructions.AddRange(ProcessInstruction(method, i).ToList());
 
                     outputInstructions.AddRange(papyrusInstructions);
 
@@ -120,7 +195,18 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 // 2. Make sure we have set all our instruction's Previous and Next value
                 AdjustInstructionChain(ref outputInstructions);
 
-                // 3. Adjust all branch instructions to point at PapyrusInstructions instead of CIL Instruction
+                // TODO: 3. For the future: We can insert a NOP at each jump's destination and add a value to the operand
+                //      used for verifying that the position is correct, and then use that NOP instruction as the new
+                //      target, then we can make sure we always have the correct destination.
+                //  --------------------------------------------
+                //      ( Branching is found -> Take offset of that branch destination -> when the offset is reached
+                //         add a NOP and set the operand to the offset -> when all instructions parsed, adjust the branching
+                //          -> set the new operand of the jumps to the NOP instruction and remove the operand from the NOP )
+                //  -------------------------------------------
+                // 3. For now: Adjust all branch instructions to point at PapyrusInstructions instead of CIL Instruction
+                //              by looking at the InstructionReferences 
+                //              ( What Papyrus Instructions was produced by the specific 
+                //                  destination CIL Instruction and take the first )
                 foreach (var papyrusInstruction in outputInstructions)
                 {
                     var inst = papyrusInstruction.Operand as Instruction;
@@ -295,20 +381,18 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     else if (InstructionHelper.IsBranchConditionalGe(instruction.OpCode.Code))
                         output.Add(CreatePapyrusInstruction(PapyrusOpCode.CmpLte, tempVar, obj1, obj2));
 
-                    if (InstructionHelper.IsBranchTrue(instruction.OpCode.Code))
-                    {
-                        var jmp = CreatePapyrusInstruction(PapyrusOpCode.Jmpt, tempVar, destinationInstruction);
-                        jmp.Operand = destinationInstruction;
-                        output.Add(jmp);
-                        return output;
-                    }
-                    if (InstructionHelper.IsBranchFalse(instruction.OpCode.Code))
-                    {
-                        var jmp = CreatePapyrusInstruction(PapyrusOpCode.Jmpf, tempVar, destinationInstruction);
-                        jmp.Operand = destinationInstruction;
-                        output.Add(jmp);
-                        return output;
-                    }
+                    // if (InstructionHelper.IsBranchTrue(instruction.OpCode.Code))
+
+                    //if (!invertedBranch)
+                    //{
+                    output.Add(ConditionalJump(PapyrusOpCode.Jmpt, tempVar, destinationInstruction));
+                    return output;
+                    //}
+                    //else // if (InstructionHelper.IsBranchFalse(instruction.OpCode.Code))
+                    //{
+                    //    output.Add(ConditionalJump(PapyrusOpCode.Jmpf, tempVar, destinationInstruction));
+                    //    return output;
+                    //}
                 }
             }
             else if (InstructionHelper.IsBranch(instruction.OpCode.Code))
@@ -319,18 +403,18 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 if (stack.Count > 0)
                 {
                     var conditionalVariable = stack.Pop();
-
                     if (InstructionHelper.IsBranchTrue(instruction.OpCode.Code))
                     {
-                        var jmp = CreatePapyrusInstruction(PapyrusOpCode.Jmpt, conditionalVariable, targetInstruction);
+                        var jmpOp = TryInvertJump(PapyrusOpCode.Jmpt);
+                        var jmp = CreatePapyrusInstruction(jmpOp, conditionalVariable, targetInstruction);
                         jmp.Operand = targetInstruction;
                         output.Add(jmp);
                         return output;
                     }
                     if (InstructionHelper.IsBranchFalse(instruction.OpCode.Code))
                     {
-                        var jmp = CreatePapyrusInstruction(PapyrusOpCode.Jmpf, conditionalVariable, targetInstruction);
-                        jmp.Operand = targetInstruction;
+                        var jmpOp = TryInvertJump(PapyrusOpCode.Jmpf);
+                        var jmp = CreatePapyrusInstruction(jmpOp, conditionalVariable, targetInstruction); jmp.Operand = targetInstruction;
                         output.Add(jmp);
                         return output;
                     }
@@ -340,7 +424,36 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 jmpInst.Operand = targetInstruction;
                 output.Add(jmpInst);
             }
+            if (InstructionHelper.IsSwitch(instruction.OpCode.Code))
+            {
+                var switchTargets = instruction.Operand as Instruction[];
+                // we need to convert the switch targets into if else statements,
+                // 1. save these targets, we need to match any upcoming instructions against them 
+                // 2. if a match, insert a equality compare <N == switch case index>
+                //      and then a jmpf <condition> <end_of_swith>
+                // -- that should be it! :-) we will have to figure out default cases later on.
+                isInsideSwitch = true;
+                switchTargetInstructions = switchTargets;
+                switchTargetIndex = 0;
 
+                // find the variable to compare with; used for the conditional bool temp var
+                switchConditionalComparer = evaluationStack.Peek().Value as PapyrusVariableReference;
+
+                // find the <end_of_switch>
+                Instruction currentInstruction = null;
+                var endOfSwitch = switchTargets.Last();
+                while (endOfSwitch != null && !InstructionHelper.IsBranch(endOfSwitch.OpCode.Code))
+                {
+                    endOfSwitch = endOfSwitch.Next;
+                    if (endOfSwitch != null) // in case we hit the end of the method we still want a propert end
+                        currentInstruction = endOfSwitch;
+                }
+                if (endOfSwitch == null)
+                {
+                    endOfSwitch = currentInstruction;
+                }
+                switchEndInstruction = endOfSwitch;
+            }
             if (InstructionHelper.IsNewArrayInstance(instruction.OpCode.Code))
             {
                 output.Add(CreateNewPapyrusArrayInstance(instruction));
@@ -428,6 +541,17 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                              methodRef.Name.ToLower().Contains("op_inequal"))
                     {
                         // TODO: Add Equality comparison
+
+                        invertedBranch = methodRef.Name.ToLower().Contains("op_inequal");
+
+                        if (!InstructionHelper.IsStore(instruction.Next.OpCode.Code))
+                        {
+                            skipToOffset = instruction.Next.Offset;
+                            return output;
+                        }
+                        // evaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
+
+                        output.AddRange(GetConditional(instruction, Code.Ceq));
                     }
                     else
                     {
@@ -507,6 +631,24 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 }
             }
             return output;
+        }
+
+        private PapyrusInstruction ConditionalJump(PapyrusOpCode jumpType, PapyrusVariableReference conditionalVar,
+            object destinationInstruction)
+        {
+            var jmpOp = TryInvertJump(jumpType);
+            var jmp = CreatePapyrusInstruction(jmpOp, conditionalVar, destinationInstruction);
+            jmp.Operand = destinationInstruction;
+            return jmp;
+        }
+
+        private PapyrusOpCode TryInvertJump(PapyrusOpCode jmpt)
+        {
+            if (!invertedBranch) return jmpt;
+            invertedBranch = false;
+            if (jmpt == PapyrusOpCode.Jmpt)
+                return PapyrusOpCode.Jmpf;
+            return PapyrusOpCode.Jmpt;
         }
 
         private PapyrusInstruction CreateNewPapyrusArrayInstance(Instruction instruction)
@@ -670,7 +812,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             foreach (var p in parameters)
             {
                 var papyrusType = Utility.GetPapyrusReturnType(p.ParameterType);
-                if (p.ParameterType.IsValueType && Utility.PapyrusValueTypeToString(papyrusParams[i].ValueType) != papyrusType)
+                if (p.ParameterType.IsValueType
+                    && Utility.PapyrusValueTypeToString(papyrusParams[i].ValueType) != papyrusType
+                    && papyrusParams[i].ValueType != PapyrusPrimitiveType.Reference)
                 {
                     papyrusParams[i].TypeName = papyrusType.Ref(papyrusAssembly);
                     papyrusParams[i].ValueType = Utility.GetPrimitiveTypeFromType(p.ParameterType);
@@ -687,7 +831,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return varRefs;
         }
 
-        public IEnumerable<PapyrusInstruction> GetConditional(Instruction instruction)
+        public IEnumerable<PapyrusInstruction> GetConditional(Instruction instruction, Code overrideOpCode = Code.Nop, string tempVariable = null)
         {
             var output = new List<PapyrusInstruction>();
 
@@ -697,7 +841,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
 #warning GetConditional only applies on Integers and must add support for Float further on.
 
-            var papyrusOpCode = Utility.GetPapyrusMathOrEqualityOpCode(instruction.OpCode.Code, false);
+            var papyrusOpCode = Utility.GetPapyrusMathOrEqualityOpCode(overrideOpCode != Code.Nop ? overrideOpCode : instruction.OpCode.Code, false);
 
             if (heapStack.Count >= 2) //Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop))
             {
@@ -762,6 +906,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 else
                 {
                     denumerator = CreateVariableReference(Utility.GetPrimitiveTypeFromValue(numeratorObject.Value), denumeratorObject.Value);
+                }
+
+                if (!string.IsNullOrEmpty(tempVariable))
+                {
+                    output.Add(CreatePapyrusInstruction(papyrusOpCode, CreateVariableReferenceFromName(tempVariable), denumerator, numerator));
+                    return output;
                 }
 
                 // if (Utility.IsGreaterThan(code) || Utility.IsLessThan(code))

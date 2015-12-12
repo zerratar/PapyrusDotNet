@@ -289,5 +289,10 @@ namespace PapyrusDotNet.Common
         {
             return code == Code.Ldnull;
         }
+
+        public static bool IsSwitch(Code code)
+        {
+            return code == Code.Switch;
+        }
     }
 }

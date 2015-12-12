@@ -290,7 +290,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                             .Ref(asm)
                         )
                         {
-                            Value = varName
+                            Value = varName.Value,
+                            ValueType = PapyrusPrimitiveType.Reference
                         }
                     );
             }
