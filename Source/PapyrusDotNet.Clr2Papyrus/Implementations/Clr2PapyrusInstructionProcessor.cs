@@ -57,15 +57,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
 
         /// <summary>
-        ///     Processes the instructions.
+        /// Processes the instructions.
         /// </summary>
-        /// <param name="targetPapyrusAssembly"></param>
-        /// <param name="targetPapyrusType"></param>
-        /// <param name="targetPapyrusMethod"></param>
+        /// <param name="targetPapyrusAssembly">The target papyrus assembly.</param>
+        /// <param name="targetPapyrusType">Type of the target papyrus.</param>
+        /// <param name="targetPapyrusMethod">The target papyrus method.</param>
         /// <param name="method">The method.</param>
         /// <param name="body">The body.</param>
         /// <param name="instructions">The instructions.</param>
-        /// <param name="options"></param>
+        /// <param name="options">The options.</param>
         /// <returns></returns>
         public IEnumerable<PapyrusInstruction> ProcessInstructions(PapyrusAssemblyDefinition targetPapyrusAssembly,
             PapyrusTypeDefinition targetPapyrusType,
@@ -220,6 +220,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                         // previous one and find the target papyrus instruction
                         while (papyrusInstRefCollection.Count == 0)
                         {
+                            // if we intend to load something and then use it in a method call, we
+                            // have most likely added the actual method call as a reference since we do not
+                            // add "loosly" hanging loads unless they are actually used as a variable.                       
+                            if (InstructionHelper.IsLoad(tempInst.OpCode.Code) &&
+                                InstructionHelper.IsCallMethod(tempInst.Next.OpCode.Code))
+                            {
+                                papyrusInstRefCollection = InstructionReferences[tempInst.Next];
+                                continue;
+                            }
                             tempInst = tempInst.Previous;
                             if (tempInst == null) break;
                             papyrusInstRefCollection = InstructionReferences[tempInst];
@@ -437,7 +446,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 switchTargetIndex = 0;
 
                 // find the variable to compare with; used for the conditional bool temp var
-                switchConditionalComparer = evaluationStack.Peek().Value as PapyrusVariableReference;
+                switchConditionalComparer = switchConditionalComparer ?? evaluationStack.Peek().Value as PapyrusVariableReference;
 
                 // find the <end_of_switch>
                 Instruction currentInstruction = null;
@@ -917,6 +926,22 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 // if (Utility.IsGreaterThan(code) || Utility.IsLessThan(code))
                 {
                     var next = instruction.Next;
+
+                    // If the next one is a switch, it most likely 
+                    // means that we want to apply some mathematical stuff
+                    // on our constant value so that we can properly do an equality
+                    // comparison.
+                    if (InstructionHelper.IsSwitch(next.OpCode.Code))
+                    {
+                        var newTempVariable = GetTargetVariable(instruction, null, "Int", true);
+                        switchConditionalComparer = CreateVariableReferenceFromName(newTempVariable);
+                        switchConditionalComparer.ValueType = PapyrusPrimitiveType.Reference;
+                        switchConditionalComparer.TypeName = "Int".Ref(papyrusAssembly);
+
+                        output.Add(CreatePapyrusInstruction(papyrusOpCode, switchConditionalComparer, denumerator, numerator));
+                        return output;
+                    }
+
                     while (next != null &&
                            !InstructionHelper.IsStoreLocalVariable(next.OpCode.Code) &&
                            !InstructionHelper.IsStoreField(next.OpCode.Code) &&

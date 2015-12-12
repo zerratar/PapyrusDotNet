@@ -98,19 +98,22 @@ namespace Fallout4Example
         {
             switch (testint)
             {
-                case 0:
+                case 1:
                     Debug.MessageBox("0 wassit?");
                     break;
-                case 1:
+                case 2:
                     Debug.MessageBox("1 wassit?");
                     break;
-                case 2:
+                case 3:
                     Debug.MessageBox("2 wassit?");
                     break;
-                case 88:
+                case 4:
                     Debug.MessageBox("88 wassit?");
                     break;
-                case 928:
+                case 5:
+                    Debug.MessageBox("928 hehehe");
+                    break;
+                case 8:
                     Debug.MessageBox("928 hehehe");
                     break;
             }
