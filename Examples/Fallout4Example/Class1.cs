@@ -84,7 +84,7 @@ namespace Fallout4Example
 
             testInteger1 += 100;
 
-            HelloThere = true;
+            HelloThere = true;  
 
             if (HelloThere)
             {

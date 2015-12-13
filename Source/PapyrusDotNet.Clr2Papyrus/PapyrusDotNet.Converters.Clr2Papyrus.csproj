@@ -57,6 +57,11 @@
     <Compile Include="Implementations\Clr2PapyrusInstructionProcessor.cs" />
     <Compile Include="Enums\PapyrusCompilerOptions.cs" />
     <Compile Include="Exceptions\ProhibitedCodingBehaviourException.cs" />
+    <Compile Include="Implementations\Processors\PapyrusCallInstructionProcessor.cs" />
+    <Compile Include="Implementations\Processors\PapyrusBranchInstructionProcessor.cs" />
+    <Compile Include="Implementations\Processors\PapyrusStoreInstructionProcessor.cs" />
+    <Compile Include="Interfaces\IPapyrusInstructionProcessor.cs" />
+    <Compile Include="Implementations\Processors\PapyrusLoadInstructionProcessor.cs" />
     <Compile Include="Interfaces\IClr2PapyrusInstructionProcessor.cs" />
     <Compile Include="Implementations\ClrAssemblyInput.cs" />
     <Compile Include="Clr2PapyrusConverter.cs" />

@@ -635,7 +635,7 @@ namespace PapyrusDotNet.Old
                 // b = (MyEnum)a;
 
 
-                //var heapStack = evaluationStack;
+                //var heapStack = EvaluationStack;
                 //var obj1 = heapStack.Pop();
                 //var obj2 = heapStack.Pop();
                 //var vars = function.AllVariables;
@@ -788,7 +788,7 @@ namespace PapyrusDotNet.Old
 
                                     var vari = function.AllVariables.FirstOrDefault(va => va.Name == targetVariable);
 
-                                    //evaluationStack.Push(new EvaluationStackItem() { IsMethodCall = false, IsThis = false, TypeName = vari.TypeName, Value = vari });
+                                    //EvaluationStack.Push(new EvaluationStackItem() { IsMethodCall = false, IsThis = false, TypeName = vari.TypeName, Value = vari });
                                     return "ArrayLength " + targetVariable + " " + (val.Value as VariableReference).Name;
                                 }
                                 evaluationStack.Push(new EvaluationStackItem
@@ -821,7 +821,7 @@ namespace PapyrusDotNet.Old
                         if (tarIn.Operand is FieldReference)
                         {
                             var fref = tarIn.Operand as FieldReference;
-                            // if the evaluationStack.Count == 0
+                            // if the EvaluationStack.Count == 0
                             // The previous instruction might have been a call that returned a value
                             // Something we did not store...
 
@@ -949,7 +949,7 @@ namespace PapyrusDotNet.Old
                 if (instruction.Operand is FieldReference)
                 {
                     var fref = instruction.Operand as FieldReference;
-                    // if the evaluationStack.Count == 0
+                    // if the EvaluationStack.Count == 0
                     // The previous instruction might have been a call that returned a value
                     // Something we did not store...
                     if (evaluationStack.Count > 0)
@@ -1068,7 +1068,7 @@ namespace PapyrusDotNet.Old
                         var popCount = para.Count;
 
                         var targetVariable = evaluationStack.Peek();
-                        //	var val=evaluationStack.Peek()
+                        //	var val=EvaluationStack.Peek()
                         if (targetVariable.Value is VariableReference)
                         {
                             targetVariable = evaluationStack.Pop();
@@ -1142,7 +1142,7 @@ namespace PapyrusDotNet.Old
                             skipToOffset = instruction.Next.Offset;
                             return "";
                         }
-                        // evaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
+                        // EvaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
                         passThroughConditional = true;
                         goto EqualityCheck;
                     }
@@ -1485,7 +1485,7 @@ namespace PapyrusDotNet.Old
                 if (whereToPlace.Operand is FieldReference)
                 {
                     var fref = whereToPlace.Operand as FieldReference;
-                    // if the evaluationStack.Count == 0
+                    // if the EvaluationStack.Count == 0
                     // The previous instruction might have been a call that returned a value
                     // Something we did not store...
                     var definedField =
@@ -1531,7 +1531,7 @@ namespace PapyrusDotNet.Old
                 skipNextInstruction = true;
 
                 // else 
-                //evaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
+                //EvaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
             }
             else if (whereToPlace != null &&
                      (InstructionHelper.IsLoad(whereToPlace.OpCode.Code) ||
@@ -1542,7 +1542,7 @@ namespace PapyrusDotNet.Old
                 // Most likely this function call have a return value other than Void
                 // and is used for an additional method call, witout being assigned to a variable first.
 
-                // evaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
+                // EvaluationStack.Push(new EvaluationStackItem { IsMethodCall = true, Value = methodRef, TypeName = methodRef.ReturnType.FullName });
 
                 var tVar =
                     function.CreateTempVariable(
