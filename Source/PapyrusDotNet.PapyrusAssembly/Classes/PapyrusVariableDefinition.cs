@@ -15,7 +15,7 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     //public class PapyrusVariableDefinition
     //{

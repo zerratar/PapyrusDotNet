@@ -5,8 +5,8 @@ using System.Text;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly.Classes;
-using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 namespace PapyrusDotNet.Converters.Papyrus2CSharp

@@ -21,7 +21,7 @@ using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusFieldDefinition : PapyrusFieldReference
     {
@@ -46,5 +46,10 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public string Documentation { get; set; }
         public string TypeName { get; set; }
         public bool IsConst { get; set; }
+
+        public override string ToString()
+        {
+            return TypeName + " " + Name;
+        }
     }
 }

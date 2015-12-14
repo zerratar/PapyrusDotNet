@@ -19,7 +19,7 @@
 
 using Mono.Cecil;
 using PapyrusDotNet.Common.Interfaces;
-using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly;
 
 #endregion
 

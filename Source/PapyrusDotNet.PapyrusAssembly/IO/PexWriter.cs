@@ -21,8 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PapyrusDotNet.PapyrusAssembly.Classes;
-using PapyrusDotNet.PapyrusAssembly.Enums;
 
 #endregion
 

@@ -21,7 +21,7 @@ using System;
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusSourceHeader
     {

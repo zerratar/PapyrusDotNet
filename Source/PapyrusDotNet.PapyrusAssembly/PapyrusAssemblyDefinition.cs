@@ -20,8 +20,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using PapyrusDotNet.PapyrusAssembly.Classes;
-using PapyrusDotNet.PapyrusAssembly.Enums;
 using PapyrusDotNet.PapyrusAssembly.Implementations;
 
 #endregion

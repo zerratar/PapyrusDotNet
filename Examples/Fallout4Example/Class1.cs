@@ -116,6 +116,16 @@ namespace Fallout4Example
                 case 8:
                     Debug.MessageBox("928 hehehe");
                     break;
+
+                case 922:
+                    Debug.MessageBox("928 hehehe");
+                    break;
+                case 923:
+                    Debug.MessageBox("928 hehehe");
+                    break;
+                case 924:
+                    Debug.MessageBox("928 hehehe");
+                    break;
             }
         }
     }

@@ -1,3 +1,20 @@
+//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
@@ -6,20 +23,20 @@ using PapyrusDotNet.Common;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Exceptions;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
-using PapyrusDotNet.PapyrusAssembly.Classes;
-using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 {
-    public class PapyrusLoadInstructionProcessor : IPapyrusInstructionProcessor
+    public class LoadInstructionProcessor : IInstructionProcessor
     {
-        private readonly Clr2PapyrusInstructionProcessor mainInstructionProcessor;
+        private readonly IClr2PapyrusInstructionProcessor mainInstructionProcessor;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PapyrusLoadInstructionProcessor"/> class.
+        /// Initializes a new instance of the <see cref="LoadInstructionProcessor"/> class.
         /// </summary>
         /// <param name="mainInstructionProcessor">The main instruction processor.</param>
-        public PapyrusLoadInstructionProcessor(Clr2PapyrusInstructionProcessor mainInstructionProcessor)
+        public LoadInstructionProcessor(IClr2PapyrusInstructionProcessor mainInstructionProcessor)
         {
             this.mainInstructionProcessor = mainInstructionProcessor;
         }

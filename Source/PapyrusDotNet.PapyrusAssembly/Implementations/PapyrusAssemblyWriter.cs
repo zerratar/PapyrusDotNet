@@ -19,8 +19,6 @@
 
 using System;
 using System.IO;
-using PapyrusDotNet.PapyrusAssembly.Classes;
-using PapyrusDotNet.PapyrusAssembly.Enums;
 using PapyrusDotNet.PapyrusAssembly.Interfaces;
 using PapyrusDotNet.PapyrusAssembly.IO;
 

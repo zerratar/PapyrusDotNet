@@ -15,7 +15,7 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-namespace PapyrusDotNet.PapyrusAssembly.Enums
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public enum PapyrusPrimitiveType : byte
     {

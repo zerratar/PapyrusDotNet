@@ -27,7 +27,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using PapyrusDotNet.Common.Papyrus;
-using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly;
 using MemberAttributes = PapyrusDotNet.Common.Papyrus.FieldAttributes;
 using VariableReference = PapyrusDotNet.Common.Papyrus.VariableReference;
 
@@ -832,6 +832,22 @@ namespace PapyrusDotNet.Common
                 case PapyrusPrimitiveType.None:
                     return null;
             }
+        }
+
+        public static T[] ArrayOf<T>(params T[] items)
+        {
+            return items;
+        }
+
+        public static bool IsConstantValue(object value)
+        {
+            return value is int || value is byte || value is short || value is long || value is double || value is float || value is string || value is bool;
+        }
+
+        public static bool IsVoid(TypeReference typeReference)
+        {
+            return typeReference.FullName.ToLower().Equals("system.void")
+                   || typeReference.Name.ToLower().Equals("void");
         }
     }
 }

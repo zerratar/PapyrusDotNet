@@ -30,7 +30,7 @@ using PapyrusDotNet.Converters.Papyrus2Clr;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.Old;
 using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly;
 using PowerArgs;
 
 #endregion
@@ -133,79 +133,79 @@ namespace PapyrusDotNet
 
         #region Old Program Start
 
-        private static void MainOld(string[] args)
-        {
-            OutputFolder = @".\output";
-            InputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
-            try
-            {
-                var parsed = Args.Parse<PapyrusDotNetArgs>(args);
-                if (parsed.InputFile != null)
-                {
-                    // Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
-                    if (parsed.OutputFolder != null)
-                        OutputFolder = parsed.OutputFolder;
-                    InputFile = parsed.InputFile;
-                    if (OutputFolder.Contains("\""))
-                    {
-                        OutputFolder = OutputFolder.Replace("\"", "");
-                    }
-
-                    if (InputFile.Contains("\""))
-                    {
-                        InputFile = InputFile.Replace("\"", "");
-                    }
-
-                    Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.InputFile, parsed.OutputFolder);
-                }
-            }
-            catch (ArgException ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ArgUsage.GetUsage<PapyrusDotNetArgs>());
-                // return;
-            }
-
-
-            var outputPasFiles = new Dictionary<string, string>();
-            CurrentAssembly = AssemblyDefinition.ReadAssembly(InputFile);
-
-            var asmReferences = AssemblyHelper.GetAssemblyReferences(CurrentAssembly);
-
-            /* Generate all CallStacks */
-            foreach (var asm in asmReferences)
-            {
-                PapyrusAsmWriter.GenerateCallStack(asm);
-            }
-            PapyrusAsmWriter.GenerateCallStack(CurrentAssembly);
-
-            /* Generate all papyrus code */
-            foreach (var asm in asmReferences)
-            {
-                PapyrusAsmWriter.GeneratePapyrusFromAssembly(asm, ref outputPasFiles, CurrentAssembly);
-            }
-
-            PapyrusAsmWriter.GeneratePapyrusFromAssembly(CurrentAssembly, ref outputPasFiles);
-
-            foreach (var pas in outputPasFiles)
-            {
-                try
-                {
-                    if (!Directory.Exists(OutputFolder)) Directory.CreateDirectory(OutputFolder);
-
-                    Console.WriteLine("Saving " + Path.Combine(OutputFolder, pas.Key) + "...");
-                    File.WriteAllText(Path.Combine(OutputFolder, pas.Key), pas.Value);
-                }
-                catch (Exception exc)
-                {
-                    Console.WriteLine("----------------");
-                    Console.WriteLine(OutputFolder);
-                    Console.WriteLine(pas.Key);
-                    Console.WriteLine(exc);
-                    Console.ReadKey();
-                }
-            }
-        }
+//        private static void MainOld(string[] args)
+//        {
+//            OutputFolder = @".\output";
+//            InputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
+//            try
+//            {
+//                var parsed = Args.Parse<PapyrusDotNetArgs>(args);
+//                if (parsed.InputFile != null)
+//                {
+//                    // Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
+//                    if (parsed.OutputFolder != null)
+//                        OutputFolder = parsed.OutputFolder;
+//                    InputFile = parsed.InputFile;
+//                    if (OutputFolder.Contains("\""))
+//                    {
+//                        OutputFolder = OutputFolder.Replace("\"", "");
+//                    }
+//
+//                    if (InputFile.Contains("\""))
+//                    {
+//                        InputFile = InputFile.Replace("\"", "");
+//                    }
+//
+//                    Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.InputFile, parsed.OutputFolder);
+//                }
+//            }
+//            catch (ArgException ex)
+//            {
+//                Console.WriteLine(ex.Message);
+//                Console.WriteLine(ArgUsage.GetUsage<PapyrusDotNetArgs>());
+//                // return;
+//            }
+//
+//
+//            var outputPasFiles = new Dictionary<string, string>();
+//            CurrentAssembly = AssemblyDefinition.ReadAssembly(InputFile);
+//
+//            var asmReferences = AssemblyHelper.GetAssemblyReferences(CurrentAssembly);
+//
+//            /* Generate all CallStacks */
+//            foreach (var asm in asmReferences)
+//            {
+//                PapyrusAsmWriter.GenerateCallStack(asm);
+//            }
+//            PapyrusAsmWriter.GenerateCallStack(CurrentAssembly);
+//
+//            /* Generate all papyrus code */
+//            foreach (var asm in asmReferences)
+//            {
+//                PapyrusAsmWriter.GeneratePapyrusFromAssembly(asm, ref outputPasFiles, CurrentAssembly);
+//            }
+//
+//            PapyrusAsmWriter.GeneratePapyrusFromAssembly(CurrentAssembly, ref outputPasFiles);
+//
+//            foreach (var pas in outputPasFiles)
+//            {
+//                try
+//                {
+//                    if (!Directory.Exists(OutputFolder)) Directory.CreateDirectory(OutputFolder);
+//
+//                    Console.WriteLine("Saving " + Path.Combine(OutputFolder, pas.Key) + "...");
+//                    File.WriteAllText(Path.Combine(OutputFolder, pas.Key), pas.Value);
+//                }
+//                catch (Exception exc)
+//                {
+//                    Console.WriteLine("----------------");
+//                    Console.WriteLine(OutputFolder);
+//                    Console.WriteLine(pas.Key);
+//                    Console.WriteLine(exc);
+//                    Console.ReadKey();
+//                }
+//            }
+//        }
 
         #endregion
 

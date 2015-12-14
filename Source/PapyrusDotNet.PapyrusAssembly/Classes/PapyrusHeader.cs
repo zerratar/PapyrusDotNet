@@ -18,12 +18,10 @@
 #region
 
 using System;
-using System.Collections.Generic;
-using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusHeader
     {
@@ -42,40 +40,5 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public PapyrusSourceHeader SourceHeader { get; set; } = new PapyrusSourceHeader();
         public PapyrusHeaderUserflagCollection UserflagReferenceHeader { get; set; }
         public uint HeaderIdentifier { get; set; }
-    }
-
-    public class PapyrusHeaderUserflagCollection : Dictionary<PapyrusStringRef, byte>
-    {
-        private readonly PapyrusAssemblyDefinition asm;
-
-        public PapyrusHeaderUserflagCollection(PapyrusAssemblyDefinition asm)
-        {
-            this.asm = asm;
-        }
-
-        public void Add(string key, byte value)
-        {
-            Add(key.Ref(asm), value);
-        }
-
-        public new void Add(PapyrusStringRef key, byte value)
-        {
-            if (asm.StringTable == null)
-            {
-                asm.StringTable = new List<string>();
-            }
-
-            if (!asm.StringTable.Contains(key.Value))
-            {
-                asm.StringTable.Add(key.Value);
-            }
-
-            base.Add(key, value);
-        }
-
-        public new void Remove(PapyrusStringRef key)
-        {
-            base.Remove(key);
-        }
     }
 }

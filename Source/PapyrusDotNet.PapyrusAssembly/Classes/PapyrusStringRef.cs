@@ -21,7 +21,7 @@ using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusStringRef
     {
@@ -104,8 +104,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
 
         public static explicit operator string (PapyrusStringRef r)
         {
-            if (r == null) return null;
-            return r.Value;
+            return r?.Value;
         }
     }
 }

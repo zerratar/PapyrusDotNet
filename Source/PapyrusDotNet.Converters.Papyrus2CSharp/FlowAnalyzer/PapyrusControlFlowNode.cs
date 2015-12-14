@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PapyrusDotNet.PapyrusAssembly.Classes;
+using PapyrusDotNet.PapyrusAssembly;
 
 namespace PapyrusDotNet.Converters.Papyrus2CSharp.FlowAnalyzer
 {

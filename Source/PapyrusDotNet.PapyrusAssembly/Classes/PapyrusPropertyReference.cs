@@ -17,11 +17,11 @@
 
 #region
 
-using PapyrusDotNet.PapyrusAssembly.Enums;
+
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusPropertyReference
     {

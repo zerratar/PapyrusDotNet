@@ -18,10 +18,11 @@
 #region
 
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusTypeDefinition : PapyrusVariableReference
     {
@@ -57,5 +58,10 @@ namespace PapyrusDotNet.PapyrusAssembly.Classes
         public Collection<PapyrusTypeDefinition> NestedTypes { get; set; }
         public Collection<PapyrusPropertyDefinition> Properties { get; set; }
         public Collection<PapyrusStateDefinition> States { get; set; }
+
+        public override string ToString()
+        {
+            return (IsClass ? "class " : "struct ") + Name + (BaseTypeName != null ? " : " + BaseTypeName : "");
+        }
     }
 }

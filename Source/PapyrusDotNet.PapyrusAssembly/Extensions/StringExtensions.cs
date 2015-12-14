@@ -17,7 +17,7 @@
 
 #region
 
-using PapyrusDotNet.PapyrusAssembly.Classes;
+
 
 #endregion
 

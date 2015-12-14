@@ -25,8 +25,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using PapyrusDotNet.PapyrusAssembly.Classes;
-using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly;
 
 namespace PapyrusDotNet.Converters.Papyrus2CSharp.FlowAnalyzer
 {

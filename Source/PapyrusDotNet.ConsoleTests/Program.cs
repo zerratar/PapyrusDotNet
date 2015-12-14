@@ -27,7 +27,7 @@ using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.Converters.Papyrus2CSharp;
 using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly;
 
 #endregion
 
@@ -41,7 +41,7 @@ namespace PapyrusDotNet.ConsoleTests
             var value = converter.Convert(
                 new ClrAssemblyInput(
                     AssemblyDefinition.ReadAssembly(
-                        @"d:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
+                        @"c:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
                     PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
 #if false
             var folder = @"d:\git\PapyrusDotNet\Source\Test Scripts\Fallout 4\";

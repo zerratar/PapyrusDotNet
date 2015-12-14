@@ -15,12 +15,6 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-#region
-
-using PapyrusDotNet.PapyrusAssembly.Classes;
-using PapyrusDotNet.PapyrusAssembly.Enums;
-
-#endregion
 
 namespace PapyrusDotNet.PapyrusAssembly.Extensions
 {

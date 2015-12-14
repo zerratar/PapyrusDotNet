@@ -19,11 +19,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusMethodDefinition : PapyrusMethodReference
     {

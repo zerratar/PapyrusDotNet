@@ -1,9 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using PapyrusDotNet.PapyrusAssembly.Enums;
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusInstructionCollection : IEnumerable<PapyrusInstruction>
     {

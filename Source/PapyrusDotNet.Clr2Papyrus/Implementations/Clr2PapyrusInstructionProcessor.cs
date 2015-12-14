@@ -29,8 +29,8 @@ using PapyrusDotNet.Converters.Clr2Papyrus.Exceptions;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
 using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly.Classes;
-using PapyrusDotNet.PapyrusAssembly.Enums;
+using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 #endregion
@@ -39,34 +39,44 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 {
     public class Clr2PapyrusInstructionProcessor : IClr2PapyrusInstructionProcessor
     {
-        public readonly Stack<EvaluationStackItem> EvaluationStack = new Stack<EvaluationStackItem>();
+        public Stack<EvaluationStackItem> EvaluationStack { get; set; } = new Stack<EvaluationStackItem>();
         public PapyrusMethodDefinition PapyrusMethod { get; set; }
         public PapyrusAssemblyDefinition PapyrusAssembly { get; set; }
         public PapyrusTypeDefinition PapyrusType { get; set; }
         public PapyrusCompilerOptions PapyrusCompilerOptions { get; set; }
         public bool SkipNextInstruction { get; set; }
-        public int SkipToOffset = -1;
-
-
+        public int SkipToOffset { get; set; } = -1;
+        public bool InvertedBranch { get; set; }
+        public PapyrusVariableReference SwitchConditionalComparer { get; set; }
         private readonly Dictionary<Instruction, List<PapyrusInstruction>> instructionReferences
             = new Dictionary<Instruction, List<PapyrusInstruction>>();
 
-        public bool invertedBranch;
+        public MethodBody ClrMethodBody { get; set; }
+
+        public MethodDefinition ClrMethod { get; set; }
+
+
         private bool isInsideSwitch;
         private Instruction[] switchTargetInstructions = new Instruction[0];
         private int switchTargetIndex;
-        private PapyrusVariableReference switchConditionalComparer;
-        private readonly PapyrusLoadInstructionProcessor papyrusLoadInstructionProcessor;
-        private readonly PapyrusStoreInstructionProcessor papyrusStoreInstructionProcessor;
-        private readonly PapyrusBranchInstructionProcessor papyrusBranchInstructionProcessor;
-        private readonly PapyrusCallInstructionProcessor papyrusCallInstructionProcessor;
+
+        private readonly LoadInstructionProcessor loadInstructionProcessor;
+        private readonly StoreInstructionProcessor storeInstructionProcessor;
+        private readonly BranchInstructionProcessor branchInstructionProcessor;
+        private readonly CallInstructionProcessor callInstructionProcessor;
+        private readonly ConditionalInstructionProcessor conditionalInstructionProcessor;
+        private readonly ReturnInstructionProcessor returnInstructionProcessor;
+        private readonly StringConcatInstructionProcessor stringConcatInstructionProcessor;
 
         public Clr2PapyrusInstructionProcessor()
         {
-            papyrusLoadInstructionProcessor = new PapyrusLoadInstructionProcessor(this);
-            papyrusStoreInstructionProcessor = new PapyrusStoreInstructionProcessor(this);
-            papyrusBranchInstructionProcessor = new PapyrusBranchInstructionProcessor(this);
-            papyrusCallInstructionProcessor = new PapyrusCallInstructionProcessor(this);
+            loadInstructionProcessor = new LoadInstructionProcessor(this);
+            storeInstructionProcessor = new StoreInstructionProcessor(this);
+            branchInstructionProcessor = new BranchInstructionProcessor(this);
+            callInstructionProcessor = new CallInstructionProcessor(this);
+            conditionalInstructionProcessor = new ConditionalInstructionProcessor(this);
+            returnInstructionProcessor = new ReturnInstructionProcessor(this);
+            stringConcatInstructionProcessor = new StringConcatInstructionProcessor(this);
         }
 
 
@@ -176,10 +186,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return outputInstructions;
         }
 
-        public MethodBody ClrMethodBody { get; set; }
-
-        public MethodDefinition ClrMethod { get; set; }
-
         private bool ProcessSwitchStatement(Instruction instruction, ref List<PapyrusInstruction> papyrusInstructions)
         {
             bool skipThisInstruction = false;
@@ -210,13 +216,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     // Push the values to the stack
                     EvaluationStack.Push(new EvaluationStackItem
                     {
-                        TypeName = switchConditionalComparer.TypeName.Value,
-                        Value = switchConditionalComparer
+                        TypeName = SwitchConditionalComparer.TypeName.Value,
+                        Value = SwitchConditionalComparer
                     });
                     EvaluationStack.Push(new EvaluationStackItem { TypeName = "Int", Value = switchTargetIndex++ });
 
                     // Create the equality comparison
-                    var conditional = GetConditional(instruction, Code.Ceq, tmpBool);
+                    var conditional = ProcessConditionalInstruction(instruction, Code.Ceq, tmpBool);
                     papyrusInstructions.AddRange(conditional);
 
                     // Create the jump to case if true
@@ -232,7 +238,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     //papyrusInstructions.Add(jump);
 
                     // Stop switch
-                    switchConditionalComparer = null;
+                    SwitchConditionalComparer = null;
                     switchTargetIndex = 0;
                     switchTargetInstructions = new Instruction[0];
                     isInsideSwitch = false;
@@ -335,12 +341,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             var code = instruction.OpCode.Code;
             if (InstructionHelper.IsLoad(code))
             {
-                output.AddRange(papyrusLoadInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(loadInstructionProcessor.Process(instruction, targetMethod, type));
             }
 
             if (InstructionHelper.IsStore(code))
             {
-                output.AddRange(papyrusStoreInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(storeInstructionProcessor.Process(instruction, targetMethod, type));
 
                 return output;
             }
@@ -391,20 +397,20 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
                     // Equiviliant Papyrus: <MathOp> <sumOutput> <denumerator> <numerator>
 
-                    output.AddRange(GetConditional(instruction));
+                    output.AddRange(ProcessConditionalInstruction(instruction));
                 }
             }
 
             if (InstructionHelper.IsConditional(instruction.OpCode.Code))
             {
-                var conditionalInstructions = GetConditional(instruction);
+                var conditionalInstructions = ProcessConditionalInstruction(instruction);
 
                 output.AddRange(conditionalInstructions);
             }
 
             if (InstructionHelper.IsBranch(instruction.OpCode.Code) || InstructionHelper.IsBranchConditional(instruction.OpCode.Code))
             {
-                output.AddRange(papyrusBranchInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(branchInstructionProcessor.Process(instruction, targetMethod, type));
 
                 return output;
             }
@@ -421,7 +427,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 switchTargetIndex = 0;
 
                 // find the variable to compare with; used for the conditional bool temp var
-                switchConditionalComparer = switchConditionalComparer ?? EvaluationStack.Peek().Value as PapyrusVariableReference;
+                SwitchConditionalComparer = SwitchConditionalComparer ?? EvaluationStack.Peek().Value as PapyrusVariableReference;
             }
             if (InstructionHelper.IsNewArrayInstance(instruction.OpCode.Code))
             {
@@ -430,323 +436,44 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (InstructionHelper.IsCallMethod(instruction.OpCode.Code))
             {
-                output.AddRange(papyrusCallInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(callInstructionProcessor.Process(instruction, targetMethod, type));
             }
             if (instruction.OpCode.Code == Code.Ret)
             {
-                IEnumerable<PapyrusInstruction> enumerable;
-                if (ProcessReturnInstruction(targetMethod, instruction, out enumerable)) return enumerable;
+                output.AddRange(returnInstructionProcessor.Process(instruction, targetMethod, type));
             }
             return output;
         }
 
-        private bool ProcessReturnInstruction(MethodDefinition targetMethod, Instruction instruction, out IEnumerable<PapyrusInstruction> enumerable)
-        {
-            enumerable = null;
-            if (IsVoid(targetMethod.ReturnType))
-            {
-                enumerable = new List<PapyrusInstruction>(new[]
-                {
-                    PapyrusReturnNone()
-                });
-                return true;
-            }
-
-            if (EvaluationStack.Count >= Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop))
-            {
-                var topValue = EvaluationStack.Pop();
-                if (topValue.Value is PapyrusVariableReference)
-                {
-                    var variable = topValue.Value as PapyrusVariableReference;
-                    // return "Return " + variable.Name;
-                    {
-                        enumerable = new List<PapyrusInstruction>(new[]
-                        {
-                            CreatePapyrusInstruction(PapyrusOpCode.Return, variable) // PapyrusReturnVariable(variable.Name)
-                        });
-                        return true;
-                    }
-                }
-                if (topValue.Value is PapyrusFieldDefinition)
-                {
-                    var variable = topValue.Value as PapyrusFieldDefinition;
-                    // return "Return " + variable.Name;
-                    {
-                        enumerable = new List<PapyrusInstruction>(new[]
-                        {
-                            CreatePapyrusInstruction(PapyrusOpCode.Return, variable)
-                        });
-                        return true;
-                    }
-                }
-                if (IsConstantValue(topValue.Value))
-                {
-                    var val = topValue.Value;
-
-                    var typeName = topValue.TypeName;
-                    var newValue = Utility.TypeValueConvert(typeName, val);
-                    var papyrusVariableReference = new PapyrusVariableReference
-                    {
-                        TypeName = typeName.Ref(PapyrusAssembly),
-                        Value = newValue,
-                        ValueType = Utility.GetPapyrusValueType(typeName)
-                    };
-                    {
-                        enumerable = new List<PapyrusInstruction>(new[]
-                        {
-                            CreatePapyrusInstruction(PapyrusOpCode.Return,
-                                papyrusVariableReference
-                                )
-                        });
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                {
-                    enumerable = new List<PapyrusInstruction>(new[]
-                    {
-                        PapyrusReturnNone()
-                    });
-                    return true;
-                }
-            }
-            return false;
-        }
-
-
+        /// <summary>
+        /// Processes the string concat instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction.</param>
+        /// <param name="methodRef">The method reference.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
         public List<PapyrusInstruction> ProcessStringConcat(Instruction instruction, MethodReference methodRef, List<object> parameters)
         {
-            List<PapyrusInstruction> output = new List<PapyrusInstruction>();
-            // Equiviliant Papyrus: StrCat <output_destination> <val1> <val2>
-
-            // Make sure we have a temp variable if necessary
-            var destinationVariable = GetTargetVariable(instruction, methodRef);
-
-            for (var i = 0; i < parameters.Count; i++)
-            {
-                var stackItem = parameters[i] as EvaluationStackItem;
-                if (stackItem != null)
-                {
-                    var targetVar = stackItem.Value as PapyrusVariableReference;
-                    if (targetVar != null)
-                    {
-                        if (!stackItem.TypeName.ToLower().Contains("string"))
-                        {
-                            // Not a string? Not a problem!
-                            // Since we already have a variable reference, we do not need to create an additional
-                            // temp variable before casting.
-                            // So we can go directly and do: cast ::temp0 ::awesomeVariable
-                            output.Add(CreatePapyrusCastInstruction(destinationVariable, targetVar));
-                        }
-                        output.Add(CreatePapyrusInstruction(PapyrusOpCode.Strcat,
-                            CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
-                            CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
-                            targetVar));
-                    }
-                    else
-                    {
-                        var value = stackItem.Value;
-                        var newTempVar = false;
-                        if (!stackItem.TypeName.ToLower().Contains("string"))
-                        {
-                            // output.Add("Cast " + destinationVariable + " " + targetVar.Name.Value);
-                            // First, get a new temp variable of type string.
-                            // This new temp variable will be used for casting the source object into a string.
-                            value = GetTargetVariable(instruction, methodRef, "String", true);
-
-                            // Create a new temp variable that we use to assign our source object to.
-                            // this is so we avoid doing ex: cast ::temp0 55
-                            // and instead we do: cast ::temp0 ::temp1
-                            var valueToCastTemp = GetTargetVariable(instruction, methodRef, stackItem.TypeName, true);
-                            var valueToCast = CreateVariableReference(Utility.GetPrimitiveTypeFromValue(stackItem.Value),
-                                stackItem.Value);
-
-                            // Assign our newly created tempvalue with our object.
-                            // ex: assign ::temp1 55
-                            output.Add(CreatePapyrusInstruction(PapyrusOpCode.Assign,
-                                CreateVariableReference(PapyrusPrimitiveType.Reference, valueToCastTemp),
-                                valueToCast));
-
-                            // Cast the new ::temp1 to ::temp0 (equivilant to .ToString())
-                            output.Add(CreatePapyrusCastInstruction((string)value,
-                                CreateVariableReference(PapyrusPrimitiveType.Reference, valueToCastTemp)));
-                            newTempVar = true;
-
-                            // Make sure that our newly ::temp1 is used when concating the string.
-                            value = valueToCastTemp;
-                        }
-                        output.Add(CreatePapyrusInstruction(PapyrusOpCode.Strcat,
-                            CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
-                            CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
-                            CreateVariableReference(newTempVar
-                                ? PapyrusPrimitiveType.Reference
-                                : PapyrusPrimitiveType.String, value)));
-                    }
-                }
-            }
-
-            // TODO: In case we want to concat more strings together or call a method using this new value
-            // we will have to use the targetVariable above and push it back into the stack. (Or do we...?)
-            return output;
+            return stringConcatInstructionProcessor.Process(instruction, methodRef, parameters);
         }
 
-
-        public IEnumerable<PapyrusInstruction> GetConditional(Instruction instruction, Code overrideOpCode = Code.Nop, string tempVariable = null)
+        /// <summary>
+        /// Processes the conditional instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction.</param>
+        /// <param name="overrideOpCode">The override op code.</param>
+        /// <param name="tempVariable">The temporary variable.</param>
+        /// <returns></returns>
+        public IEnumerable<PapyrusInstruction> ProcessConditionalInstruction(Instruction instruction, Code overrideOpCode = Code.Nop, string tempVariable = null)
         {
-            var output = new List<PapyrusInstruction>();
-
-            //cast = null;
-
-            var heapStack = EvaluationStack;
-
-            // TODO: GetConditional only applies on Integers and must add support for Float further on.
-
-            var papyrusOpCode = Utility.GetPapyrusMathOrEqualityOpCode(overrideOpCode != Code.Nop ? overrideOpCode : instruction.OpCode.Code, false);
-
-            if (heapStack.Count >= 2) //Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop))
-            {
-                var numeratorObject = heapStack.Pop();
-                var denumeratorObject = heapStack.Pop();
-                var vars = PapyrusMethod.GetVariables();
-                int varIndex;
-
-                object numerator;
-                object denumerator;
-
-                if (numeratorObject.Value is PapyrusFieldDefinition)
-                {
-                    numeratorObject.Value = (numeratorObject.Value as PapyrusFieldDefinition).FieldVariable;
-                }
-
-                if (denumeratorObject.Value is PapyrusFieldDefinition)
-                {
-                    denumeratorObject.Value = (denumeratorObject.Value as PapyrusFieldDefinition).FieldVariable;
-                }
-
-                if (numeratorObject.Value is PapyrusVariableReference)
-                {
-                    var varRef = numeratorObject.Value as PapyrusVariableReference;
-                    var refTypeName = varRef.TypeName.Value;
-
-                    numerator = varRef;
-
-                    // if not int or string, we need to cast it.
-                    if (!refTypeName.ToLower().Equals("int") && !refTypeName.ToLower().Equals("system.int32") &&
-                        !refTypeName.ToLower().Equals("system.string") && !refTypeName.ToLower().Equals("string"))
-                    {
-                        var typeVariable = GetTargetVariable(instruction, null, "Int");
-                        output.Add(CreatePapyrusCastInstruction(typeVariable, varRef));
-                        // cast = "Cast " + typeVariable + " " + value1;
-                    }
-                }
-                else
-                {
-                    numerator = CreateVariableReference(Utility.GetPrimitiveTypeFromValue(numeratorObject.Value), numeratorObject.Value);
-                }
-
-                if (denumeratorObject.Value is PapyrusVariableReference)
-                {
-                    var varRef = denumeratorObject.Value as PapyrusVariableReference;
-                    var refTypeName = varRef.TypeName.Value;
-                    denumerator = varRef;
-
-                    // if not int or string, we need to cast it.
-                    if (!refTypeName.ToLower().Equals("int") && !refTypeName.ToLower().Equals("system.int32") &&
-                        !refTypeName.ToLower().Equals("system.string") && !refTypeName.ToLower().Equals("string"))
-                    {
-                        // CAST BOOL TO INT
-                        // var typeVariable = GetTargetVariable(instruction, null, "Int");
-                        // cast = "Cast " + typeVariable + " " + value2;
-
-                        var typeVariable = GetTargetVariable(instruction, null, "Int");
-                        output.Add(CreatePapyrusCastInstruction(typeVariable, varRef));
-
-                    }
-                }
-                else
-                {
-                    denumerator = CreateVariableReference(Utility.GetPrimitiveTypeFromValue(numeratorObject.Value), denumeratorObject.Value);
-                }
-
-                if (!string.IsNullOrEmpty(tempVariable))
-                {
-                    output.Add(CreatePapyrusInstruction(papyrusOpCode, CreateVariableReferenceFromName(tempVariable), denumerator, numerator));
-                    return output;
-                }
-
-                // if (Utility.IsGreaterThan(code) || Utility.IsLessThan(code))
-                {
-                    var next = instruction.Next;
-
-                    // If the next one is a switch, it most likely 
-                    // means that we want to apply some mathematical stuff
-                    // on our constant value so that we can properly do an equality
-                    // comparison.
-                    if (InstructionHelper.IsSwitch(next.OpCode.Code))
-                    {
-                        var newTempVariable = GetTargetVariable(instruction, null, "Int", true);
-                        switchConditionalComparer = CreateVariableReferenceFromName(newTempVariable);
-                        switchConditionalComparer.ValueType = PapyrusPrimitiveType.Reference;
-                        switchConditionalComparer.TypeName = "Int".Ref(PapyrusAssembly);
-
-                        output.Add(CreatePapyrusInstruction(papyrusOpCode, switchConditionalComparer, denumerator, numerator));
-                        return output;
-                    }
-
-                    while (next != null &&
-                           !InstructionHelper.IsStoreLocalVariable(next.OpCode.Code) &&
-                           !InstructionHelper.IsStoreField(next.OpCode.Code) &&
-                           !InstructionHelper.IsCallMethod(next.OpCode.Code))
-                    {
-                        next = next.Next;
-                    }
-
-                    if (instruction.Operand is MethodReference)
-                    {
-                        // if none found, create a temp one.
-                        var methodRef = instruction.Operand as MethodReference;
-                        var tVar = CreateTempVariable(methodRef.ReturnType.FullName);
-                        var targetVar = tVar;
-
-                        EvaluationStack.Push(new EvaluationStackItem { Value = tVar.Value, TypeName = tVar.TypeName.Value });
-
-                        output.Add(CreatePapyrusInstruction(papyrusOpCode, targetVar, denumerator, numerator));
-                        return output;
-                    }
-
-
-                    if (next == null)
-                    {
-                        // No intentions to store this value into a variable, 
-                        // Its to be used in a function call.
-                        //return "NULLPTR " + denumerator + " " + numerator;
-                        return output;
-                    }
-
-                    SkipToOffset = next.Offset;
-                    if (next.Operand is FieldReference)
-                    {
-                        var field = GetFieldFromStfld(next);
-                        if (field != null)
-                        {
-                            output.Add(CreatePapyrusInstruction(papyrusOpCode, field, denumerator, numerator));
-                            return output;
-                            //return field.Name + " " + denumerator + " " + numerator;
-                        }
-                    }
-
-
-                    varIndex = (int)GetNumericValue(next);
-                }
-
-                output.Add(CreatePapyrusInstruction(papyrusOpCode, vars[varIndex], denumerator, numerator));
-                //return vars[varIndex].Name + " " + denumerator + " " + numerator;
-            }
-            return output;
+            return conditionalInstructionProcessor.Process(instruction, overrideOpCode, tempVariable);
         }
 
+        /// <summary>
+        /// Gets the field from STFLD.
+        /// </summary>
+        /// <param name="whereToPlace">The where to place.</param>
+        /// <returns></returns>
         public PapyrusFieldDefinition GetFieldFromStfld(Instruction whereToPlace)
         {
             if (InstructionHelper.IsStoreField(whereToPlace.OpCode.Code))
@@ -769,7 +496,14 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return null;
         }
 
-
+        /// <summary>
+        /// Gets the target variable.
+        /// </summary>
+        /// <param name="instruction">The instruction.</param>
+        /// <param name="methodRef">The method reference.</param>
+        /// <param name="fallbackType">Type of the fallback.</param>
+        /// <param name="forceNew">if set to <c>true</c> [force new].</param>
+        /// <returns></returns>
         public string GetTargetVariable(Instruction instruction, MethodReference methodRef, string fallbackType = null, bool forceNew = false)
         {
             string targetVar = null;
@@ -846,8 +580,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
         public PapyrusOpCode TryInvertJump(PapyrusOpCode jmpt)
         {
-            if (!invertedBranch) return jmpt;
-            invertedBranch = false;
+            if (!InvertedBranch) return jmpt;
+            InvertedBranch = false;
             if (jmpt == PapyrusOpCode.Jmpt)
                 return PapyrusOpCode.Jmpf;
             return PapyrusOpCode.Jmpt;
@@ -900,60 +634,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return arrayInstance;
         }
 
-        private PapyrusInstruction CreatePapyrusCastInstruction(string destinationVariable, PapyrusVariableReference variableToCast)
+        public PapyrusInstruction CreatePapyrusCastInstruction(string destinationVariable, PapyrusVariableReference variableToCast)
         {
             return CreatePapyrusInstruction(PapyrusOpCode.Cast,
                 CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                 variableToCast);
         }
 
-        public PapyrusInstruction CreatePapyrusCallInstruction(PapyrusOpCode callOpCode, MethodReference methodRef, string callerLocation, string destinationVariable, List<object> parameters)
-        {
-            var inst = new PapyrusInstruction { OpCode = callOpCode };
-            if (callOpCode == PapyrusOpCode.Callstatic)
-            {
-                inst.Arguments.AddRange(ParsePapyrusParameters(new object[] {
-                CreateVariableReference(PapyrusPrimitiveType.Reference, callerLocation),
-                CreateVariableReference(PapyrusPrimitiveType.Reference, methodRef.Name),
-                CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable)}));
-            }
-            else
-            {
-                inst.Arguments.AddRange(ParsePapyrusParameters(new object[] {
-                CreateVariableReference(PapyrusPrimitiveType.Reference, methodRef.Name),
-                CreateVariableReference(PapyrusPrimitiveType.Reference, callerLocation),
-                CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable)}));
-            }
-            inst.OperandArguments.AddRange(EnsureParameterTypes(methodRef.Parameters, ParsePapyrusParameters(parameters.ToArray())));
-            inst.Operand = methodRef;
-            return inst;
-        }
-
-        private IEnumerable<PapyrusVariableReference> EnsureParameterTypes(Collection<ParameterDefinition> parameters, List<PapyrusVariableReference> papyrusParams)
-        {
-            var varRefs = new List<PapyrusVariableReference>();
-            var i = 0;
-            foreach (var p in parameters)
-            {
-                var papyrusReturnType = Utility.GetPapyrusReturnType(p.ParameterType);
-                if (p.ParameterType.IsValueType
-                    && Utility.PapyrusValueTypeToString(papyrusParams[i].ValueType) != papyrusReturnType
-                    && papyrusParams[i].ValueType != PapyrusPrimitiveType.Reference)
-                {
-                    papyrusParams[i].TypeName = papyrusReturnType.Ref(PapyrusAssembly);
-                    papyrusParams[i].ValueType = Utility.GetPrimitiveTypeFromType(p.ParameterType);
-                    papyrusParams[i].Value = Utility.TypeValueConvert(papyrusReturnType, papyrusParams[i].Value);
-                    varRefs.Add(papyrusParams[i]);
-                }
-                else
-                {
-                    varRefs.Add(papyrusParams[i]);
-                }
-                i++;
-            }
-
-            return varRefs;
-        }
 
 
         public MethodDefinition TryResolveMethodReference(MethodReference methodRef)
@@ -1014,16 +701,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return varRef;
         }
 
-        public T[] ArrayOf<T>(params T[] items)
-        {
-            return items;
-        }
-
-        private bool IsConstantValue(object value)
-        {
-            return value is int || value is byte || value is short || value is long || value is double || value is float || value is string || value is bool;
-        }
-
         public PapyrusInstruction CreatePapyrusInstruction(PapyrusOpCode papyrusOpCode, params object[] values)
         {
             var args = ParsePapyrusParameters(values);
@@ -1035,7 +712,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             };
         }
 
-        private List<PapyrusVariableReference> ParsePapyrusParameters(object[] values)
+        public List<PapyrusVariableReference> ParsePapyrusParameters(object[] values)
         {
             var args = new List<PapyrusVariableReference>();
             foreach (var sourceVal in values)
@@ -1066,14 +743,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     var varName = val as string;
                     if (varName != null)
                     {
-                        if (vars.Any(v => v.Name.Value == varName))
-                        {
-                            args.Add(CreateVariableReferenceFromName(varName));
-                        }
-                        else
-                        {
-                            args.Add(CreateVariableReference(PapyrusPrimitiveType.String, varName.Trim('"')));
-                        }
+                        args.Add(vars.Any(v => v.Name.Value == varName)
+                            ? CreateVariableReferenceFromName(varName)
+                            : CreateVariableReference(PapyrusPrimitiveType.String, varName.Trim('"')));
                     }
                     else
                     {
@@ -1095,7 +767,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             };
         }
 
-        private PapyrusVariableReference CreateVariableReferenceFromName(string varName)
+        public PapyrusVariableReference CreateVariableReferenceFromName(string varName)
         {
             var nameRef = varName.Ref(PapyrusAssembly);
             return new PapyrusVariableReference()
@@ -1103,18 +775,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 Name = nameRef,
                 Value = nameRef.Value,
                 ValueType = PapyrusPrimitiveType.Reference
-            };
-        }
-
-        private static PapyrusInstruction PapyrusReturnNone()
-        {
-            return new PapyrusInstruction()
-            {
-                OpCode = PapyrusOpCode.Return,
-                Arguments = new List<PapyrusVariableReference>(new[] { new PapyrusVariableReference()
-                {
-                    ValueType = PapyrusPrimitiveType.None
-                }})
             };
         }
 
@@ -1135,12 +795,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return next;
         }
 
-
-        private bool IsVoid(TypeReference typeReference)
-        {
-            return typeReference.FullName.ToLower().Equals("system.void")
-                   || typeReference.Name.ToLower().Equals("void");
-        }
 
         public object GetNumericValue(Instruction instruction)
         {

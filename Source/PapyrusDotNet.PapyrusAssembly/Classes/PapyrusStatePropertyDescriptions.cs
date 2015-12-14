@@ -21,7 +21,7 @@ using System.Collections.Generic;
 
 #endregion
 
-namespace PapyrusDotNet.PapyrusAssembly.Classes
+namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusStatePropertyDescriptions
     {
