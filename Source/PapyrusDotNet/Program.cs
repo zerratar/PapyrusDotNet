@@ -18,7 +18,6 @@
 #region
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Mono.Cecil;
@@ -28,8 +27,6 @@ using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
 using PapyrusDotNet.Converters.Papyrus2Clr;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
-using PapyrusDotNet.Old;
-using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly;
 using PowerArgs;
 

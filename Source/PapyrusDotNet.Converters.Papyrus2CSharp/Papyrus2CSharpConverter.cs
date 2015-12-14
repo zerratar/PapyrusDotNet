@@ -5,8 +5,6 @@ using System.Text;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 namespace PapyrusDotNet.Converters.Papyrus2CSharp
@@ -143,7 +141,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
             var outputFileName = type.Name.Value + ".cs";
 
             var sourceBuilder = new SourceBuilder();
-            var outputFileContent = WriteType(sourceBuilder, asm, type);
+            var outputFileContent = WriteType(sourceBuilder, asm, type).Replace(" ::", " ").Replace("(::", "(").Replace(",::", ",").Replace("!::", "!");
 
             return new CSharpOutput(outputFileName, outputFileContent);
         }
@@ -186,7 +184,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                 {
                     WriteDoc(field.Documentation, indent + 1);
                 }
-                AppendLine("public " + field.TypeName + " " + (string)field.Name + ";", indent + 1);
+                AppendLine("public " + field.TypeName + " " + ((string)field.Name) + ";", indent + 1);
             }
 
             foreach (var prop in type.Properties)
@@ -305,7 +303,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     foreach (var var in method.GetVariables())
                     {
                         if (var.Name.Value.ToLower() == "::nonevar") continue;
-                        AppendLine((string)var.TypeName + " " + (string)var.Name + ";", indent + 1);
+                        AppendLine((string)var.TypeName + " " + ((string)var.Name) + ";", indent + 1);
                     }
 
 
@@ -497,11 +495,24 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     }
                 case PapyrusOpCode.PropGet:
                     {
-                        return WritePapyrusInstruction(i);
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
+
+                        var property = GetArgumentValue(i.Arguments[0]);
+                        var owner = GetArgumentValue(i.Arguments[1]);
+                        var targetVar = GetArgumentValue(i.Arguments[2]);
+
+                        return comment + targetVar + " = " + owner + "." + property + ";";
                     }
                 case PapyrusOpCode.PropSet:
                     {
-                        return WritePapyrusInstruction(i);
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
+
+                        var property = GetArgumentValue(i.Arguments[0]);
+                        var owner = GetArgumentValue(i.Arguments[1]);
+                        var value = GetArgumentValue(i.Arguments[2]);
+
+
+                        return comment + owner + "." + property + " = " + value + ";";
                     }
                 case PapyrusOpCode.StructSet:
                     {
@@ -599,6 +610,8 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     }
                 case PapyrusOpCode.Not:
                     {
+                        // var comment = WritePapyrusInstruction(i) + Environment.NewLine;
+
                         var assignee = i.GetArg(0);
                         var target = i.GetArg(1);
                         return (assignee + " = !" + target + ";");
@@ -638,6 +651,10 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
             var asignee = GetArgumentValue(i.Arguments[0]);
             var target = GetArgumentValue(i.Arguments[1]);
             var value = GetArgumentValue(i.Arguments[2]);
+            if (string.IsNullOrEmpty(value))
+            {
+                value = "null";
+            }
             return (asignee + " = " + target + " " + op + " " + value + ";"); //, indent, i);
         }
 

@@ -34,7 +34,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
         public void Save(string output)
         {
             var filePath =
-                System.IO.Path.Combine(output, outputFileName);
+                System.IO.Path.Combine(output, outputFileName.Replace(":", "_"));
             System.IO.File.WriteAllText(filePath, outputFileContent);
         }
     }

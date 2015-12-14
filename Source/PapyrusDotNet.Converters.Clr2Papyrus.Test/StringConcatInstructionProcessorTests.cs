@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using PapyrusDotNet.Common;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Test
