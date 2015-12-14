@@ -24,8 +24,6 @@ using Mono.Collections.Generic;
 using PapyrusDotNet.Common;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly;
 
 #endregion
 

@@ -22,8 +22,6 @@ using Mono.Cecil;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
 using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly;
-using PapyrusDotNet.PapyrusAssembly;
 
 #endregion
 
