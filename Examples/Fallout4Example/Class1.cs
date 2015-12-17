@@ -56,8 +56,9 @@ namespace Fallout4Example
         public int asda = 0;
         public override void OnInit()
         {
-
-          
+            FollowersScript fs;
+            
+            
             //MyTestStruct meStruct;
 
             //meStruct.StructInteger = 252;

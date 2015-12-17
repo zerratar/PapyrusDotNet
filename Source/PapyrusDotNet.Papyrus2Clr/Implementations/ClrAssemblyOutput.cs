@@ -17,6 +17,7 @@
 
 #region
 
+using System.IO;
 using Mono.Cecil;
 using PapyrusDotNet.Common.Interfaces;
 
@@ -35,6 +36,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr.Implementations
 
         public void Save(string output)
         {
+            OutputAssembly.Write(Path.Combine(output, "PapyrusDotNet.Core.dll")); // TODO: Change the name to match the target version, ex Skyrim or Fallout4
         }
     }
 }

@@ -63,20 +63,31 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             mainModule = clrAssembly.MainModule;
 
+            int i = 0;
+            var x = Console.CursorLeft;
+            var y = Console.CursorTop;
             foreach (var inputAssembly in input.Assemblies)
             {
+                Console.SetCursorPosition(x, y);
+                Console.WriteLine("Adding assembly references... " + i++ + "/" + input.Assemblies.Length);
                 AddAssemblyReferences(inputAssembly);
             }
+            i = 0;
+            Console.SetCursorPosition(0, y + 1);
             foreach (var papyrusAssembly in input.Assemblies)
             {
                 foreach (var type in papyrusAssembly.Types)
                 {
+                    Console.SetCursorPosition(0, y + 1);
+                    Console.WriteLine("Building Classes... " + i++ + "/" + input.Assemblies.Length);
                     mainModule.Types.Add(ResolveTypeDefinition(type.Name, type));
                 }
             }
 
             exeAsm.FindTypes("attribute")
                 .ForEach(attr => ImportType(mainModule, attr));
+
+            Console.WriteLine("Process Completed.");
 
             return new ClrAssemblyOutput(clrAssembly);
         }
@@ -206,21 +217,13 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             AddEmptyConstructor(newType);
 
-            if (!string.IsNullOrEmpty(type.BaseTypeName.Value))
+            if (!string.IsNullOrEmpty(type.BaseTypeName?.Value))
             {
                 var baseType = ResolveTypeReference(null, type.BaseTypeName.Value);
                 if (baseType != null)
                 {
                     newType.BaseType = baseType;
                 }
-            }
-
-            foreach (var prop in type.Properties)
-            {
-                var typeRef = ResolveTypeReference(null, prop.TypeName);
-
-                var propDef = new PropertyDefinition(prop.Name.Value, PropertyAttributes.HasDefault, typeRef);
-                newType.Properties.Add(propDef);
             }
 
             foreach (var field in type.Fields)
@@ -231,6 +234,16 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
                 var attributes = FieldAttributes.Public;
 
+                if (field.Name.Value.ToLower().EndsWith("_var"))
+                {
+                    if (type.Properties.Any(
+                            n => field.Name.Value.Contains('_') && n.Name.Value == field.Name.Value.Split('_')[0]
+                            || n.AutoName == field.Name.Value))
+                    {
+                        attributes = FieldAttributes.Private;
+                    }
+                }
+
                 if (field.IsConst)
                 {
                     attributes |= FieldAttributes.InitOnly;
@@ -239,6 +252,35 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                 var fieldDef = new FieldDefinition(field.Name.Value.Replace("::", ""), attributes, typeRef);
                 newType.Fields.Add(fieldDef);
             }
+
+            foreach (var prop in type.Properties)
+            {
+                FieldDefinition targetField = null;
+                foreach (var field in newType.Fields)
+                {
+                    if (!string.IsNullOrEmpty(prop.AutoName))
+                    {
+                        if (prop.AutoName.Contains(field.Name))
+                        {
+                            targetField = field;
+                            break;
+                        }
+                    }
+                    if (field.Name.ToLower().Contains(prop.Name.Value.ToLower() + "_var"))
+                    {
+                        targetField = field;
+                        break;
+                    }
+                }
+
+                var typeRef = ResolveTypeReference(null, prop.TypeName);
+
+                var propDef = new PropertyDefinition(prop.Name.Value, PropertyAttributes.HasDefault, typeRef);
+                propDef.SetMethod = CreatePropertySetMethod(prop, targetField, typeRef);
+                propDef.GetMethod = CreatePropertyGetMethod(prop, targetField, typeRef);
+                newType.Properties.Add(propDef);
+            }
+
 
             foreach (var structure in type.NestedTypes)
             {
@@ -275,6 +317,44 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                 }
             }
             return newType;
+        }
+
+        private MethodDefinition CreatePropertyGetMethod(PapyrusPropertyDefinition prop, FieldReference field, TypeReference typeRef)
+        {
+            var get = new MethodDefinition("get_" + prop.Name.Value,
+                MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, typeRef);
+            var processor = get.Body.GetILProcessor();
+            get.Body.Instructions.Add(processor.Create(OpCodes.Ldarg_0));
+            if (field != null)
+            {
+                get.Body.Instructions.Add(processor.Create(OpCodes.Ldfld, field));
+            }
+            else
+            {
+                get.Body.Instructions.Add(processor.Create(OpCodes.Ldnull));
+            }
+            get.Body.Instructions.Add(processor.Create(OpCodes.Ret));
+            get.SemanticsAttributes = MethodSemanticsAttributes.Getter;
+            return get;
+        }
+
+        private MethodDefinition CreatePropertySetMethod(PapyrusPropertyDefinition prop, FieldReference field, TypeReference typeRef)
+        {
+
+            var voidRef = mainModule.Import(typeof(void));
+            var set = new MethodDefinition("set_" + prop.Name.Value,
+                MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, voidRef);
+            var processor = set.Body.GetILProcessor();
+            set.Body.Instructions.Add(processor.Create(OpCodes.Ldarg_0));
+            if (field != null)
+            {
+                set.Body.Instructions.Add(processor.Create(OpCodes.Ldarg_1));
+                set.Body.Instructions.Add(processor.Create(OpCodes.Stfld, field));
+            }
+            set.Body.Instructions.Add(processor.Create(OpCodes.Ret));
+            set.Parameters.Add(new ParameterDefinition(typeRef));
+            set.SemanticsAttributes = MethodSemanticsAttributes.Setter;
+            return set;
         }
 
         public void AddEmptyConstructor(TypeDefinition type)

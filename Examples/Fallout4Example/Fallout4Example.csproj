@@ -33,8 +33,9 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PapyrusDotNet.Core">
-      <HintPath>..\..\Source\PapyrusDotNet.ConsoleTests\bin\Debug\PapyrusDotNet.Core.dll</HintPath>
+    <Reference Include="PapyrusDotNet.Core, Version=2.0.65535.65535, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Binaries\PapyrusDotNet.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
