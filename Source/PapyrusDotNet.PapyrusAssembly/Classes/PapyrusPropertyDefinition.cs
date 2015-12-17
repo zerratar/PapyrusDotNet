@@ -17,6 +17,7 @@
 
 #region
 
+using System;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 #endregion
@@ -44,13 +45,76 @@ namespace PapyrusDotNet.PapyrusAssembly
         public int Userflags { get; set; }
         public byte Flags { get; set; }
 
-        public bool IsAuto => (Flags & 4) > 0;
-        public bool HasGetter => (Flags & 1) > 0;
-        public bool HasSetter => (Flags & 2) > 0;
+        public bool IsAuto
+        {
+            get { return (Flags & (byte)PapyrusPropertyFlags.IsAuto) > 0; }
+            set
+            {
+                if (value)
+                {
+                    SetFlags(GetFlags() | PapyrusPropertyFlags.IsAuto);
+                }
+                else
+                {
+                    SetFlags(GetFlags() & ~PapyrusPropertyFlags.IsAuto);
+                }
+            }
+        }
+
+        public bool HasGetter
+        {
+            get { return (Flags & (byte)PapyrusPropertyFlags.HasGetter) > 0; }
+            set
+            {
+                if (value)
+                {
+                    SetFlags(GetFlags() | PapyrusPropertyFlags.HasGetter);
+                }
+                else
+                {
+                    SetFlags(GetFlags() & ~PapyrusPropertyFlags.HasGetter);
+                }
+            }
+        }
+
+        public bool HasSetter
+        {
+            get { return (Flags & (byte)PapyrusPropertyFlags.HasSetter) > 0; }
+            set
+            {
+                if (value)
+                {
+                    SetFlags(GetFlags() | PapyrusPropertyFlags.HasSetter);
+                }
+                else
+                {
+                    SetFlags(GetFlags() & ~PapyrusPropertyFlags.HasSetter);
+                }
+            }
+        }
 
 
         public string AutoName { get; set; }
         public PapyrusMethodDefinition GetMethod { get; set; }
         public PapyrusMethodDefinition SetMethod { get; set; }
+
+        public void SetFlags(PapyrusPropertyFlags flags)
+        {
+            Flags = (byte)flags;
+        }
+
+        public PapyrusPropertyFlags GetFlags()
+        {
+            return (PapyrusPropertyFlags)Flags;
+        }
+
+    }
+
+    [Flags]
+    public enum PapyrusPropertyFlags : byte
+    {
+        IsAuto = 4,
+        HasGetter = 1,
+        HasSetter = 2
     }
 }

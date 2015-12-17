@@ -18,7 +18,12 @@
 #region
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using Mono.Cecil;
+using PapyrusDotNet.Converters.Clr2Papyrus;
+using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
+using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.Converters.Papyrus2CSharp;
 using PapyrusDotNet.PapyrusAssembly;
@@ -72,50 +77,50 @@ namespace PapyrusDotNet.ConsoleTests
         private static void Main(string[] args)
         {
 
-            DecompileAllFallout4Scripts();
+            //DecompileAllFallout4Scripts();
 
 
-            //            var converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), PapyrusCompilerOptions.Strict);
-            //            var value = converter.Convert(
-            //                new ClrAssemblyInput(
-            //                    AssemblyDefinition.ReadAssembly(
-            //                        @"c:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
-            //                    PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
-            //#if false
-            //            var folder = @"d:\git\PapyrusDotNet\Source\Test Scripts\Fallout 4\";
-            //            var pexFile1 = folder + @"AssaultronHeadModStealthScript.pex";
-            //            var pexFile2 = folder + @"BobbleheadStandContainerScript.pex";
-            //            var pexFile3 = folder + @"DN035QuestScript.pex";
+            var converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), PapyrusCompilerOptions.Strict);
+            var value = converter.Convert(
+                new ClrAssemblyInput(
+                    AssemblyDefinition.ReadAssembly(
+                        @"d:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
+                    PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
+#if false
+                        var folder = @"d:\git\PapyrusDotNet\Source\Test Scripts\Fallout 4\";
+                        var pexFile1 = folder + @"AssaultronHeadModStealthScript.pex";
+                        var pexFile2 = folder + @"BobbleheadStandContainerScript.pex";
+                        var pexFile3 = folder + @"DN035QuestScript.pex";
 
-            //            var pexAssemblies = new PapyrusAssemblyDefinition[]
-            //            {
-            //                PapyrusAssemblyDefinition.ReadAssembly(pexFile1),
-            //                PapyrusAssemblyDefinition.ReadAssembly(pexFile2),
-            //                PapyrusAssemblyDefinition.ReadAssembly(pexFile3)
-            //            };
-            //#else
-            //            var pexAssemblies = new PapyrusAssemblyDefinition[0];
-            //#endif
-            //            var asm = value.Assemblies;
+                        var pexAssemblies = new PapyrusAssemblyDefinition[]
+                        {
+                            PapyrusAssemblyDefinition.ReadAssembly(pexFile1),
+                            PapyrusAssemblyDefinition.ReadAssembly(pexFile2),
+                            PapyrusAssemblyDefinition.ReadAssembly(pexFile3)
+                        };
+#else
+            var pexAssemblies = new PapyrusAssemblyDefinition[0];
+#endif
+            var asm = value.Assemblies;
 
-            //            var defs = new List<PapyrusAssemblyDefinition>(pexAssemblies);
-            //            defs.AddRange(asm);
+            var defs = new List<PapyrusAssemblyDefinition>(pexAssemblies);
+            defs.AddRange(asm);
 
-            //            var clrNamespaceResolver = new ClrNamespaceResolver();
-            //            var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
-            //                new ClrTypeReferenceResolver(clrNamespaceResolver, new ClrTypeNameResolver()));
+            var clrNamespaceResolver = new ClrNamespaceResolver();
+            var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
+                new ClrTypeReferenceResolver(clrNamespaceResolver, new ClrTypeNameResolver()));
 
 
-            //            var output = csharpConverter.Convert(new PapyrusAssemblyInput(defs.ToArray())) as MultiCSharpOutput;
+            var output = csharpConverter.Convert(new PapyrusAssemblyInput(defs.ToArray())) as MultiCSharpOutput;
 
-            //            var targetOutputFolder = "c:\\PapyrusDotNet\\Output";
-            //            if (!Directory.Exists(targetOutputFolder))
-            //            {
-            //                Directory.CreateDirectory(targetOutputFolder);
-            //            }
+            var targetOutputFolder = "c:\\PapyrusDotNet\\Output";
+            if (!Directory.Exists(targetOutputFolder))
+            {
+                Directory.CreateDirectory(targetOutputFolder);
+            }
 
-            //            output.Save(targetOutputFolder);
-            //            value.Save(targetOutputFolder);
+            output.Save(targetOutputFolder);
+            value.Save(targetOutputFolder);
 
 
 

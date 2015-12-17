@@ -219,7 +219,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             {
                 var typeRef = ResolveTypeReference(null, prop.TypeName);
 
-                var propDef = new PropertyDefinition(prop.Name.Value, PropertyAttributes.None, typeRef);
+                var propDef = new PropertyDefinition(prop.Name.Value, PropertyAttributes.HasDefault, typeRef);
                 newType.Properties.Add(propDef);
             }
 

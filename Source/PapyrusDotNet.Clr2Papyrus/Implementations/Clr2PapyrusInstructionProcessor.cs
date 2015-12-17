@@ -58,23 +58,23 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         private Instruction[] switchTargetInstructions = new Instruction[0];
         private int switchTargetIndex;
 
-        private readonly LoadInstructionProcessor loadInstructionProcessor;
-        private readonly StoreInstructionProcessor storeInstructionProcessor;
-        private readonly BranchInstructionProcessor branchInstructionProcessor;
-        private readonly CallInstructionProcessor callInstructionProcessor;
-        private readonly ConditionalInstructionProcessor conditionalInstructionProcessor;
-        private readonly ReturnInstructionProcessor returnInstructionProcessor;
-        private readonly StringConcatInstructionProcessor stringConcatInstructionProcessor;
+        internal readonly LoadInstructionProcessor LoadInstructionProcessor;
+        internal readonly StoreInstructionProcessor StoreInstructionProcessor;
+        internal readonly BranchInstructionProcessor BranchInstructionProcessor;
+        internal readonly CallInstructionProcessor CallInstructionProcessor;
+        internal readonly ConditionalInstructionProcessor ConditionalInstructionProcessor;
+        internal readonly ReturnInstructionProcessor ReturnInstructionProcessor;
+        internal readonly StringConcatInstructionProcessor StringConcatInstructionProcessor;
 
         public Clr2PapyrusInstructionProcessor()
         {
-            loadInstructionProcessor = new LoadInstructionProcessor(this);
-            storeInstructionProcessor = new StoreInstructionProcessor(this);
-            branchInstructionProcessor = new BranchInstructionProcessor(this);
-            callInstructionProcessor = new CallInstructionProcessor(this);
-            conditionalInstructionProcessor = new ConditionalInstructionProcessor(this);
-            returnInstructionProcessor = new ReturnInstructionProcessor(this);
-            stringConcatInstructionProcessor = new StringConcatInstructionProcessor(this);
+            LoadInstructionProcessor = new LoadInstructionProcessor(this);
+            StoreInstructionProcessor = new StoreInstructionProcessor(this);
+            BranchInstructionProcessor = new BranchInstructionProcessor(this);
+            CallInstructionProcessor = new CallInstructionProcessor(this);
+            ConditionalInstructionProcessor = new ConditionalInstructionProcessor(this);
+            ReturnInstructionProcessor = new ReturnInstructionProcessor(this);
+            StringConcatInstructionProcessor = new StringConcatInstructionProcessor(this);
         }
 
 
@@ -339,12 +339,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             var code = instruction.OpCode.Code;
             if (InstructionHelper.IsLoad(code))
             {
-                output.AddRange(loadInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(LoadInstructionProcessor.Process(instruction, targetMethod, type));
             }
 
             if (InstructionHelper.IsStore(code))
             {
-                output.AddRange(storeInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(StoreInstructionProcessor.Process(instruction, targetMethod, type));
 
                 return output;
             }
@@ -408,7 +408,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (InstructionHelper.IsBranch(instruction.OpCode.Code) || InstructionHelper.IsBranchConditional(instruction.OpCode.Code))
             {
-                output.AddRange(branchInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(BranchInstructionProcessor.Process(instruction, targetMethod, type));
 
                 return output;
             }
@@ -434,11 +434,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (InstructionHelper.IsCallMethod(instruction.OpCode.Code))
             {
-                output.AddRange(callInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(CallInstructionProcessor.Process(instruction, targetMethod, type));
             }
             if (instruction.OpCode.Code == Code.Ret)
             {
-                output.AddRange(returnInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(ReturnInstructionProcessor.Process(instruction, targetMethod, type));
             }
             return output;
         }
@@ -452,7 +452,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         /// <returns></returns>
         public List<PapyrusInstruction> ProcessStringConcat(Instruction instruction, MethodReference methodRef, List<object> parameters)
         {
-            return stringConcatInstructionProcessor.Process(instruction, methodRef, parameters);
+            return StringConcatInstructionProcessor.Process(instruction, methodRef, parameters);
         }
 
         /// <summary>
@@ -464,7 +464,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         /// <returns></returns>
         public IEnumerable<PapyrusInstruction> ProcessConditionalInstruction(Instruction instruction, Code overrideOpCode = Code.Nop, string tempVariable = null)
         {
-            return conditionalInstructionProcessor.Process(instruction, overrideOpCode, tempVariable);
+            return ConditionalInstructionProcessor.Process(instruction, overrideOpCode, tempVariable);
         }
 
         /// <summary>

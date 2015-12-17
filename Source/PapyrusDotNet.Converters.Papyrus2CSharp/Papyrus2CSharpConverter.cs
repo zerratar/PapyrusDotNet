@@ -210,13 +210,13 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         AppendLine("{", 1);
                         if (prop.HasGetter)
                         {
-                            AppendLine("get", 2);
-                            WriteMethod(prop.GetMethod, type, asm, indent + 3, true);
+                            Append("get ", 2);
+                            WriteMethod(prop.GetMethod, type, asm, indent + 3, prop, true);
                         }
                         if (prop.HasSetter)
                         {
-                            AppendLine("set", 2);
-                            WriteMethod(prop.SetMethod, type, asm, indent + 3, false, true);
+                            Append("set ", 2);
+                            WriteMethod(prop.SetMethod, type, asm, indent + 3, prop, false, true);
                         }
                         AppendLine("}", indent + 1);
                     }
@@ -261,7 +261,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
         /// <param name="indent">The indent.</param>
         /// <param name="isGetter">if set to <c>true</c> [is getter].</param>
         /// <param name="isSetter">if set to <c>true</c> [is setter].</param>
-        private void WriteMethod(PapyrusMethodDefinition method, PapyrusTypeDefinition type, PapyrusAssemblyDefinition asm, int indent, bool isGetter = false, bool isSetter = false)
+        private void WriteMethod(PapyrusMethodDefinition method, PapyrusTypeDefinition type, PapyrusAssemblyDefinition asm, int indent, PapyrusPropertyDefinition prop = null, bool isGetter = false, bool isSetter = false)
         {
             // SetGlobalIndent(indent);
             if (!isGetter && !isSetter)
@@ -271,27 +271,32 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     WriteDoc(method.Documentation, indent);
                 }
                 Append("public " +
-                              (method.IsGlobal ? "static " : "") +
-                              (method.IsNative ? "extern " : "") +
-                              ((string)method.ReturnTypeName).Replace("None", "void") + " " +
-                              (string)method.Name
+                       (method.IsGlobal ? "static " : "") +
+                       (method.IsNative ? "extern " : "") +
+                       ((string) method.ReturnTypeName).Replace("None", "void") + " " +
+                       (string) method.Name
                     , indent);
                 Append("(");
                 Append(string.Join(",",
-                    method.Parameters.Select(i => (string)i.TypeName + " " + (string)i.Name)));
+                    method.Parameters.Select(i => (string) i.TypeName + " " + (string) i.Name)));
                 AppendLine(")");
+                
             }
             AppendLine("{", indent);
-            if (isGetter)
-            {
-                // type.Fields.FirstOrDefault(f=>f.Name.Value.Contains());
-                AppendLine("return <backing_field>;", indent + 1);
-            }
-            else if (isSetter)
-            {
-                AppendLine("<backing_field> = value;", indent + 1);
-            }
-            else
+            //if (isGetter)
+            //{
+            //    if (prop != null)
+            //    {
+            //        prop.
+            //    }
+            //    // type.Fields.FirstOrDefault(f=>f.Name.Value.Contains());
+            //    AppendLine("return <backing_field>;", indent + 1);
+            //}
+            //else if (isSetter)
+            //{
+            //    AppendLine("<backing_field> = value;", indent + 1);
+            //}
+            //else
             {
                 if (method.HasBody)
                 {

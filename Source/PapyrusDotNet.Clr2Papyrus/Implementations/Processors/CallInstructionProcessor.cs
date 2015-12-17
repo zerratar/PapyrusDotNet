@@ -110,6 +110,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     isStaticCall = methodDefinition.IsStatic;
                 }
 
+                if (methodDefinition != null && methodDefinition.IsConstructor) return processInstruction;
+
                 if (methodDefinition == null)
                 {
                     isStaticCall = name.Contains("::");
@@ -147,6 +149,14 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 }
                 else
                 {
+                    if (methodRef.Name.ToLower().Contains("get_") || methodRef.Name.ToLower().Contains("set_"))
+                    {
+                        processInstruction.AddRange(ProcessPropertyAccess(instruction, methodRef, methodDefinition, parameters));
+
+                        return processInstruction;
+                    }
+
+
                     if (isStaticCall)
                     {
                         var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef);
@@ -170,6 +180,47 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 }
             }
             return processInstruction;
+        }
+
+        private IEnumerable<PapyrusInstruction> ProcessPropertyAccess(Instruction instruction, MethodReference methodRef, MethodDefinition methodDefinition,
+            List<object> parameters)
+        {
+            var instructions = new List<PapyrusInstruction>();
+
+            if (methodRef is MethodDefinition)
+            {
+                methodDefinition = methodRef as MethodDefinition;
+            }
+            if (methodDefinition != null)
+            {
+                var matchingProperty = mainInstructionProcessor.PapyrusType.Properties.FirstOrDefault(
+                    p => p.SetMethod.Name.Value.ToLower().Equals(methodRef.Name.ToLower()) ||
+                         p.GetMethod.Name.Value.ToLower().Equals(methodRef.Name.ToLower()));
+                if (matchingProperty != null)
+                {
+                    if (methodDefinition.IsSetter)
+                    {
+                        var param = parameters;
+
+                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.PropSet,
+                                mainInstructionProcessor.CreateVariableReferenceFromName(matchingProperty.Name.Value),
+                                mainInstructionProcessor.CreateVariableReferenceFromName("self"),
+                                param.First()
+                            ));
+                    }
+                    else if (methodDefinition.IsGetter)
+                    {
+                        var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef);
+
+                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.PropSet,
+                                mainInstructionProcessor.CreateVariableReferenceFromName(matchingProperty.Name.Value),
+                                mainInstructionProcessor.CreateVariableReferenceFromName("self"),
+                                 mainInstructionProcessor.CreateVariableReferenceFromName(destinationVariable)
+                            ));
+                    }
+                }
+            }
+            return instructions;
         }
 
         /// <summary>

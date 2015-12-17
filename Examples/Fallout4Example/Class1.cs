@@ -51,12 +51,13 @@ namespace Fallout4Example
                 Debug.MessageBox("This is message # " + i);
             }
         }
-
-
+        
         public int testInteger1 = 0;
         public int asda = 0;
         public override void OnInit()
         {
+
+          
             //MyTestStruct meStruct;
 
             //meStruct.StructInteger = 252;
@@ -84,7 +85,7 @@ namespace Fallout4Example
 
             testInteger1 += 100;
 
-            HelloThere = true;  
+            HelloThere = true;
 
             if (HelloThere)
             {

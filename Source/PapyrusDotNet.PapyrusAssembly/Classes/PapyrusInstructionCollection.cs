@@ -15,6 +15,11 @@ namespace PapyrusDotNet.PapyrusAssembly
             return items.GetEnumerator();
         }
 
+        public void Insert(int index, PapyrusInstruction item)
+        {
+            items.Insert(index, item);
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
