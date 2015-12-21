@@ -1,13 +1,16 @@
 using System.Linq;
 using Mono.Cecil;
 using Mono.Collections.Generic;
+using PapyrusDotNet.Common.Interfaces;
 
 namespace PapyrusDotNet.Common.Utilities
 {
     public class PapyrusAttributeReader : IPapyrusAttributeReader
     {
-        public PapyrusAttributeReader()
+        private readonly IValueTypeConverter papyrusValueTypeConverter;
+        public PapyrusAttributeReader(IValueTypeConverter papyrusValueTypeConverter)
         {
+            this.papyrusValueTypeConverter = papyrusValueTypeConverter;
         }
 
         public string GetCustomAttributeValue(CustomAttribute varAttr)
@@ -20,7 +23,7 @@ namespace PapyrusDotNet.Common.Utilities
                     var arg = (CustomAttributeArgument)ctrArg.Value;
                     var val = arg.Value;
 
-                    return ValueTypeConverter.Instance.Convert(arg.Type.Name, val).ToString();
+                    return papyrusValueTypeConverter.Convert(arg.Type.Name, val).ToString();
                 }
                 return ctrArg.Value.ToString();
             }
@@ -110,7 +113,7 @@ namespace PapyrusDotNet.Common.Utilities
                             var arg = (CustomAttributeArgument)ctrArg.Value;
                             var val = arg.Value;
 
-                            initialValue = ValueTypeConverter.Instance.Convert(arg.Type.Name, val).ToString();
+                            initialValue = papyrusValueTypeConverter.Convert(arg.Type.Name, val).ToString();
                         }
                         else
                             initialValue = ctrArg.Value.ToString();

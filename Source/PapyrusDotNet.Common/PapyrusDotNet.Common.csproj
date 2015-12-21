@@ -100,7 +100,7 @@
     <Compile Include="Utilities\Utility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Papyrus\VariableReference.cs" />
-    <Compile Include="Utilities\ValueTypeConverter.cs" />
+    <Compile Include="Utilities\PapyrusValueTypeConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">

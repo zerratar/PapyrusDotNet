@@ -23,6 +23,7 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using PapyrusDotNet.Common.Extensions;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Papyrus2Clr.Base;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
@@ -113,8 +114,8 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                 }
             }
 
-            //exeAsm.FindTypes("attribute")
-            //    .ForEach(attr => ImportType(mainModule, attr));
+            exeAsm.FindTypes("attribute")
+                .ForEach(attr => ImportType(mainModule, attr));
 
             uiRenderer.DrawResult("Building Core Library Completed.");
 
@@ -177,6 +178,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                     {
                         // ignored
                     }
+
                 }
 
                 // if (constructor != null && !constructor.HasParameters)
@@ -311,10 +313,12 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
                 var typeRef = ResolveTypeReference(null, prop.TypeName);
 
-                var propDef = new PropertyDefinition(prop.Name.Value, PropertyAttributes.None, typeRef);
-                propDef.SetMethod = CreatePropertySetMethod(prop, targetField, typeRef);
-                propDef.GetMethod = CreatePropertyGetMethod(prop, targetField, typeRef);
-                newType.Properties.Add(propDef);
+                newType.AddProperty(prop.Name.Value, typeRef, targetField);
+
+                //var propDef = new PropertyDefinition(prop.Name.Value, PropertyAttributes.None, typeRef);
+                //propDef.SetMethod = CreatePropertySetMethod(prop, targetField, typeRef);
+                //propDef.GetMethod = CreatePropertyGetMethod(prop, targetField, typeRef);
+                //newType.Properties.Add(propDef);
             }
 
 
@@ -367,46 +371,46 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             return newType;
         }
 
-        private MethodDefinition CreatePropertyGetMethod(PapyrusPropertyDefinition prop, FieldReference field, TypeReference typeRef)
-        {
-            var get = new MethodDefinition("get_" + prop.Name.Value,
-                MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, typeRef);
-            var processor = get.Body.GetILProcessor();
+        //private MethodDefinition CreatePropertyGetMethod(PapyrusPropertyDefinition prop, FieldReference field, TypeReference typeRef)
+        //{
+        //    var get = new MethodDefinition("get_" + prop.Name.Value,
+        //        MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, typeRef);
+        //    var processor = get.Body.GetILProcessor();
 
 
-            if (field != null)
-            {
-                get.Body.Instructions.Add(processor.Create(OpCodes.Ldarg_0));
-                get.Body.Instructions.Add(processor.Create(OpCodes.Ldfld, field));
-            }
-            else
-            if (typeRef.IsValueType)
-            {
-                var var = GetMonoType(typeRef);
+        //    if (field != null)
+        //    {
+        //        get.Body.Instructions.Add(processor.Create(OpCodes.Ldarg_0));
+        //        get.Body.Instructions.Add(processor.Create(OpCodes.Ldfld, field));
+        //    }
+        //    else
+        //    if (typeRef.IsValueType)
+        //    {
+        //        var var = GetMonoType(typeRef);
 
-                var opcode = GetDefaultPrimitiveValueOpCode(var);
+        //        var opcode = GetDefaultPrimitiveValueOpCode(var);
 
-                get.Body.Instructions.Add(processor.Create(OpCodes.Ldc_I4_0));
-                get.Body.Instructions.Add(processor.Create(OpCodes.Box, typeRef));
+        //        get.Body.Instructions.Add(processor.Create(OpCodes.Ldc_I4_0));
+        //        get.Body.Instructions.Add(processor.Create(OpCodes.Box, typeRef));
 
-                //if (opcode == OpCodes.Ldstr)
-                //    get.Body.Instructions.Add(processor.Create(opcode, "Hello World"));
-                //else
-                //    get.Body.Instructions.Add(processor.Create(opcode));
-            }
-            else
-            {
-                get.Body.Instructions.Add(processor.Create(OpCodes.Ldnull));
-            }
-            //if (field != null)
-            //{
-            //    get.Body.Instructions.Add(processor.Create(OpCodes.Ldfld, field));
-            //}
+        //        //if (opcode == OpCodes.Ldstr)
+        //        //    get.Body.Instructions.Add(processor.Create(opcode, "Hello World"));
+        //        //else
+        //        //    get.Body.Instructions.Add(processor.Create(opcode));
+        //    }
+        //    else
+        //    {
+        //        get.Body.Instructions.Add(processor.Create(OpCodes.Ldnull));
+        //    }
+        //    //if (field != null)
+        //    //{
+        //    //    get.Body.Instructions.Add(processor.Create(OpCodes.Ldfld, field));
+        //    //}
 
-            get.Body.Instructions.Add(processor.Create(OpCodes.Ret));
-            get.SemanticsAttributes = MethodSemanticsAttributes.Getter;
-            return get;
-        }
+        //    get.Body.Instructions.Add(processor.Create(OpCodes.Ret));
+        //    get.SemanticsAttributes = MethodSemanticsAttributes.Getter;
+        //    return get;
+        //}
 
         public static Type GetMonoType(TypeReference type)
         {
@@ -434,24 +438,24 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
         }
 
 
-        private MethodDefinition CreatePropertySetMethod(PapyrusPropertyDefinition prop, FieldReference field, TypeReference typeRef)
-        {
+        //private MethodDefinition CreatePropertySetMethod(PapyrusPropertyDefinition prop, FieldReference field, TypeReference typeRef)
+        //{
 
-            var voidRef = mainModule.Import(typeof(void));
-            var set = new MethodDefinition("set_" + prop.Name.Value,
-                MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, voidRef);
-            var processor = set.Body.GetILProcessor();
-            set.Body.Instructions.Add(processor.Create(OpCodes.Ldarg_0));
-            if (field != null)
-            {
-                set.Body.Instructions.Add(processor.Create(OpCodes.Ldarg_1));
-                set.Body.Instructions.Add(processor.Create(OpCodes.Stfld, field));
-            }
-            set.Body.Instructions.Add(processor.Create(OpCodes.Ret));
-            set.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, typeRef));
-            set.SemanticsAttributes = MethodSemanticsAttributes.Setter;
-            return set;
-        }
+        //    var voidRef = mainModule.Import(typeof(void));
+        //    var set = new MethodDefinition("set_" + prop.Name.Value,
+        //        MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, voidRef);
+        //    var processor = set.Body.GetILProcessor();
+        //    set.Body.Instructions.Add(processor.Create(OpCodes.Ldarg_0));
+        //    if (field != null)
+        //    {
+        //        set.Body.Instructions.Add(processor.Create(OpCodes.Ldarg_1));
+        //        set.Body.Instructions.Add(processor.Create(OpCodes.Stfld, field));
+        //    }
+        //    set.Body.Instructions.Add(processor.Create(OpCodes.Ret));
+        //    set.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, typeRef));
+        //    set.SemanticsAttributes = MethodSemanticsAttributes.Setter;
+        //    return set;
+        //}
 
         MethodReference objectCtor = null;
         public void AddEmptyConstructor(TypeDefinition type)

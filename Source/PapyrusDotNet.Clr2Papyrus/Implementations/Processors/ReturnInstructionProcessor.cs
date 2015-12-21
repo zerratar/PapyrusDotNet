@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
 using PapyrusDotNet.PapyrusAssembly;
@@ -28,6 +29,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 {
     public class ReturnInstructionProcessor : IInstructionProcessor
     {
+        private readonly IValueTypeConverter valueTypeConverter;
         private readonly IClr2PapyrusInstructionProcessor mainInstructionProcessor;
 
         /// <summary>
@@ -36,6 +38,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="clr2PapyrusInstructionProcessor">The CLR2 papyrus instruction processor.</param>
         public ReturnInstructionProcessor(IClr2PapyrusInstructionProcessor clr2PapyrusInstructionProcessor)
         {
+            valueTypeConverter = new PapyrusValueTypeConverter();
             mainInstructionProcessor = clr2PapyrusInstructionProcessor;
         }
 
@@ -81,7 +84,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     var val = topValue.Value;
 
                     var typeName = topValue.TypeName;
-                    var newValue = ValueTypeConverter.Instance.Convert(typeName, val);
+                    var newValue = valueTypeConverter.Convert(typeName, val);
                     var papyrusVariableReference = new PapyrusVariableReference
                     {
                         TypeName = StringExtensions.Ref(typeName, mainInstructionProcessor.PapyrusAssembly),

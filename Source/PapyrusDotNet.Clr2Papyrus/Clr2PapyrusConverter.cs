@@ -50,7 +50,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         /// <param name="processorOptions"></param>
         public Clr2PapyrusConverter(IClr2PapyrusInstructionProcessor instructionProcessor, PapyrusCompilerOptions processorOptions)
         {
-            attributeReader = new PapyrusAttributeReader();
+            attributeReader = new PapyrusAttributeReader(new PapyrusValueTypeConverter());
             this.instructionProcessor = instructionProcessor;
             this.processorOptions = processorOptions;
         }

@@ -62,7 +62,9 @@ namespace PapyrusDotNet.Old
 
         private MethodDefinition targetMethod;
 
-        private static readonly PapyrusAttributeReader attributeReader = new PapyrusAttributeReader();
+        private static readonly IValueTypeConverter ValueTypeConverter = new PapyrusValueTypeConverter();
+
+        private static readonly PapyrusAttributeReader AttributeReader = new PapyrusAttributeReader(ValueTypeConverter);
 
         public PapyrusAsmWriter(AssemblyDefinition assembly, TypeDefinition type, List<VariableReference> fields)
         {
@@ -131,7 +133,7 @@ namespace PapyrusDotNet.Old
 
                     var outputPapyrus = "";
 
-                    var properties = attributeReader.ReadPapyrusAttributes(type);
+                    var properties = AttributeReader.ReadPapyrusAttributes(type);
                     if (properties.IsGeneric)
                     {
                         // Get all usages to know which generic types are necessary to be generated.
@@ -326,7 +328,7 @@ namespace PapyrusDotNet.Old
 
             output = new PapyrusAssemblyOptimizer(output, codeblockParser).OptimizeLabels();
 
-            output = Utility.InjectTempVariables(output, indentDepth + 2, function.TempVariables);
+            output = InjectTempVariables(output, indentDepth + 2, function.TempVariables);
 
             sourceBuilder = new StringBuilder(output);
 
@@ -334,6 +336,22 @@ namespace PapyrusDotNet.Old
 
             return function;
         }
+
+        public static string InjectTempVariables(string output, int indentDepth, List<VariableReference> tempVariables)
+        {
+            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
+
+            var insertIndex = Array.IndexOf(rows.ToArray(),
+                rows.FirstOrDefault(r => r.ToLower().Contains(".endlocaltable")));
+
+            foreach (var variable in tempVariables)
+            {
+                rows.Insert(insertIndex, StringUtility.Indent(indentDepth, variable.Definition, false));
+            }
+
+            return String.Join(Environment.NewLine, rows.ToArray());
+        }
+
 
         public static string WritePapyrusObjectTable(Assembly asm)
         {
@@ -853,7 +871,7 @@ namespace PapyrusDotNet.Old
                                         return "ArrayCreate " + definedField.Name + " " + val.Value;
                                     }
                                 }
-                                definedField.Value = ValueTypeConverter.Instance.Convert(definedField.TypeName, val.Value);
+                                definedField.Value = ValueTypeConverter.Convert(definedField.TypeName, val.Value);
                                 // return "Assign " + definedField.Name + " " + definedField.Value;
                                 return "ArrayCreate " + definedField.Name + " " + val.Value;
                             }
@@ -977,7 +995,7 @@ namespace PapyrusDotNet.Old
                                 definedField.Value = varRef.Value;
                                 return "Assign " + definedField.Name + " " + varRef.Name;
                             }
-                            definedField.Value = ValueTypeConverter.Instance.Convert(definedField.TypeName, obj.Value);
+                            definedField.Value = ValueTypeConverter.Convert(definedField.TypeName, obj.Value);
                             return "Assign " + definedField.Name + " " + definedField.Value;
                         }
                     }
@@ -997,7 +1015,7 @@ namespace PapyrusDotNet.Old
 
 
                         function.AllVariables[(int)index].Value =
-                            ValueTypeConverter.Instance.Convert(function.AllVariables[(int)index].TypeName, heapObj.Value);
+                            ValueTypeConverter.Convert(function.AllVariables[(int)index].TypeName, heapObj.Value);
                     }
                     var valout = function.AllVariables[(int)index].Value;
                     var valoutStr = valout + "";

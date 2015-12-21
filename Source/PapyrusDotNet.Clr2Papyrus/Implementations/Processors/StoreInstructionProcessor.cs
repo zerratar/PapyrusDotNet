@@ -20,6 +20,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
 using PapyrusDotNet.PapyrusAssembly;
@@ -28,6 +29,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 {
     public class StoreInstructionProcessor : IInstructionProcessor
     {
+        private readonly IValueTypeConverter valueTypeConverter;
         private readonly IClr2PapyrusInstructionProcessor mainInstructionProcessor;
 
         /// <summary>
@@ -36,6 +38,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="clr2PapyrusInstructionProcessor">The CLR2 papyrus instruction processor.</param>
         public StoreInstructionProcessor(IClr2PapyrusInstructionProcessor clr2PapyrusInstructionProcessor)
         {
+            valueTypeConverter = new PapyrusValueTypeConverter();
             mainInstructionProcessor = clr2PapyrusInstructionProcessor;
         }
 
@@ -135,7 +138,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             }
                             //definedField.FieldVariable.Value =
                             //    Utility.TypeValueConvert(definedField.FieldVariable.TypeName.Value, obj.Value);
-                            var targetValue = ValueTypeConverter.Instance.Convert(definedField.FieldVariable.TypeName.Value,
+                            var targetValue = valueTypeConverter.Convert(definedField.FieldVariable.TypeName.Value,
                                 obj.Value);
 
                             return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, definedField, targetValue));
@@ -164,7 +167,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, allVariables[index], varRef));
                         }
                         // allVariables[index].Value
-                        outVal = ValueTypeConverter.Instance.Convert(allVariables[index].TypeName.Value, heapObj.Value);
+                        outVal = valueTypeConverter.Convert(allVariables[index].TypeName.Value, heapObj.Value);
                     }
                     var valout = outVal;//allVariables[index].Value;
 

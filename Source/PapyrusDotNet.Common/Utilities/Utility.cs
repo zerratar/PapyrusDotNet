@@ -34,7 +34,7 @@ namespace PapyrusDotNet.Common.Utilities
 {
     public class Utility : IUtility
     {
-        public static string InitialValue(FieldDefinition variable)
+        public static string GetInitialValue(FieldDefinition variable)
         {
             var initialValue = "None";
             if (variable.InitialValue != null && variable.InitialValue.Length > 0)
@@ -66,9 +66,6 @@ namespace PapyrusDotNet.Common.Utilities
             }
             return initialValue;
         }
-
-
-
 
         public static string GetPapyrusReturnType(TypeReference reference, bool stripGenericMarkers)
         {
@@ -118,11 +115,8 @@ namespace PapyrusDotNet.Common.Utilities
 
         public static string GetPapyrusBaseType(string fullName)
         {
-            switch (fullName)
-            {
-                case "Object":
-                    return "";
-            }
+            if (fullName == "Object")
+                return "";
 
             var name = fullName;
             var Namespace = "";
@@ -220,7 +214,6 @@ namespace PapyrusDotNet.Common.Utilities
             }
         }
 
-
         public static string GetVariableName(Instruction instruction)
         {
             var i = instruction.OpCode.Name;
@@ -234,23 +227,7 @@ namespace PapyrusDotNet.Common.Utilities
             return "V_" + instruction.Operand;
         }
 
-        public static string InjectTempVariables(string output, int indentDepth, List<VariableReference> tempVariables)
-        {
-            var rows = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
-
-            // foreach(var )
-            var insertIndex = Array.IndexOf(rows.ToArray(),
-                rows.FirstOrDefault(r => r.ToLower().Contains(".endlocaltable")));
-
-
-            foreach (var variable in tempVariables)
-            {
-                rows.Insert(insertIndex, StringUtility.Indent(indentDepth, variable.Definition, false));
-            }
-
-
-            return String.Join(Environment.NewLine, rows.ToArray());
-        }
+     
 
         public static int GetStackPopCount(StackBehaviour stackBehaviour)
         {

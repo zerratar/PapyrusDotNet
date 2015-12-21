@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace PapyrusDotNet.Converters.Papyrus2Clr
 {
@@ -220,14 +221,36 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
 
             var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+            var bt = targetType.BaseType;
+
             var objectConstructor = parentType.GetConstructor(flags, null, new Type[0], null);
 
-            // Revert to the System.Object constructor
-            // if the parent type does not have a default constructor
-            if (objectConstructor == null)
-                objectConstructor = typeof(object).GetConstructor(new Type[0]);
+            MethodReference baseConstructor = null;
+            if (bt != null)
+            {
+                try
+                {
+                    baseConstructor = bt.Resolve().GetConstructors().FirstOrDefault();
+                    try
+                    {
+                        baseConstructor = module.Import(baseConstructor);
+                    }
+                    catch { }
+                }
+                catch { }
+            }
 
-            var baseConstructor = module.Import(objectConstructor);
+
+            if (baseConstructor == null)
+            {
+                // Revert to the System.Object constructor
+                // if the parent type does not have a default constructor
+                if (objectConstructor == null)
+                    objectConstructor = typeof(object).GetConstructor(new Type[0]);
+
+                baseConstructor = module.Import(objectConstructor);
+            }
 
             // Define the default constructor
             var ctor = new MethodDefinition(".ctor", methodAttributes, voidType)
@@ -293,28 +316,32 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             typeDef.AddProperty(propertyName, typeRef);
         }
 
+
         /// <summary>
         /// Adds a rewritable property to the <paramref name="typeDef">target type</paramref>.
         /// </summary>
         /// <param name="typeDef">The target type that will hold the newly-created property.</param>
         /// <param name="propertyName">The name of the property itself.</param>
         /// <param name="propertyType">The <see cref="TypeReference"/> instance that describes the property type.</param>
+        /// <param name="backingField"></param>
         public static void AddProperty(this TypeDefinition typeDef, string propertyName,
-            TypeReference propertyType)
+            TypeReference propertyType, FieldReference backingField = null)
         {
             #region Add the backing field
             string fieldName = string.Format("__{0}_backingField", propertyName);
-            FieldDefinition actualField = new FieldDefinition(fieldName, Mono.Cecil.FieldAttributes.Private,
-                propertyType);
+            if (backingField == null)
+            {
+                FieldDefinition actualField = new FieldDefinition(fieldName, Mono.Cecil.FieldAttributes.Private,
+                    propertyType);
 
+                typeDef.Fields.Add(actualField);
+                backingField = actualField;
 
-            typeDef.Fields.Add(actualField);
+                if (typeDef.GenericParameters.Count > 0)
+                    backingField = GetBackingField(fieldName, typeDef, propertyType);
+            }
             #endregion
 
-
-            FieldReference backingField = actualField;
-            if (typeDef.GenericParameters.Count > 0)
-                backingField = GetBackingField(fieldName, typeDef, propertyType);
 
             var getterName = string.Format("get_{0}", propertyName);
             var setterName = string.Format("set_{0}", propertyName);

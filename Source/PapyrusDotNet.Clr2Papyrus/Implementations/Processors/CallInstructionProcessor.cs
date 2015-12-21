@@ -21,6 +21,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Exceptions;
@@ -32,6 +33,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 {
     public class CallInstructionProcessor : IInstructionProcessor
     {
+        private readonly IValueTypeConverter valueTypeConverter;
         private readonly IClr2PapyrusInstructionProcessor mainInstructionProcessor;
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="clr2PapyrusInstructionProcessor">The CLR2 papyrus instruction processor.</param>
         public CallInstructionProcessor(IClr2PapyrusInstructionProcessor clr2PapyrusInstructionProcessor)
         {
+            valueTypeConverter = new PapyrusValueTypeConverter();
             mainInstructionProcessor = clr2PapyrusInstructionProcessor;
         }
 
@@ -274,7 +277,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 {
                     papyrusParams[i].TypeName = papyrusReturnType.Ref(mainInstructionProcessor.PapyrusAssembly);
                     papyrusParams[i].ValueType = Utility.GetPrimitiveTypeFromType(p.ParameterType);
-                    papyrusParams[i].Value = ValueTypeConverter.Instance.Convert(papyrusReturnType, papyrusParams[i].Value);
+                    papyrusParams[i].Value = valueTypeConverter.Convert(papyrusReturnType, papyrusParams[i].Value);
                     varRefs.Add(papyrusParams[i]);
                 }
                 else

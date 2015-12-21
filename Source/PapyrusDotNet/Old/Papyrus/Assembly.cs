@@ -91,7 +91,7 @@ namespace PapyrusDotNet.Old.Papyrus
 
         public List<FieldDefinition> DelegateFields { get; set; }
 
-        private IPapyrusAttributeReader attributeReader = new PapyrusAttributeReader();
+        private IPapyrusAttributeReader attributeReader = new PapyrusAttributeReader(new PapyrusValueTypeConverter());
 
         public ObjectTable CreateObjectTable(TypeDefinition type)
         {
@@ -212,7 +212,7 @@ namespace PapyrusDotNet.Old.Papyrus
 
                 var variableType = Utility.GetPapyrusReturnType(variable.FieldType, true);
 
-                var initialValue = Utility.InitialValue(variable);
+                var initialValue = Utility.GetInitialValue(variable);
 
                 if (IsEnum)
                 {

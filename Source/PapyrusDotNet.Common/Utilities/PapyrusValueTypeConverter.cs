@@ -1,23 +1,26 @@
 using System;
+using PapyrusDotNet.Common.Interfaces;
 
 namespace PapyrusDotNet.Common.Utilities
 {
-    public class ValueTypeConverter : IValueTypeConverter
+    public class PapyrusValueTypeConverter : IValueTypeConverter
     {
-        private static ValueTypeConverter instance;
-
-        public static ValueTypeConverter Instance => instance ?? new ValueTypeConverter();
-
-        public object Convert(string targetTypeName, object value)
+        /// <summary>
+        /// Converts the value object into a papyrus friendly type
+        /// </summary>
+        /// <param name="typeName">Name of the target type.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public object Convert(string typeName, object value)
         {
-            if (targetTypeName.ToLower().StartsWith("bool") || targetTypeName.ToLower().StartsWith("system.bool"))
+            if (typeName.ToLower().StartsWith("bool") || typeName.ToLower().StartsWith("system.bool"))
             {
                 if (value is int || value is float || value is short || value is double || value is long || value is byte)
                     return (int)Double.Parse(value.ToString()) == 1;
                 if (value is bool) return (bool)value;
                 if (value is string) return (string)value == "1" || value.ToString().ToLower() == "true";
             }
-            if (targetTypeName.ToLower().StartsWith("string") || targetTypeName.ToLower().StartsWith("system.string"))
+            if (typeName.ToLower().StartsWith("string") || typeName.ToLower().StartsWith("system.string"))
             {
                 if (!value.ToString().Contains("\"")) return "\"" + value + "\"";
             }
@@ -29,7 +32,7 @@ namespace PapyrusDotNet.Common.Utilities
                 }
             }
 
-            if (targetTypeName.ToLower().StartsWith("int"))
+            if (typeName.ToLower().StartsWith("int"))
             {
                 if (value is int || value is float || value is short || value is double || value is long || value is byte)
                 {

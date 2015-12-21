@@ -51,14 +51,14 @@ namespace Fallout4Example
                 Debug.MessageBox("This is message # " + i);
             }
         }
-        
+
         public int testInteger1 = 0;
         public int asda = 0;
         public override void OnInit()
         {
-            FollowersScript fs;
+
             
-            
+
             //MyTestStruct meStruct;
 
             //meStruct.StructInteger = 252;
