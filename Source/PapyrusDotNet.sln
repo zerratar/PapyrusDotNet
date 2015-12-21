@@ -205,6 +205,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Cl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Papyrus2CSharp", "PapyrusDotNet.Converters.Papyrus2CSharp\PapyrusDotNet.Converters.Papyrus2CSharp.csproj", "{0F72BF82-253B-4588-9029-7C091C104118}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F8A2EB41-0C08-48CB-AB7E-2D70A2B036B5}"
+	ProjectSection(SolutionItems) = preProject
+		todo.txt = todo.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -24,6 +24,7 @@ using System.Text;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
 using PapyrusDotNet.Common.Papyrus;
+using PapyrusDotNet.Common.Utilities;
 
 #endregion
 

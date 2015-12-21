@@ -35,18 +35,18 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Test
             throw new System.NotImplementedException();
         }
 
-        public PapyrusInstruction CreatePapyrusInstruction(PapyrusOpCode papyrusOpCode, params object[] values)
+        public PapyrusInstruction CreatePapyrusInstruction(PapyrusOpCodes papyrusOpCode, params object[] values)
         {
             throw new System.NotImplementedException();
         }
 
-        public PapyrusInstruction ConditionalJump(PapyrusOpCode jumpType, PapyrusVariableReference conditionalVar,
+        public PapyrusInstruction ConditionalJump(PapyrusOpCodes jumpType, PapyrusVariableReference conditionalVar,
             object destinationInstruction)
         {
             throw new System.NotImplementedException();
         }
 
-        public PapyrusOpCode TryInvertJump(PapyrusOpCode jmpt)
+        public PapyrusOpCodes TryInvertJump(PapyrusOpCodes jmpt)
         {
             throw new System.NotImplementedException();
         }
@@ -91,7 +91,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Test
         public PapyrusInstruction CreatePapyrusCastInstruction(string destinationVariable,
             PapyrusVariableReference variableToCast)
         {
-            return new PapyrusInstruction() { OpCode = PapyrusOpCode.Cast };
+            return new PapyrusInstruction() { OpCode = PapyrusOpCodes.Cast };
         }
 
         public PapyrusFieldDefinition GetFieldFromStfld(Instruction whereToPlace)

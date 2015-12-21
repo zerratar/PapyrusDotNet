@@ -22,6 +22,7 @@ using System.Linq;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
 using PapyrusDotNet.Common.Papyrus;
+using PapyrusDotNet.Common.Utilities;
 
 #endregion
 
@@ -89,6 +90,8 @@ namespace PapyrusDotNet.Old.Papyrus
         public Dictionary<MethodDefinition, List<FieldDefinition>> DelegateMethodFieldPair { get; set; }
 
         public List<FieldDefinition> DelegateFields { get; set; }
+
+        private IPapyrusAttributeReader attributeReader = new PapyrusAttributeReader();
 
         public ObjectTable CreateObjectTable(TypeDefinition type)
         {
@@ -188,7 +191,7 @@ namespace PapyrusDotNet.Old.Papyrus
 
             ObjectTable.Name = Utility.GetPapyrusBaseType(type);
             ObjectTable.BaseType = type.BaseType != null ? Utility.GetPapyrusBaseType(type.BaseType) : "";
-            ObjectTable.Info = Utility.GetFlagsAndProperties(type);
+            ObjectTable.Info = attributeReader.ReadPapyrusAttributes(type);
 
 
             var allFields = new List<FieldDefinition>();
@@ -196,7 +199,7 @@ namespace PapyrusDotNet.Old.Papyrus
             allFields.AddRange(DelegateFields);
             foreach (var variable in allFields)
             {
-                var varProps = Utility.GetFlagsAndProperties(variable);
+                var varProps = attributeReader.ReadPapyrusAttributes(variable);
 
                 var variableName = variable.Name.Replace('<', '_').Replace('>', '_');
 

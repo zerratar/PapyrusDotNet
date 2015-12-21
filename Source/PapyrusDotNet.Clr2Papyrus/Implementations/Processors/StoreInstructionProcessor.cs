@@ -20,6 +20,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
 using PapyrusDotNet.PapyrusAssembly;
 
@@ -93,7 +94,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     }
 
 
-                    return Utility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.ArraySetElement, targetItemArray, targetItemIndex,
+                    return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArraySetElement, targetItemArray, targetItemIndex,
                         targetItemValue));
                     //return "ArraySetElement " + tar + " " + oidx + " " + val;
                 }
@@ -121,7 +122,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                 // definedField.FieldVariable = varRef.;
 
                                 // CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField.Name.Value, varRef.Name.Value)
-                                return Utility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField, varRef));
+                                return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, definedField, varRef));
                             }
                             if (obj.Value is PapyrusVariableReference)
                             {
@@ -130,14 +131,14 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                 definedField.FieldVariable = varRef;
                                 definedField.FieldVariable.ValueType = PapyrusPrimitiveType.Reference;
                                 // CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField.Name.Value, varRef.Name.Value)
-                                return Utility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField, varRef));
+                                return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, definedField, varRef));
                             }
                             //definedField.FieldVariable.Value =
                             //    Utility.TypeValueConvert(definedField.FieldVariable.TypeName.Value, obj.Value);
-                            var targetValue = Utility.TypeValueConvert(definedField.FieldVariable.TypeName.Value,
+                            var targetValue = ValueTypeConverter.Instance.Convert(definedField.FieldVariable.TypeName.Value,
                                 obj.Value);
 
-                            return Utility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField, targetValue));
+                            return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, definedField, targetValue));
                             // definedField.FieldVariable.Value
                             // "Assign " + definedField.Name + " " + definedField.Value;
                         }
@@ -160,10 +161,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             allVariables[index].Value = allVariables[index].Name.Value;
                             //varRef.Name.Value;
                             // "Assign " + allVariables[(int)index].Name.Value + " " + varRef.Name.Value;                         
-                            return Utility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Assign, allVariables[index], varRef));
+                            return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, allVariables[index], varRef));
                         }
                         // allVariables[index].Value
-                        outVal = Utility.TypeValueConvert(allVariables[index].TypeName.Value, heapObj.Value);
+                        outVal = ValueTypeConverter.Instance.Convert(allVariables[index].TypeName.Value, heapObj.Value);
                     }
                     var valout = outVal;//allVariables[index].Value;
 
@@ -175,17 +176,17 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                     if (valout is PapyrusFieldDefinition)
                     {
-                        return Utility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Assign, allVariables[index], valout as PapyrusFieldDefinition));
+                        return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, allVariables[index], valout as PapyrusFieldDefinition));
                     }
 
                     if (valout is PapyrusVariableReference)
                     {
-                        return Utility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Assign, allVariables[index], valout as PapyrusVariableReference));
+                        return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, allVariables[index], valout as PapyrusVariableReference));
                     }
 
                     if (valout is PapyrusParameterDefinition)
                     {
-                        return Utility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Assign, allVariables[index], valout as PapyrusParameterDefinition));
+                        return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, allVariables[index], valout as PapyrusParameterDefinition));
                     }
 
 
@@ -196,7 +197,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         valout = "None";
                     }
 
-                    return Utility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Assign, allVariables[index], valout));
+                    return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, allVariables[index], valout));
                 }
             }
             return new PapyrusInstruction[0];

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
 using PapyrusDotNet.PapyrusAssembly;
 using StringExtensions = PapyrusDotNet.PapyrusAssembly.Extensions.StringExtensions;
@@ -63,7 +64,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     var variable = topValue.Value as PapyrusVariableReference;
                     // return "Return " + variable.Name;
 
-                    output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Return, variable));
+                    output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return, variable));
                     // PapyrusReturnVariable(variable.Name)
 
                     return output;
@@ -72,7 +73,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 {
                     var variable = topValue.Value as PapyrusFieldDefinition;
                     // return "Return " + variable.Name;
-                    output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Return, variable));
+                    output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return, variable));
                     return output;
                 }
                 if (Utility.IsConstantValue(topValue.Value))
@@ -80,7 +81,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     var val = topValue.Value;
 
                     var typeName = topValue.TypeName;
-                    var newValue = Utility.TypeValueConvert(typeName, val);
+                    var newValue = ValueTypeConverter.Instance.Convert(typeName, val);
                     var papyrusVariableReference = new PapyrusVariableReference
                     {
                         TypeName = StringExtensions.Ref(typeName, mainInstructionProcessor.PapyrusAssembly),
@@ -88,7 +89,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         ValueType = Utility.GetPapyrusValueType(typeName)
                     };
                     {
-                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Return, papyrusVariableReference));
+                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return, papyrusVariableReference));
                         return output;
                     }
                 }
@@ -106,7 +107,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         {
             return new PapyrusInstruction()
             {
-                OpCode = PapyrusOpCode.Return,
+                OpCode = PapyrusOpCodes.Return,
                 Arguments = new List<PapyrusVariableReference>(new[] { new PapyrusVariableReference()
                 {
                     ValueType = PapyrusPrimitiveType.None

@@ -402,11 +402,11 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var last = method.Body.Instructions.LastOrDefault();
             if (last != null)
             {
-                if (last.OpCode != PapyrusOpCode.Return)
+                if (last.OpCode != PapyrusOpCodes.Return)
                 {
                     var ret = new PapyrusInstruction()
                     {
-                        OpCode = PapyrusOpCode.Return,
+                        OpCode = PapyrusOpCodes.Return,
                         Previous = last,
                         Offset = last.Offset + 1,
                         TemporarilyInstruction = true,
@@ -424,29 +424,29 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
             return method;
         }
-        private bool IsJump(PapyrusOpCode opCode)
+        private bool IsJump(PapyrusOpCodes opCode)
         {
-            return opCode == PapyrusOpCode.Jmp || opCode == PapyrusOpCode.Jmpf || opCode == PapyrusOpCode.Jmpt;
+            return opCode == PapyrusOpCodes.Jmp || opCode == PapyrusOpCodes.Jmpf || opCode == PapyrusOpCodes.Jmpt;
         }
         private void UpdateOperand(PapyrusInstruction instruction, PapyrusInstructionCollection instructions, IEnumerable<PapyrusMethodDefinition> allmethods)
         {
             var papyrusMethodDefinitions = allmethods.ToList();
             var i = instruction;
-            if (i.OpCode == PapyrusOpCode.Jmpt || i.OpCode == PapyrusOpCode.Jmpf)
+            if (i.OpCode == PapyrusOpCodes.Jmpt || i.OpCode == PapyrusOpCodes.Jmpf)
             {
                 i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + int.Parse(i.GetArg(1)));
             }
-            if (i.OpCode == PapyrusOpCode.Jmp)
+            if (i.OpCode == PapyrusOpCodes.Jmp)
             {
                 i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + int.Parse(i.GetArg(0)));
             }
 
-            if (i.OpCode == PapyrusOpCode.Callmethod)
+            if (i.OpCode == PapyrusOpCodes.Callmethod)
             {
                 i.Operand = papyrusMethodDefinitions
                             .FirstOrDefault(m => m.Name.Value == i.GetArg(0));
             }
-            if (i.OpCode == PapyrusOpCode.Callstatic)
+            if (i.OpCode == PapyrusOpCodes.Callstatic)
             {
                 i.Operand = papyrusMethodDefinitions
                             .FirstOrDefault(m => m.Name.Value == i.GetArg(0));
@@ -457,7 +457,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         {
             var instruction = new PapyrusInstruction();
 
-            instruction.OpCode = (PapyrusOpCode)pexReader.ReadByte();
+            instruction.OpCode = (PapyrusOpCodes)pexReader.ReadByte();
 
             var desc = PapyrusInstructionOpCodeDescription.FromOpCode(instruction.OpCode);
 

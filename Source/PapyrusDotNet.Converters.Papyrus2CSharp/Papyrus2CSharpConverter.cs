@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.PapyrusAssembly;
@@ -9,117 +7,6 @@ using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 namespace PapyrusDotNet.Converters.Papyrus2CSharp
 {
-    public struct TextRange
-    {
-        public int Row;
-        public int Column;
-        public int Length;
-        public string Text;
-        public object Key;
-
-        public TextRange(object key, string text, int row, int column, int length)
-            : this()
-        {
-            Key = key;
-            Row = row;
-            Column = column;
-            Length = length;
-            Text = text;
-        }
-    }
-
-    public class SourceBuilder
-    {
-        private readonly StringBuilder sb = new StringBuilder();
-        private readonly Dictionary<object, TextRange> location = new Dictionary<object, TextRange>();
-        private int size;
-        public int CurrentLine;
-        public int CurrentColumn;
-        private bool lastWasAppend;
-
-        public int Size => size;
-
-        public int Lines => CurrentLine;
-
-        public int Column => CurrentColumn;
-
-        public override string ToString()
-        {
-            return sb.ToString();
-        }
-
-        public TextRange this[object key] => location[key];
-
-        public List<TextRange> GetTextRanges() => location.Select(v => v.Value).ToList();
-
-        public void Append(string text, object key = null, int indent = 0)
-        {
-            text = Indent(text, indent);
-            sb.Append(text);
-
-            if (key != null)
-            {
-                location.Add(key, new TextRange(key, text, CurrentLine, CurrentColumn, text.Length));
-            }
-
-            size += text.Length;
-            CurrentColumn += text.Length;
-            lastWasAppend = true;
-        }
-
-        public void AppendLine(string text, object key = null, int indent = 0)
-        {
-            if (!lastWasAppend)
-            {
-                text = Indent(text, indent);
-            }
-            sb.AppendLine(text);
-
-            if (key != null)
-            {
-                if (!location.ContainsKey(key)) // Only the first occurence will be added.
-                {
-                    location.Add(key, new TextRange(key, text, CurrentLine, 0, text.Length));
-                }
-            }
-
-            size += text.Length;
-            CurrentLine++;
-            CurrentColumn = 0;
-            lastWasAppend = false;
-        }
-
-        public void AppendLine()
-        {
-            sb.AppendLine();
-            size += Environment.NewLine.Length;
-            CurrentLine++;
-            CurrentColumn = 0;
-            lastWasAppend = false;
-        }
-
-
-        private string Indent(string text, int num)
-        {
-            string output = "";
-            for (var i = 0; i < num; i++)
-            {
-                output += '\t';
-            }
-            return output + text.Trim('\t');
-        }
-
-        //private string For(int num, Func<int, string> func)
-        //{
-        //    string output = "";
-        //    for (var i = 0; i < num; i++)
-        //    {
-        //        output += func(i);
-        //    }
-        //    return output;
-        //}
-    }
-
     public class Papyrus2CSharpConverter : Papyrus2CSharpConverterBase
     {
         private SourceBuilder activeBuilder;
@@ -391,11 +278,11 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
 
             switch (i.OpCode)
             {
-                case PapyrusOpCode.Nop:
+                case PapyrusOpCodes.Nop:
                     {
                         return ("// Do Nothing Operator (NOP)");
                     }
-                case PapyrusOpCode.Callstatic:
+                case PapyrusOpCodes.Callstatic:
                     {
                         var val = string.Join(",", i.Arguments.Skip(2).Take(i.Arguments.Count - 3).Select(GetArgumentValue));
                         var location = GetArgumentValue(i.Arguments[0]);
@@ -415,7 +302,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         return assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");";
 
                     }
-                case PapyrusOpCode.Callmethod:
+                case PapyrusOpCodes.Callmethod:
                     {
                         var val = string.Join(",", i.Arguments.Skip(2).Take(i.Arguments.Count - 3).Select(GetArgumentValue));
                         var location = GetArgumentValue(i.Arguments[1]);
@@ -435,7 +322,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
 
                         return assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");";
                     }
-                case PapyrusOpCode.Return:
+                case PapyrusOpCodes.Return:
                     {
                         string val;
                         var firstArg = GetArgumentValue(i.Arguments.FirstOrDefault());
@@ -450,7 +337,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         return (("return" + val).Trim() + ";");
                         //WritePapyrusInstruction(i);
                     }
-                case PapyrusOpCode.Assign:
+                case PapyrusOpCodes.Assign:
                     {
                         var val1 = GetArgumentValue(i.Arguments.FirstOrDefault());
                         var val2 = GetArgumentValue(i.Arguments.LastOrDefault());
@@ -465,7 +352,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         }
                         return (var0 + " = " + var1 + ";");
                     }
-                case PapyrusOpCode.ArrayRemoveElements:
+                case PapyrusOpCodes.ArrayRemoveElements:
                     {
                         var comment = WritePapyrusInstruction(i) + Environment.NewLine;
 
@@ -475,7 +362,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
 
                         return comment + "Array.RemoveItems(" + array + ", " + index + ", " + count + ");";
                     }
-                case PapyrusOpCode.ArrayFindElement:
+                case PapyrusOpCodes.ArrayFindElement:
                     {
                         var comment = WritePapyrusInstruction(i) + Environment.NewLine;
 
@@ -486,7 +373,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
 
                         return comment + destination + " = Array.IndexOf(" + array + ", " + elementToFind + ", " + startIndex + ");";
                     }
-                case PapyrusOpCode.ArrayFindStruct:
+                case PapyrusOpCodes.ArrayFindStruct:
                     {
                         var comment = WritePapyrusInstruction(i) + Environment.NewLine;
 
@@ -498,7 +385,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
 
                         return comment + destination + " = Structs.IndexOf(" + array + ", " + fieldToMatch + ", " + value + ", " + startIndex + ");";
                     }
-                case PapyrusOpCode.PropGet:
+                case PapyrusOpCodes.PropGet:
                     {
                         var comment = WritePapyrusInstruction(i) + Environment.NewLine;
 
@@ -508,7 +395,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
 
                         return comment + targetVar + " = " + owner + "." + property + ";";
                     }
-                case PapyrusOpCode.PropSet:
+                case PapyrusOpCodes.PropSet:
                     {
                         var comment = WritePapyrusInstruction(i) + Environment.NewLine;
 
@@ -519,7 +406,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
 
                         return comment + owner + "." + property + " = " + value + ";";
                     }
-                case PapyrusOpCode.StructSet:
+                case PapyrusOpCodes.StructSet:
                     {
                         var structVar = GetArgumentValue(i.Arguments[0]);
                         var structField = GetArgumentValue(i.Arguments[1]);
@@ -527,34 +414,34 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         return structVar + "." + structField + " = " + value + ";";
                         // (value + "." + structField + " = " + structVar + "." + structField + ";");
                     }
-                case PapyrusOpCode.StructGet:
+                case PapyrusOpCodes.StructGet:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var structVar = GetArgumentValue(i.Arguments[1]);
                         var structField = GetArgumentValue(i.Arguments[2]);
                         return (asignee + " = " + structVar + "." + structField + ";");
                     }
-                case PapyrusOpCode.ArraySetElement:
+                case PapyrusOpCodes.ArraySetElement:
                     {
                         var array = GetArgumentValue(i.Arguments[0]);
                         var index = GetArgumentValue(i.Arguments[1]);
                         var value = GetArgumentValue(i.Arguments[2]);
                         return (array + "[" + index + "] = " + value + ";");
                     }
-                case PapyrusOpCode.ArrayGetElement:
+                case PapyrusOpCodes.ArrayGetElement:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var array = GetArgumentValue(i.Arguments[1]);
                         var index = GetArgumentValue(i.Arguments[2]);
                         return (asignee + " = " + array + "[" + index + "];");
                     }
-                case PapyrusOpCode.ArrayLength:
+                case PapyrusOpCodes.ArrayLength:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var array = GetArgumentValue(i.Arguments[1]);
                         return (asignee + " = " + array + ".Length;");
                     }
-                case PapyrusOpCode.ArrayCreate:
+                case PapyrusOpCodes.ArrayCreate:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var size = GetArgumentValue(i.Arguments[1]);
@@ -570,50 +457,50 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                             return (asignee + " = new " + prop.TypeName.Value.Replace("[]", "") + "[" + size + "];");
                     }
                     break;
-                case PapyrusOpCode.Strcat:
+                case PapyrusOpCodes.Strcat:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var str = GetArgumentValue(i.Arguments[1]);
                         var value = GetArgumentValue(i.Arguments[2]);
                         return (asignee + " = " + str + " + " + value + ";");
                     }
-                case PapyrusOpCode.Fsub:
-                case PapyrusOpCode.Isub:
+                case PapyrusOpCodes.Fsub:
+                case PapyrusOpCodes.Isub:
                     {
                         return DoMath(i, "-");
                     }
-                case PapyrusOpCode.Fadd:
-                case PapyrusOpCode.Iadd:
+                case PapyrusOpCodes.Fadd:
+                case PapyrusOpCodes.Iadd:
                     {
                         return DoMath(i, "+");
                     }
-                case PapyrusOpCode.Ineg:
+                case PapyrusOpCodes.Ineg:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var target = GetArgumentValue(i.Arguments[1]);
                         return (asignee + " = " + target + " < 0;");
                     }
-                case PapyrusOpCode.CmpEq:
+                case PapyrusOpCodes.CmpEq:
                     {
                         return DoMath(i, "==");
                     }
-                case PapyrusOpCode.CmpGt:
+                case PapyrusOpCodes.CmpGt:
                     {
                         return DoMath(i, ">");
                     }
-                case PapyrusOpCode.CmpGte:
+                case PapyrusOpCodes.CmpGte:
                     {
                         return DoMath(i, ">=");
                     }
-                case PapyrusOpCode.CmpLt:
+                case PapyrusOpCodes.CmpLt:
                     {
                         return DoMath(i, "<");
                     }
-                case PapyrusOpCode.CmpLte:
+                case PapyrusOpCodes.CmpLte:
                     {
                         return DoMath(i, "<=");
                     }
-                case PapyrusOpCode.Not:
+                case PapyrusOpCodes.Not:
                     {
                         // var comment = WritePapyrusInstruction(i) + Environment.NewLine;
 
@@ -621,14 +508,14 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         var target = i.GetArg(1);
                         return (assignee + " = !" + target + ";");
                     }
-                case PapyrusOpCode.Jmp:
+                case PapyrusOpCodes.Jmp:
                     {
                         var destination = GetArgumentValue(i.Arguments[0]);
                         return ("// " + i.OpCode + " " + destination + " (offset: " +
                                    (i.Offset + int.Parse(destination)) + ")");
                     }
-                case PapyrusOpCode.Jmpt:
-                case PapyrusOpCode.Jmpf:
+                case PapyrusOpCodes.Jmpt:
+                case PapyrusOpCodes.Jmpf:
                     {
                         var boolVal = GetArgumentValue(i.Arguments[0]);
                         var destination = GetArgumentValue(i.Arguments[1]);

@@ -24,6 +24,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Exceptions;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors;
@@ -125,7 +126,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     // this is not necessary though and can be skipped.
                     if (i.OpCode.Code == Code.Nop)
                     {
-                        var nop = CreatePapyrusInstruction(PapyrusOpCode.Nop);
+                        var nop = CreatePapyrusInstruction(PapyrusOpCodes.Nop);
                         outputInstructions.Add(nop);
                         instructionReferences[i].Add(nop);
                     }
@@ -224,7 +225,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     papyrusInstructions.AddRange(conditional);
 
                     // Create the jump to case if true
-                    var jumpT = ConditionalJump(PapyrusOpCode.Jmpt, CreateVariableReferenceFromName(tmpBool), dest);
+                    var jumpT = ConditionalJump(PapyrusOpCodes.Jmpt, CreateVariableReferenceFromName(tmpBool), dest);
                     papyrusInstructions.Add(jumpT);
                 }
 
@@ -576,16 +577,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         }
 
 
-        public PapyrusOpCode TryInvertJump(PapyrusOpCode jmpt)
+        public PapyrusOpCodes TryInvertJump(PapyrusOpCodes jmpt)
         {
             if (!InvertedBranch) return jmpt;
             InvertedBranch = false;
-            if (jmpt == PapyrusOpCode.Jmpt)
-                return PapyrusOpCode.Jmpf;
-            return PapyrusOpCode.Jmpt;
+            if (jmpt == PapyrusOpCodes.Jmpt)
+                return PapyrusOpCodes.Jmpf;
+            return PapyrusOpCodes.Jmpt;
         }
 
-        public PapyrusInstruction ConditionalJump(PapyrusOpCode jumpType, PapyrusVariableReference conditionalVar,
+        public PapyrusInstruction ConditionalJump(PapyrusOpCodes jumpType, PapyrusVariableReference conditionalVar,
             object destinationInstruction)
         {
             var jmpOp = TryInvertJump(jumpType);
@@ -626,7 +627,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     targetArraySize = 128;
             }
 
-            var arrayInstance = CreatePapyrusInstruction(PapyrusOpCode.ArrayCreate,
+            var arrayInstance = CreatePapyrusInstruction(PapyrusOpCodes.ArrayCreate,
                 targetArrayItem,
                 targetArraySize);
             return arrayInstance;
@@ -634,7 +635,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
         public PapyrusInstruction CreatePapyrusCastInstruction(string destinationVariable, PapyrusVariableReference variableToCast)
         {
-            return CreatePapyrusInstruction(PapyrusOpCode.Cast,
+            return CreatePapyrusInstruction(PapyrusOpCodes.Cast,
                 CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                 variableToCast);
         }
@@ -699,7 +700,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return varRef;
         }
 
-        public PapyrusInstruction CreatePapyrusInstruction(PapyrusOpCode papyrusOpCode, params object[] values)
+        public PapyrusInstruction CreatePapyrusInstruction(PapyrusOpCodes papyrusOpCode, params object[] values)
         {
             var args = ParsePapyrusParameters(values);
 

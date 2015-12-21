@@ -25,17 +25,17 @@ using PapyrusDotNet.Common.Papyrus;
 
 namespace PapyrusDotNet.Common
 {
-    public class CodeBlock
+    public class PapyrusCodeBlock : IPapyrusCodeBlock
     {
         public int StartRow { get; set; }
 
         public int EndRow { get; set; }
 
-        public List<LabelReference> UsedLabels { get; set; } = new List<LabelReference>();
+        public IList<ILabelReference> UsedLabels { get; set; } = new List<ILabelReference>();
 
-        public List<LabelDefinition> Labels { get; set; } = new List<LabelDefinition>();
+        public IList<ILabelDefinition> Labels { get; set; } = new List<ILabelDefinition>();
 
-        public LabelDefinition GetLabelDefinition(int row)
+        public ILabelDefinition GetLabelDefinition(int row)
         {
             return Labels.FirstOrDefault(r => r.Row == row);
         }

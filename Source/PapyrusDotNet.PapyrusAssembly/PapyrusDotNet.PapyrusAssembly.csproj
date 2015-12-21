@@ -75,7 +75,7 @@
     <Compile Include="Classes\PapyrusHeader.cs" />
     <Compile Include="PapyrusAssemblyDefinition.cs" />
     <Compile Include="Implementations\PapyrusAssemblyWriter.cs" />
-    <Compile Include="Enums\PapyrusOpCode.cs" />
+    <Compile Include="Enums\PapyrusOpCodes.cs" />
     <Compile Include="Classes\PapyrusSourceHeader.cs" />
     <Compile Include="Enums\PapyrusVersionTargets.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

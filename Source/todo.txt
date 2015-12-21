@@ -1,0 +1,28 @@
+=====================
+	Papyrus2Clr
+=====================
+TODO:
+	* Properties cannot be currently be accessed
+		(Not being created properly?)
+
+=====================
+	Clr2Papyrus
+=====================
+TODO:
+  Instructions:
+	* PropGet - Use with external classes
+	* PropSet - Use with external classes
+		(Accessing a property outside the "local" class)
+		(!! Papyrus2Clr needs to be fixed first !!)
+	* StructGet
+	* StructSet
+	* Is - Used the same way as the 'is' keyword in c# ?
+
+=====================
+	PapyrusAssembly
+=====================
+TODO:
+	* Create an assembly parser
+		(Input text/assembly code and output appropriate typed object)
+		(This can be used for easier inserting/injecting
+		 papyrus assembly code)

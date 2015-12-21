@@ -20,6 +20,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
 using PapyrusDotNet.PapyrusAssembly;
 
@@ -65,17 +66,17 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     var destinationInstruction = instruction.Operand;
 
                     if (InstructionHelper.IsBranchConditionalEq(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.CmpEq, tempVar, obj1, obj2));
+                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpEq, tempVar, obj1, obj2));
                     else if (InstructionHelper.IsBranchConditionalLt(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.CmpLt, tempVar, obj1, obj2));
+                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpLt, tempVar, obj1, obj2));
                     else if (InstructionHelper.IsBranchConditionalGt(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.CmpGt, tempVar, obj1, obj2));
+                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpGt, tempVar, obj1, obj2));
                     else if (InstructionHelper.IsBranchConditionalGe(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.CmpGte, tempVar, obj1, obj2));
+                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpGte, tempVar, obj1, obj2));
                     else if (InstructionHelper.IsBranchConditionalGe(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.CmpLte, tempVar, obj1, obj2));
+                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpLte, tempVar, obj1, obj2));
 
-                    instructions.Add(mainInstructionProcessor.ConditionalJump(PapyrusOpCode.Jmpt, tempVar, destinationInstruction));
+                    instructions.Add(mainInstructionProcessor.ConditionalJump(PapyrusOpCodes.Jmpt, tempVar, destinationInstruction));
                     return instructions;
                 }
             }
@@ -90,7 +91,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     var conditionalVariable = stack.Pop();
                     if (InstructionHelper.IsBranchTrue(instruction.OpCode.Code))
                     {
-                        var jmpOp = mainInstructionProcessor.TryInvertJump(PapyrusOpCode.Jmpt);
+                        var jmpOp = mainInstructionProcessor.TryInvertJump(PapyrusOpCodes.Jmpt);
                         var jmp = mainInstructionProcessor.CreatePapyrusInstruction(jmpOp, conditionalVariable, targetInstruction);
                         jmp.Operand = targetInstruction;
                         instructions.Add(jmp);
@@ -98,7 +99,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     }
                     if (InstructionHelper.IsBranchFalse(instruction.OpCode.Code))
                     {
-                        var jmpOp = mainInstructionProcessor.TryInvertJump(PapyrusOpCode.Jmpf);
+                        var jmpOp = mainInstructionProcessor.TryInvertJump(PapyrusOpCodes.Jmpf);
                         var jmp = mainInstructionProcessor.CreatePapyrusInstruction(jmpOp, conditionalVariable, targetInstruction);
                         jmp.Operand = targetInstruction;
                         instructions.Add(jmp);
@@ -106,7 +107,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     }
                 }
 
-                var jmpInst = mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Jmp, targetInstruction);
+                var jmpInst = mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Jmp, targetInstruction);
                 jmpInst.Operand = targetInstruction;
                 instructions.Add(jmpInst);
             }

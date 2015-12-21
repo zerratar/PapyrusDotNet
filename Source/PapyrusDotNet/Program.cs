@@ -18,10 +18,14 @@
 #region
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.GotDotNet;
 using Mono.Cecil;
+using PapyrusDotNet.Common;
 using PapyrusDotNet.Common.Interfaces;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
@@ -51,35 +55,40 @@ namespace PapyrusDotNet
 
         public static AssemblyDefinition CurrentAssembly;
 
-        public static string OutputFolder;
+        [Obsolete]
+        public static string InputFile { get; set; }
 
-        public static string InputFile;
+        //public static string OutputFolder;
+
+        //public static string InputFile;
+
+        private static readonly ConsoleUiRenderer ui = new ConsoleUiRenderer();
 
         private static void Main(string[] args)
         {
-            // Console.Clear();
-            Console.WriteLine("PapyrusDotNet v0.2");
 
             IAssemblyConverter converter;
             IAssemblyInput inputData;
 
             if (args.Length < 2)
             {
-                Console.WriteLine("Missing Important Arguments.");
-                PrintHelp();
+                Console.WriteLine("  Missing Important Arguments.");
+                ui.DrawHelp();
                 return;
             }
 
-            var clr2Papyrus = !args.Contains("-clr");
+            ui.DrawInterface("Magic is about to happen!");
+
+            var clr2Papyrus = !Enumerable.Contains(args, "-clr");
             var input = args[0];
             var output = args[1];
 
             if (clr2Papyrus)
             {
-                var targetVersion = args.Contains("-skyrim") ? PapyrusVersionTargets.Skyrim
+                var targetVersion = Enumerable.Contains(args, "-skyrim") ? PapyrusVersionTargets.Skyrim
                         : PapyrusVersionTargets.Fallout4;
 
-                var compilerOptions = !args.Contains("-easy") ? PapyrusCompilerOptions.Strict
+                var compilerOptions = !Enumerable.Contains(args, "-easy") ? PapyrusCompilerOptions.Strict
                     : PapyrusCompilerOptions.Easy;
 
                 converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), compilerOptions);
@@ -89,13 +98,19 @@ namespace PapyrusDotNet
             {
                 var nsResolver = new ClrNamespaceResolver();
 
-                converter = new Papyrus2ClrConverter(nsResolver,
+                // Papyrus2ClrCecilConverter
+                converter = new Papyrus2ClrCecilConverter(
+                    ui, nsResolver,
                     new ClrTypeReferenceResolver(nsResolver, new ClrTypeNameResolver()));
 
+                var pexFiles = Directory.GetFiles(input, "*.pex", SearchOption.AllDirectories);
+
+                ui.DrawInterface("(1/3) Reading Papyrus Assemblies.");
+
+                var papyrusAssemblyDefinitions = pexFiles.Select(f => ReadPapyrusAssembly(f, pexFiles.Length)).ToArray();
+
                 inputData = new PapyrusAssemblyInput(
-                    Directory.GetFiles(input, "*.pex", SearchOption.AllDirectories)
-                        .Select(PapyrusAssemblyDefinition.ReadAssembly)
-                        .ToArray()
+                    papyrusAssemblyDefinitions
                     );
             }
 
@@ -104,105 +119,128 @@ namespace PapyrusDotNet
             if (outputData != null)
             {
                 outputData.Save(output);
-                
+
                 // Do something...
             }
 
+            while (true)
+            {
+                var openTargetDir = new Hotkeys("Open target directory", ConsoleKey.A, () =>
+                {
+                    Process.Start(output);
+                });
+
+                var exit = new Hotkeys("Exit", ConsoleKey.X, () => { });
+
+                ui.DrawHotkeys(openTargetDir, exit);
+
+                var posx = Console.CursorLeft;
+
+                var k = Console.ReadKey();
+
+                Console.CursorLeft = posx;
+                Console.Write(" ");
+
+                if (k.Key == exit.Key)
+                    return;
+
+                if (k.Key == openTargetDir.Key)
+                {
+                    openTargetDir.Action();
+                }
+            }
             // MainOld(args);
         }
 
-        private static void PrintHelp()
+        private static int assembliesReadTick;
+        private static int assembliesRead;
+        private static PapyrusAssemblyDefinition ReadPapyrusAssembly(string arg, int maxCount)
         {
-            Console.WriteLine(
-                "Usage: PapyrusDotNet.exe <input> <output> [option] [<target papyrus version (-fo4 | -skyrim)>] [<compiler settings (-strict|-easy)>]");
-            Console.WriteLine("Options:");
-            Console.WriteLine(
-                "\t-papyrus :: [Default] Converts a .NET .dll into .pex files. Each class will be a separate .pex file.");
-            Console.WriteLine("\t\t<input> :: file (.dll)");
-            Console.WriteLine("\t\t<output> :: folder");
-            Console.WriteLine("\t\t<target version> :: [Fallout 4 is default] -fo4 or -skyrim");
-            Console.WriteLine("\t\t<compiler options> :: [Strict is default] -strict or -easy determines how the compiler will react on features known to not work in papyrus. -strict will throw a build exception while -easy may let it slide and just remove the usage but may cause problems with the final script.");
-            Console.WriteLine(
-                "\t-clr :: Converts a .pex or folder containg .pex files into a .NET library usable when modding.");
-            Console.WriteLine("\t\t<input> :: .pex file or folder");
-            Console.WriteLine("\t\t<output> :: folder (File will be named PapyrusDotNet.Core.dll)");
+            assembliesReadTick++;
+            assembliesRead++;
+            if (assembliesReadTick >= 100 || assembliesRead == maxCount)
+            {
+                ui.DrawProgressBarWithInfo(assembliesRead, maxCount);
+                assembliesReadTick = 0;
+            }
+            return PapyrusAssemblyDefinition.ReadAssembly(arg);
         }
 
         #region Old Program Start
 
-//        private static void MainOld(string[] args)
-//        {
-//            OutputFolder = @".\output";
-//            InputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
-//            try
-//            {
-//                var parsed = Args.Parse<PapyrusDotNetArgs>(args);
-//                if (parsed.InputFile != null)
-//                {
-//                    // Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
-//                    if (parsed.OutputFolder != null)
-//                        OutputFolder = parsed.OutputFolder;
-//                    InputFile = parsed.InputFile;
-//                    if (OutputFolder.Contains("\""))
-//                    {
-//                        OutputFolder = OutputFolder.Replace("\"", "");
-//                    }
-//
-//                    if (InputFile.Contains("\""))
-//                    {
-//                        InputFile = InputFile.Replace("\"", "");
-//                    }
-//
-//                    Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.InputFile, parsed.OutputFolder);
-//                }
-//            }
-//            catch (ArgException ex)
-//            {
-//                Console.WriteLine(ex.Message);
-//                Console.WriteLine(ArgUsage.GetUsage<PapyrusDotNetArgs>());
-//                // return;
-//            }
-//
-//
-//            var outputPasFiles = new Dictionary<string, string>();
-//            CurrentAssembly = AssemblyDefinition.ReadAssembly(InputFile);
-//
-//            var asmReferences = AssemblyHelper.GetAssemblyReferences(CurrentAssembly);
-//
-//            /* Generate all CallStacks */
-//            foreach (var asm in asmReferences)
-//            {
-//                PapyrusAsmWriter.GenerateCallStack(asm);
-//            }
-//            PapyrusAsmWriter.GenerateCallStack(CurrentAssembly);
-//
-//            /* Generate all papyrus code */
-//            foreach (var asm in asmReferences)
-//            {
-//                PapyrusAsmWriter.GeneratePapyrusFromAssembly(asm, ref outputPasFiles, CurrentAssembly);
-//            }
-//
-//            PapyrusAsmWriter.GeneratePapyrusFromAssembly(CurrentAssembly, ref outputPasFiles);
-//
-//            foreach (var pas in outputPasFiles)
-//            {
-//                try
-//                {
-//                    if (!Directory.Exists(OutputFolder)) Directory.CreateDirectory(OutputFolder);
-//
-//                    Console.WriteLine("Saving " + Path.Combine(OutputFolder, pas.Key) + "...");
-//                    File.WriteAllText(Path.Combine(OutputFolder, pas.Key), pas.Value);
-//                }
-//                catch (Exception exc)
-//                {
-//                    Console.WriteLine("----------------");
-//                    Console.WriteLine(OutputFolder);
-//                    Console.WriteLine(pas.Key);
-//                    Console.WriteLine(exc);
-//                    Console.ReadKey();
-//                }
-//            }
-//        }
+        //        private static void MainOld(string[] args)
+        //        {
+        //            OutputFolder = @".\output";
+        //            InputFile = @"..\Examples\Example1\bin\Debug\Example1.dll";
+        //            try
+        //            {
+        //                var parsed = Args.Parse<PapyrusDotNetArgs>(args);
+        //                if (parsed.InputFile != null)
+        //                {
+        //                    // Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
+        //                    if (parsed.OutputFolder != null)
+        //                        OutputFolder = parsed.OutputFolder;
+        //                    InputFile = parsed.InputFile;
+        //                    if (OutputFolder.Contains("\""))
+        //                    {
+        //                        OutputFolder = OutputFolder.Replace("\"", "");
+        //                    }
+        //
+        //                    if (InputFile.Contains("\""))
+        //                    {
+        //                        InputFile = InputFile.Replace("\"", "");
+        //                    }
+        //
+        //                    Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.InputFile, parsed.OutputFolder);
+        //                }
+        //            }
+        //            catch (ArgException ex)
+        //            {
+        //                Console.WriteLine(ex.Message);
+        //                Console.WriteLine(ArgUsage.GetUsage<PapyrusDotNetArgs>());
+        //                // return;
+        //            }
+        //
+        //
+        //            var outputPasFiles = new Dictionary<string, string>();
+        //            CurrentAssembly = AssemblyDefinition.ReadAssembly(InputFile);
+        //
+        //            var asmReferences = AssemblyHelper.GetAssemblyReferences(CurrentAssembly);
+        //
+        //            /* Generate all CallStacks */
+        //            foreach (var asm in asmReferences)
+        //            {
+        //                PapyrusAsmWriter.GenerateCallStack(asm);
+        //            }
+        //            PapyrusAsmWriter.GenerateCallStack(CurrentAssembly);
+        //
+        //            /* Generate all papyrus code */
+        //            foreach (var asm in asmReferences)
+        //            {
+        //                PapyrusAsmWriter.GeneratePapyrusFromAssembly(asm, ref outputPasFiles, CurrentAssembly);
+        //            }
+        //
+        //            PapyrusAsmWriter.GeneratePapyrusFromAssembly(CurrentAssembly, ref outputPasFiles);
+        //
+        //            foreach (var pas in outputPasFiles)
+        //            {
+        //                try
+        //                {
+        //                    if (!Directory.Exists(OutputFolder)) Directory.CreateDirectory(OutputFolder);
+        //
+        //                    Console.WriteLine("Saving " + Path.Combine(OutputFolder, pas.Key) + "...");
+        //                    File.WriteAllText(Path.Combine(OutputFolder, pas.Key), pas.Value);
+        //                }
+        //                catch (Exception exc)
+        //                {
+        //                    Console.WriteLine("----------------");
+        //                    Console.WriteLine(OutputFolder);
+        //                    Console.WriteLine(pas.Key);
+        //                    Console.WriteLine(exc);
+        //                    Console.ReadKey();
+        //                }
+        //            }
+        //        }
 
         #endregion
 

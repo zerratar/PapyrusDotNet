@@ -17,7 +17,7 @@
 
 namespace PapyrusDotNet.Common.Papyrus
 {
-    public class LabelDefinition
+    public class LabelDefinition : ILabelDefinition
     {
         public LabelDefinition(int row, string name = null)
         {

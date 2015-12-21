@@ -24,9 +24,9 @@ using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 
 namespace PapyrusDotNet.Converters.Papyrus2Clr.Base
 {
-    public abstract class Papyrus2ClrConverterBase : IPapyrusOutputConverter
+    public abstract class Papyrus2ClrCecilConverterBase : IPapyrusOutputConverter
     {
-        protected Papyrus2ClrConverterBase(INamespaceResolver namespaceResolver,
+        protected Papyrus2ClrCecilConverterBase(INamespaceResolver namespaceResolver,
             ITypeReferenceResolver typeReferenceResolver)
         {
             NamespaceResolver = namespaceResolver;
@@ -41,6 +41,6 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr.Base
             return ConvertAssembly(input as PapyrusAssemblyInput);
         }
 
-        protected abstract ClrAssemblyOutput ConvertAssembly(PapyrusAssemblyInput input);
+        protected abstract CecilAssemblyOutput ConvertAssembly(PapyrusAssemblyInput input);
     }
 }

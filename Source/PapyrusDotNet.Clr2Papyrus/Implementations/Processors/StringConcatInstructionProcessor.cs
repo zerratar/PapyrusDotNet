@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
 using PapyrusDotNet.PapyrusAssembly;
 
@@ -68,7 +69,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             // So we can go directly and do: cast ::temp0 ::awesomeVariable
                             output.Add(mainInstructionProcessor.CreatePapyrusCastInstruction(destinationVariable, targetVar));
                         }
-                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Strcat,
+                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             targetVar));
@@ -93,7 +94,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                             // Assign our newly created tempvalue with our object.
                             // ex: assign ::temp1 55
-                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Assign,
+                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign,
                                 mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, valueToCastTemp),
                                 valueToCast));
 
@@ -105,7 +106,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             // Make sure that our newly ::temp1 is used when concating the string.
                             value = valueToCastTemp;
                         }
-                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.Strcat,
+                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             mainInstructionProcessor.CreateVariableReference(newTempVar

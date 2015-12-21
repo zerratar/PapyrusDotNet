@@ -25,9 +25,9 @@ using PapyrusDotNet.Common.Interfaces;
 
 namespace PapyrusDotNet.Converters.Papyrus2Clr.Implementations
 {
-    public class ClrAssemblyOutput : IAssemblyOutput
+    public class CecilAssemblyOutput : IAssemblyOutput
     {
-        public ClrAssemblyOutput(AssemblyDefinition clrAssembly)
+        public CecilAssemblyOutput(AssemblyDefinition clrAssembly)
         {
             OutputAssembly = clrAssembly;
         }

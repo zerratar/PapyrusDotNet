@@ -34,6 +34,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ConsoleEx, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ConsoleEx.1.0.4\lib\ConsoleEx.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\..\..\Program Files (x86)\Unity\Editor\Data\Managed\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -52,8 +56,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeBlock.cs" />
+    <Compile Include="IPapyrusCodeBlock.cs" />
+    <Compile Include="PapyrusCodeBlock.cs" />
     <Compile Include="ConsoleStatusCallbackService.cs" />
+    <Compile Include="Papyrus\ILabelDefinition.cs" />
+    <Compile Include="Papyrus\ILabelReference.cs" />
+    <Compile Include="Utilities\ArrayUtility.cs" />
+    <Compile Include="Utilities\ConsoleUiRenderer.cs" />
     <Compile Include="DebugStatusCallbackService.cs" />
     <Compile Include="EvaluationStackItem.cs" />
     <Compile Include="Extensions\AssemblyExtensions.cs" />
@@ -68,15 +77,30 @@
     <Compile Include="Interfaces\IStatusCallbackService.cs" />
     <Compile Include="Interfaces\ITypeNameResolver.cs" />
     <Compile Include="Interfaces\ITypeReferenceResolver.cs" />
+    <Compile Include="Interfaces\IUtility.cs" />
     <Compile Include="Papyrus\FieldAttributes.cs" />
     <Compile Include="Papyrus\LabelDefinition.cs" />
     <Compile Include="Papyrus\LabelReference.cs" />
     <Compile Include="ObjectReplacementHolder.cs" />
     <Compile Include="SkyrimInstallationPath.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Utility.cs" />
+    <Compile Include="Utilities\GameInstallationPathUtility.cs" />
+    <Compile Include="Enums\Games.cs" />
+    <Compile Include="Interfaces\IValueTypeConverter.cs" />
+    <Compile Include="Interfaces\IUiRenderer.cs" />
+    <Compile Include="Hotkeys.cs" />
+    <Compile Include="Interfaces\IPapyrusAssemblyOptimizer.cs" />
+    <Compile Include="Interfaces\IPapyrusCodeBlockParser.cs" />
+    <Compile Include="Utilities\IPapyrusAttributeReader.cs" />
+    <Compile Include="Utilities\PapyrusAssemblyOptimizer.cs" />
+    <Compile Include="Utilities\PapyrusAttributeReader.cs" />
+    <Compile Include="Utilities\PapyrusCodeBlockParser.cs" />
+    <Compile Include="Utilities\StringUtility.cs" />
+    <Compile Include="Utilities\UnixTimeConverterUtility.cs" />
+    <Compile Include="Utilities\Utility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Papyrus\VariableReference.cs" />
+    <Compile Include="Utilities\ValueTypeConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">
@@ -84,6 +108,10 @@
       <Name>PapyrusDotNet.PapyrusAssembly</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

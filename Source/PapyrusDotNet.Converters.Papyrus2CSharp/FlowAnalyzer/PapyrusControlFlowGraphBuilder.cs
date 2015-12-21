@@ -67,12 +67,12 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp.FlowAnalyzer
             }
             foreach (var instruction in method.Body.Instructions)
             {
-                if (instruction.OpCode == PapyrusOpCode.Jmpt || instruction.OpCode == PapyrusOpCode.Jmpf)
+                if (instruction.OpCode == PapyrusOpCodes.Jmpt || instruction.OpCode == PapyrusOpCodes.Jmpf)
                 {
                     var destination = instruction.Offset + int.Parse(instruction.GetArg(1));
                     hasIncomingJumps[GetInstruction(destination)] = true;
                 }
-                else if (instruction.OpCode == PapyrusOpCode.Jmp)
+                else if (instruction.OpCode == PapyrusOpCodes.Jmp)
                 {
                     var destination = instruction.Offset + int.Parse(instruction.GetArg(0));
                     hasIncomingJumps[GetInstruction(destination)] = true;
@@ -119,17 +119,17 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp.FlowAnalyzer
                 if (node.End != null)
                 {
                     // create normal edges from one instruction to the next
-                    if (node.End.OpCode == PapyrusOpCode.Jmpt || node.End.OpCode == PapyrusOpCode.Jmpf)
+                    if (node.End.OpCode == PapyrusOpCodes.Jmpt || node.End.OpCode == PapyrusOpCodes.Jmpf)
                         CreateEdge(node, node.End.Next);
 
                     // create edges for branch instructions
-                    if (node.End.OpCode == PapyrusOpCode.Jmp)
+                    if (node.End.OpCode == PapyrusOpCodes.Jmp)
                     {
                         CreateEdge(node, (PapyrusInstruction)node.End.Operand);
 
                     }
                     // create edges for return instructions
-                    if (node.End.OpCode == PapyrusOpCode.Return)
+                    if (node.End.OpCode == PapyrusOpCodes.Return)
                     {
                         CreateEdge(node, regularExit);
                     }
@@ -149,9 +149,9 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp.FlowAnalyzer
             toNode.Incoming.Add(edge);
         }
 
-        private bool IsBranch(PapyrusOpCode opCode)
+        private bool IsBranch(PapyrusOpCodes opCode)
         {
-            return opCode == PapyrusOpCode.Jmp || opCode == PapyrusOpCode.Jmpf || opCode == PapyrusOpCode.Jmpt;
+            return opCode == PapyrusOpCodes.Jmp || opCode == PapyrusOpCodes.Jmpf || opCode == PapyrusOpCodes.Jmpt;
         }
     }
 }

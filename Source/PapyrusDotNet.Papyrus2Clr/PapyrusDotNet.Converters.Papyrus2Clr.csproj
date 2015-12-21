@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ConsoleEx, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ConsoleEx.1.0.4\lib\ConsoleEx.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\..\Binaries\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -52,6 +56,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base\ClrAssemblyOutput.cs" />
+    <Compile Include="Base\Papyrus2ClrTypeBuilderConverterBase.cs" />
     <Compile Include="Core\Attributes\AutoAttribute.cs" />
     <Compile Include="Core\Attributes\AutoReadOnlyAttribute.cs" />
     <Compile Include="Core\Attributes\ConditionalAttribute.cs" />
@@ -63,14 +69,16 @@
     <Compile Include="Core\Attributes\InitialValueAttribute.cs" />
     <Compile Include="Core\Attributes\NativeAttribute.cs" />
     <Compile Include="Core\Attributes\PropertyAttribute.cs" />
-    <Compile Include="Implementations\ClrAssemblyOutput.cs" />
+    <Compile Include="Implementations\CecilAssemblyOutput.cs" />
     <Compile Include="Implementations\ClrNamespaceResolver.cs" />
     <Compile Include="Implementations\ClrTypeReferenceResolver.cs" />
     <Compile Include="Implementations\PapyrusAssemblyInput.cs" />
     <Compile Include="Implementations\ClrTypeNameResolver.cs" />
-    <Compile Include="Papyrus2ClrConverter.cs" />
-    <Compile Include="Base\Papyrus2ClrConverterBase.cs" />
+    <Compile Include="Papyrus2ClrCecilConverter.cs" />
+    <Compile Include="Base\Papyrus2ClrCecilConverterBase.cs" />
+    <Compile Include="Papyrus2ClrTypeBuilderConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeDefinitionExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
@@ -81,6 +89,9 @@
       <Project>{c5f9b5da-f44a-4129-98d1-2efdadf09b52}</Project>
       <Name>PapyrusDotNet.PapyrusAssembly</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

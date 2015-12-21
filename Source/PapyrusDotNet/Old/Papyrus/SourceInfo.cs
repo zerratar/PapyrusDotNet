@@ -19,6 +19,7 @@
 
 using System;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Utilities;
 
 #endregion
 
@@ -29,7 +30,7 @@ namespace PapyrusDotNet.Old.Papyrus
         public SourceInfo()
         {
             Source = "PapyrusDotNet-Generated.psc";
-            ModifyTime = Utility.ConvertToTimestamp(DateTime.Now);
+            ModifyTime = UnixTimeConverterUtility.Convert(DateTime.Now);
             CompileTime = ModifyTime;
             User = Environment.UserName;
             Computer = Environment.MachineName;

@@ -25,7 +25,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Extensions
         /// </summary>
         /// <param name="opcode">The opcode.</param>
         /// <returns></returns>
-        public static int GetInstructionParamSize(this PapyrusOpCode opcode)
+        public static int GetInstructionParamSize(this PapyrusOpCodes opcode)
         {
             return PapyrusInstructionOpCodeDescription.FromOpCode(opcode).ParamSize;
         }

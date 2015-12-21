@@ -17,7 +17,7 @@
 
 namespace PapyrusDotNet.Common.Papyrus
 {
-    public class LabelReference
+    public class LabelReference : ILabelReference
     {
         public LabelReference(string name, int row)
         {

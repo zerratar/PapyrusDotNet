@@ -20,6 +20,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Exceptions;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
@@ -90,7 +91,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                             Value = targetVariable
                                         });
 
-                                        outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.ArrayLength, mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, targetVariableName), val.Value));
+                                        outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayLength, mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, targetVariableName), val.Value));
                                     }
                                 }
                                 else
@@ -103,7 +104,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                         Value = allVars[variableIndex]
                                     });
 
-                                    outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.ArrayLength, allVars[variableIndex], val.Value));
+                                    outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayLength, allVars[variableIndex], val.Value));
 
                                     //return "ArrayLength " + allVars[variableIndex].Name + " " +
                                     //       (val.Value as VariableReference).Name;
@@ -163,7 +164,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
             if (InstructionHelper.IsLoadString(instruction.OpCode.Code))
             {
-                var value = Utility.GetString(instruction.Operand);
+                var value = StringUtility.AsString(instruction.Operand);
 
                 mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem { Value = value, TypeName = "String" });
             }
@@ -266,7 +267,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                     TypeName = tempVariableType
                                 });
 
-                                outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.ArrayGetElement, mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationTempVar),
+                                outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayGetElement, mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationTempVar),
                                     targetItemArray,
                                     targetItemIndex));
                             }
@@ -286,7 +287,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                         tempVariableType);
 
                                     // "ArrayGetElement " + destinationTempVar + " " + targetItemArray + " " + targetItemIndex;
-                                    outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.ArrayGetElement, mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationTempVar),
+                                    outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayGetElement, mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationTempVar),
                                         targetItemArray,
                                         targetItemIndex));
                                 }
@@ -302,7 +303,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         var destinationVar = mainInstructionProcessor.PapyrusMethod.GetVariables()[destinationVariableIndex];
 
                         // ArrayGetElement targetVariable targetItemArray targetItemIndex
-                        outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.ArrayGetElement,
+                        outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayGetElement,
                             destinationVar,
                             targetItemArray,
                             targetItemIndex)

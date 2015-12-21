@@ -32,7 +32,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
         public int Offset { get; set; }
-        public PapyrusOpCode OpCode { get; set; }
+        public PapyrusOpCodes OpCode { get; set; }
         public List<PapyrusVariableReference> Arguments { get; set; }
         public PapyrusInstruction Previous { get; set; }
         public PapyrusInstruction Next { get; set; }

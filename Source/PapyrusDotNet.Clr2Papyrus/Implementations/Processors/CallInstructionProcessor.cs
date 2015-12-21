@@ -21,6 +21,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Exceptions;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
@@ -161,7 +162,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     {
                         var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef);
                         {
-                            processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCode.Callstatic, methodRef,
+                            processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCodes.Callstatic, methodRef,
                                 callerLocation,
                                 destinationVariable, parameters));
                             return processInstruction;
@@ -172,7 +173,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     {
                         var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef);
                         {
-                            processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCode.Callmethod, methodRef, callerLocation,
+                            processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, methodRef, callerLocation,
                                 destinationVariable, parameters));
                             return processInstruction;
                         }
@@ -202,7 +203,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     {
                         var param = parameters;
 
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.PropSet,
+                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.PropSet,
                                 mainInstructionProcessor.CreateVariableReferenceFromName(matchingProperty.Name.Value),
                                 mainInstructionProcessor.CreateVariableReferenceFromName("self"),
                                 param.First()
@@ -212,7 +213,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     {
                         var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef);
 
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCode.PropSet,
+                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.PropSet,
                                 mainInstructionProcessor.CreateVariableReferenceFromName(matchingProperty.Name.Value),
                                 mainInstructionProcessor.CreateVariableReferenceFromName("self"),
                                  mainInstructionProcessor.CreateVariableReferenceFromName(destinationVariable)
@@ -232,10 +233,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="destinationVariable">The destination variable.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
-        public PapyrusInstruction CreatePapyrusCallInstruction(PapyrusOpCode callOpCode, MethodReference methodRef, string callerLocation, string destinationVariable, List<object> parameters)
+        public PapyrusInstruction CreatePapyrusCallInstruction(PapyrusOpCodes callOpCode, MethodReference methodRef, string callerLocation, string destinationVariable, List<object> parameters)
         {
             var inst = new PapyrusInstruction { OpCode = callOpCode };
-            if (callOpCode == PapyrusOpCode.Callstatic)
+            if (callOpCode == PapyrusOpCodes.Callstatic)
             {
                 inst.Arguments.AddRange(mainInstructionProcessor.ParsePapyrusParameters(new object[] {
                 mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, callerLocation),
@@ -273,7 +274,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 {
                     papyrusParams[i].TypeName = papyrusReturnType.Ref(mainInstructionProcessor.PapyrusAssembly);
                     papyrusParams[i].ValueType = Utility.GetPrimitiveTypeFromType(p.ParameterType);
-                    papyrusParams[i].Value = Utility.TypeValueConvert(papyrusReturnType, papyrusParams[i].Value);
+                    papyrusParams[i].Value = ValueTypeConverter.Instance.Convert(papyrusReturnType, papyrusParams[i].Value);
                     varRefs.Add(papyrusParams[i]);
                 }
                 else

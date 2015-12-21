@@ -24,6 +24,8 @@ using System.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Interfaces;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Old.Papyrus;
 using VariableReference = PapyrusDotNet.Common.Papyrus.VariableReference;
 
@@ -33,6 +35,8 @@ namespace PapyrusDotNet.Old
 {
     public class PapyrusAsmWriter
     {
+        private readonly IPapyrusCodeBlockParser codeblockParser = new PapyrusCodeBlockParser();
+
         public static List<VariableReference> Fields;
 
         public static List<Assembly> ParsedAssemblies = new List<Assembly>();
@@ -58,13 +62,16 @@ namespace PapyrusDotNet.Old
 
         private MethodDefinition targetMethod;
 
+        private static readonly PapyrusAttributeReader attributeReader = new PapyrusAttributeReader();
+
         public PapyrusAsmWriter(AssemblyDefinition assembly, TypeDefinition type, List<VariableReference> fields)
         {
             this.assembly = assembly;
             this.type = type;
             evaluationStack = new Stack<EvaluationStackItem>();
 
-            function = new Function {Fields = fields};
+            function = new Function { Fields = fields };
+
         }
 
         private static void GetCallStack(TypeDefinition type)
@@ -124,7 +131,7 @@ namespace PapyrusDotNet.Old
 
                     var outputPapyrus = "";
 
-                    var properties = Utility.GetFlagsAndProperties(type);
+                    var properties = attributeReader.ReadPapyrusAttributes(type);
                     if (properties.IsGeneric)
                     {
                         // Get all usages to know which generic types are necessary to be generated.
@@ -211,39 +218,39 @@ namespace PapyrusDotNet.Old
 
             var indentDepth = 4;
 
-            sourceBuilder.AppendLine(Utility.Indent(indentDepth++,
+            sourceBuilder.AppendLine(StringUtility.Indent(indentDepth++,
                 ".function " + method.Name + staticMarker + nativeMarker, false));
-            sourceBuilder.AppendLine(Utility.Indent(indentDepth, ".userFlags " + function.UserFlags, false));
-            sourceBuilder.AppendLine(Utility.Indent(indentDepth, ".docString \"\"", false));
-            sourceBuilder.AppendLine(Utility.Indent(indentDepth, ".return " + function.ReturnType, false));
-            sourceBuilder.AppendLine(Utility.Indent(indentDepth++, ".paramTable", false));
+            sourceBuilder.AppendLine(StringUtility.Indent(indentDepth, ".userFlags " + function.UserFlags, false));
+            sourceBuilder.AppendLine(StringUtility.Indent(indentDepth, ".docString \"\"", false));
+            sourceBuilder.AppendLine(StringUtility.Indent(indentDepth, ".return " + function.ReturnType, false));
+            sourceBuilder.AppendLine(StringUtility.Indent(indentDepth++, ".paramTable", false));
 
             foreach (var parameter in method.Parameters)
             {
                 var parameterOutput = ParseParameter(parameter);
                 if (!string.IsNullOrEmpty(parameterOutput))
-                    sourceBuilder.AppendLine(Utility.Indent(indentDepth, parameterOutput, false));
+                    sourceBuilder.AppendLine(StringUtility.Indent(indentDepth, parameterOutput, false));
             }
 
-            sourceBuilder.AppendLine(Utility.Indent(--indentDepth, ".endParamTable", false));
-            sourceBuilder.AppendLine(Utility.Indent(indentDepth++, ".localTable", false));
+            sourceBuilder.AppendLine(StringUtility.Indent(--indentDepth, ".endParamTable", false));
+            sourceBuilder.AppendLine(StringUtility.Indent(indentDepth++, ".localTable", false));
 
             if (method.HasBody)
             {
                 if (HasVoidCalls(method.Body))
-                    sourceBuilder.AppendLine(Utility.Indent(indentDepth, ".local ::NoneVar None", false));
+                    sourceBuilder.AppendLine(StringUtility.Indent(indentDepth, ".local ::NoneVar None", false));
 
                 foreach (var variable in method.Body.Variables)
                 {
                     if (variable.VariableType.Name.StartsWith("<>"))
                         continue; // Delegate variables should not be added.
 
-                    sourceBuilder.AppendLine(Utility.Indent(indentDepth, ParseLocalVariable(variable), false));
+                    sourceBuilder.AppendLine(StringUtility.Indent(indentDepth, ParseLocalVariable(variable), false));
                 }
             }
 
-            sourceBuilder.AppendLine(Utility.Indent(--indentDepth, ".endLocalTable", false));
-            sourceBuilder.AppendLine(Utility.Indent(indentDepth++, ".code", false));
+            sourceBuilder.AppendLine(StringUtility.Indent(--indentDepth, ".endLocalTable", false));
+            sourceBuilder.AppendLine(StringUtility.Indent(indentDepth++, ".code", false));
             if (method.HasBody)
             {
                 foreach (var instruction in method.Body.Instructions)
@@ -256,7 +263,7 @@ namespace PapyrusDotNet.Old
 
                     // We will add a new label for each instruction.
                     // And at the end we will remove any unused instructions.
-                    sourceBuilder.AppendLine(Utility.Indent(indentDepth - 1, "_label" + instruction.Offset + ":", false));
+                    sourceBuilder.AppendLine(StringUtility.Indent(indentDepth - 1, "_label" + instruction.Offset + ":", false));
 
                     if (skipNextInstruction)
                     {
@@ -292,30 +299,33 @@ namespace PapyrusDotNet.Old
                     // We will have to format it properly and add each instruction to our function.
                     if (value.Contains(Environment.NewLine))
                     {
-                        var rows = value.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
+                        var rows = value.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
                         foreach (var row in rows)
                         {
-                            var codeInstruction = Utility.Indent(indentDepth, row, false);
+                            var codeInstruction = StringUtility.Indent(indentDepth, row, false);
                             function.CodeInstructions.Add(codeInstruction);
                             sourceBuilder.AppendLine(codeInstruction);
                         }
                     }
                     else
                     {
-                        var codeInstruction = Utility.Indent(indentDepth, value, false);
+                        var codeInstruction = StringUtility.Indent(indentDepth, value, false);
                         function.CodeInstructions.Add(codeInstruction);
                         sourceBuilder.AppendLine(codeInstruction);
                     }
                 }
             }
-            sourceBuilder.AppendLine(Utility.Indent(--indentDepth, ".endCode", false));
-            sourceBuilder.AppendLine(Utility.Indent(--indentDepth, ".endFunction", false));
+            sourceBuilder.AppendLine(StringUtility.Indent(--indentDepth, ".endCode", false));
+            sourceBuilder.AppendLine(StringUtility.Indent(--indentDepth, ".endFunction", false));
 
             // Post Optimizations
 
             var output = sourceBuilder.ToString();
 
-            output = Utility.OptimizeLabels(output);
+
+
+            output = new PapyrusAssemblyOptimizer(output, codeblockParser).OptimizeLabels();
+
             output = Utility.InjectTempVariables(output, indentDepth + 2, function.TempVariables);
 
             sourceBuilder = new StringBuilder(output);
@@ -333,7 +343,7 @@ namespace PapyrusDotNet.Old
 
             var ptype = Utility.GetPapyrusBaseType(asm.GenericTypeReplacement);
 
-            var papyrusRow = papyrus.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
+            var papyrusRow = papyrus.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             for (var j = 0; j < papyrusRow.Length; j++)
             {
@@ -390,10 +400,10 @@ namespace PapyrusDotNet.Old
                 }
                 // variable.TypeName
 
-                papyrus += Utility.Indent(3, ".variable " + variable.Name + " " + variable.TypeName);
-                papyrus += Utility.Indent(4, ".userFlags " + userFlagsVal);
-                papyrus += Utility.Indent(4, ".initialValue " + variable.Attributes.InitialValue);
-                papyrus += Utility.Indent(3, ".endVariable");
+                papyrus += StringUtility.Indent(3, ".variable " + variable.Name + " " + variable.TypeName);
+                papyrus += StringUtility.Indent(4, ".userFlags " + userFlagsVal);
+                papyrus += StringUtility.Indent(4, ".initialValue " + variable.Attributes.InitialValue);
+                papyrus += StringUtility.Indent(3, ".endVariable");
             }
             papyrus += "\t\t.endVariableTable" + Environment.NewLine;
             papyrus += "\t\t.propertyTable" + Environment.NewLine;
@@ -407,11 +417,11 @@ namespace PapyrusDotNet.Old
                 }
 
                 var autoMarker = fieldProp.Attributes.IsAuto ? " auto" : "";
-                papyrus += Utility.Indent(3, ".property " + fieldProp.Name + " " + fieldProp.TypeName + autoMarker);
-                papyrus += Utility.Indent(4, ".userFlags " + fieldProp.Attributes.UserFlagsValue);
-                papyrus += Utility.Indent(4, ".docString \"\"");
-                papyrus += Utility.Indent(4, ".autoVar " + fieldProp.AutoVarName);
-                papyrus += Utility.Indent(3, ".endProperty");
+                papyrus += StringUtility.Indent(3, ".property " + fieldProp.Name + " " + fieldProp.TypeName + autoMarker);
+                papyrus += StringUtility.Indent(4, ".userFlags " + fieldProp.Attributes.UserFlagsValue);
+                papyrus += StringUtility.Indent(4, ".docString \"\"");
+                papyrus += StringUtility.Indent(4, ".autoVar " + fieldProp.AutoVarName);
+                papyrus += StringUtility.Indent(3, ".endProperty");
             }
 
             papyrus += "\t\t.endPropertyTable" + Environment.NewLine;
@@ -843,7 +853,7 @@ namespace PapyrusDotNet.Old
                                         return "ArrayCreate " + definedField.Name + " " + val.Value;
                                     }
                                 }
-                                definedField.Value = Utility.TypeValueConvert(definedField.TypeName, val.Value);
+                                definedField.Value = ValueTypeConverter.Instance.Convert(definedField.TypeName, val.Value);
                                 // return "Assign " + definedField.Name + " " + definedField.Value;
                                 return "ArrayCreate " + definedField.Name + " " + val.Value;
                             }
@@ -873,9 +883,9 @@ namespace PapyrusDotNet.Old
             if (InstructionHelper.IsLoadArgs(instruction.OpCode.Code))
             {
                 var index = IntValue(instruction);
-                if (targetMethod.IsStatic && (int) index == 0 && targetMethod.Parameters.Count == 0)
+                if (targetMethod.IsStatic && (int)index == 0 && targetMethod.Parameters.Count == 0)
                 {
-                    evaluationStack.Push(new EvaluationStackItem {IsThis = true, Value = type, TypeName = type.FullName});
+                    evaluationStack.Push(new EvaluationStackItem { IsThis = true, Value = type, TypeName = type.FullName });
                 }
                 else
                 {
@@ -884,8 +894,8 @@ namespace PapyrusDotNet.Old
                     {
                         evaluationStack.Push(new EvaluationStackItem
                         {
-                            Value = function.Parameters[(int) index],
-                            TypeName = function.Parameters[(int) index].TypeName
+                            Value = function.Parameters[(int)index],
+                            TypeName = function.Parameters[(int)index].TypeName
                         });
                     }
                 }
@@ -893,12 +903,12 @@ namespace PapyrusDotNet.Old
             if (InstructionHelper.IsLoadInteger(instruction.OpCode.Code))
             {
                 var index = IntValue(instruction);
-                evaluationStack.Push(new EvaluationStackItem {Value = index, TypeName = "Int"});
+                evaluationStack.Push(new EvaluationStackItem { Value = index, TypeName = "Int" });
             }
 
             if (InstructionHelper.IsLoadNull(instruction.OpCode.Code))
             {
-                evaluationStack.Push(new EvaluationStackItem {Value = "None", TypeName = "None"});
+                evaluationStack.Push(new EvaluationStackItem { Value = "None", TypeName = "None" });
             }
 
             if (InstructionHelper.IsLoadField(instruction.OpCode.Code))
@@ -929,17 +939,17 @@ namespace PapyrusDotNet.Old
                 {
                     evaluationStack.Push(new EvaluationStackItem
                     {
-                        Value = function.AllVariables[(int) index],
-                        TypeName = function.AllVariables[(int) index].TypeName
+                        Value = function.AllVariables[(int)index],
+                        TypeName = function.AllVariables[(int)index].TypeName
                     });
                 }
             }
 
             if (InstructionHelper.IsLoadString(instruction.OpCode.Code))
             {
-                var value = Utility.GetString(instruction.Operand);
+                var value = StringUtility.AsString(instruction.Operand);
 
-                evaluationStack.Push(new EvaluationStackItem {Value = "\"" + value + "\"", TypeName = "String"});
+                evaluationStack.Push(new EvaluationStackItem { Value = "\"" + value + "\"", TypeName = "String" });
             }
 
 
@@ -967,7 +977,7 @@ namespace PapyrusDotNet.Old
                                 definedField.Value = varRef.Value;
                                 return "Assign " + definedField.Name + " " + varRef.Name;
                             }
-                            definedField.Value = Utility.TypeValueConvert(definedField.TypeName, obj.Value);
+                            definedField.Value = ValueTypeConverter.Instance.Convert(definedField.TypeName, obj.Value);
                             return "Assign " + definedField.Name + " " + definedField.Value;
                         }
                     }
@@ -981,18 +991,18 @@ namespace PapyrusDotNet.Old
                         if (heapObj.Value is VariableReference)
                         {
                             var varRef = heapObj.Value as VariableReference;
-                            function.AllVariables[(int) index].Value = varRef.Value;
-                            return "Assign " + function.AllVariables[(int) index].Name + " " + varRef.Name;
+                            function.AllVariables[(int)index].Value = varRef.Value;
+                            return "Assign " + function.AllVariables[(int)index].Name + " " + varRef.Name;
                         }
 
 
-                        function.AllVariables[(int) index].Value =
-                            Utility.TypeValueConvert(function.AllVariables[(int) index].TypeName, heapObj.Value);
+                        function.AllVariables[(int)index].Value =
+                            ValueTypeConverter.Instance.Convert(function.AllVariables[(int)index].TypeName, heapObj.Value);
                     }
-                    var valout = function.AllVariables[(int) index].Value;
+                    var valout = function.AllVariables[(int)index].Value;
                     var valoutStr = valout + "";
                     if (string.IsNullOrEmpty(valoutStr)) valoutStr = "None";
-                    return "Assign " + function.AllVariables[(int) index].Name + " " + valoutStr;
+                    return "Assign " + function.AllVariables[(int)index].Name + " " + valoutStr;
                 }
             }
 
@@ -1211,7 +1221,7 @@ namespace PapyrusDotNet.Old
                             var fName = methodRef.FullName;
                             if (fName.Contains("::"))
                             {
-                                var values = fName.Split(new[] {"::"}, StringSplitOptions.None)[0];
+                                var values = fName.Split(new[] { "::" }, StringSplitOptions.None)[0];
                                 if (values.Contains("."))
                                 {
                                     values = values.Split('.').LastOrDefault();
@@ -1524,8 +1534,8 @@ namespace PapyrusDotNet.Old
                     var index = IntValue(whereToPlace);
                     if (index < function.AllVariables.Count)
                     {
-                        targetVar = function.AllVariables[(int) index].Name;
-                        LastSaughtTypeName = function.AllVariables[(int) index].TypeName;
+                        targetVar = function.AllVariables[(int)index].Name;
+                        LastSaughtTypeName = function.AllVariables[(int)index].TypeName;
                     }
                 }
                 skipNextInstruction = true;
@@ -1549,7 +1559,7 @@ namespace PapyrusDotNet.Old
                         !string.IsNullOrEmpty(fallbackType) ? fallbackType : methodRef.ReturnType.FullName,
                         methodRef);
                 targetVar = tVar.Name;
-                evaluationStack.Push(new EvaluationStackItem {Value = tVar, TypeName = tVar.TypeName});
+                evaluationStack.Push(new EvaluationStackItem { Value = tVar, TypeName = tVar.TypeName });
                 LastSaughtTypeName = tVar.TypeName;
             }
             else
@@ -1623,7 +1633,7 @@ namespace PapyrusDotNet.Old
                         var methodRef = instruction.Operand as MethodReference;
                         var tVar = function.CreateTempVariable(methodRef.ReturnType.FullName);
                         var targetVar = tVar.Name;
-                        evaluationStack.Push(new EvaluationStackItem {Value = tVar, TypeName = tVar.TypeName});
+                        evaluationStack.Push(new EvaluationStackItem { Value = tVar, TypeName = tVar.TypeName });
                         return targetVar + " " + value2 + " " + value1;
                     }
 
@@ -1643,7 +1653,7 @@ namespace PapyrusDotNet.Old
                     }
 
 
-                    varIndex = (int) IntValue(next);
+                    varIndex = (int)IntValue(next);
                 }
 
                 return vars[varIndex].Name + " " + value2 + " " + value1;
@@ -1663,7 +1673,7 @@ namespace PapyrusDotNet.Old
 
             if (next != null)
             {
-                varIndex = (int) IntValue(next);
+                varIndex = (int)IntValue(next);
                 skipToOffset = next.Offset;
             }
             return next;

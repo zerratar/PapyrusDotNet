@@ -101,7 +101,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// <param name="papyrusOpCode">The papyrus op code.</param>
         /// <param name="values">The values.</param>
         /// <returns></returns>
-        PapyrusInstruction CreatePapyrusInstruction(PapyrusOpCode papyrusOpCode, params object[] values);
+        PapyrusInstruction CreatePapyrusInstruction(PapyrusOpCodes papyrusOpCode, params object[] values);
 
         /// <summary>
         /// Creates a conditional jump instruction.
@@ -110,7 +110,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// <param name="conditionalVar">The conditional variable.</param>
         /// <param name="destinationInstruction">The destination instruction.</param>
         /// <returns></returns>
-        PapyrusInstruction ConditionalJump(PapyrusOpCode jumpType, PapyrusVariableReference conditionalVar,
+        PapyrusInstruction ConditionalJump(PapyrusOpCodes jumpType, PapyrusVariableReference conditionalVar,
             object destinationInstruction);
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// </summary>
         /// <param name="jmpt">The JMPT.</param>
         /// <returns></returns>
-        PapyrusOpCode TryInvertJump(PapyrusOpCode jmpt);
+        PapyrusOpCodes TryInvertJump(PapyrusOpCodes jmpt);
 
         /// <summary>
         /// Tries to resolve the resolve method reference.        

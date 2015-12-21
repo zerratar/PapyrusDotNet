@@ -64,12 +64,12 @@ namespace PapyrusDotNet.PapyrusAssembly
                 var instruction = items[offset].Operand as PapyrusInstruction;
                 if (instruction != null)
                 {
-                    if (items[offset].OpCode == PapyrusOpCode.Jmp)
+                    if (items[offset].OpCode == PapyrusOpCodes.Jmp)
                     {
                         items[offset].Arguments[0].Value = instruction.Offset - offset;
                         items[offset].Arguments[0].ValueType = PapyrusPrimitiveType.Integer;
                     }
-                    else if (items[offset].OpCode == PapyrusOpCode.Jmpt || items[offset].OpCode == PapyrusOpCode.Jmpf)
+                    else if (items[offset].OpCode == PapyrusOpCodes.Jmpt || items[offset].OpCode == PapyrusOpCodes.Jmpf)
                     {
                         items[offset].Arguments[1].Value = instruction.Offset - offset;
                         items[offset].Arguments[1].ValueType = PapyrusPrimitiveType.Integer;

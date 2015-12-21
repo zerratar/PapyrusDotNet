@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Base;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Exceptions;
@@ -40,6 +41,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         private readonly PapyrusCompilerOptions processorOptions;
         private List<MethodDefinition> propertyMethods = new List<MethodDefinition>();
         private MethodDefinition constructor;
+        private IPapyrusAttributeReader attributeReader;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Clr2PapyrusConverter" /> class.
@@ -48,6 +50,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         /// <param name="processorOptions"></param>
         public Clr2PapyrusConverter(IClr2PapyrusInstructionProcessor instructionProcessor, PapyrusCompilerOptions processorOptions)
         {
+            attributeReader = new PapyrusAttributeReader();
             this.instructionProcessor = instructionProcessor;
             this.processorOptions = processorOptions;
         }
@@ -144,7 +147,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         private void CreateDebugInfo(PapyrusAssemblyDefinition pex, TypeDefinition type)
         {
             var debug = pex.DebugInfo;
-            debug.DebugTime = Utility.ConvertToTimestamp(DateTime.Now);
+            debug.DebugTime = UnixTimeConverterUtility.Convert(DateTime.Now);
 
             if (pex.VersionTarget == PapyrusVersionTargets.Fallout4)
             {
@@ -198,7 +201,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
         private void UpdateUserFlags(TypeDefinition type, PapyrusAssemblyDefinition pex)
         {
-            var props = Utility.GetFlagsAndProperties(type);
+            var props = attributeReader.ReadPapyrusAttributes(type);
             pex.Header.UserflagReferenceHeader.Add("hidden", (byte)(props.IsHidden ? 1 : 0));
             pex.Header.UserflagReferenceHeader.Add("conditional", (byte)(props.IsConditional ? 1 : 0));
         }
@@ -219,7 +222,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             var propList = new List<PapyrusPropertyDefinition>();
             foreach (var prop in type.Properties)
             {
-                var properties = Utility.GetFlagsAndProperties(prop);
+                var properties = attributeReader.ReadPapyrusAttributes(prop);
                 var papyrusPropertyDefinition = new PapyrusPropertyDefinition(pex, prop.Name,
                     Utility.GetPapyrusReturnType(prop.PropertyType))
                 {
@@ -262,7 +265,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             {
                 var papyrusFriendlyName = "::" + field.Name.Replace('<', '_').Replace('>', '_'); // Only for the VariableReference
 
-                var properties = Utility.GetFlagsAndProperties(field);
+                var properties = attributeReader.ReadPapyrusAttributes(field);
                 var fieldType = Utility.GetPapyrusReturnType(field.FieldType);
                 var nameRef = papyrusFriendlyName.Ref(pex);
                 var papyrusFieldDefinition = new PapyrusFieldDefinition(pex, field.Name,
@@ -295,7 +298,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
             var m = new PapyrusMethodDefinition(asm);
             m.Documentation = "".Ref(asm);
-            m.UserFlags = Utility.GetFlagsAndProperties(method).UserFlagsValue;
+            m.UserFlags = attributeReader.ReadPapyrusAttributes(method).UserFlagsValue;
             m.IsGlobal = method.IsStatic;
             m.IsNative = method.CustomAttributes.Any(i => i.AttributeType.Name.Equals("NativeAttribute"));
             m.Name = method.Name.Ref(asm);
@@ -348,7 +351,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             {
                 var ip = instructionProcessor as Clr2PapyrusInstructionProcessor; // TODO: Going against solid here just because im to damn tired.
                 m.Body.Instructions.Insert(0,
-                    ip.CallInstructionProcessor.CreatePapyrusCallInstruction(PapyrusOpCode.Callmethod, constructor, "self",
+                    ip.CallInstructionProcessor.CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, constructor, "self",
                         "::nonevar", new List<object>()));
             }
 
@@ -369,8 +372,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             pex.Header.SourceHeader.User = Environment.UserName;
             pex.Header.SourceHeader.Computer = Environment.MachineName;
             pex.Header.SourceHeader.GameId = (short)input.TargetPapyrusVersion;
-            pex.Header.SourceHeader.CompileTime = Utility.ConvertToTimestamp(DateTime.Now);
-            pex.Header.SourceHeader.ModifyTime = Utility.ConvertToTimestamp(DateTime.Now);
+            pex.Header.SourceHeader.CompileTime = UnixTimeConverterUtility.Convert(DateTime.Now);
+            pex.Header.SourceHeader.ModifyTime = UnixTimeConverterUtility.Convert(DateTime.Now);
         }
     }
 }
