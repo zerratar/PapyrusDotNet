@@ -347,9 +347,10 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             var setterName = string.Format("set_{0}", propertyName);
 
 
-            const Mono.Cecil.MethodAttributes attributes = Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.HideBySig |
-                                                Mono.Cecil.MethodAttributes.SpecialName | Mono.Cecil.MethodAttributes.NewSlot |
-                                                Mono.Cecil.MethodAttributes.Virtual;
+            const Mono.Cecil.MethodAttributes attributes =
+                Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.HideBySig |
+                Mono.Cecil.MethodAttributes.SpecialName | Mono.Cecil.MethodAttributes.NewSlot;
+            // | Mono.Cecil.MethodAttributes.Virtual;
 
             ModuleDefinition module = typeDef.Module;
             TypeReference voidType = module.Import(typeof(void));

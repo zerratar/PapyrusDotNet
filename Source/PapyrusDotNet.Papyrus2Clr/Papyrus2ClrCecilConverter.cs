@@ -44,19 +44,20 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
     public class Papyrus2ClrCecilConverter : Papyrus2ClrCecilConverterBase
     {
         private readonly IUiRenderer uiRenderer;
+        private readonly ITypeNameResolver nameConventionResolver;
         private AssemblyDefinition clrAssembly;
         // private PapyrusAssemblyDefinition papyrusAssembly;
         private ModuleDefinition mainModule;
         public IList<string> ReservedTypeNames = new List<string>();
         public IList<TypeReference> AddedTypeReferences = new List<TypeReference>();
         private TypeReference objectType;
-        private TypeDefinition objectTypeDef;
 
-        public Papyrus2ClrCecilConverter(IUiRenderer uiRenderer,
+        public Papyrus2ClrCecilConverter(IUiRenderer uiRenderer, INameConvetionResolver nameConventionResolver,
             INamespaceResolver namespaceResolver, ITypeReferenceResolver typeReferenceResolver)
             : base(namespaceResolver, typeReferenceResolver)
         {
             this.uiRenderer = uiRenderer;
+            this.nameConventionResolver = nameConventionResolver;
         }
 
         protected override CecilAssemblyOutput ConvertAssembly(PapyrusAssemblyInput input)
@@ -69,17 +70,14 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             mainModule = clrAssembly.MainModule;
             objectType = mainModule.Import(typeof(object));
-            try
-            {
-                objectTypeDef = objectType.Resolve();
-            }
-            catch { }
+
             int i = 1, ij = 0;
 
             uiRenderer.DrawInterface("(2/3) Adding assembly references.");
             foreach (var inputAssembly in input.Assemblies)
             {
-                if (ij >= 100 || i == input.Assemblies.Length)
+                var redrawProgress = ij >= 100 || i == input.Assemblies.Length || input.Assemblies.Length < 500;
+                if (redrawProgress)
                 {
                     //Console.SetCursorPosition(x, y);
                     //Console.WriteLine("Adding assembly references... " + i + "/" + input.Assemblies.Length);
@@ -100,7 +98,8 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             {
                 foreach (var type in papyrusAssembly.Types)
                 {
-                    if (ij >= 100 || i == input.Assemblies.Length)
+                    var redrawProgress = ij >= 100 || i == input.Assemblies.Length || input.Assemblies.Length < 500;
+                    if (redrawProgress)
                     {
                         //Console.SetCursorPosition(0, y + 1);
                         //Console.WriteLine("Building Classes... " + i + "/" + input.Assemblies.Length);
@@ -109,7 +108,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                     }
                     ij++;
                     i++;
-                    ResolveTypeDefinition(null, type.Name, type, false);
+                    AddTypeDefinition(null, type.Name, type, false);
 
                 }
             }
@@ -137,8 +136,6 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                 var reference = module.Import(typeToImport);
 
                 var definition = reference.Resolve();
-
-
 
                 var newType = new TypeDefinition("PapyrusDotNet.Core", definition.Name,
                     TypeAttributes.Class)
@@ -212,13 +209,17 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
         private void AddAssemblyReferences(PapyrusAssemblyDefinition papyrusAssembly)
         {
+            // Add types
             foreach (var type in papyrusAssembly.Types)
             {
+                type.Name.Value = nameConventionResolver.Resolve(type.Name.Value);
                 var typeRef = ResolveTypeReference(null, type.Name);
                 if (!AddedTypeReferences.Contains(typeRef))
                     AddedTypeReferences.Add(typeRef);
+                // Add structs
                 foreach (var nestedType in type.NestedTypes)
                 {
+                    nestedType.Name.Value = nameConventionResolver.Resolve(nestedType.Name.Value);
                     var nestedTypeRef = ResolveTypeReference(null, nestedType.Name);
                     if (!AddedTypeReferences.Contains(nestedTypeRef))
                         AddedTypeReferences.Add(nestedTypeRef);
@@ -226,20 +227,34 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             }
         }
 
-        private TypeDefinition ResolveTypeDefinition(TypeDefinition owningType, PapyrusStringRef name, PapyrusTypeDefinition type, bool isNested)
+        private void AddTypeDefinition(TypeDefinition owningType, PapyrusStringRef name, PapyrusTypeDefinition type, bool isNested)
         {
-            return ResolveTypeDefinition(owningType, name.Value, type, isNested);
+            AddTypeDefinition(owningType, name.Value, type, isNested);
         }
 
-        private TypeDefinition ResolveTypeDefinition(TypeDefinition owningType, string name, PapyrusTypeDefinition type, bool isNested)
+        private void AddTypeDefinition(TypeDefinition owningType, string name, PapyrusTypeDefinition type, bool isNested)
         {
+            if (mainModule.Types.Any(t => t.Name.ToLower() == name.ToLower()))
+            {
+                // Type already exists? Don't do anything.
+                return;
+            }
+
             var newType = new TypeDefinition(NamespaceResolver.Resolve(name), name,
                 isNested
-                ? TypeAttributes.NestedPublic | TypeAttributes.Class
+                ? TypeAttributes.NestedPublic | TypeAttributes.SequentialLayout | TypeAttributes.BeforeFieldInit | TypeAttributes.Sealed
                 : TypeAttributes.Public | TypeAttributes.Class);
 
             if (isNested)
             {
+                newType.IsClass = false;
+                newType.BaseType = mainModule.Import(typeof(System.ValueType));
+
+                if (owningType.NestedTypes.Any(t => t.Name.ToLower() == name.ToLower()))
+                {
+                    // Structure already exists? Don't do anything.
+                    return;
+                }
                 owningType.NestedTypes.Add(newType);
             }
             else
@@ -247,21 +262,17 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             AddEmptyConstructor(newType);
 
-            if (!string.IsNullOrEmpty(type.BaseTypeName?.Value))
+            if (!isNested)
             {
-                var baseType = ResolveTypeReference(null, type.BaseTypeName.Value);
-                if (baseType != null)
+                if (!string.IsNullOrEmpty(type.BaseTypeName?.Value))
                 {
-                    newType.BaseType = baseType;
+                    var baseType = ResolveTypeReference(null, type.BaseTypeName.Value);
+                    newType.BaseType = baseType ?? objectType;
                 }
                 else
                 {
                     newType.BaseType = objectType;
                 }
-            }
-            else
-            {
-                newType.BaseType = objectType;
             }
 
             foreach (var field in type.Fields)
@@ -282,10 +293,10 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                     }
                 }
 
-                if (field.IsConst)
-                {
-                    attributes |= FieldAttributes.InitOnly;
-                }
+                //if (field.IsConst)
+                //{
+                //    attributes |= FieldAttributes.InitOnly;
+                //}
 
                 var fieldDef = new FieldDefinition(field.Name.Value.Replace("::", ""), attributes, typeRef);
                 newType.Fields.Add(fieldDef);
@@ -313,28 +324,25 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
                 var typeRef = ResolveTypeReference(null, prop.TypeName);
 
-                newType.AddProperty(prop.Name.Value, typeRef, targetField);
-
-                //var propDef = new PropertyDefinition(prop.Name.Value, PropertyAttributes.None, typeRef);
-                //propDef.SetMethod = CreatePropertySetMethod(prop, targetField, typeRef);
-                //propDef.GetMethod = CreatePropertyGetMethod(prop, targetField, typeRef);
-                //newType.Properties.Add(propDef);
+                newType.AddProperty(nameConventionResolver.Resolve(prop.Name.Value), typeRef, targetField);
             }
 
 
             foreach (var structure in type.NestedTypes)
             {
-                ResolveTypeDefinition(newType, structure.Name, structure, true);
+                AddTypeDefinition(newType, structure.Name, structure, true);
             }
 
             foreach (var state in type.States)
             {
                 foreach (var method in state.Methods)
                 {
+                    method.Name.Value = nameConventionResolver.Resolve(method.Name.Value);
+
                     var typeRef = ResolveTypeReference(null, method.ReturnTypeName);
                     var attributes = MethodAttributes.Public;
 
-                    if (method.IsGlobal || method.IsNative)
+                    if (method.IsGlobal /* || method.IsNative */)
                     {
                         attributes |= MethodAttributes.Static;
                     }
@@ -368,7 +376,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                     }
                 }
             }
-            return newType;
+            // return newType;
         }
 
         //private MethodDefinition CreatePropertyGetMethod(PapyrusPropertyDefinition prop, FieldReference field, TypeReference typeRef)
@@ -492,16 +500,17 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                 function.Body = new MethodBody(function);
             }
             var fnl = function.ReturnType.FullName.ToLower();
+
             if (fnl.Equals("system.void"))
             {
-                // Do nothing	
+                function.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+                return;
             }
 
-            else if (fnl.Contains("[]"))
+            if (fnl.Contains("[]"))
             {
                 function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
             }
-
             else if (fnl.StartsWith("system.string") || fnl.StartsWith("system.object") ||
                      fnl.StartsWith("papyrusdotnet.core"))
                 function.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));

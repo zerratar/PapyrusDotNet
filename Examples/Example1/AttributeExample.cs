@@ -38,16 +38,17 @@ namespace Example1
 
         public override void OnInit()
         {
-            RegisterForSingleUpdateGameTime(1);
+         //   RegisterForSingleUpdateGameTime(1);
         }
 
-        public override void OnUpdateGameTime()
-        {
-            totalHoursElapsed++;
+        //public override void OnUpdateGameTime()
+        //{
+        //    totalHoursElapsed++;
 
-            Debug.MessageBox(totalHoursElapsed + " hours spent ingame! And my name is " + PlayerRef.GetName());
+        //    Debug.MessageBox(totalHoursElapsed + " hours spent ingame! And my name is " + PlayerRef);
 
-            RegisterForSingleUpdateGameTime(1);
-        }
+
+        //  RegisterForSingleUpdateGameTime(1);
+        //}
     }
 }

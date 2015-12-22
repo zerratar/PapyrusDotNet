@@ -21,7 +21,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.GotDotNet;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
 using PapyrusDotNet.Common.Interfaces;
@@ -96,12 +95,12 @@ namespace PapyrusDotNet
             }
             else
             {
-                var nsResolver = new ClrNamespaceResolver();
-
+                var nsResolver = new NamespaceResolver();
+                var camelCaseResolver = new PascalCaseNameResolver(ui, "wordlist-fo4.txt");
                 // Papyrus2ClrCecilConverter
                 converter = new Papyrus2ClrCecilConverter(
-                    ui, nsResolver,
-                    new ClrTypeReferenceResolver(nsResolver, new ClrTypeNameResolver()));
+                    ui, camelCaseResolver, nsResolver,
+                    new TypeReferenceResolver(nsResolver, new TypeNameResolver(camelCaseResolver)));
 
                 var pexFiles = Directory.GetFiles(input, "*.pex", SearchOption.AllDirectories);
 

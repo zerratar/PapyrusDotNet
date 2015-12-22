@@ -210,7 +210,7 @@ namespace PapyrusDotNet.Old.Papyrus
                     continue;
                 }
 
-                var variableType = Utility.GetPapyrusReturnType(variable.FieldType, true);
+                var variableType = Utility.GetPapyrusReturnType(variable.FieldType, null, true);
 
                 var initialValue = Utility.GetInitialValue(variable);
 

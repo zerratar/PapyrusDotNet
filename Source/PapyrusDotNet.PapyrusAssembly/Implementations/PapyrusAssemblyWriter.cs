@@ -244,22 +244,21 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                         if (fieldVariable.Value is bool)
                         {
                             // I think this is Acceptable :p
-                            var value = (byte)(((bool)fieldVariable.Value) ? 1 : 0);
+                            var value = (byte)((bool)fieldVariable.Value ? 1 : 0);
                             pexWriter.Write(value);
                         }
-                        else
-                        {
-                            pexWriter.Write((byte)fieldVariable.Value);
-                        }
+                        else pexWriter.Write((byte)fieldVariable.Value);
                     }
                     break;
                 case PapyrusPrimitiveType.Float:
-                    pexWriter.Write((float)fieldVariable.Value);
-                    //pexWriter.Write((float)float.Parse(fieldVariable.Value.ToString()));
+                    if (fieldVariable.Value is double)
+                        pexWriter.Write((float)(double)fieldVariable.Value);
+                    else
+                        pexWriter.Write((float)fieldVariable.Value);
                     break;
                 case PapyrusPrimitiveType.Integer:
 #warning TODO: The value to write should NEVER need to be parsed.
-                    pexWriter.Write((int)int.Parse(fieldVariable.Value.ToString()));
+                    pexWriter.Write(int.Parse(fieldVariable.Value.ToString()));
                     break;
 
                 default:

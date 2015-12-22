@@ -49,7 +49,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="targetMethod">The target method.</param>
         /// <param name="type">The type.</param>
         /// <returns></returns>
-        public IEnumerable<PapyrusInstruction> Process(Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
+        public IEnumerable<PapyrusInstruction> Process(IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
         {
             var output = new List<PapyrusInstruction>();
             if (Utility.IsVoid(targetMethod.ReturnType))

@@ -54,6 +54,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
         public MethodDefinition ClrMethod { get; set; }
 
+        public System.Collections.ObjectModel.ReadOnlyCollection<PapyrusAssemblyDefinition> PapyrusAssemblyCollection { get; set; }
 
         private bool isInsideSwitch;
         private Instruction[] switchTargetInstructions = new Instruction[0];
@@ -82,6 +83,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         /// <summary>
         /// Processes the instructions.
         /// </summary>
+        /// <param name="papyrusAssemblyCollection"></param>
         /// <param name="targetPapyrusAssembly">The target papyrus assembly.</param>
         /// <param name="targetPapyrusType">Type of the target papyrus.</param>
         /// <param name="targetPapyrusMethod">The target papyrus method.</param>
@@ -90,13 +92,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         /// <param name="instructions">The instructions.</param>
         /// <param name="options">The options.</param>
         /// <returns></returns>
-        public IEnumerable<PapyrusInstruction> ProcessInstructions(PapyrusAssemblyDefinition targetPapyrusAssembly,
+        public IEnumerable<PapyrusInstruction> ProcessInstructions(
+            IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection,
+            PapyrusAssemblyDefinition targetPapyrusAssembly,
             PapyrusTypeDefinition targetPapyrusType,
             PapyrusMethodDefinition targetPapyrusMethod,
             MethodDefinition method,
             MethodBody body, Collection<Instruction> instructions,
             PapyrusCompilerOptions options = PapyrusCompilerOptions.Strict)
         {
+            PapyrusAssemblyCollection = new System.Collections.ObjectModel.ReadOnlyCollection<PapyrusAssemblyDefinition>(papyrusAssemblyCollection.ToArray());
             PapyrusAssembly = targetPapyrusAssembly;
             PapyrusType = targetPapyrusType;
             PapyrusMethod = targetPapyrusMethod;
@@ -185,6 +190,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return outputInstructions;
         }
 
+
         private bool ProcessSwitchStatement(Instruction instruction, ref List<PapyrusInstruction> papyrusInstructions)
         {
             bool skipThisInstruction = false;
@@ -209,8 +215,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
                 foreach (var dest in switchTargetInstructions)
                 {
+                    bool isStructAccess;
                     // Create a temp variable
-                    var tmpBool = GetTargetVariable(instruction, null, "Bool");
+                    var tmpBool = GetTargetVariable(instruction, null, out isStructAccess, "Bool");
 
                     // Push the values to the stack
                     EvaluationStack.Push(new EvaluationStackItem
@@ -340,12 +347,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             var code = instruction.OpCode.Code;
             if (InstructionHelper.IsLoad(code))
             {
-                output.AddRange(LoadInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(LoadInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod, type));
             }
 
             if (InstructionHelper.IsStore(code))
             {
-                output.AddRange(StoreInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(StoreInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod, type));
 
                 return output;
             }
@@ -391,8 +398,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 // Must be 2.
                 if (EvaluationStack.Count >= Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop))
                 {
+                    bool isStructAccess;
                     // Make sure we have a temp variable if necessary
-                    GetTargetVariable(instruction, null, "Int");
+                    GetTargetVariable(instruction, null, out isStructAccess, "Int");
 
                     // Equiviliant Papyrus: <MathOp> <sumOutput> <denumerator> <numerator>
 
@@ -409,7 +417,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (InstructionHelper.IsBranch(instruction.OpCode.Code) || InstructionHelper.IsBranchConditional(instruction.OpCode.Code))
             {
-                output.AddRange(BranchInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(BranchInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod, type));
 
                 return output;
             }
@@ -435,11 +443,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (InstructionHelper.IsCallMethod(instruction.OpCode.Code))
             {
-                output.AddRange(CallInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(CallInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod, type));
             }
             if (instruction.OpCode.Code == Code.Ret)
             {
-                output.AddRange(ReturnInstructionProcessor.Process(instruction, targetMethod, type));
+                output.AddRange(ReturnInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod, type));
             }
             return output;
         }
@@ -468,11 +476,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             return ConditionalInstructionProcessor.Process(instruction, overrideOpCode, tempVariable);
         }
 
+
         /// <summary>
         /// Gets the field from STFLD.
         /// </summary>
         /// <param name="whereToPlace">The where to place.</param>
-        /// <returns></returns>
+        /// <returns>Returns a <see cref="PapyrusFieldDefinition"/> if the found field was inside the same type or returns a <see cref="PapyrusStructFieldReference"/> if the target field was inside a struct; otherwise null.</returns>
         public PapyrusFieldDefinition GetFieldFromStfld(Instruction whereToPlace)
         {
             if (InstructionHelper.IsStoreField(whereToPlace.OpCode.Code))
@@ -483,9 +492,27 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     // if the EvaluationStack.Count == 0
                     // The previous instruction might have been a call that returned a value
                     // Something we did not store...
+
                     var definedField =
-                        PapyrusType.Fields.FirstOrDefault(
-                            f => f.Name.Value == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+                      PapyrusType.Fields.FirstOrDefault(
+                          f => f.Name.Value == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+
+                    if (fref.FullName.Contains("/") && definedField == null)
+                    {
+                        if (EvaluationStack.Count == 0 && PapyrusCompilerOptions == PapyrusCompilerOptions.Strict) throw new StackUnderflowException();
+                        if (EvaluationStack.Count > 0)
+                        {
+                            var targetStructVariable = EvaluationStack.Pop().Value;
+
+                            return new PapyrusStructFieldReference(PapyrusAssembly)
+                            {
+                                StructSource = targetStructVariable,
+                                StructVariable = CreateVariableReferenceFromName(fref.Name)
+                            };
+                        }
+                    }
+
+
                     if (definedField != null)
                     {
                         return definedField;
@@ -503,8 +530,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         /// <param name="fallbackType">Type of the fallback.</param>
         /// <param name="forceNew">if set to <c>true</c> [force new].</param>
         /// <returns></returns>
-        public string GetTargetVariable(Instruction instruction, MethodReference methodRef, string fallbackType = null, bool forceNew = false)
+        public string GetTargetVariable(Instruction instruction, MethodReference methodRef, out bool isStructAccess, string fallbackType = null, bool forceNew = false)
         {
+            isStructAccess = false;
             string targetVar = null;
             var whereToPlace = instruction.Next;
             var allVariables = PapyrusMethod.GetVariables();
@@ -527,7 +555,62 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 if (InstructionHelper.IsStoreField(whereToPlace.OpCode.Code))
                 {
                     var fieldData = GetFieldFromStfld(whereToPlace);
-                    if (fieldData != null)
+                    var structRef = fieldData as PapyrusStructFieldReference;
+                    if (structRef != null)
+                    {
+                        var parameterSource = structRef.StructSource as PapyrusParameterDefinition;
+                        var fieldSource = structRef.StructSource as PapyrusFieldDefinition;
+                        if (fieldSource != null || parameterSource != null)
+                        {
+
+                            // 1. Since we need to return a struct field, we will need to actually create a temp variable
+                            //      and use the temp variable to assign whatever value we want on our struct val.
+                            // 2. StructSet (Assign) Struct variable with the value from the temp value.
+
+
+                            // Ex1: MyStruct.StructValue = GetValue();                           
+                            //   call GetValue self ::tempVar 
+                            //   structset StructValue MyStruct ::tempVar
+                            //  -----------------------------------
+                            //  * Create Temp Var
+                            //  * Do Call, assign return value on TempVar
+                            //  * Set StructField to TempVar
+                            //  ----------
+
+                            // Ex2: MyStruct.StructValue = ::otherVar
+                            //  -----------------------------------
+                            //  * Assign structvalue
+                            //  ----------
+
+                            EvaluationStack.Push(new EvaluationStackItem { Value = structRef, TypeName = "$StructAccess$" });
+                            isStructAccess = true;
+
+                            // If previous instruction was a call. We want to do Ex1.
+                            if (InstructionHelper.IsCallMethod(whereToPlace.Previous.OpCode.Code) ||
+                                (whereToPlace.Previous.Previous != null &&
+                                 whereToPlace.Previous.Previous.OpCode.Code == Code.Nop &&
+                                 InstructionHelper.IsCallMethod(whereToPlace.Previous.Previous.OpCode.Code)))
+                            {
+                                // do Ex1
+                                var tVar = CreateTempVariable(!string.IsNullOrEmpty(fallbackType) ? fallbackType : methodRef.ReturnType.FullName, methodRef);
+                                targetVar = tVar.Name.Value;
+
+                                return targetVar;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+
+                        }
+                        if (PapyrusCompilerOptions == PapyrusCompilerOptions.Strict)
+                        {
+                            // You may not have the struct as a property
+                            throw new ProhibitedCodingBehaviourException();
+                        }
+                        // structRef.
+                    }
+                    else if (fieldData != null)
                     {
                         targetVar = fieldData.Name.Value;
                         // LastSaughtTypeName = fieldData.TypeName;
@@ -687,7 +770,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             }
 
             var varname = "::temp" + PapyrusMethod.Body.TempVariables.Count;
-            var type = Utility.GetPapyrusReturnType(name, @namespace);
+            var type = Utility.GetPapyrusReturnType(name, @namespace, null);
             // var def = ".local " + varname + " " + type.Replace("<T>", "");
             var varnameRef = varname.Ref(PapyrusAssembly);
             var typenameRef = type.Ref(PapyrusAssembly);
@@ -728,7 +811,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 {
                     args.Add(varRef);
                 }
-                else if (fieldDef != null)
+                else if (fieldDef != null && fieldDef.FieldVariable != null)
                 {
                     args.Add(fieldDef.FieldVariable);
                 }
@@ -752,6 +835,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                         args.Add(CreateVariableReference(papyrusPrimitiveType, val));
                     }
                 }
+            }
+            if (args.Any(a => a == null))
+            {
+                
             }
             return args;
         }

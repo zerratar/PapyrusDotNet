@@ -49,8 +49,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="type">The type.</param>
         /// <returns></returns>
         /// <exception cref="MissingVariableException"></exception>
-        public IEnumerable<PapyrusInstruction> Process(Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
+        public IEnumerable<PapyrusInstruction> Process(IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
         {
+            bool isStructAccess;
             var outputInstructions = new List<PapyrusInstruction>();
             if (InstructionHelper.IsLoadLength(instruction.OpCode.Code))
             {
@@ -74,7 +75,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                     mainInstructionProcessor.SkipNextInstruction = false;
                                     mainInstructionProcessor.SkipToOffset = 0;
 
-                                    var targetVariableName = mainInstructionProcessor.GetTargetVariable(instruction, null, "Int", true);
+                                    var targetVariableName = mainInstructionProcessor.GetTargetVariable(instruction, null, out isStructAccess, "Int", true);
 
                                     var allVars = mainInstructionProcessor.PapyrusMethod.GetVariables();
                                     var targetVariable = allVars.FirstOrDefault(v => v.Name.Value == targetVariableName);
@@ -126,6 +127,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 }
                 else
                 {
+                    if (targetMethod.HasThis && index == 0)
+                    {
+                        return outputInstructions;
+                    }
+
                     if (!targetMethod.IsStatic && index > 0) index--;
                     if (index < mainInstructionProcessor.PapyrusMethod.Parameters.Count)
                     {
@@ -171,6 +177,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
             if (InstructionHelper.IsLoadField(instruction.OpCode.Code))
             {
+                if (instruction.OpCode.Code == Code.Ldflda)
+                {
+
+                }
+
                 if (instruction.Operand is FieldReference)
                 {
                     var fieldRef = instruction.Operand as FieldReference;
@@ -178,30 +189,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                     PapyrusFieldDefinition targetField = null;
 
-                    if (fieldRef.DeclaringType.FullName != type.FullName)
-                    {
-                        // The target field is not inside the declared type.
-                        // Most likely, this is a get field from struct.
-                        if (fieldRef.DeclaringType.FullName.Contains("/"))
-                        {
-                            var location = fieldRef.DeclaringType.FullName.Split("/").LastOrDefault();
-
-                            var targetStruct = mainInstructionProcessor.PapyrusType.NestedTypes.FirstOrDefault(n => n.Name.Value == location);
-                            if (targetStruct != null)
-                            {
-
-
-                                // TODO: Add support for getting values from Structs
-                                // 
-                                // CreatePapyrusInstruction(PapyrusOpCode.StructGet, ...)
-                            }
-                        }
-                    }
-                    else
-                    {
-                        targetField = mainInstructionProcessor.PapyrusType.Fields.FirstOrDefault(
-                            f => f.Name.Value == "::" + fieldRef.Name.Replace('<', '_').Replace('>', '_'));
-                    }
+                    targetField = mainInstructionProcessor.PapyrusType.Fields.FirstOrDefault(
+                       f => f.Name.Value == "::" + fieldRef.Name.Replace('<', '_').Replace('>', '_'));
 
                     if (targetField != null)
                     {
@@ -211,6 +200,55 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             TypeName = targetField.TypeName
                         });
                     }
+
+                    if (PreviousInstructionWas(instruction, Code.Ldflda) && fieldRef.FullName.Contains("/"))
+                    {
+
+
+                        var targetStructVariable = mainInstructionProcessor.EvaluationStack.Pop().Value;
+
+                        var structRef = new PapyrusStructFieldReference(mainInstructionProcessor.PapyrusAssembly)
+                        {
+                            StructSource = targetStructVariable,
+                            StructVariable = mainInstructionProcessor.CreateVariableReferenceFromName(fieldRef.Name)
+                        };
+
+                        mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                        {
+                            Value = structRef,
+                            TypeName = "$StructAccess$"
+                        });
+
+                        return outputInstructions;
+
+                        //    // The target field is not inside the declared type.
+                        //    // Most likely, this is a get field from struct.
+                        //    if (fieldRef.FieldType.FullName.Contains("/"))
+                        //    {
+                        //        var location = fieldRef.FieldType.FullName.Split("/").LastOrDefault();
+
+                        //        var targetStruct = mainInstructionProcessor.PapyrusType.NestedTypes.FirstOrDefault(n => n.Name.Value == location);
+                        //        if (targetStruct != null)
+                        //        {
+
+                        //            targetField = mainInstructionProcessor.PapyrusType.Fields.FirstOrDefault(
+                        //                f => f.Name.Value == "::" + fieldRef.Name);
+                        //            // var stack = mainInstructionProcessor.EvaluationStack;
+                        //            // TODO: Add support for getting values from Structs
+                        //            // 
+                        //            // CreatePapyrusInstruction(PapyrusOpCode.StructGet, ...)
+                        //        }
+                        //    }
+
+
+                    }
+                    //else
+                    //{
+                    //    targetField = mainInstructionProcessor.PapyrusType.Fields.FirstOrDefault(
+                    //        f => f.Name.Value == "::" + fieldRef.Name.Replace('<', '_').Replace('>', '_'));
+                    //}
+
+
                 }
             }
 
@@ -257,7 +295,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                 // Assign our value to this temp variable and push it to the stack
                                 // so that the next instruction can take care of it.
                                 var tempVariableType = sourceArray.TypeName.Value.Replace("[]", "");
-                                var destinationTempVar = mainInstructionProcessor.GetTargetVariable(instruction, null, tempVariableType, true);
+
+                                var destinationTempVar = mainInstructionProcessor.GetTargetVariable(instruction, null, out isStructAccess, tempVariableType, true);
 
                                 var varRef = mainInstructionProcessor.PapyrusMethod.GetVariables().FirstOrDefault(n => n.Name.Value == destinationTempVar);
 
@@ -283,7 +322,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                 if (sourceArray != null)
                                 {
                                     var tempVariableType = sourceArray.TypeName.Value.Replace("[]", "");
-                                    var destinationTempVar = mainInstructionProcessor.GetTargetVariable(instruction, methodRef,
+                                    var destinationTempVar = mainInstructionProcessor.GetTargetVariable(instruction, methodRef, out isStructAccess,
                                         tempVariableType);
 
                                     // "ArrayGetElement " + destinationTempVar + " " + targetItemArray + " " + targetItemIndex;
@@ -312,6 +351,14 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 }
             }
             return outputInstructions;
+        }
+
+        private static bool PreviousInstructionWas(Instruction instruction, Code targetOpCode)
+        {
+            return (instruction.Previous != null && instruction.Previous.OpCode.Code == targetOpCode) ||
+                   (instruction.Previous != null && instruction.Previous.OpCode.Code == Code.Nop &&
+                    instruction.Previous.Previous != null &&
+                    instruction.Previous.Previous.OpCode.Code == targetOpCode);
         }
     }
 }

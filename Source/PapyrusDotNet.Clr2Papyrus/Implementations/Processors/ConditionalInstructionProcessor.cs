@@ -48,6 +48,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <returns></returns>
         public IEnumerable<PapyrusInstruction> Process(Instruction instruction, Code overrideOpCode = Code.Nop, string tempVariable = null)
         {
+            bool isStructAccess;
             var output = new List<PapyrusInstruction>();
 
             //cast = null;
@@ -89,7 +90,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     if (!refTypeName.ToLower().Equals("int") && !refTypeName.ToLower().Equals("system.int32") &&
                         !refTypeName.ToLower().Equals("system.string") && !refTypeName.ToLower().Equals("string"))
                     {
-                        var typeVariable = mainInstructionProcessor.GetTargetVariable(instruction, null, "Int");
+                        var typeVariable = mainInstructionProcessor.GetTargetVariable(instruction, null, out isStructAccess, "Int");
                         output.Add(mainInstructionProcessor.CreatePapyrusCastInstruction(typeVariable, varRef));
                         // cast = "Cast " + typeVariable + " " + value1;
                     }
@@ -113,7 +114,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         // var typeVariable = GetTargetVariable(instruction, null, "Int");
                         // cast = "Cast " + typeVariable + " " + value2;
 
-                        var typeVariable = mainInstructionProcessor.GetTargetVariable(instruction, null, "Int");
+                        var typeVariable = mainInstructionProcessor.GetTargetVariable(instruction, null, out isStructAccess, "Int");
                         output.Add(mainInstructionProcessor.CreatePapyrusCastInstruction(typeVariable, varRef));
 
                     }
@@ -139,7 +140,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     // comparison.
                     if (InstructionHelper.IsSwitch(next.OpCode.Code))
                     {
-                        var newTempVariable = mainInstructionProcessor.GetTargetVariable(instruction, null, "Int", true);
+                        var newTempVariable = mainInstructionProcessor.GetTargetVariable(instruction, null, out isStructAccess, "Int", true);
                         mainInstructionProcessor.SwitchConditionalComparer = mainInstructionProcessor.CreateVariableReferenceFromName(newTempVariable);
                         mainInstructionProcessor.SwitchConditionalComparer.ValueType = PapyrusPrimitiveType.Reference;
                         mainInstructionProcessor.SwitchConditionalComparer.TypeName = "Int".Ref(mainInstructionProcessor.PapyrusAssembly);
@@ -182,12 +183,25 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     if (next.Operand is FieldReference)
                     {
                         var field = mainInstructionProcessor.GetFieldFromStfld(next);
-                        if (field != null)
+                        var structRef = field as PapyrusStructFieldReference;
+                        if (structRef != null)
+                        {
+                            // output.Add(mainInstructionProcessor.CreatePapyrusInstruction(papyrusOpCode, field, denumerator, numerator));
+                            // structRef.
+                        }
+                        else if (field != null)
                         {
                             output.Add(mainInstructionProcessor.CreatePapyrusInstruction(papyrusOpCode, field, denumerator, numerator));
                             return output;
-                            //return field.Name + " " + denumerator + " " + numerator;
+                            // LastSaughtTypeName = fieldData.TypeName;
                         }
+
+                        //if (field != null)
+                        //{
+                        //    output.Add(mainInstructionProcessor.CreatePapyrusInstruction(papyrusOpCode, field, denumerator, numerator));
+                        //    return output;
+                        //    //return field.Name + " " + denumerator + " " + numerator;
+                        //}
                     }
 
 
@@ -208,7 +222,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="type">The type.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public IEnumerable<PapyrusInstruction> Process(Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
+        public IEnumerable<PapyrusInstruction> Process(IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
         {
             throw new System.NotImplementedException();
         }

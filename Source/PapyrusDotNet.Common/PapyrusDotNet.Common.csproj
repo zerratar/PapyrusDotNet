@@ -34,10 +34,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ConsoleEx, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ConsoleEx.1.0.4\lib\ConsoleEx.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\..\..\Program Files (x86)\Unity\Editor\Data\Managed\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -56,6 +52,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleExLib\ConsoleEx.cs" />
+    <Compile Include="Interfaces\INameConvetionResolver.cs" />
     <Compile Include="IPapyrusCodeBlock.cs" />
     <Compile Include="PapyrusCodeBlock.cs" />
     <Compile Include="ConsoleStatusCallbackService.cs" />
@@ -108,10 +106,6 @@
       <Name>PapyrusDotNet.PapyrusAssembly</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,7 +1,6 @@
 ﻿using System;
-using Microsoft.GotDotNet;
 using PapyrusDotNet.Common.Interfaces;
-
+using PapyrusDotNet.Common.ConsoleExLib;
 namespace PapyrusDotNet.Common.Utilities
 {
     public class ConsoleUiRenderer : IUiRenderer
@@ -66,7 +65,8 @@ namespace PapyrusDotNet.Common.Utilities
 
         public void DrawProgressBarWithInfo(int value, int max)
         {
-            ConsoleEx.WriteAt(42, 5, value + "/" + max);
+            var text = value + "/" + max;
+            ConsoleEx.WriteAt(42, 5, text.PadRight(24));
             ConsoleEx.WriteAt(40, 7, "");
             DrawProgressBar(value, max);
         }

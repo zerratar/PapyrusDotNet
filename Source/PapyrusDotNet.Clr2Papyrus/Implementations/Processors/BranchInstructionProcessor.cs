@@ -46,8 +46,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="targetMethod">The target method.</param>
         /// <param name="type">The type.</param>
         /// <returns></returns>
-        public IEnumerable<PapyrusInstruction> Process(Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
+        public IEnumerable<PapyrusInstruction> Process(IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
         {
+            bool isStructAccess;
             var instructions = new List<PapyrusInstruction>();
             if (InstructionHelper.IsBranchConditional(instruction.OpCode.Code))
             {
@@ -57,7 +58,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     var obj1 = mainInstructionProcessor.EvaluationStack.Pop();
                     var obj2 = mainInstructionProcessor.EvaluationStack.Pop();
                     // gets or create a temp boolean variable we can use to store the conditional check on.
-                    var temp = mainInstructionProcessor.GetTargetVariable(instruction, null, "Bool");
+                    var temp = mainInstructionProcessor.GetTargetVariable(instruction, null, out isStructAccess, "Bool");
 
                     var allVars = mainInstructionProcessor.PapyrusMethod.GetVariables();
 

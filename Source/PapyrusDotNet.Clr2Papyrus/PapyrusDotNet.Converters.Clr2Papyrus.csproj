@@ -57,6 +57,8 @@
     <Compile Include="Implementations\Clr2PapyrusInstructionProcessor.cs" />
     <Compile Include="Enums\PapyrusCompilerOptions.cs" />
     <Compile Include="Exceptions\ProhibitedCodingBehaviourException.cs" />
+    <Compile Include="Exceptions\InvalidPropertyAccessException.cs" />
+    <Compile Include="Implementations\PapyrusStructFieldReference.cs" />
     <Compile Include="Implementations\Processors\ReturnInstructionProcessor.cs" />
     <Compile Include="Implementations\Processors\ConditionalInstructionProcessor.cs" />
     <Compile Include="Implementations\Processors\CallInstructionProcessor.cs" />

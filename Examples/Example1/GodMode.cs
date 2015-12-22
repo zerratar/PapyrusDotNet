@@ -32,17 +32,18 @@ namespace Example1
 
         public void ActivateGodMode(Actor player)
         {
-            var equippedWeapon = player.GetEquippedWeapon(false);
+            
+            //var equippedWeapon = player.GetEquippedWeapon(0);
+            
+            //equippedWeapon.SetBaseDamage(9999);
 
-            equippedWeapon.SetBaseDamage(9999);
+            //player.SetActorValue("Health", 999999);
 
-            player.SetActorValue("Health", 999999);
+            //player.SetActorValue("Magicka", 999999);
 
-            player.SetActorValue("Magicka", 999999);
+            //player.SetActorValue("Stamina", 999999);
 
-            player.SetActorValue("Stamina", 999999);
-
-            Debug.MessageBox("God Mode activated!");
+            //Debug.MessageBox("God Mode activated!");
         }
     }
 }

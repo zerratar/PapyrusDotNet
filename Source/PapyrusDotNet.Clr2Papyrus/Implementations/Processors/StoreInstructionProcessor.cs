@@ -49,7 +49,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="targetMethod">The target method.</param>
         /// <param name="type">The type.</param>
         /// <returns></returns>
-        public IEnumerable<PapyrusInstruction> Process(Instruction instruction, MethodDefinition targetMethod,
+        public IEnumerable<PapyrusInstruction> Process(IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, Instruction instruction, MethodDefinition targetMethod,
             TypeDefinition type)
         {
             var allVariables = mainInstructionProcessor.PapyrusMethod.GetVariables();
@@ -111,14 +111,65 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     // if the EvaluationStack.Count == 0
                     // The previous instruction might have been a call that returned a value
                     // Something we did not store...
+
+                    if (mainInstructionProcessor.EvaluationStack.Count == 0 &&
+                        InstructionHelper.IsCallMethod(instruction.Previous.OpCode.Code))
+                    {
+                        // If previous was a call, then we should have the evaluation stack with at least one item.
+                        // But it seem like we don't... Inject tempvar?
+                    }
+
                     if (mainInstructionProcessor.EvaluationStack.Count > 0)
                     {
                         var obj = mainInstructionProcessor.EvaluationStack.Pop();
 
                         var definedField = mainInstructionProcessor.PapyrusType.Fields.FirstOrDefault(
-                            f => f.Name.Value == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+                                                    f => f.Name.Value == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+                        if (mainInstructionProcessor.EvaluationStack.Count > 0)
+                        {
+                            var nextObj = mainInstructionProcessor.EvaluationStack.Peek();
+
+                            if (nextObj != null && nextObj.TypeName != null && nextObj.TypeName.Contains("#"))
+                            {
+                                // Store into Struct field.
+                                definedField = nextObj.Value as PapyrusFieldDefinition;
+                                var structPropName = fref.Name;
+                                mainInstructionProcessor.EvaluationStack.Pop(); // Just pop it so it does not interfere with any other instructions
+                                return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.StructSet,
+                                            definedField, // location
+                                            mainInstructionProcessor.CreateVariableReferenceFromName(structPropName), // Struct Property/Field Name
+                                            obj.Value // value
+                                            ));
+                            }
+                        }
+
+
                         if (definedField != null)
                         {
+                            var structRef = obj.Value as PapyrusStructFieldReference;
+                            if (structRef != null)
+                            {
+                                // StructGet -> TempVar
+                                // Var <- TempVar
+
+                                var structSource = structRef.StructSource as PapyrusFieldDefinition;
+                                var structField = structRef.StructVariable;
+
+                                var fieldType = GetStructFieldType(papyrusAssemblyCollection, structSource, structField);
+
+                                // 1. Create Temp Var
+                                bool isStructAccess;
+                                var tempVar = mainInstructionProcessor.GetTargetVariable(instruction, null, out isStructAccess,
+                                    fieldType, true);
+
+                                // 2. StructGet -> tempVar
+                                // 3. Assign var <- tempVar
+                                return ArrayUtility.ArrayOf(
+                                    mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.StructGet, mainInstructionProcessor.CreateVariableReferenceFromName(tempVar), structSource, structField),
+                                    mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, definedField, mainInstructionProcessor.CreateVariableReferenceFromName(tempVar)));
+
+
+                            }
                             if (obj.Value is PapyrusParameterDefinition)
                             {
                                 var varRef = obj.Value as PapyrusParameterDefinition;
@@ -154,6 +205,29 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     if (mainInstructionProcessor.EvaluationStack.Count > 0)
                     {
                         var heapObj = mainInstructionProcessor.EvaluationStack.Pop();
+
+                        var structRef = heapObj.Value as PapyrusStructFieldReference;
+                        if (structRef != null)
+                        {
+                            // Grabbing value from struct
+
+                            var structSource = structRef.StructSource as PapyrusFieldDefinition;
+                            var structField = structRef.StructVariable;
+
+                            var fieldType = GetStructFieldType(papyrusAssemblyCollection, structSource, structField);
+
+                            // 1. Create Temp Var
+                            bool isStructAccess;
+                            var tempVar = mainInstructionProcessor.GetTargetVariable(instruction, null, out isStructAccess,
+                                fieldType, true);
+
+                            // 2. StructGet -> tempVar
+                            // 3. Assign var <- tempVar
+                            return ArrayUtility.ArrayOf(
+                                mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.StructGet, mainInstructionProcessor.CreateVariableReferenceFromName(tempVar), structSource, structField),
+                                mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, allVariables[index], mainInstructionProcessor.CreateVariableReferenceFromName(tempVar)));
+                        }
+
                         if (heapObj.Value is PapyrusFieldDefinition)
                         {
                             heapObj.Value = (heapObj.Value as PapyrusFieldDefinition).FieldVariable;
@@ -204,6 +278,31 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 }
             }
             return new PapyrusInstruction[0];
+        }
+
+        private string GetStructFieldType(IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection,
+            PapyrusFieldDefinition structSource, PapyrusVariableReference structField)
+        {
+            foreach (var a in papyrusAssemblyCollection)
+            {
+                foreach (var t in a.Types)
+                {
+                    foreach (var s in t.NestedTypes)
+                    {
+                        var name = structSource.TypeName.Split('#').LastOrDefault();
+
+                        if (s.Name.Value.ToLower() == name.ToLower())
+                        {
+                            var targetField = s.Fields.FirstOrDefault(f => f.Name.Value == "::" + structField.Name.Value);
+                            if (targetField != null)
+                            {
+                                return targetField.TypeName;
+                            }
+                        }
+                    }
+                }
+            }
+            return "none";
         }
     }
 }

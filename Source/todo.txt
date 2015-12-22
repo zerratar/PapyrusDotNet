@@ -1,28 +1,57 @@
-=====================
-	Papyrus2Clr
-=====================
-TODO:
-	* Properties cannot be currently be accessed
-		(Not being created properly?)
+==================================
+    Papyrus2Clr (1/1 completed)
+==================================
+TODO: (1/1 completed)
+    * [Completed] Properties cannot be currently be accessed
+        (Not being created properly?)
 
-=====================
-	Clr2Papyrus
-=====================
+==================================
+    Clr2Papyrus (4/22 completed)
+==================================
 TODO:
-  Instructions:
-	* PropGet - Use with external classes
-	* PropSet - Use with external classes
-		(Accessing a property outside the "local" class)
-		(!! Papyrus2Clr needs to be fixed first !!)
-	* StructGet
-	* StructSet
-	* Is - Used the same way as the 'is' keyword in c# ?
+  (1) Instructions: (2/15 completed)
+    * [Completed] PropGet - Use with external classes
+    * [Completed] PropSet - Use with external classes
+        (Accessing a property outside the "local" class)
+        (!! Papyrus2Clr needs to be fixed first !!)
+    * StructCreate - new StructName() ?
+    * [Completed] StructGet - Struct Variable/Property Get		
+    * [Completed] StructSet - Struct Variable/Property Set		
+    * Is - Is it used the same way as the 'is' keyword in c# ?	
+    
+    -\\ Proposed API for accessing the Array Functions using Extension methods \\-
+    ------------------------------------------------------------------------------
+    * ArrayFindElement - int index ItemArray[].Find(elm) ?
+    * ArrayRfindelement - int index ItemArray[].Find(elm) ?
+    * ArrayFindStruct - int index StructArray[].Find(...) ?
+    * ArrayRfindStruct - int index StructArray[].Find(...) ?
+    * ArrayAddElements - void ItemArray[].AddRange(item1, item2, item3, itemN...) ?
+    * ArrayInsertElement - int index ItemArray[].Insert(index, elm) ?
+    * ArrayRemoveElements - void ItemArray[].RemoveRange(0..n) ?
+    * ArrayRemoveLastElement - void ItemArray[].RemoveLast()	?
+    * ArrayClearElements - void ItemArray[].Clear()			?
+  
+  (2) States:  (0/3 completed)
+    * State Definition
+        - How to create a state
+        - How to change a state
+        - How to enforce state method one-to-one existence with owning type
+  
+  (3) Delegates: (0/2 completed)
+        (Note to self: Look at the old code where I've already solved this :))
+    * Create delegates
+    * Use delegates
 
-=====================
-	PapyrusAssembly
-=====================
-TODO:
-	* Create an assembly parser
-		(Input text/assembly code and output appropriate typed object)
-		(This can be used for easier inserting/injecting
-		 papyrus assembly code)
+  (4) Generics: (0/2 completed)
+        (Note to self: Look at the old code where I've already solved this :))
+    * Create Generics
+    * Use Generics
+
+==================================
+    PapyrusAssembly (0/1 completed)
+==================================
+TODO: (0/1 completed)
+    * Create an assembly parser
+        (Input text/assembly code and output appropriate typed object)
+        (This can be used for easier inserting/injecting
+         papyrus assembly code)

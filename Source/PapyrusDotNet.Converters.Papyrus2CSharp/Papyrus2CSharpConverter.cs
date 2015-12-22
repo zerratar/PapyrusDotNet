@@ -71,7 +71,15 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                 {
                     WriteDoc(field.Documentation, indent + 1);
                 }
-                AppendLine("public " + field.TypeName + " " + ((string)field.Name) + ";", indent + 1);
+                if (field.TypeName.Contains("#"))
+                {
+                    AppendLine("// Access to Struct: " + field.TypeName, indent + 1);
+                    AppendLine("public " + field.TypeName.Split('#').LastOrDefault() + " " + ((string)field.Name) + ";", indent + 1);
+                }
+                else
+                {
+                    AppendLine("public " + field.TypeName + " " + ((string)field.Name) + ";", indent + 1);
+                }
             }
 
             foreach (var prop in type.Properties)
@@ -80,13 +88,27 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                 {
                     WriteDoc(prop.Documentation, indent + 1);
                 }
+
+
+
+                //AppendLine("// Struct Variable: " + typeName, indent + 1);
+                //AppendLine(typeName.Split('#').LastOrDefault() + " " + ((string)var.Name) + ";", indent + 1);
+
+                var typeName = (string)prop.TypeName;
+
+                if (typeName.Contains("#"))
+                {
+                    AppendLine("// Struct Property: " + typeName, indent + 1);
+                    typeName = typeName.Split('#').LastOrDefault();
+                }
+
                 if (!string.IsNullOrEmpty(prop.AutoName))
                 {
-                    AppendLine("public " + (string)prop.TypeName + " " + (string)prop.Name + " { get; set; }", indent + 1);
+                    AppendLine("public " + typeName + " " + (string)prop.Name + " { get; set; }", indent + 1);
                 }
                 else
                 {
-                    Append("public " + (string)prop.TypeName + " " + (string)prop.Name, indent + 1);
+                    Append("public " + typeName + " " + (string)prop.Name, indent + 1);
                     if (!prop.HasSetter && !prop.HasGetter)
                     {
                         AppendLine("{ get; set; }", indent + 1);
@@ -160,14 +182,14 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                 Append("public " +
                        (method.IsGlobal ? "static " : "") +
                        (method.IsNative ? "extern " : "") +
-                       ((string) method.ReturnTypeName).Replace("None", "void") + " " +
-                       (string) method.Name
+                       ((string)method.ReturnTypeName).Replace("None", "void") + " " +
+                       (string)method.Name
                     , indent);
                 Append("(");
                 Append(string.Join(",",
-                    method.Parameters.Select(i => (string) i.TypeName + " " + (string) i.Name)));
+                    method.Parameters.Select(i => (string)i.TypeName + " " + (string)i.Name)));
                 AppendLine(")");
-                
+
             }
             AppendLine("{", indent);
             //if (isGetter)
@@ -195,7 +217,17 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     foreach (var var in method.GetVariables())
                     {
                         if (var.Name.Value.ToLower() == "::nonevar") continue;
-                        AppendLine((string)var.TypeName + " " + ((string)var.Name) + ";", indent + 1);
+
+                        var typeName = (string)var.TypeName;
+                        if (typeName.Contains("#"))
+                        {
+                            AppendLine("// Struct Variable: " + typeName, indent + 1);
+                            AppendLine(typeName.Split('#').LastOrDefault() + " " + ((string)var.Name) + ";", indent + 1);
+                        }
+                        else
+                        {
+                            AppendLine(typeName + " " + ((string)var.Name) + ";", indent + 1);
+                        }
                     }
 
 
@@ -304,6 +336,9 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     }
                 case PapyrusOpCodes.Callmethod:
                     {
+
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
+
                         var val = string.Join(",", i.Arguments.Skip(2).Take(i.Arguments.Count - 3).Select(GetArgumentValue));
                         var location = GetArgumentValue(i.Arguments[1]);
                         var functionName = GetArgumentValue(i.Arguments[0]);
@@ -320,10 +355,13 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                             }
                         }
 
-                        return assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");";
+                        return comment + assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");";
                     }
                 case PapyrusOpCodes.Return:
                     {
+
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
+
                         string val;
                         var firstArg = GetArgumentValue(i.Arguments.FirstOrDefault());
                         var firstVarArg = GetArgumentValue(i.OperandArguments.FirstOrDefault());
@@ -334,11 +372,14 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         else
                             val = "";
 
-                        return (("return" + val).Trim() + ";");
+                        return comment + (("return" + val).Trim() + ";");
                         //WritePapyrusInstruction(i);
                     }
                 case PapyrusOpCodes.Assign:
                     {
+
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
+
                         var val1 = GetArgumentValue(i.Arguments.FirstOrDefault());
                         var val2 = GetArgumentValue(i.Arguments.LastOrDefault());
                         var val3 = GetArgumentValue(i.OperandArguments.FirstOrDefault());
@@ -350,7 +391,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                         {
                             return (var0 + " = null;");
                         }
-                        return (var0 + " = " + var1 + ";");
+                        return comment + (var0 + " = " + var1 + ";");
                     }
                 case PapyrusOpCodes.ArrayRemoveElements:
                     {

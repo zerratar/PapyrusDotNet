@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Mono.Cecil;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
@@ -40,9 +41,9 @@ namespace PapyrusDotNet.ConsoleTests
 
             var allScripts = Directory.GetFiles(folder, "*.pex", SearchOption.AllDirectories);
 
-            var clrNamespaceResolver = new ClrNamespaceResolver();
+            var clrNamespaceResolver = new NamespaceResolver();
             var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
-                new ClrTypeReferenceResolver(clrNamespaceResolver, new ClrTypeNameResolver()));
+                new TypeReferenceResolver(clrNamespaceResolver, new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUiRenderer()))));
 
             var index = 1;
             foreach (var s in allScripts)
@@ -79,12 +80,20 @@ namespace PapyrusDotNet.ConsoleTests
 
             //DecompileAllFallout4Scripts();
 
+            var drive = "d";
+            var dir = @":\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\";
+            var targetFolder = drive + dir;
+
+            if (!System.IO.Directory.Exists(targetFolder))
+            {
+                targetFolder = "c" + dir;
+            }
 
             var converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), PapyrusCompilerOptions.Strict);
             var value = converter.Convert(
                 new ClrAssemblyInput(
                     AssemblyDefinition.ReadAssembly(
-                        @"d:\Git\PapyrusDotNet\Examples\Fallout4Example\bin\Debug\fallout4example.dll"),
+                        targetFolder + "fallout4example.dll"),
                     PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
 #if false
                         var folder = @"d:\git\PapyrusDotNet\Source\Test Scripts\Fallout 4\";
@@ -106,9 +115,9 @@ namespace PapyrusDotNet.ConsoleTests
             var defs = new List<PapyrusAssemblyDefinition>(pexAssemblies);
             defs.AddRange(asm);
 
-            var clrNamespaceResolver = new ClrNamespaceResolver();
+            var clrNamespaceResolver = new NamespaceResolver();
             var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
-                new ClrTypeReferenceResolver(clrNamespaceResolver, new ClrTypeNameResolver()));
+                new TypeReferenceResolver(clrNamespaceResolver, new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUiRenderer()))));
 
 
             var output = csharpConverter.Convert(new PapyrusAssemblyInput(defs.ToArray())) as MultiCSharpOutput;

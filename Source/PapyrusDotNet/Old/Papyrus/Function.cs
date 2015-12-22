@@ -133,7 +133,7 @@ namespace PapyrusDotNet.Old.Papyrus
 
 
             var varname = "::temp" + TempVariables.Count;
-            var type = Utility.GetPapyrusReturnType(name, @namespace);
+            var type = Utility.GetPapyrusReturnType(name, @namespace, null);
             var def = ".local " + varname + " " + type.Replace("<T>", "");
             var varRef = new VariableReference(varname, type, def);
             TempVariables.Add(varRef);

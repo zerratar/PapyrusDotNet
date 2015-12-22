@@ -51,7 +51,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             // Equiviliant Papyrus: StrCat <output_destination> <val1> <val2>
 
             // Make sure we have a temp variable if necessary
-            var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef);
+            bool isStructAccess;
+            var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef, out isStructAccess);
 
             for (var i = 0; i < parameters.Count; i++)
             {
@@ -82,13 +83,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         {
                             // output.Add("Cast " + destinationVariable + " " + targetVar.Name.Value);
                             // First, get a new temp variable of type string.
-                            // This new temp variable will be used for casting the source object into a string.
-                            value = mainInstructionProcessor.GetTargetVariable(instruction, methodRef, "String", true);
+                            // This new temp variable will be used for casting the source object into a string.                            
+                            value = mainInstructionProcessor.GetTargetVariable(instruction, methodRef, out isStructAccess, "String", true);
 
                             // Create a new temp variable that we use to assign our source object to.
                             // this is so we avoid doing ex: cast ::temp0 55
                             // and instead we do: cast ::temp0 ::temp1
-                            var valueToCastTemp = mainInstructionProcessor.GetTargetVariable(instruction, methodRef, stackItem.TypeName, true);
+                            var valueToCastTemp = mainInstructionProcessor.GetTargetVariable(instruction, methodRef, out isStructAccess, stackItem.TypeName, true);
                             var valueToCast = mainInstructionProcessor.CreateVariableReference(Utility.GetPrimitiveTypeFromValue(stackItem.Value),
                                 stackItem.Value);
 
@@ -129,7 +130,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="type">The type.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public IEnumerable<PapyrusInstruction> Process(Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
+        public IEnumerable<PapyrusInstruction> Process(IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, Instruction instruction, MethodDefinition targetMethod, TypeDefinition type)
         {
             throw new System.NotImplementedException();
         }

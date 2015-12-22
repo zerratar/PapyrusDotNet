@@ -67,28 +67,41 @@ namespace PapyrusDotNet.Common.Utilities
             return initialValue;
         }
 
-        public static string GetPapyrusReturnType(TypeReference reference, bool stripGenericMarkers)
+        //public static string GetPapyrusReturnType(TypeReference reference, bool stripGenericMarkers)
+        //{
+        //    var retType = GetPapyrusReturnType(reference);
+
+
+        //    if (stripGenericMarkers && reference.IsGenericInstance)
+        //    {
+        //        retType = retType.Replace("`1", "_" + GetPapyrusBaseType(reference.FullName.Split('<')[1].Split('>')[0], caller));
+        //    }
+
+        //    return retType;
+        //}
+
+        public static string GetPapyrusReturnType(TypeReference reference, TypeDefinition caller, bool stripGenericMarkers)
         {
-            var retType = GetPapyrusReturnType(reference);
+            var retType = GetPapyrusReturnType(reference, caller);
 
 
             if (stripGenericMarkers && reference.IsGenericInstance)
             {
-                retType = retType.Replace("`1", "_" + GetPapyrusBaseType(reference.FullName.Split('<')[1].Split('>')[0]));
+                retType = retType.Replace("`1", "_" + GetPapyrusBaseType(reference.FullName.Split('<')[1].Split('>')[0], caller));
             }
 
             return retType;
         }
 
-        public static string GetPapyrusReturnType(TypeReference reference)
+        public static string GetPapyrusReturnType(TypeReference reference, TypeDefinition caller = null)
         {
-            return GetPapyrusReturnType(reference.Name, reference.Namespace);
+            return GetPapyrusReturnType(reference.Name, reference.Namespace, caller);
         }
 
-        public static string GetPapyrusReturnType(string reference)
+        public static string GetPapyrusReturnType(string reference, TypeDefinition caller = null)
         {
             return GetPapyrusReturnType(reference.Split('.').LastOrDefault(),
-                reference.Remove(reference.LastIndexOf('.')));
+                reference.Remove(reference.LastIndexOf('.')), caller);
         }
 
         public static string GetPapyrusBaseType(TypeReference typeRef)
@@ -113,7 +126,7 @@ namespace PapyrusDotNet.Common.Utilities
             return Namespace.Replace(".", "_") + "_" + name;
         }
 
-        public static string GetPapyrusBaseType(string fullName)
+        public static string GetPapyrusBaseType(string fullName, TypeDefinition caller)
         {
             if (fullName == "Object")
                 return "";
@@ -131,7 +144,7 @@ namespace PapyrusDotNet.Common.Utilities
 
             if (Namespace.ToLower().StartsWith("system"))
             {
-                return GetPapyrusReturnType(name, Namespace);
+                return GetPapyrusReturnType(name, Namespace, caller);
             }
 
             if (Namespace.ToLower().StartsWith("papyrusdotnet.core."))
@@ -149,12 +162,28 @@ namespace PapyrusDotNet.Common.Utilities
             return Namespace.Replace(".", "_") + "_" + name;
         }
 
-        public static string GetPapyrusReturnType(string type, string Namespace)
+        public static string GetPapyrusReturnType(string type, string Namespace, TypeDefinition caller)
         {
             var swtype = type;
             var swExt = "";
             var isArray = swtype.Contains("[]");
 
+            if (type.ToLower().Contains("myteststruct"))
+            {
+
+            }
+            if (caller != null)
+            {
+
+                if (caller.Namespace == Namespace || Namespace == "")
+                {
+                    if (caller.NestedTypes.Any(t => t.Name.ToLower() == type.ToLower().Replace("[]", "")))
+                    {
+                        swtype = caller.Name + "#" + type;
+                        type = caller.Name + "#" + type;
+                    }
+                }
+            }
             if (!String.IsNullOrEmpty(Namespace))
             {
                 if (Namespace.ToLower().StartsWith("system"))
@@ -227,7 +256,7 @@ namespace PapyrusDotNet.Common.Utilities
             return "V_" + instruction.Operand;
         }
 
-     
+
 
         public static int GetStackPopCount(StackBehaviour stackBehaviour)
         {
@@ -247,6 +276,7 @@ namespace PapyrusDotNet.Common.Utilities
                 case StackBehaviour.Popi_popr4:
                 case StackBehaviour.Pop1_pop1:
                 case StackBehaviour.Popref_popi:
+                case StackBehaviour.Popref_pop1:                    
                     return 2;
                 case StackBehaviour.Popi_popi_popi:
                 case StackBehaviour.Popref_popi_popi:

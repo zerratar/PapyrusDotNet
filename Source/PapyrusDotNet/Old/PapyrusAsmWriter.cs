@@ -154,7 +154,7 @@ namespace PapyrusDotNet.Old
                             var outputAssembly = new Assembly(type, r.Type);
 
                             outputAssembly.OutputName = outputAssembly.BaseType.Replace("`1",
-                                "_" + Utility.GetPapyrusBaseType(r.Type));
+                                "_" + Utility.GetPapyrusBaseType(r.Type, null));
 
                             ParsedAssemblies.Add(outputAssembly);
                         }
@@ -359,7 +359,7 @@ namespace PapyrusDotNet.Old
 
             if (string.IsNullOrEmpty(asm.GenericTypeReplacement)) return papyrus;
 
-            var ptype = Utility.GetPapyrusBaseType(asm.GenericTypeReplacement);
+            var ptype = Utility.GetPapyrusBaseType(asm.GenericTypeReplacement, null);
 
             var papyrusRow = papyrus.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
@@ -518,26 +518,26 @@ namespace PapyrusDotNet.Old
                 }
             }
 
-            var val = Utility.GetPapyrusReturnType(typeName, parameter.ParameterType.Namespace);
+            var val = Utility.GetPapyrusReturnType(typeName, parameter.ParameterType.Namespace, null);
             if (parameter.ParameterType.IsGenericInstance)
             {
                 if (typeFullName.Contains("<"))
                 {
                     var targetName = typeFullName.Split('<')[1].Split('>')[0];
-                    var papName = Utility.GetPapyrusBaseType(targetName);
+                    var papName = Utility.GetPapyrusBaseType(targetName,null);
 
                     val = val.Replace("`1", "_" + papName);
                 }
                 else
                 {
-                    var papName = Utility.GetPapyrusBaseType(typeFullName);
+                    var papName = Utility.GetPapyrusBaseType(typeFullName, null);
 
                     val = val.Replace("`1", "_" + papName);
                 }
             }
             else if (parameter.ParameterType.Name.Contains("<T>"))
             {
-                val = Utility.GetPapyrusBaseType(typeFullName).Replace("<T>", "");
+                val = Utility.GetPapyrusBaseType(typeFullName, null).Replace("<T>", "");
             }
 
             val = val.Replace("<T>", "");
@@ -557,24 +557,24 @@ namespace PapyrusDotNet.Old
                 name = "V_" + function.Variables.Count;
 
 
-            var val = Utility.GetPapyrusReturnType(typeN, variable.VariableType.Namespace);
+            var val = Utility.GetPapyrusReturnType(typeN, variable.VariableType.Namespace, null);
             if (variable.VariableType.IsGenericInstance)
             {
                 if (type.Contains("<"))
                 {
                     var targetName = type.Split('<')[1].Split('>')[0];
-                    var papName = Utility.GetPapyrusBaseType(targetName);
+                    var papName = Utility.GetPapyrusBaseType(targetName, null);
                     val = val.Replace("`1", "_" + papName);
                 }
                 else
                 {
-                    var papName = Utility.GetPapyrusBaseType(type);
+                    var papName = Utility.GetPapyrusBaseType(type, null);
                     val = val.Replace("`1", "_" + papName);
                 }
             }
             else if (variable.VariableType.Name.Contains("<T>"))
             {
-                val = Utility.GetPapyrusBaseType(type).Replace("<T>", "");
+                val = Utility.GetPapyrusBaseType(type, null).Replace("<T>", "");
             }
 
             val = val.Replace("<T>", "");

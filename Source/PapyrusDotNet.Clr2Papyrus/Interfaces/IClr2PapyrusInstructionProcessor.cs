@@ -72,6 +72,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// <summary>
         ///     Processes the instructions.
         /// </summary>
+        /// <param name="papyrusAssemblyCollection"></param>
         /// <param name="targetPapyrusAssembly"></param>
         /// <param name="targetPapyrusType"></param>
         /// <param name="targetPapyrusMethod"></param>
@@ -80,7 +81,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// <param name="instructions">The instructions.</param>
         /// <param name="options"></param>
         /// <returns></returns>
-        IEnumerable<PapyrusInstruction> ProcessInstructions(PapyrusAssemblyDefinition targetPapyrusAssembly, PapyrusTypeDefinition targetPapyrusType, PapyrusMethodDefinition targetPapyrusMethod, MethodDefinition method, MethodBody body,
+        IEnumerable<PapyrusInstruction> ProcessInstructions(IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection, PapyrusAssemblyDefinition targetPapyrusAssembly, PapyrusTypeDefinition targetPapyrusType, PapyrusMethodDefinition targetPapyrusMethod, MethodDefinition method, MethodBody body,
             Collection<Instruction> instructions, PapyrusCompilerOptions options);
 
         /// <summary>
@@ -89,10 +90,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// </summary>
         /// <param name="instruction">The instruction.</param>
         /// <param name="methodRef">The method reference.</param>
+        /// <param name="isStructAccess"></param>
         /// <param name="fallbackType">Type of the fallback.</param>
         /// <param name="forceNew">if set to <c>true</c> [force new].</param>
         /// <returns></returns>
-        string GetTargetVariable(Instruction instruction, MethodReference methodRef, string fallbackType = null,
+        string GetTargetVariable(Instruction instruction, MethodReference methodRef, out bool isStructAccess, string fallbackType = null,
             bool forceNew = false);
 
         /// <summary>

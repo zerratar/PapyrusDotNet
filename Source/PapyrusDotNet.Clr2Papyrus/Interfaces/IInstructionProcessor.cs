@@ -7,7 +7,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
 {
     public interface IInstructionProcessor
     {
-        IEnumerable<PapyrusInstruction> Process(Instruction instruction, MethodDefinition targetMethod,
-            TypeDefinition type);
+        IEnumerable<PapyrusInstruction> Process(IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, 
+            Instruction instruction, MethodDefinition targetMethod, TypeDefinition targetType);
     }
 }

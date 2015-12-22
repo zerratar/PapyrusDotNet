@@ -36,10 +36,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ConsoleEx, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ConsoleEx.1.0.4\lib\ConsoleEx.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="ICSharpCode.NRefactory">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Unity\Editor\Data\Managed\ICSharpCode.NRefactory.dll</HintPath>
     </Reference>
@@ -103,6 +99,11 @@
       <Project>{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}</Project>
       <Name>PapyrusDotNet.PapyrusAssembly</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="wordlist-fo4.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -70,10 +70,11 @@
     <Compile Include="Core\Attributes\NativeAttribute.cs" />
     <Compile Include="Core\Attributes\PropertyAttribute.cs" />
     <Compile Include="Implementations\CecilAssemblyOutput.cs" />
-    <Compile Include="Implementations\ClrNamespaceResolver.cs" />
-    <Compile Include="Implementations\ClrTypeReferenceResolver.cs" />
+    <Compile Include="Implementations\NamespaceResolver.cs" />
+    <Compile Include="Implementations\TypeReferenceResolver.cs" />
+    <Compile Include="Implementations\PascalCaseNameResolver.cs" />
     <Compile Include="Implementations\PapyrusAssemblyInput.cs" />
-    <Compile Include="Implementations\ClrTypeNameResolver.cs" />
+    <Compile Include="Implementations\TypeNameResolver.cs" />
     <Compile Include="Papyrus2ClrCecilConverter.cs" />
     <Compile Include="Base\Papyrus2ClrCecilConverterBase.cs" />
     <Compile Include="Papyrus2ClrTypeBuilderConverter.cs" />
