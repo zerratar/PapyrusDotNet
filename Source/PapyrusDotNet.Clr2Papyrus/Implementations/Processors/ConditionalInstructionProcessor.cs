@@ -69,6 +69,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 object numerator;
                 object denumerator;
 
+
                 if (numeratorObject.Value is PapyrusFieldDefinition)
                 {
                     numeratorObject.Value = (numeratorObject.Value as PapyrusFieldDefinition).FieldVariable;
@@ -95,9 +96,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         // cast = "Cast " + typeVariable + " " + value1;
                     }
                 }
+                else if (numeratorObject.Value is FieldReference)
+                {
+                    numerator = mainInstructionProcessor.CreateVariableReferenceFromName((numeratorObject.Value as FieldReference).Name);
+                }
                 else
                 {
-                    numerator = mainInstructionProcessor.CreateVariableReference(Utility.GetPrimitiveTypeFromValue(numeratorObject.Value), numeratorObject.Value);
+                    numerator = mainInstructionProcessor.CreateVariableReference(
+                        Utility.GetPrimitiveTypeFromValue(numeratorObject.Value),
+                        numeratorObject.Value);
                 }
 
                 if (denumeratorObject.Value is PapyrusVariableReference)
@@ -119,9 +126,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                     }
                 }
+                else if (denumeratorObject.Value is FieldReference)
+                {
+                    denumerator = mainInstructionProcessor.CreateVariableReferenceFromName((denumeratorObject.Value as FieldReference).Name);
+                }
                 else
                 {
-                    denumerator = mainInstructionProcessor.CreateVariableReference(Utility.GetPrimitiveTypeFromValue(numeratorObject.Value), denumeratorObject.Value);
+                    denumerator = mainInstructionProcessor.CreateVariableReference(Utility.GetPrimitiveTypeFromValue(denumeratorObject.Value), denumeratorObject.Value);
                 }
 
                 if (!string.IsNullOrEmpty(tempVariable))

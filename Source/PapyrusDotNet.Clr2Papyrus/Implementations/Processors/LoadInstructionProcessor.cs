@@ -53,6 +53,52 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         {
             bool isStructAccess;
             var outputInstructions = new List<PapyrusInstruction>();
+
+
+
+            if (InstructionHelper.NextInstructionIs(instruction, Code.Ldnull) &&
+                InstructionHelper.NextInstructionIs(instruction.Next, Code.Cgt_Un))
+            {
+                var stack = mainInstructionProcessor.EvaluationStack;
+                //var itemToCheck = stack.Pop().Value;
+                var itemToCheck = instruction.Operand as FieldReference;
+
+                if (itemToCheck != null)
+                {
+                    mainInstructionProcessor.EvaluationStack.Push(
+                            new EvaluationStackItem()
+                            {
+                                Value = itemToCheck,
+                                TypeName = ""
+                            }
+                        );
+                    mainInstructionProcessor.EvaluationStack.Push(
+                            new EvaluationStackItem()
+                            {
+                                Value = null,
+                                TypeName = "none"
+                            }
+                        );
+
+                    mainInstructionProcessor.SkipToOffset =
+                        InstructionHelper.NextInstructionIsOffset(instruction.Next, Code.Cgt_Un) - 1;
+
+                    //bool structAccess;
+                    //var targetVar = mainInstructionProcessor.GetTargetVariable(tarInstruction, null, out structAccess, "Bool");
+
+                    //if (mainInstructionProcessor.SkipNextInstruction)
+                    //{
+                    //    mainInstructionProcessor.SkipToOffset += 2;
+                    //    mainInstructionProcessor.SkipNextInstruction = false;
+                    //}
+
+                    //outputInstructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Is,
+                    //    mainInstructionProcessor.CreateVariableReferenceFromName(targetVar), fieldDef,
+                    //    mainInstructionProcessor.CreateVariableReferenceFromName(typeToCheckAgainst.Name)));
+                    return outputInstructions;
+                }
+            }
+
             if (InstructionHelper.IsLoadLength(instruction.OpCode.Code))
             {
                 var popCount = Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop);
@@ -201,7 +247,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         });
                     }
 
-                    if (PreviousInstructionWas(instruction, Code.Ldflda) && fieldRef.FullName.Contains("/"))
+                    if (InstructionHelper.PreviousInstructionWas(instruction, Code.Ldflda) && fieldRef.FullName.Contains("/"))
                     {
 
 
@@ -351,14 +397,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 }
             }
             return outputInstructions;
-        }
-
-        private static bool PreviousInstructionWas(Instruction instruction, Code targetOpCode)
-        {
-            return (instruction.Previous != null && instruction.Previous.OpCode.Code == targetOpCode) ||
-                   (instruction.Previous != null && instruction.Previous.OpCode.Code == Code.Nop &&
-                    instruction.Previous.Previous != null &&
-                    instruction.Previous.Previous.OpCode.Code == targetOpCode);
         }
     }
 }

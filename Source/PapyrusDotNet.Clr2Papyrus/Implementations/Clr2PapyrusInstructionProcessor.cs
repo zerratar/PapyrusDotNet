@@ -345,6 +345,43 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             var output = new List<PapyrusInstruction>();
             var type = targetMethod.DeclaringType;
             var code = instruction.OpCode.Code;
+
+            // bool temp = object is type
+            // is tempVar object type
+            // This only works if the type instance is not guaranteed
+            // otherwise it will compare the object with null. (ldfld, ldnull, cgt.un)
+            // Expected: (ldfld, isinst, ldnull, cgt.un)
+            if (InstructionHelper.IsInstance(code))
+            {
+                var stack = EvaluationStack;
+                var itemToCheck = stack.Pop().Value;
+                var typeToCheckAgainst = instruction.Operand as TypeReference;
+
+                if (InstructionHelper.NextInstructionIs(instruction, Code.Ldnull) &&
+                    InstructionHelper.NextInstructionIs(instruction.Next, Code.Cgt_Un))
+                {
+                    SkipToOffset = InstructionHelper.NextInstructionIsOffset(instruction.Next, Code.Cgt_Un);
+                    // Store the comparison (object is type)
+                    var fieldDef = itemToCheck as PapyrusFieldDefinition;
+                    if (fieldDef != null)
+                    {
+                        var tarInstruction = InstructionHelper.NextInstructionAtOffset(instruction.Next, SkipToOffset);
+                        bool structAccess;
+
+                        var targetVar = GetTargetVariable(tarInstruction, null, out structAccess, "Bool");
+
+                        if (SkipNextInstruction)
+                        {
+                            SkipToOffset += 2;
+                            SkipNextInstruction = false;
+                        }
+
+                        output.Add(CreatePapyrusInstruction(PapyrusOpCodes.Is, CreateVariableReferenceFromName(targetVar), fieldDef, CreateVariableReferenceFromName(typeToCheckAgainst.Name)));
+                        return output;
+                    }
+                }
+            }
+
             if (InstructionHelper.IsLoad(code))
             {
                 output.AddRange(LoadInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod, type));
@@ -838,7 +875,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             }
             if (args.Any(a => a == null))
             {
-                
+
             }
             return args;
         }

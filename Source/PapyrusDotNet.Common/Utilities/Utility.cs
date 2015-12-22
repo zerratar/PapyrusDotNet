@@ -276,7 +276,7 @@ namespace PapyrusDotNet.Common.Utilities
                 case StackBehaviour.Popi_popr4:
                 case StackBehaviour.Pop1_pop1:
                 case StackBehaviour.Popref_popi:
-                case StackBehaviour.Popref_pop1:                    
+                case StackBehaviour.Popref_pop1:
                     return 2;
                 case StackBehaviour.Popi_popi_popi:
                 case StackBehaviour.Popref_popi_popi:
@@ -409,6 +409,8 @@ namespace PapyrusDotNet.Common.Utilities
 
         public static PapyrusPrimitiveType GetPrimitiveTypeFromValue(object val)
         {
+            if (val == null)
+                return PapyrusPrimitiveType.None;
             var type = val.GetType();
 
             var typeName = GetPapyrusReturnType(type.FullName);

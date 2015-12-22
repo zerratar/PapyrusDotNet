@@ -6,10 +6,10 @@ TODO: (1/1 completed)
         (Not being created properly?)
 
 ==================================
-    Clr2Papyrus (4/22 completed)
+    Clr2Papyrus (4/25 completed)
 ==================================
 TODO:
-  (1) Instructions: (2/15 completed)
+  (1) Instructions: (4/15 completed)
     * [Completed] PropGet - Use with external classes
     * [Completed] PropSet - Use with external classes
         (Accessing a property outside the "local" class)
@@ -46,6 +46,13 @@ TODO:
         (Note to self: Look at the old code where I've already solved this :))
     * Create Generics
     * Use Generics
+
+  (5) Debug: (0/2 completed)
+	* Finish the debug table
+	* Add debug line numbers based on the c# source code
+  
+  (6) Documentation: (0/1 completed)
+	* Add Documentation using XML Documentation
 
 ==================================
     PapyrusAssembly (0/1 completed)
