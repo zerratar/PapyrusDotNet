@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PapyrusDotNet.CoreBuilder</RootNamespace>
     <AssemblyName>PapyrusDotNet.CoreBuilder</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -62,7 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CecilExt.cs" />
-    <Compile Include="DefaultPapyrusCilAssemblyBuilder.cs" />
+    <Compile Include="PapyrusCilAssemblyBuilder.cs" />
     <Compile Include="Implementation\CoreAssemblyNameResolver.cs" />
     <Compile Include="CoreExtensions\AutoAttribute.cs" />
     <Compile Include="CoreExtensions\AutoReadOnlyAttribute.cs" />
@@ -81,7 +81,7 @@
     <Compile Include="Interfaces\IPapyrusNamespaceResolver.cs" />
     <Compile Include="Interfaces\IPapyrusTypeDefinitionResolver.cs" />
     <Compile Include="Implementation\PapyrusTypeDefinitionResolver.cs" />
-    <Compile Include="Implementation\PapyrusCilAssemblyBuilder.cs" />
+    <Compile Include="Implementation\PapyrusCilAssemblyBuilderBase.cs" />
     <Compile Include="Implementation\DictionaryPapyrusNameResolver.cs" />
     <Compile Include="Interfaces\IPapyrusCilAssemblyBuilder.cs" />
     <Compile Include="Interfaces\IPapyrusAssemblyParser.cs" />

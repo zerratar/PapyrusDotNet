@@ -1,7 +1,28 @@
-﻿using Mono.Cecil;
+﻿//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
+#region
+
+using Mono.Cecil;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.CoreBuilder.Interfaces;
 using PapyrusDotNet.CoreBuilder.Papyrus.Assembly;
+
+#endregion
 
 namespace PapyrusDotNet.CoreBuilder.Implementation
 {
@@ -33,7 +54,8 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
             // newType.DeclaringType = newType;
             if (!string.IsNullOrEmpty(input.ExtendsName))
             {
-                newType.BaseType = new TypeReference(assemblyNameResolver.BaseNamespace, input.ExtendsName, mainModule, mainModule);
+                newType.BaseType = new TypeReference(assemblyNameResolver.BaseNamespace, input.ExtendsName, mainModule,
+                    mainModule);
                 // newType.DeclaringType = MainModule.Types.FirstOrDefault(t => t.FullName == newType.BaseType.FullName);
                 newType.Scope = mainModule;
             }
@@ -43,7 +65,8 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                 newType.Scope = mainModule;
             }
 
-            statusCallback.WriteLine("Generating Type '" + assemblyNameResolver.BaseNamespace + "." + input.Name + "'...");
+            statusCallback.WriteLine("Generating Type '" + assemblyNameResolver.BaseNamespace + "." + input.Name +
+                                     "'...");
 
             foreach (var prop in input.PropertyTable)
             {
@@ -86,7 +109,7 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                         var nPar = new ParameterDefinition(par.Name, ParameterAttributes.None, resolvedTypeReference);
                         function.Parameters.Add(nPar);
                     }
-                    bool skipAdd = false;
+                    var skipAdd = false;
                     foreach (var m in newType.Methods)
                     {
                         if (m.Name == function.Name)
@@ -94,9 +117,10 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                             if (m.Parameters.Count == function.Parameters.Count)
                             {
                                 skipAdd = true;
-                                for (int pi = 0; pi < m.Parameters.Count; pi++)
+                                for (var pi = 0; pi < m.Parameters.Count; pi++)
                                 {
-                                    if (m.Parameters[pi].ParameterType.FullName != function.Parameters[pi].ParameterType.FullName) skipAdd = false;
+                                    if (m.Parameters[pi].ParameterType.FullName !=
+                                        function.Parameters[pi].ParameterType.FullName) skipAdd = false;
                                 }
                                 break;
                             }

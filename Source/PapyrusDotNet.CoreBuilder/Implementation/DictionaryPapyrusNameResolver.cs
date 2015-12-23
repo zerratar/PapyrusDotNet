@@ -1,21 +1,21 @@
-/*
-    This file is part of PapyrusDotNet.
+//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-    PapyrusDotNet is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    PapyrusDotNet is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
-	
-	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
- */
+#region
 
 using System.Collections.Generic;
 using System.IO;
@@ -23,16 +23,16 @@ using System.Linq;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.CoreBuilder.Interfaces;
 
+#endregion
+
 namespace PapyrusDotNet.CoreBuilder.Implementation
 {
     public class DictionaryPapyrusNameResolver : IPapyrusNameResolver
     {
+        private readonly IStatusCallbackService statusCallbackService;
         internal string[] WordList;
 
-        private IStatusCallbackService statusCallbackService;
-
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="statusCallback"></param>
         /// <param name="wordDictionaryFile"></param>
@@ -55,7 +55,7 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
         }
 
         /// <summary>
-        /// Resolves the inputName and returns a PascalCase class-friendly name
+        ///     Resolves the inputName and returns a PascalCase class-friendly name
         /// </summary>
         /// <param name="inputName"></param>
         /// <returns></returns>
@@ -77,7 +77,7 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                         {
                             var i = inputName.ToLower().IndexOf(word);
 
-                            bool skip = false;
+                            var skip = false;
                             if (i > 0)
                             {
                                 skip = char.IsUpper(inputName[i - 1]);

@@ -1,0 +1,55 @@
+//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
+#region
+
+using PapyrusDotNet.PapyrusAssembly.Extensions;
+
+#endregion
+
+namespace PapyrusDotNet.PapyrusAssembly
+{
+    public class PapyrusFieldDefinition : PapyrusFieldReference
+    {
+        private readonly PapyrusAssemblyDefinition assembly;
+
+        public PapyrusFieldDefinition(PapyrusAssemblyDefinition assembly)
+        {
+            this.assembly = assembly;
+        }
+
+        public PapyrusFieldDefinition(PapyrusAssemblyDefinition assembly, string name, string typeName)
+            : this(assembly)
+        {
+            name = "::" + name.Replace('<', '_').Replace('>', '_');
+            Name = name.Ref(assembly);
+            TypeName = typeName;
+        }
+
+        public PapyrusStringRef Name { get; set; }
+        public int UserFlags { get; set; }
+        public PapyrusTypeDefinition DeclaringType { get; set; }
+        public string Documentation { get; set; }
+        public string TypeName { get; set; }
+        public bool IsConst { get; set; }
+
+        public override string ToString()
+        {
+            return "FieldDef: " + TypeName + " " + Name;
+        }
+    }
+}

@@ -15,6 +15,201 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.System", "Pap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.CoreBuilder.Tests", "PapyrusDotNet.CoreBuilder.Tests\PapyrusDotNet.CoreBuilder.Tests.csproj", "{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PapyrusAssembly", "PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj", "{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PapyrusAssembly.Tests", "PapyrusDotNet.PapyrusAssembly.Tests\PapyrusDotNet.PapyrusAssembly.Tests.csproj", "{E53819BD-3427-4DB1-96CD-6CA5E81AF756}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.ConsoleTests", "PapyrusDotNet.ConsoleTests\PapyrusDotNet.ConsoleTests.csproj", "{BD15920E-26D2-49EC-AD79-EB565858A6AA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test Scripts", "Test Scripts", "{2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Unit Tests", "Unit Tests", "{8F01FC55-0D09-42F5-B04D-93463B86E105}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extended Framework", "Extended Framework", "{3D43E2F5-59B9-4917-9578-8000DA86597D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{6DFFF8A9-3932-4EFD-BA8F-7C6AB9DDFD24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Papyrus2Clr", "PapyrusDotNet.Papyrus2Clr\PapyrusDotNet.Converters.Papyrus2Clr.csproj", "{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Clr2Papyrus", "PapyrusDotNet.Clr2Papyrus\PapyrusDotNet.Converters.Clr2Papyrus.csproj", "{8547F068-C90E-4245-A9F8-20A98797E92B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Old Projects", "Old Projects", "{7017ED49-D123-4EC8-894E-73CA02B972A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fallout4Example", "..\Examples\Fallout4Example\Fallout4Example.csproj", "{CEDA785C-79BD-457B-9A25-3EC69CD29042}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Skyrim", "Skyrim", "{D47C236E-5E6B-4E75-A3CD-DF63CB99F00D}"
+	ProjectSection(SolutionItems) = preProject
+		Test Scripts\Skyrim\activemagiceffect.pex = Test Scripts\Skyrim\activemagiceffect.pex
+		Test Scripts\Skyrim\actor.pex = Test Scripts\Skyrim\actor.pex
+		Test Scripts\Skyrim\actorbase.pex = Test Scripts\Skyrim\actorbase.pex
+		Test Scripts\Skyrim\actorvalueinfo.pex = Test Scripts\Skyrim\actorvalueinfo.pex
+		Test Scripts\Skyrim\alias.pex = Test Scripts\Skyrim\alias.pex
+		Test Scripts\Skyrim\ammo.pex = Test Scripts\Skyrim\ammo.pex
+		Test Scripts\Skyrim\apparatus.pex = Test Scripts\Skyrim\apparatus.pex
+		Test Scripts\Skyrim\armor.pex = Test Scripts\Skyrim\armor.pex
+		Test Scripts\Skyrim\armoraddon.pex = Test Scripts\Skyrim\armoraddon.pex
+		Test Scripts\Skyrim\art.pex = Test Scripts\Skyrim\art.pex
+		Test Scripts\Skyrim\book.pex = Test Scripts\Skyrim\book.pex
+		Test Scripts\Skyrim\cell.pex = Test Scripts\Skyrim\cell.pex
+		Test Scripts\Skyrim\colorcomponent.pex = Test Scripts\Skyrim\colorcomponent.pex
+		Test Scripts\Skyrim\colorform.pex = Test Scripts\Skyrim\colorform.pex
+		Test Scripts\Skyrim\combatstyle.pex = Test Scripts\Skyrim\combatstyle.pex
+		Test Scripts\Skyrim\constructibleobject.pex = Test Scripts\Skyrim\constructibleobject.pex
+		Test Scripts\Skyrim\defaultobjectmanager.pex = Test Scripts\Skyrim\defaultobjectmanager.pex
+		Test Scripts\Skyrim\enchantment.pex = Test Scripts\Skyrim\enchantment.pex
+		Test Scripts\Skyrim\equipslot.pex = Test Scripts\Skyrim\equipslot.pex
+		Test Scripts\Skyrim\faction.pex = Test Scripts\Skyrim\faction.pex
+		Test Scripts\Skyrim\flora.pex = Test Scripts\Skyrim\flora.pex
+		Test Scripts\Skyrim\form.pex = Test Scripts\Skyrim\form.pex
+		Test Scripts\Skyrim\formtype.pex = Test Scripts\Skyrim\formtype.pex
+		Test Scripts\Skyrim\game.pex = Test Scripts\Skyrim\game.pex
+		Test Scripts\Skyrim\headpart.pex = Test Scripts\Skyrim\headpart.pex
+		Test Scripts\Skyrim\ingredient.pex = Test Scripts\Skyrim\ingredient.pex
+		Test Scripts\Skyrim\input.pex = Test Scripts\Skyrim\input.pex
+		Test Scripts\Skyrim\keyword.pex = Test Scripts\Skyrim\keyword.pex
+		Test Scripts\Skyrim\leveledactor.pex = Test Scripts\Skyrim\leveledactor.pex
+		Test Scripts\Skyrim\leveleditem.pex = Test Scripts\Skyrim\leveleditem.pex
+		Test Scripts\Skyrim\leveledspell.pex = Test Scripts\Skyrim\leveledspell.pex
+		Test Scripts\Skyrim\magiceffect.pex = Test Scripts\Skyrim\magiceffect.pex
+		Test Scripts\Skyrim\math.pex = Test Scripts\Skyrim\math.pex
+		Test Scripts\Skyrim\modevent.pex = Test Scripts\Skyrim\modevent.pex
+		Test Scripts\Skyrim\netimmerse.pex = Test Scripts\Skyrim\netimmerse.pex
+		Test Scripts\Skyrim\objectreference.pex = Test Scripts\Skyrim\objectreference.pex
+		Test Scripts\Skyrim\outfit.pex = Test Scripts\Skyrim\outfit.pex
+		Test Scripts\Skyrim\perk.pex = Test Scripts\Skyrim\perk.pex
+		Test Scripts\Skyrim\potion.pex = Test Scripts\Skyrim\potion.pex
+		Test Scripts\Skyrim\quest.pex = Test Scripts\Skyrim\quest.pex
+		Test Scripts\Skyrim\race.pex = Test Scripts\Skyrim\race.pex
+		Test Scripts\Skyrim\scroll.pex = Test Scripts\Skyrim\scroll.pex
+		Test Scripts\Skyrim\shout.pex = Test Scripts\Skyrim\shout.pex
+		Test Scripts\Skyrim\skse.pex = Test Scripts\Skyrim\skse.pex
+		Test Scripts\Skyrim\soulgem.pex = Test Scripts\Skyrim\soulgem.pex
+		Test Scripts\Skyrim\sound.pex = Test Scripts\Skyrim\sound.pex
+		Test Scripts\Skyrim\sounddescriptor.pex = Test Scripts\Skyrim\sounddescriptor.pex
+		Test Scripts\Skyrim\spell.pex = Test Scripts\Skyrim\spell.pex
+		Test Scripts\Skyrim\stringutil.pex = Test Scripts\Skyrim\stringutil.pex
+		Test Scripts\Skyrim\textureset.pex = Test Scripts\Skyrim\textureset.pex
+		Test Scripts\Skyrim\treeobject.pex = Test Scripts\Skyrim\treeobject.pex
+		Test Scripts\Skyrim\ui.pex = Test Scripts\Skyrim\ui.pex
+		Test Scripts\Skyrim\uicallback.pex = Test Scripts\Skyrim\uicallback.pex
+		Test Scripts\Skyrim\utility.pex = Test Scripts\Skyrim\utility.pex
+		Test Scripts\Skyrim\weapon.pex = Test Scripts\Skyrim\weapon.pex
+		Test Scripts\Skyrim\weather.pex = Test Scripts\Skyrim\weather.pex
+		Test Scripts\Skyrim\wornobject.pex = Test Scripts\Skyrim\wornobject.pex
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fallout4", "fallout4", "{F3D27E01-2FEF-410A-8705-1A92855F13C6}"
+	ProjectSection(SolutionItems) = preProject
+		Test Scripts\Fallout 4\Actor.pex = Test Scripts\Fallout 4\Actor.pex
+		Test Scripts\Fallout 4\Actor.pex_new = Test Scripts\Fallout 4\Actor.pex_new
+		Test Scripts\Fallout 4\aoscript.pex = Test Scripts\Fallout 4\aoscript.pex
+		Test Scripts\Fallout 4\ArenaScript.pex = Test Scripts\Fallout 4\ArenaScript.pex
+		Test Scripts\Fallout 4\AssaultronHeadModScript.pex = Test Scripts\Fallout 4\AssaultronHeadModScript.pex
+		Test Scripts\Fallout 4\AssaultronHeadModStealthScript.pex = Test Scripts\Fallout 4\AssaultronHeadModStealthScript.pex
+		Test Scripts\Fallout 4\AttractionObjectScript.pex = Test Scripts\Fallout 4\AttractionObjectScript.pex
+		Test Scripts\Fallout 4\BobbleheadStandContainerScript.pex = Test Scripts\Fallout 4\BobbleheadStandContainerScript.pex
+		Test Scripts\Fallout 4\bos100fightmonitor.pex = Test Scripts\Fallout 4\bos100fightmonitor.pex
+		Test Scripts\Fallout 4\BoSKickOutScript.pex = Test Scripts\Fallout 4\BoSKickOutScript.pex
+		Test Scripts\Fallout 4\bosm01questscript.pex = Test Scripts\Fallout 4\bosm01questscript.pex
+		Test Scripts\Fallout 4\COMDeaconScript.pex = Test Scripts\Fallout 4\COMDeaconScript.pex
+		Test Scripts\Fallout 4\companionactorscript.pex = Test Scripts\Fallout 4\companionactorscript.pex
+		Test Scripts\Fallout 4\companionaffinityeventquestscript.pex = Test Scripts\Fallout 4\companionaffinityeventquestscript.pex
+		Test Scripts\Fallout 4\czstagecontrollerscript.pex = Test Scripts\Fallout 4\czstagecontrollerscript.pex
+		Test Scripts\Fallout 4\defaultremoveablelight.pex = Test Scripts\Fallout 4\defaultremoveablelight.pex
+		Test Scripts\Fallout 4\DialogueDrinkingBuddyScript.pex = Test Scripts\Fallout 4\DialogueDrinkingBuddyScript.pex
+		Test Scripts\Fallout 4\DialogueRailroadScript.pex = Test Scripts\Fallout 4\DialogueRailroadScript.pex
+		Test Scripts\Fallout 4\dn015puzzlescript.pex = Test Scripts\Fallout 4\dn015puzzlescript.pex
+		Test Scripts\Fallout 4\dn017questscript.pex = Test Scripts\Fallout 4\dn017questscript.pex
+		Test Scripts\Fallout 4\DN029SecondWaveBScript.pex = Test Scripts\Fallout 4\DN029SecondWaveBScript.pex
+		Test Scripts\Fallout 4\DN035QuestScript.pex = Test Scripts\Fallout 4\DN035QuestScript.pex
+		Test Scripts\Fallout 4\dn070_turrethallmanagerscript.pex = Test Scripts\Fallout 4\dn070_turrethallmanagerscript.pex
+		Test Scripts\Fallout 4\DN081ElevatorMasterScript.pex = Test Scripts\Fallout 4\DN081ElevatorMasterScript.pex
+		Test Scripts\Fallout 4\dn084_glasselevatorscript.pex = Test Scripts\Fallout 4\dn084_glasselevatorscript.pex
+		Test Scripts\Fallout 4\DN119FightController.pex = Test Scripts\Fallout 4\DN119FightController.pex
+		Test Scripts\Fallout 4\DN136_ElevatorNewScript.pex = Test Scripts\Fallout 4\DN136_ElevatorNewScript.pex
+		Test Scripts\Fallout 4\DN136_PrivateElevatorNEWScript.pex = Test Scripts\Fallout 4\DN136_PrivateElevatorNEWScript.pex
+		Test Scripts\Fallout 4\DN151_MovableWater.pex = Test Scripts\Fallout 4\DN151_MovableWater.pex
+		Test Scripts\Fallout 4\dn151_trackingquestscript.pex = Test Scripts\Fallout 4\dn151_trackingquestscript.pex
+		Test Scripts\Fallout 4\DN158_MovableWaterScript.pex = Test Scripts\Fallout 4\DN158_MovableWaterScript.pex
+		Test Scripts\Fallout 4\DN158QuestScript.pex = Test Scripts\Fallout 4\DN158QuestScript.pex
+		Test Scripts\Fallout 4\dn160_encountermanagerscript.pex = Test Scripts\Fallout 4\dn160_encountermanagerscript.pex
+		Test Scripts\Fallout 4\dogmeatidles.pex = Test Scripts\Fallout 4\dogmeatidles.pex
+		Test Scripts\Fallout 4\elevatormasterscript.pex = Test Scripts\Fallout 4\elevatormasterscript.pex
+		Test Scripts\Fallout 4\EMSystemTurfScript.pex = Test Scripts\Fallout 4\EMSystemTurfScript.pex
+		Test Scripts\Fallout 4\FireFightStall_MasterScript.pex = Test Scripts\Fallout 4\FireFightStall_MasterScript.pex
+		Test Scripts\Fallout 4\followersscript.pex = Test Scripts\Fallout 4\followersscript.pex
+		Test Scripts\Fallout 4\FusionGeneratorPowerPuzzleScript.pex = Test Scripts\Fallout 4\FusionGeneratorPowerPuzzleScript.pex
+		Test Scripts\Fallout 4\FWQuestScript.pex = Test Scripts\Fallout 4\FWQuestScript.pex
+		Test Scripts\Fallout 4\Game.pex = Test Scripts\Fallout 4\Game.pex
+		Test Scripts\Fallout 4\hackerHolotapeMaster.pex = Test Scripts\Fallout 4\hackerHolotapeMaster.pex
+		Test Scripts\Fallout 4\holdupeffectscript.pex = Test Scripts\Fallout 4\holdupeffectscript.pex
+		Test Scripts\Fallout 4\holdupExplosionEffectScript.pex = Test Scripts\Fallout 4\holdupExplosionEffectScript.pex
+		Test Scripts\Fallout 4\IDCardReaderScript.pex = Test Scripts\Fallout 4\IDCardReaderScript.pex
+		Test Scripts\Fallout 4\inst305RadioRackSlotScript.pex = Test Scripts\Fallout 4\inst305RadioRackSlotScript.pex
+		Test Scripts\Fallout 4\inst307fightquestscript.pex = Test Scripts\Fallout 4\inst307fightquestscript.pex
+		Test Scripts\Fallout 4\LoadElevatorMasterScript.pex = Test Scripts\Fallout 4\LoadElevatorMasterScript.pex
+		Test Scripts\Fallout 4\min03script.pex = Test Scripts\Fallout 4\min03script.pex
+		Test Scripts\Fallout 4\MinArtilleryScript.pex = Test Scripts\Fallout 4\MinArtilleryScript.pex
+		Test Scripts\Fallout 4\mindefendcastleattackscript.pex = Test Scripts\Fallout 4\mindefendcastleattackscript.pex
+		Test Scripts\Fallout 4\MinDestBOSScript.pex = Test Scripts\Fallout 4\MinDestBOSScript.pex
+		Test Scripts\Fallout 4\MinRadiantOwned01Script.pex = Test Scripts\Fallout 4\MinRadiantOwned01Script.pex
+		Test Scripts\Fallout 4\MinRadiantOwned07Script.pex = Test Scripts\Fallout 4\MinRadiantOwned07Script.pex
+		Test Scripts\Fallout 4\minrecruitquestscript.pex = Test Scripts\Fallout 4\minrecruitquestscript.pex
+		Test Scripts\Fallout 4\minutemencentralscript.pex = Test Scripts\Fallout 4\minutemencentralscript.pex
+		Test Scripts\Fallout 4\mq03questscript.pex = Test Scripts\Fallout 4\mq03questscript.pex
+		Test Scripts\Fallout 4\mq101kelloggsequencescript.pex = Test Scripts\Fallout 4\mq101kelloggsequencescript.pex
+		Test Scripts\Fallout 4\mq101questscript.pex = Test Scripts\Fallout 4\mq101questscript.pex
+		Test Scripts\Fallout 4\mq203script.pex = Test Scripts\Fallout 4\mq203script.pex
+		Test Scripts\Fallout 4\MQ206Script.pex = Test Scripts\Fallout 4\MQ206Script.pex
+		Test Scripts\Fallout 4\mq302script.pex = Test Scripts\Fallout 4\mq302script.pex
+		Test Scripts\Fallout 4\MS02NukeStrikeScript.pex = Test Scripts\Fallout 4\MS02NukeStrikeScript.pex
+		Test Scripts\Fallout 4\ms09script.pex = Test Scripts\Fallout 4\ms09script.pex
+		Test Scripts\Fallout 4\MS13CookeDiesScript.pex = Test Scripts\Fallout 4\MS13CookeDiesScript.pex
+		Test Scripts\Fallout 4\MS13PaulDiesScript.pex = Test Scripts\Fallout 4\MS13PaulDiesScript.pex
+		Test Scripts\Fallout 4\MS13Script.pex = Test Scripts\Fallout 4\MS13Script.pex
+		Test Scripts\Fallout 4\ms17questscript.pex = Test Scripts\Fallout 4\ms17questscript.pex
+		Test Scripts\Fallout 4\ObjectReference.pex = Test Scripts\Fallout 4\ObjectReference.pex
+		Test Scripts\Fallout 4\Quest.pex = Test Scripts\Fallout 4\Quest.pex
+		Test Scripts\Fallout 4\RECheckpointQuestScript.pex = Test Scripts\Fallout 4\RECheckpointQuestScript.pex
+		Test Scripts\Fallout 4\RefCollectionAlias.pex = Test Scripts\Fallout 4\RefCollectionAlias.pex
+		Test Scripts\Fallout 4\RefCollectionAliasManager.pex = Test Scripts\Fallout 4\RefCollectionAliasManager.pex
+		Test Scripts\Fallout 4\ReferenceAlias.pex = Test Scripts\Fallout 4\ReferenceAlias.pex
+		Test Scripts\Fallout 4\RelayTowerScript.pex = Test Scripts\Fallout 4\RelayTowerScript.pex
+		Test Scripts\Fallout 4\REPrisonerScript.pex = Test Scripts\Fallout 4\REPrisonerScript.pex
+		Test Scripts\Fallout 4\rescript.pex = Test Scripts\Fallout 4\rescript.pex
+		Test Scripts\Fallout 4\ScriptObject.pex = Test Scripts\Fallout 4\ScriptObject.pex
+		Test Scripts\Fallout 4\securityBarScript.pex = Test Scripts\Fallout 4\securityBarScript.pex
+		Test Scripts\Fallout 4\SentryBotActorScript.pex = Test Scripts\Fallout 4\SentryBotActorScript.pex
+		Test Scripts\Fallout 4\simpleelevatormasterscript.pex = Test Scripts\Fallout 4\simpleelevatormasterscript.pex
+		Test Scripts\Fallout 4\SpotlightScript.pex = Test Scripts\Fallout 4\SpotlightScript.pex
+		Test Scripts\Fallout 4\spotlighttriggerscript.pex = Test Scripts\Fallout 4\spotlighttriggerscript.pex
+		Test Scripts\Fallout 4\StimBoxScript.pex = Test Scripts\Fallout 4\StimBoxScript.pex
+		Test Scripts\Fallout 4\StimObjectScript.pex = Test Scripts\Fallout 4\StimObjectScript.pex
+		Test Scripts\Fallout 4\TestMovementAnim.pex = Test Scripts\Fallout 4\TestMovementAnim.pex
+		Test Scripts\Fallout 4\tpSmelterSmelterSCRIPT.pex = Test Scripts\Fallout 4\tpSmelterSmelterSCRIPT.pex
+		Test Scripts\Fallout 4\TrapBase.pex = Test Scripts\Fallout 4\TrapBase.pex
+		Test Scripts\Fallout 4\trapexplgas.pex = Test Scripts\Fallout 4\trapexplgas.pex
+		Test Scripts\Fallout 4\TrapTrigBase.pex = Test Scripts\Fallout 4\TrapTrigBase.pex
+		Test Scripts\Fallout 4\TutorialPlayerAliasScript.pex = Test Scripts\Fallout 4\TutorialPlayerAliasScript.pex
+		Test Scripts\Fallout 4\tutorialscript.pex = Test Scripts\Fallout 4\tutorialscript.pex
+		Test Scripts\Fallout 4\vertibirdturretscript.pex = Test Scripts\Fallout 4\vertibirdturretscript.pex
+		Test Scripts\Fallout 4\WorkshopAttackScript.pex = Test Scripts\Fallout 4\WorkshopAttackScript.pex
+		Test Scripts\Fallout 4\workshopnpcscript.pex = Test Scripts\Fallout 4\workshopnpcscript.pex
+		Test Scripts\Fallout 4\workshopobjectscript.pex = Test Scripts\Fallout 4\workshopobjectscript.pex
+		Test Scripts\Fallout 4\workshopparentscript.pex = Test Scripts\Fallout 4\workshopparentscript.pex
+		Test Scripts\Fallout 4\workshopscript.pex = Test Scripts\Fallout 4\workshopscript.pex
+		Test Scripts\Fallout 4\WorkshopTutorialScript.pex = Test Scripts\Fallout 4\WorkshopTutorialScript.pex
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Clr2Papyrus.Test", "PapyrusDotNet.Converters.Clr2Papyrus.Test\PapyrusDotNet.Converters.Clr2Papyrus.Test.csproj", "{ABEE7921-79B8-45AF-B10B-FE4E421AE53F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Papyrus2CSharp", "PapyrusDotNet.Converters.Papyrus2CSharp\PapyrusDotNet.Converters.Papyrus2CSharp.csproj", "{0F72BF82-253B-4588-9029-7C091C104118}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F8A2EB41-0C08-48CB-AB7E-2D70A2B036B5}"
+	ProjectSection(SolutionItems) = preProject
+		todo.txt = todo.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,8 +240,52 @@ Global
 		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8547F068-C90E-4245-A9F8-20A98797E92B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8547F068-C90E-4245-A9F8-20A98797E92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8547F068-C90E-4245-A9F8-20A98797E92B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8547F068-C90E-4245-A9F8-20A98797E92B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEDA785C-79BD-457B-9A25-3EC69CD29042}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEDA785C-79BD-457B-9A25-3EC69CD29042}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEDA785C-79BD-457B-9A25-3EC69CD29042}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEDA785C-79BD-457B-9A25-3EC69CD29042}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABEE7921-79B8-45AF-B10B-FE4E421AE53F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABEE7921-79B8-45AF-B10B-FE4E421AE53F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABEE7921-79B8-45AF-B10B-FE4E421AE53F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABEE7921-79B8-45AF-B10B-FE4E421AE53F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F72BF82-253B-4588-9029-7C091C104118}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F72BF82-253B-4588-9029-7C091C104118}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F72BF82-253B-4588-9029-7C091C104118}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F72BF82-253B-4588-9029-7C091C104118}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{54B3F2D8-7510-4445-8A4C-420A73994D03} = {7017ED49-D123-4EC8-894E-73CA02B972A4}
+		{58CA8F82-6071-4212-A745-51C4B4FA0544} = {6DFFF8A9-3932-4EFD-BA8F-7C6AB9DDFD24}
+		{CAAF38B3-8033-4B23-9B50-0059306EAFAC} = {3D43E2F5-59B9-4917-9578-8000DA86597D}
+		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
+		{E53819BD-3427-4DB1-96CD-6CA5E81AF756} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
+		{BD15920E-26D2-49EC-AD79-EB565858A6AA} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
+		{CEDA785C-79BD-457B-9A25-3EC69CD29042} = {6DFFF8A9-3932-4EFD-BA8F-7C6AB9DDFD24}
+		{D47C236E-5E6B-4E75-A3CD-DF63CB99F00D} = {2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}
+		{F3D27E01-2FEF-410A-8705-1A92855F13C6} = {2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}
+		{ABEE7921-79B8-45AF-B10B-FE4E421AE53F} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
 	EndGlobalSection
 EndGlobal

@@ -1,31 +1,33 @@
-/*
-    This file is part of PapyrusDotNet.
+//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-    PapyrusDotNet is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    PapyrusDotNet is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
-	
-	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
- */
+#region
 
 using System.IO;
-
 using PapyrusDotNet.CoreBuilder.Interfaces;
+
+#endregion
 
 namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
 {
     public class PapyrusAssemblyParser : IPapyrusAssemblyParser
     {
         private readonly IPapyrusNameResolver assemblyNameResolver;
+
         public PapyrusAssemblyParser(IPapyrusNameResolver nameResolver)
         {
             assemblyNameResolver = nameResolver;
@@ -33,7 +35,6 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
 
         public PapyrusAssemblyObject ParseAssembly(string file)
         {
-
             var inputScript = File.ReadAllLines(file);
             var obj = new PapyrusAssemblyObject();
             var inVariableTable = false;
@@ -83,7 +84,6 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
                     obj.Name = Path.GetFileNameWithoutExtension(file);
 
 
-
                     if (obj.Name.Contains("."))
                     {
                         obj.Name = obj.Name.Split('.')[0];
@@ -97,24 +97,22 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
                     //var theAfter = obj.Name;
 
 
-
                     if (tLine.Split(' ').Length > 2)
                     {
                         obj.ExtendsName = tLine.Split(' ')[2];
                     }
                     if (tLine.Contains("extends"))
                     {
-                        obj.ExtendsName = tLine.Split(' ')[3];// Parse(@"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\" + tLine.Split(' ')[3] + ".disassemble.pas");
+                        obj.ExtendsName = tLine.Split(' ')[3];
+                        // Parse(@"C:\The Elder Scrolls V Skyrim\Papyrus Compiler\" + tLine.Split(' ')[3] + ".disassemble.pas");
                     }
                 }
 
                 if (inVariableTable)
                 {
-
                 }
                 else if (inPropertyTable)
                 {
-
                 }
                 else if (inStateTable)
                 {
@@ -147,7 +145,8 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Assembly
                     {
                         if (tLine.StartsWith(".local "))
                         {
-                            lastFunction.LocalTable.Add(new PapyrusAssemblyVariable(tLine.Split(' ')[1], tLine.Split(' ')[2]));
+                            lastFunction.LocalTable.Add(new PapyrusAssemblyVariable(tLine.Split(' ')[1],
+                                tLine.Split(' ')[2]));
                         }
                     }
                     if (inFunctionParamTable && lastFunction != null)

@@ -1,33 +1,36 @@
-﻿/*
-    This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-    PapyrusDotNet is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    PapyrusDotNet is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
-	
-	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
- */
+#region
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using PapyrusDotNet.Common;
 using PapyrusDotNet.CoreBuilder.Interfaces;
 using PapyrusDotNet.CoreBuilder.Papyrus.Assembly;
 
+#endregion
+
 namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
 {
     public class PapyrusScriptParser : IPapyrusScriptParser
     {
-        private IPapyrusNameResolver functionNameResolver;
+        private readonly IPapyrusNameResolver functionNameResolver;
 
         public PapyrusScriptParser(IPapyrusNameResolver nameResolver)
         {
@@ -36,7 +39,6 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
 
         public PapyrusAssemblyObject ParseScript(string file)
         {
-
             var obj = new PapyrusAssemblyObject();
 
             var scriptObject = Parse(file);
@@ -60,7 +62,7 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
                     function.Name = functionNameResolver.Resolve(sourceFunction.Name);
                     function.ReturnType = sourceFunction.ReturnType.VarType;
                     function.ReturnArray = sourceFunction.ReturnType.IsArray;
-                    int inputNameIndex = 0;
+                    var inputNameIndex = 0;
                     foreach (var p in sourceFunction.Parameters)
                     {
                         function.Params.Add(new PapyrusAssemblyVariable(p.Name, p.VarType));
@@ -105,7 +107,6 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
                 // Most likely an auto- property
                 // And we have already added them above.
                 if (field.Name.StartsWith("::")) continue;
-
             }
 
             //      throw new NotImplementedException("Parsing from .psc/ Skyrim Papyrus Scripts are not yet supported.");
@@ -119,9 +120,9 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
         public PapyrusScriptObject Parse(string file)
         {
             var output = new PapyrusScriptObject();
-            output.Name = System.IO.Path.GetFileNameWithoutExtension(file);
+            output.Name = Path.GetFileNameWithoutExtension(file);
 
-            var source = System.IO.File.ReadAllText(file);
+            var source = File.ReadAllText(file);
 
 
             while (source.Contains(";/") && source.Contains("/;"))
@@ -149,21 +150,22 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
 
         public void ParseScript(ref PapyrusScriptObject output, string[] sourceLines)
         {
-            bool insideFunction = false;
-            bool insideState = false;
+            var insideFunction = false;
+            var insideState = false;
 
             PapyrusScriptFunction lastFunction = null;
 
-            PapyrusScriptStateFunction lastState = new PapyrusScriptStateFunction();
+            var lastState = new PapyrusScriptStateFunction();
 
             output.StateFunctions.Add(lastState);
 
-            bool lastParametersFinished = true;
+            var lastParametersFinished = true;
 
             for (var i = 0; i < sourceLines.Length; i++)
             {
                 sourceLines[i] = sourceLines[i].Trim();
-                if (sourceLines[i].StartsWith(";") || string.IsNullOrEmpty(sourceLines[i]) || sourceLines[i].Length < 3) continue;
+                if (sourceLines[i].StartsWith(";") || string.IsNullOrEmpty(sourceLines[i]) || sourceLines[i].Length < 3)
+                    continue;
 
                 if (sourceLines[i].Contains(";"))
                 {
@@ -246,10 +248,11 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
                     continue;
                 }
 
-                if (l.StartsWith("event ") || l.Contains(" event ") || l.StartsWith("function ") || l.Contains(" function ") && l.Contains("(") && l.Contains(")"))
+                if (l.StartsWith("event ") || l.Contains(" event ") || l.StartsWith("function ") ||
+                    l.Contains(" function ") && l.Contains("(") && l.Contains(")"))
                 {
                     lastFunction = new PapyrusScriptFunction();
-                    lastFunction.ReturnType = new PapyrusScriptVariable()
+                    lastFunction.ReturnType = new PapyrusScriptVariable
                     {
                         VarType = "void"
                     };
@@ -263,7 +266,7 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
                         if (fi > 0)
                         {
                             var val = dataSplitsNormal.FirstOrDefault();
-                            lastFunction.ReturnType = new PapyrusScriptVariable()
+                            lastFunction.ReturnType = new PapyrusScriptVariable
                             {
                                 VarType = val,
                                 IsArray = val.Contains("[]")
@@ -273,7 +276,8 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
                     else if (l.Contains("event"))
                     {
                         lastFunction.IsEvent = true;
-                        lastFunction.Name = dataSplitsNormal[dataSplitsNormal.IndexOf("event") + 1].Split('(').FirstOrDefault();
+                        lastFunction.Name =
+                            dataSplitsNormal[dataSplitsNormal.IndexOf("event") + 1].Split('(').FirstOrDefault();
                     }
 
                     if (dataSplits.Contains("global"))
@@ -328,7 +332,6 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
 
                     output.Properties.Add(prop);
                 }
-
             }
         }
 
@@ -337,7 +340,7 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
         {
             wasFinished = true;
             var p = new List<PapyrusScriptVariable>();
-            var vars = new[] { input };
+            var vars = new[] {input};
             if (input.Contains(','))
             {
                 vars = input.Split(',');
@@ -379,8 +382,6 @@ namespace PapyrusDotNet.CoreBuilder.Papyrus.Script
                 return new List<PapyrusScriptVariable>();
 
             return ParseParameterList(varData, out wasFinished);
-
         }
     }
-
 }

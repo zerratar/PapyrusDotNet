@@ -1,7 +1,28 @@
+//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+
+#region
+
 using System;
 using System.Linq;
 using Mono.Cecil;
 using PapyrusDotNet.CoreBuilder.Interfaces;
+
+#endregion
 
 namespace PapyrusDotNet.CoreBuilder.Implementation
 {
@@ -11,7 +32,8 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
         private readonly IPapyrusTypeNameResolver typeNameResolver;
         private IPapyrusCilAssemblyBuilder builder;
 
-        public PapyrusTypeReferenceResolver(IPapyrusNamespaceResolver namespaceResolver, IPapyrusTypeNameResolver typeNameResolver)
+        public PapyrusTypeReferenceResolver(IPapyrusNamespaceResolver namespaceResolver,
+            IPapyrusTypeNameResolver typeNameResolver)
         {
             this.namespaceResolver = namespaceResolver;
             this.typeNameResolver = typeNameResolver;
@@ -27,15 +49,18 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
 
             if (ns == "System")
             {
-
-                var propies = mainModule.TypeSystem.GetType().GetProperties().Where(pr => pr.PropertyType == typeof(TypeReference)).ToList();
+                var propies =
+                    mainModule.TypeSystem.GetType()
+                        .GetProperties()
+                        .Where(pr => pr.PropertyType == typeof (TypeReference))
+                        .ToList();
                 foreach (var propy in propies)
                 {
                     var name = propy.Name;
                     if (tn.Replace("[]", "").ToLower() == name.ToLower())
                     {
                         var val = propy.GetValue(mainModule.TypeSystem, null) as TypeReference;
-                        return val != null && (isArray && !val.IsArray) ? new ArrayType(val) : val;
+                        return val != null && isArray && !val.IsArray ? new ArrayType(val) : val;
                     }
                 }
                 // fallback
@@ -66,7 +91,8 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                 }
             }
             var tnA = tn.Replace("[]", "");
-            var existing = builder.AddedTypeReferences.FirstOrDefault(ty => ty.FullName.ToLower() == (ns + "." + tnA).ToLower());
+            var existing =
+                builder.AddedTypeReferences.FirstOrDefault(ty => ty.FullName.ToLower() == (ns + "." + tnA).ToLower());
             if (existing == null)
             {
                 var hasTypeOf = mainModule.Types.FirstOrDefault(t => t.FullName.ToLower() == (ns + "." + tnA).ToLower());
@@ -81,18 +107,20 @@ namespace PapyrusDotNet.CoreBuilder.Implementation
                 }
                 else
                 {
-                    if (builder.ReservedTypeNames.Any(n => string.Equals(n, tnA, StringComparison.CurrentCultureIgnoreCase)))
+                    if (
+                        builder.ReservedTypeNames.Any(
+                            n => string.Equals(n, tnA, StringComparison.CurrentCultureIgnoreCase)))
                     {
-                        tn = builder.ReservedTypeNames.FirstOrDefault(j => string.Equals(j, tnA, StringComparison.CurrentCultureIgnoreCase));
+                        tn =
+                            builder.ReservedTypeNames.FirstOrDefault(
+                                j => string.Equals(j, tnA, StringComparison.CurrentCultureIgnoreCase));
                     }
-                    var typeRef = new TypeReference(ns, tn, mainModule, mainModule) { Scope = mainModule };
-
+                    var typeRef = new TypeReference(ns, tn, mainModule, mainModule) {Scope = mainModule};
 
 
                     builder.AddedTypeReferences.Add(typeRef);
                     return isArray && !typeRef.IsArray ? new ArrayType(typeRef) : typeRef;
                 }
-
             }
 
             return isArray && !existing.IsArray ? new ArrayType(existing) : existing;

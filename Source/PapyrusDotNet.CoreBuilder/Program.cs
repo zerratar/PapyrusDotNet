@@ -1,36 +1,36 @@
-﻿/*
-	This file is part of PapyrusDotNet.
+﻿//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-	PapyrusDotNet is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+#region
 
-	PapyrusDotNet is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
-	
-	Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
- */
-
+using System;
 using System.IO;
 using PapyrusDotNet.CoreBuilder.Interfaces;
+using PowerArgs;
+
+#endregion
 
 namespace PapyrusDotNet.CoreBuilder
 {
-    using System;
-
-    using PowerArgs;
-
-    class Program
+    internal class Program
     {
         private static IPapyrusCilAssemblyBuilder coreAssemblyBuilder;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.Title = "PapyrusDotNet";
 
@@ -38,7 +38,7 @@ namespace PapyrusDotNet.CoreBuilder
             var inputExtensionFilter = "*.pas";
             var inputSourceType = "assembly";
 
-            PapyrusDotNetArgs parsed = new PapyrusDotNetArgs()
+            var parsed = new PapyrusDotNetArgs
             {
                 InputFolder = inputDirectory,
                 InputType = "script"
@@ -87,7 +87,7 @@ namespace PapyrusDotNet.CoreBuilder
 
             var inputSourceFiles = Directory.GetFiles(inputDirectory, inputExtensionFilter, SearchOption.AllDirectories);
 
-            coreAssemblyBuilder = new DefaultPapyrusCilAssemblyBuilder();
+            coreAssemblyBuilder = new PapyrusCilAssemblyBuilder();
 
             coreAssemblyBuilder.BuildAssembly(inputSourceFiles);
 
