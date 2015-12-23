@@ -1,4 +1,4 @@
-﻿//     This file is part of PapyrusDotNet.
+//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -15,19 +15,29 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
+#region
+
+using System.Collections.Generic;
+using System.Linq;
 using PapyrusDotNet.Common.Interfaces;
+
+#endregion
 
 namespace PapyrusDotNet.Common.Papyrus
 {
-    public class LabelReference : ILabelReference
+    public class PapyrusCodeBlock : IPapyrusCodeBlock
     {
-        public LabelReference(string name, int row)
-        {
-            Name = name;
-            RowReference = row;
-        }
+        public int StartRow { get; set; }
 
-        public string Name { get; set; }
-        public int RowReference { get; set; }
+        public int EndRow { get; set; }
+
+        public IList<ILabelReference> UsedLabels { get; set; } = new List<ILabelReference>();
+
+        public IList<ILabelDefinition> Labels { get; set; } = new List<ILabelDefinition>();
+
+        public ILabelDefinition GetLabelDefinition(int row)
+        {
+            return Labels.FirstOrDefault(r => r.Row == row);
+        }
     }
 }

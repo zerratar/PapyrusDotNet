@@ -184,7 +184,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                 // definedField.Value = varRef.Value;
                                 definedField.FieldVariable = varRef;
                                 definedField.FieldVariable.ValueType = PapyrusPrimitiveType.Reference;
-                                // CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField.Name.Value, varRef.Name.Value)
+                                // CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField.Name.Value, varRef.Name.Value)                                
+                                if (varRef.IsDelegateReference)
+                                {
+                                    return new PapyrusInstruction[0];
+                                }
                                 return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, definedField, varRef));
                             }
                             //definedField.FieldVariable.Value =
@@ -272,6 +276,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     if (valout == null)
                     {
                         valout = "None";
+                    }
+
+                    if (allVariables[index].IsDelegateReference)
+                    {
+                        // If this is a delegate reference, then we do not want to assign this value to anything.
+                        return new PapyrusInstruction[0];
                     }
 
                     return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, allVariables[index], valout));

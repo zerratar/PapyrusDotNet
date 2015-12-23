@@ -29,6 +29,8 @@ namespace PapyrusDotNet.PapyrusAssembly
         public PapyrusStringRef TypeName { get; set; }
         public object Value { get; set; }
         public PapyrusPrimitiveType ValueType { get; set; }
+        public bool IsDelegateReference { get; set; }
+        public string DelegateInvokeReference { get; set; }
 
         public PapyrusVariableReference()
         {

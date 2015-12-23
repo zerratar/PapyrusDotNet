@@ -47,6 +47,7 @@
     <Compile Include="Classes\PapyrusMethodDefinition.cs" />
     <Compile Include="Classes\PapyrusMethodReference.cs" />
     <Compile Include="Classes\PapyrusParameterDefinition.cs" />
+    <Compile Include="Classes\PapyrusSequencePoint.cs" />
     <Compile Include="Classes\PapyrusStateDefinition.cs" />
     <Compile Include="Classes\PapyrusStateReference.cs" />
     <Compile Include="Classes\PapyrusStringRef.cs" />

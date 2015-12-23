@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Common.Papyrus;
 using PapyrusDotNet.Common.Utilities;
 

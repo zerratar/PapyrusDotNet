@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Base;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
@@ -43,7 +44,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         private MethodDefinition constructor;
         private IPapyrusAttributeReader attributeReader;
         private List<PapyrusAssemblyDefinition> papyrusAssemblies = new List<PapyrusAssemblyDefinition>();
+        private List<TypeDefinition> EnumDefinitions = new List<TypeDefinition>();
         private TypeDefinition activeClrType;
+
+        private readonly DelegateFinder delegateFinder;
+        private IDelegatePairDefinition delegatePairDefinition;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Clr2PapyrusConverter" /> class.
@@ -55,6 +60,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             attributeReader = new PapyrusAttributeReader(new PapyrusValueTypeConverter());
             this.instructionProcessor = instructionProcessor;
             this.processorOptions = processorOptions;
+            delegateFinder = new DelegateFinder();
         }
 
         /// <summary>
@@ -73,13 +79,21 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
             try
             {
-                Dictionary<PapyrusAssemblyDefinition, TypeDefinition> asmDict = new Dictionary<PapyrusAssemblyDefinition, TypeDefinition>();
+                var papyrusAssemblyToTypeDefinition = new Dictionary<PapyrusAssemblyDefinition, TypeDefinition>();
+
+                // Find all delegate types and methods and create references to them.                                
+                delegatePairDefinition = delegateFinder.FindDelegateTypes(mainModule);
+
+                // Keep track on the enum types so we can verify any parameter, variables, etc, and change the type into integers.
+                ResolveEnumDefinitions(mainModule);
+
                 foreach (var type in mainModule.Types)
                 {
-                    activeClrType = type;
                     // We will skip this one for now
                     // as it will not really provide us with any necessary information at this early stage.
                     if (type.Name == "<Module>") continue;
+
+                    activeClrType = type;
 
                     var pex = PapyrusAssemblyDefinition.CreateAssembly(input.TargetPapyrusVersion);
 
@@ -87,20 +101,23 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
                     CreateType(pex, type, processorOptions);
 
-                    CreateDebugInfo(pex, type);
-
                     papyrusAssemblies.Add(pex);
 
-                    asmDict.Add(pex, type);
+                    papyrusAssemblyToTypeDefinition.Add(pex, type);
                 }
 
-                foreach (var pasm in papyrusAssemblies)
-                {
-                    foreach (var t in pasm.Types)
-                    {
-                        var clrType = asmDict[pasm];
+                // After the type has been processed
+                // we will create the methods and then create the debug info as we do not have any info regarding the methods until those have been created ;-)
 
-                        CreateMethods(papyrusAssemblies, clrType, t, pasm, processorOptions).ForEach(t.States.FirstOrDefault().Methods.Add);
+                foreach (var pex in papyrusAssemblies)
+                {
+                    foreach (var t in pex.Types)
+                    {
+                        var type = papyrusAssemblyToTypeDefinition[pex];
+
+                        CreateMethods(papyrusAssemblies, type, t, pex, processorOptions).ForEach(t.States.FirstOrDefault().Methods.Add);
+
+                        CreateDebugInfo(pex, t, type);
                     }
                 }
             }
@@ -110,6 +127,24 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             }
             return new PapyrusAssemblyOutput(papyrusAssemblies.ToArray());
         }
+
+        private void ResolveEnumDefinitions(ModuleDefinition mainModule)
+        {
+            foreach (var type in mainModule.Types)
+            {
+                if (type.IsEnum)
+                {
+                    EnumDefinitions.Add(type);
+                    continue;
+                }
+
+                foreach (var nestedType in type.NestedTypes.Where(nestedType => nestedType.IsEnum))
+                {
+                    EnumDefinitions.Add(nestedType);
+                }
+            }
+        }
+
 
         private PapyrusTypeDefinition CreateType(PapyrusAssemblyDefinition pex, TypeDefinition type, PapyrusCompilerOptions options, bool isStruct = false)
         {
@@ -140,8 +175,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             // Create Structs
             foreach (var nestedType in type.NestedTypes)
             {
+                // Make sure we don't add any delegate classes, as those are not supported as is
+                if (delegatePairDefinition.DelegateTypeDefinitions.Contains(nestedType)) continue;
+                // We do not want to include any Enums either :-)
+                if (EnumDefinitions.Contains(nestedType)) continue;
                 papyrusType.NestedTypes.Add(CreateStruct(nestedType, pex, options));
             }
+
             if (!isStruct)
             {
                 var autoState = new PapyrusStateDefinition(papyrusType)
@@ -160,46 +200,56 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             return CreateType(asm, structType, options, true);
         }
 
-        private void CreateDebugInfo(PapyrusAssemblyDefinition pex, TypeDefinition type)
+        private void CreateDebugInfo(PapyrusAssemblyDefinition pex, PapyrusTypeDefinition papyrusType, TypeDefinition type)
         {
             var debug = pex.DebugInfo;
             debug.DebugTime = UnixTimeConverterUtility.Convert(DateTime.Now);
 
             if (pex.VersionTarget == PapyrusVersionTargets.Fallout4)
             {
-                foreach (var t in type.NestedTypes)
+                foreach (var t in papyrusType.NestedTypes)
                 {
                     var structInfo = new PapyrusStructDescription();
-                    structInfo.Name = t.Name.Ref(pex);
+                    structInfo.Name = papyrusType.Name;
                     structInfo.DeclaringTypeName = type.Name.Ref(pex);
 
                     foreach (var f in t.Fields)
-                        structInfo.FieldNames.Add(f.Name.Ref(pex));
+                        structInfo.FieldNames.Add(f.Name);
 
                     debug.StructDescriptions.Add(structInfo);
                 }
             }
-            foreach (var method in type.Methods)
-            {
-                var m = new PapyrusMethodDecription();
-                m.Name = method.Name.Ref(pex);
-                m.DeclaringTypeName = type.Name.Ref(pex);
-                m.StateName = "".Ref(pex);
 
-                if (method.IsGetter)
+            foreach (var s in papyrusType.States)
+            {
+
+                foreach (var method in s.Methods)
                 {
-                    m.MethodType = PapyrusMethodTypes.Getter;
+                    var m = new PapyrusMethodDecription();
+                    m.Name = method.Name;
+                    m.DeclaringTypeName = type.Name.Ref(pex);
+                    m.StateName = "".Ref(pex);
+
+                    if (method.Name.Value.ToLower().StartsWith("get_"))
+                    {
+                        m.MethodType = PapyrusMethodTypes.Getter;
+                    }
+                    else if (method.Name.Value.ToLower().StartsWith("set_"))
+                    {
+                        m.MethodType = PapyrusMethodTypes.Setter;
+                    }
+                    else
+                    {
+                        m.MethodType = PapyrusMethodTypes.Method;
+                    }
+
+                    method.Body.Instructions.ForEach(i =>
+                    {
+                        if (i.SequencePoint != null) m.BodyLineNumbers.Add((short)i.SequencePoint.StartLine);
+                    });
+
+                    debug.MethodDescriptions.Add(m);
                 }
-                else if (method.IsSetter)
-                {
-                    m.MethodType = PapyrusMethodTypes.Setter;
-                }
-                else
-                {
-                    m.MethodType = PapyrusMethodTypes.Method;
-                }
-                //TODO: m.BodyLineNumbers
-                debug.MethodDescriptions.Add(m);
             }
 
             var stateProperties = new PapyrusStatePropertyDescriptions();
@@ -209,7 +259,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
             foreach (var prop in type.Properties)
             {
-                // TODO: This
+                // TODO: This                
                 stateProperties.PropertyNames.Add(prop.Name.Ref(pex));
             }
             debug.PropertyDescriptions.Add(stateProperties);
@@ -225,10 +275,17 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         private List<PapyrusMethodDefinition> CreateMethods(IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection, TypeDefinition type, PapyrusTypeDefinition papyrusType, PapyrusAssemblyDefinition pex, PapyrusCompilerOptions options)
         {
             var methods = new List<PapyrusMethodDefinition>();
+
+            foreach (var method in delegatePairDefinition.DelegateMethodDefinitions)
+            {
+                methods.Add(CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, method, delegatePairDefinition, options));
+            }
+
             foreach (var method in type.Methods.OrderByDescending(m => m.IsConstructor))
             {
                 if (propertyMethods.Contains(method)) continue;
-                methods.Add(CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, method, options));
+
+                methods.Add(CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, method, delegatePairDefinition, options));
             }
             return methods;
         }
@@ -239,8 +296,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             foreach (var prop in type.Properties)
             {
                 var properties = attributeReader.ReadPapyrusAttributes(prop);
+                var propertyTypeName = Utility.GetPapyrusReturnType(prop.PropertyType);
+
+                if (EnumDefinitions.Any(i => i.FullName == prop.PropertyType.FullName))
+                    propertyTypeName = "Int";
+
                 var papyrusPropertyDefinition = new PapyrusPropertyDefinition(pex, prop.Name,
-                    Utility.GetPapyrusReturnType(prop.PropertyType))
+                    propertyTypeName)
                 {
                     Documentation = "".Ref(pex),
                     Userflags = properties.UserFlagsValue
@@ -250,6 +312,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                 {
                     papyrusPropertyDefinition.HasSetter = true;
                     papyrusPropertyDefinition.SetMethod = CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, prop.SetMethod,
+                        delegatePairDefinition,
                         processorOptions);
                     propertyMethods.Add(prop.SetMethod);
                 }
@@ -258,6 +321,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                 {
                     papyrusPropertyDefinition.HasGetter = true;
                     papyrusPropertyDefinition.GetMethod = CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, prop.GetMethod,
+                        delegatePairDefinition,
                         processorOptions);
                     propertyMethods.Add(prop.GetMethod);
                 }
@@ -283,6 +347,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
                 var properties = attributeReader.ReadPapyrusAttributes(field);
                 var fieldType = Utility.GetPapyrusReturnType(field.FieldType, type);
+
+                if (EnumDefinitions.Any(i => i.FullName == field.FieldType.FullName))
+                    fieldType = "Int";
+
                 var nameRef = papyrusFriendlyName.Ref(pex);
                 var papyrusFieldDefinition = new PapyrusFieldDefinition(pex, field.Name,
                     fieldType)
@@ -303,7 +371,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
         private PapyrusMethodDefinition CreatePapyrusMethodDefinition(IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection, PapyrusAssemblyDefinition asm,
             PapyrusTypeDefinition papyrusType,
-            MethodDefinition method, PapyrusCompilerOptions options)
+            MethodDefinition method, IDelegatePairDefinition delegatePairDef, PapyrusCompilerOptions options)
         {
             if (method.IsConstructor)
             {
@@ -322,35 +390,68 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             m.Parameters = new List<PapyrusParameterDefinition>();
             foreach (var p in method.Parameters)
             {
+                // TODO: Add support for delegate as parameter
+
+                var paramTypeName = Utility.GetPapyrusReturnType(p.ParameterType, activeClrType, true);
+
+                // Replace enum types into Integer
+                if (EnumDefinitions.Any(i => i.FullName == p.ParameterType.FullName))
+                    paramTypeName = "Int";
+
                 m.Parameters.Add(new PapyrusParameterDefinition
                 {
                     Name = p.Name.Ref(asm),
-                    TypeName = Utility.GetPapyrusReturnType(p.ParameterType, activeClrType, true).Ref(asm)
+                    TypeName = paramTypeName.Ref(asm)
                 });
             }
 
             var clrVariables = method.Body.Variables;
 
+            int varNum = 0;
             foreach (var clrVar in clrVariables)
             {
-                var varName = (!string.IsNullOrEmpty(clrVar.Name)
-                    ? clrVar.Name
-                    : clrVar.ToString()).Ref(asm);
-                m.Body.Variables.Add(
-                        new PapyrusVariableReference(varName,
-                            Utility.GetPapyrusReturnType(clrVar.VariableType.FullName)
-                            .Ref(asm)
-                        )
-                        {
-                            Value = varName.Value,
-                            ValueType = PapyrusPrimitiveType.Reference
-                        }
-                    );
+
+                var delegateVars = delegatePairDef.DelegateMethodLocalPair.Where(d => d.Key == method).SelectMany(d => d.Value);
+
+                if (delegateVars.Any(d => "V_" + d.Index == "V_" + clrVar.Index))
+                {
+                    // This local variable is pointing to a delegate
+                    // and since we are removing all Delegate types, this wont work. So we have to change the type into something else.
+                    // in this case, we are changing it into a Int
+                    var varName = (!string.IsNullOrEmpty(clrVar.Name) ? clrVar.Name : clrVar.ToString()).Ref(asm);
+
+                    var delegateInvokeRef = delegateFinder.FindDelegateInvokeReference(delegatePairDefinition, m);
+
+                    m.Body.Variables.Add(new PapyrusVariableReference(varName, "Int".Ref(asm))
+                    {
+                        IsDelegateReference = true,
+                        DelegateInvokeReference = delegateInvokeRef,
+                        Value = varName.Value,
+                        ValueType = PapyrusPrimitiveType.Reference
+                    });
+
+                }
+                else
+                {
+                    var varName = (!string.IsNullOrEmpty(clrVar.Name) ? clrVar.Name : clrVar.ToString()).Ref(asm);
+                    var variableTypeName = Utility.GetPapyrusReturnType(clrVar.VariableType.FullName);
+
+                    // If its an enum, we want to change the type into a Int
+                    if (EnumDefinitions.Any(i => i.FullName == clrVar.VariableType.FullName))
+                        variableTypeName = "Int";
+
+                    m.Body.Variables.Add(new PapyrusVariableReference(varName, variableTypeName.Ref(asm))
+                    {
+                        Value = varName.Value,
+                        ValueType = PapyrusPrimitiveType.Reference
+                    });
+                }
+                varNum++;
             }
 
             if (method.HasBody)
             {
-                ProcessInstructions(papyrusAssemblyCollection, method, asm, papyrusType, m, options);
+                ProcessInstructions(papyrusAssemblyCollection, delegatePairDef, method, asm, papyrusType, m, options);
 
                 m.Body.Instructions.RecalculateOffsets();
             }
@@ -358,15 +459,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             return m;
         }
 
-        private void ProcessInstructions(IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection, MethodDefinition method, PapyrusAssemblyDefinition asm, PapyrusTypeDefinition papyrusType, PapyrusMethodDefinition m, PapyrusCompilerOptions options)
+        private void ProcessInstructions(IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection, IDelegatePairDefinition delegatePairDef, MethodDefinition method, PapyrusAssemblyDefinition asm, PapyrusTypeDefinition papyrusType, PapyrusMethodDefinition m, PapyrusCompilerOptions options)
         {
             var papyrusInstructions =
-                instructionProcessor.ProcessInstructions(papyrusAssemblyCollection, asm, papyrusType, m, method, method.Body, method.Body.Instructions, options);
+                instructionProcessor.ProcessInstructions(papyrusAssemblyCollection, delegatePairDef, asm, papyrusType, m, method, method.Body, method.Body.Instructions, options);
 
             if (method.Name.ToLower() == "oninit")
             {
-                List<PapyrusInstruction> structGets = new List<PapyrusInstruction>();
-                var ip = instructionProcessor as Clr2PapyrusInstructionProcessor; // TODO: Going against solid here just because im to damn tired.
+                List<PapyrusInstruction> structGets;
+                var ip = instructionProcessor as Clr2PapyrusInstructionProcessor; // TODO: Going against solid here just because im to damn tired, which I ended up breaking in lots of places.
                 m.Body.Instructions.Insert(0,
                     ip.CallInstructionProcessor.CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, constructor, "self",
                         "::nonevar", new List<object>(), out structGets));

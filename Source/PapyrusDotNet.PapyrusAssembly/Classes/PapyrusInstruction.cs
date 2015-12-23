@@ -52,6 +52,11 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// </summary>
         public object Operand { get; set; }
 
+        /// <summary>
+        /// Gets or sets the sequence point for this instruction.
+        /// </summary>
+        public PapyrusSequencePoint SequencePoint { get; set; }
+
         public string GetArg(int index)
         {
             var arg = Arguments[index];

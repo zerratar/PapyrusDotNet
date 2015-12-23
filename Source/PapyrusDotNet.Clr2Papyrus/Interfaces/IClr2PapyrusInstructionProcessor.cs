@@ -73,6 +73,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         ///     Processes the instructions.
         /// </summary>
         /// <param name="papyrusAssemblyCollection"></param>
+        /// <param name="delegatePairDef"></param>
         /// <param name="targetPapyrusAssembly"></param>
         /// <param name="targetPapyrusType"></param>
         /// <param name="targetPapyrusMethod"></param>
@@ -81,7 +82,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// <param name="instructions">The instructions.</param>
         /// <param name="options"></param>
         /// <returns></returns>
-        IEnumerable<PapyrusInstruction> ProcessInstructions(IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection, PapyrusAssemblyDefinition targetPapyrusAssembly, PapyrusTypeDefinition targetPapyrusType, PapyrusMethodDefinition targetPapyrusMethod, MethodDefinition method, MethodBody body,
+        IEnumerable<PapyrusInstruction> ProcessInstructions(IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection, IDelegatePairDefinition delegatePairDef, PapyrusAssemblyDefinition targetPapyrusAssembly, PapyrusTypeDefinition targetPapyrusType, PapyrusMethodDefinition targetPapyrusMethod, MethodDefinition method, MethodBody body,
             Collection<Instruction> instructions, PapyrusCompilerOptions options);
 
         /// <summary>

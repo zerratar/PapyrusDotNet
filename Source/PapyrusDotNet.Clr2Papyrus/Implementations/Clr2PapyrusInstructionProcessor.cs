@@ -38,6 +38,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 {
     public class Clr2PapyrusInstructionProcessor : IClr2PapyrusInstructionProcessor
     {
+        public IDelegatePairDefinition ClrDelegatePairDefinition { get; set; }
         public Stack<EvaluationStackItem> EvaluationStack { get; set; } = new Stack<EvaluationStackItem>();
         public PapyrusMethodDefinition PapyrusMethod { get; set; }
         public PapyrusAssemblyDefinition PapyrusAssembly { get; set; }
@@ -83,7 +84,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         /// <summary>
         /// Processes the instructions.
         /// </summary>
-        /// <param name="papyrusAssemblyCollection"></param>
+        /// <param name="papyrusAssemblyCollection">The papyrus assembly collection.</param>
+        /// <param name="delegatePairDef"></param>
         /// <param name="targetPapyrusAssembly">The target papyrus assembly.</param>
         /// <param name="targetPapyrusType">Type of the target papyrus.</param>
         /// <param name="targetPapyrusMethod">The target papyrus method.</param>
@@ -94,6 +96,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         /// <returns></returns>
         public IEnumerable<PapyrusInstruction> ProcessInstructions(
             IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection,
+            IDelegatePairDefinition delegatePairDef,
             PapyrusAssemblyDefinition targetPapyrusAssembly,
             PapyrusTypeDefinition targetPapyrusType,
             PapyrusMethodDefinition targetPapyrusMethod,
@@ -101,6 +104,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             MethodBody body, Collection<Instruction> instructions,
             PapyrusCompilerOptions options = PapyrusCompilerOptions.Strict)
         {
+            
             PapyrusAssemblyCollection = new System.Collections.ObjectModel.ReadOnlyCollection<PapyrusAssemblyDefinition>(papyrusAssemblyCollection.ToArray());
             PapyrusAssembly = targetPapyrusAssembly;
             PapyrusType = targetPapyrusType;
@@ -109,6 +113,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             ClrMethod = method;
             ClrMethodBody = body;
+            ClrDelegatePairDefinition = delegatePairDef;
 
             Instruction currentInstruction = null;
 
@@ -171,6 +176,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                     instructionReferences[i] = papyrusInstructions;
                 }
 
+                // Adds the Line number association for each instruction
+                AdjustInstructionSequencePoints(ref outputInstructions);
+
                 // 2. Make sure we have set all our instruction's Previous and Next value
                 AdjustInstructionChain(ref outputInstructions);
 
@@ -189,7 +197,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             }
             return outputInstructions;
         }
-
 
         private bool ProcessSwitchStatement(Instruction instruction, ref List<PapyrusInstruction> papyrusInstructions)
         {
@@ -253,6 +260,33 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 }
             }
             return skipThisInstruction;
+        }
+
+
+        private void AdjustInstructionSequencePoints(ref List<PapyrusInstruction> outputInstructions)
+        {
+            foreach (var instruction in instructionReferences)
+            {
+                var i = instruction.Key;
+                if (i.SequencePoint != null)
+                {
+                    foreach (var pi in instruction.Value)
+                    {
+                        var idx = outputInstructions.IndexOf(pi);
+
+                        outputInstructions[idx].SequencePoint = new PapyrusSequencePoint();
+
+                        if (i.SequencePoint.Document != null)
+                        {
+                            outputInstructions[idx].SequencePoint.Document = i.SequencePoint.Document.Url;
+                            outputInstructions[idx].SequencePoint.StartLine = i.SequencePoint.StartLine;
+                            outputInstructions[idx].SequencePoint.EndLine = i.SequencePoint.EndLine;
+                            outputInstructions[idx].SequencePoint.StartColumn = i.SequencePoint.StartColumn;
+                            outputInstructions[idx].SequencePoint.EndColumn = i.SequencePoint.EndColumn;
+                        }
+                    }
+                }
+            }
         }
 
         private void AdjustBranching(ref List<PapyrusInstruction> outputInstructions)

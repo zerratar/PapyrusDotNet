@@ -89,9 +89,9 @@ namespace PapyrusDotNet
 
                 var compilerOptions = !Enumerable.Contains(args, "-easy") ? PapyrusCompilerOptions.Strict
                     : PapyrusCompilerOptions.Easy;
-
+                var readerParameters = new ReaderParameters { ReadSymbols = true };
                 converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), compilerOptions);
-                inputData = new ClrAssemblyInput(AssemblyDefinition.ReadAssembly(input), targetVersion);
+                inputData = new ClrAssemblyInput(AssemblyDefinition.ReadAssembly(input, readerParameters), targetVersion);
             }
             else
             {

@@ -69,6 +69,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             var methodRef = instruction.Operand as MethodReference;
             if (methodRef != null)
             {
+
+                if (methodRef.FullName.ToLower().Contains("system.void") && methodRef.FullName.ToLower().Contains(".ctor"))
+                {
+                    return new PapyrusInstruction[0];
+                }
+
                 // What we need:
                 // 1. Call Location (The name of the type that has this method)
                 // 2. Method Name (The name of the method, duh)
@@ -107,7 +113,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 for (var paramIndex = 0; paramIndex < itemsToPop; paramIndex++)
                 {
                     var parameter = stack.Pop();
-                    if (parameter.IsThis && mainInstructionProcessor.EvaluationStack.Count > methodRef.Parameters.Count
+                    if (parameter.IsThis && stack.Count > methodRef.Parameters.Count
                         || methodRef.CallingConvention == MethodCallingConvention.ThisCall)
                     {
                         isThisCall = true;
@@ -183,40 +189,62 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     }
                     if (isThisCall)
                     {
-                        var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef,
-                            out isStructAccess);
 
-                        if (isStructAccess)
+                        bool isDelegateInvoke = false;
+                        if (stack.Count > 0)
                         {
-                            var structRef =
-                                mainInstructionProcessor.EvaluationStack.Pop().Value as PapyrusStructFieldReference;
-                            if (structRef != null)
+                            var next = stack.Peek().Value;
+                            var varRef = next as PapyrusVariableReference;
+                            if (varRef != null && varRef.IsDelegateReference)
                             {
-                                // (Call and Assign Temp then do StructSet using Temp)
-
-                                // Call and Assign return value to temp
-                                processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, methodRef,
-                                    callerLocation,
-                                    destinationVariable, parameters, out structGets));
-
-                                // StructSet
-                                processInstruction.Add(
-                                    mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.StructSet,
-                                        structRef.StructSource, structRef.StructVariable,
-                                        mainInstructionProcessor.CreateVariableReferenceFromName(destinationVariable)));
-
-                                // Skip next instruction as it should be stfld and we already store the field here.
-                                mainInstructionProcessor.SkipNextInstruction = true;
+                                isDelegateInvoke = true;
                             }
+                        }
+
+                        var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef,
+                                out isStructAccess);
+
+                        if (isDelegateInvoke)
+                        {
+                            var targetDelegate = stack.Pop().Value as PapyrusVariableReference;
+                            var targetDelegateMethodName = targetDelegate.DelegateInvokeReference;
+
+                            processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, methodRef, callerLocation, destinationVariable, parameters, out structGets, targetDelegateMethodName));
+                            processInstruction.InsertRange(processInstruction.Count - 1, structGets);
                         }
                         else
                         {
-                            processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, methodRef,
-                                callerLocation,
-                                destinationVariable, parameters, out structGets));
-                            processInstruction.InsertRange(processInstruction.Count - 1, structGets);
-                        }
+                            if (isStructAccess)
+                            {
+                                var structRef =
+                                    stack.Pop().Value as PapyrusStructFieldReference;
+                                if (structRef != null)
+                                {
+                                    // (Call and Assign Temp then do StructSet using Temp)
 
+                                    // Call and Assign return value to temp
+                                    processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, methodRef,
+                                        callerLocation,
+                                        destinationVariable, parameters, out structGets));
+
+                                    // StructSet
+                                    processInstruction.Add(
+                                        mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.StructSet,
+                                            structRef.StructSource, structRef.StructVariable,
+                                            mainInstructionProcessor.CreateVariableReferenceFromName(destinationVariable)));
+
+                                    // Skip next instruction as it should be stfld and we already store the field here.
+                                    mainInstructionProcessor.SkipNextInstruction = true;
+                                }
+                            }
+                            else
+                            {
+                                processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, methodRef,
+                                    callerLocation,
+                                    destinationVariable, parameters, out structGets));
+                                processInstruction.InsertRange(processInstruction.Count - 1, structGets);
+                            }
+                        }
                         return processInstruction;
                     }
                 }
@@ -404,14 +432,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <param name="destinationVariable">The destination variable.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
-        public PapyrusInstruction CreatePapyrusCallInstruction(PapyrusOpCodes callOpCode, MethodReference methodRef, string callerLocation, string destinationVariable, List<object> parameters, out List<PapyrusInstruction> structGets)
+        public PapyrusInstruction CreatePapyrusCallInstruction(PapyrusOpCodes callOpCode, MethodReference methodRef, string callerLocation, string destinationVariable, List<object> parameters, out List<PapyrusInstruction> structGets, string methodName = null)
         {
             structGets = new List<PapyrusInstruction>();
 
             var inst = new PapyrusInstruction { OpCode = callOpCode };
 
             var param = parameters.ToArray();
-
             for (int index = 0; index < param.Length; index++)
             {
                 var p = param[index];
@@ -446,17 +473,19 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 }
             }
 
+            methodName = methodName ?? methodRef.Name;
+
             if (callOpCode == PapyrusOpCodes.Callstatic)
             {
                 inst.Arguments.AddRange(mainInstructionProcessor.ParsePapyrusParameters(new object[] {
                 mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, callerLocation),
-                mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, methodRef.Name),
+                mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, methodName),
                 mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable)}));
             }
             else
             {
                 inst.Arguments.AddRange(mainInstructionProcessor.ParsePapyrusParameters(new object[] {
-                mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, methodRef.Name),
+                mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, methodName),
                 mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, callerLocation),
                 mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable)}));
             }

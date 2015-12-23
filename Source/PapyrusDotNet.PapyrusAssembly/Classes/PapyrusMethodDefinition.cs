@@ -79,7 +79,11 @@ namespace PapyrusDotNet.PapyrusAssembly
             }
         }
 
-        public bool IsEvent { get; set; } //=> (Flags & 4) > 0;
+        public bool IsEvent { get; set; }
+
+        public int DelegateInvokeCount { get; set; }
+
+//=> (Flags & 4) > 0;
 
         public void SetFlags(PapyrusMethodFlags flags)
         {

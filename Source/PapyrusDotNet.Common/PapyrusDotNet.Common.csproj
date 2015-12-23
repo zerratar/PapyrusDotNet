@@ -54,11 +54,11 @@
   <ItemGroup>
     <Compile Include="ConsoleExLib\ConsoleEx.cs" />
     <Compile Include="Interfaces\INameConvetionResolver.cs" />
-    <Compile Include="IPapyrusCodeBlock.cs" />
-    <Compile Include="PapyrusCodeBlock.cs" />
+    <Compile Include="Interfaces\IPapyrusCodeBlock.cs" />
+    <Compile Include="Papyrus\PapyrusCodeBlock.cs" />
     <Compile Include="ConsoleStatusCallbackService.cs" />
-    <Compile Include="Papyrus\ILabelDefinition.cs" />
-    <Compile Include="Papyrus\ILabelReference.cs" />
+    <Compile Include="Interfaces\ILabelDefinition.cs" />
+    <Compile Include="Interfaces\ILabelReference.cs" />
     <Compile Include="Utilities\ArrayUtility.cs" />
     <Compile Include="Utilities\ConsoleUiRenderer.cs" />
     <Compile Include="DebugStatusCallbackService.cs" />
@@ -89,7 +89,7 @@
     <Compile Include="Hotkeys.cs" />
     <Compile Include="Interfaces\IPapyrusAssemblyOptimizer.cs" />
     <Compile Include="Interfaces\IPapyrusCodeBlockParser.cs" />
-    <Compile Include="Utilities\IPapyrusAttributeReader.cs" />
+    <Compile Include="Interfaces\IPapyrusAttributeReader.cs" />
     <Compile Include="Utilities\PapyrusAssemblyOptimizer.cs" />
     <Compile Include="Utilities\PapyrusAttributeReader.cs" />
     <Compile Include="Utilities\PapyrusCodeBlockParser.cs" />

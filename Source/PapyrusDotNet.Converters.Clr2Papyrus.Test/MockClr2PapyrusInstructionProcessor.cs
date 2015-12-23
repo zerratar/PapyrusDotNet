@@ -36,6 +36,14 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Test
             throw new System.NotImplementedException();
         }
 
+        public IEnumerable<PapyrusInstruction> ProcessInstructions(IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection, IDelegatePairDefinition delegatePairDef,
+            PapyrusAssemblyDefinition targetPapyrusAssembly, PapyrusTypeDefinition targetPapyrusType,
+            PapyrusMethodDefinition targetPapyrusMethod, MethodDefinition method, MethodBody body, Collection<Instruction> instructions,
+            PapyrusCompilerOptions options)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string GetTargetVariable(Instruction instruction, MethodReference methodRef, out bool isStructAccess,
             string fallbackType = null, bool forceNew = false)
         {

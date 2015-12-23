@@ -59,6 +59,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 var stackItem = parameters[i] as EvaluationStackItem;
                 if (stackItem != null)
                 {
+                    var paramVar = stackItem.Value as PapyrusParameterDefinition;
                     var targetVar = stackItem.Value as PapyrusVariableReference;
                     if (targetVar != null)
                     {
@@ -74,6 +75,22 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             targetVar));
+                    }
+                    else if (paramVar != null)
+                    {
+                        if (!stackItem.TypeName.ToLower().Contains("string"))
+                        {
+                            // Not a string? Not a problem!
+                            // Since we already have a variable reference, we do not need to create an additional
+                            // temp variable before casting.
+                            // So we can go directly and do: cast ::temp0 ::awesomeVariable
+                            output.Add(mainInstructionProcessor.CreatePapyrusCastInstruction(destinationVariable,
+                                mainInstructionProcessor.CreateVariableReferenceFromName(paramVar.Name.Value)));
+                        }
+                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
+                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
+                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
+                            paramVar));
                     }
                     else
                     {
