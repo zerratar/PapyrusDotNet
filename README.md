@@ -105,7 +105,7 @@ The first technical preview (TP1) does **not** have support for `Delegates` or `
 
 These features will be added again when the base functionality is stable enough. To use it, you will have to checkout an earlier version of PapyrusDotNet but unfortunately it only works for Skyrim.
 
-Short: Delegates, Generics and Enums will be added very soon and is not implemented in TP1.
+Short: Delegates and Generics will be added very soon but is not implemented in TP1.
 
 ## Limitations of PapyrusDotNet
 #### .NET Framework is NOT supported!
