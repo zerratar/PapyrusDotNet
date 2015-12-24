@@ -471,7 +471,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 {
                     bool isStructAccess;
                     // Make sure we have a temp variable if necessary
-                    GetTargetVariable(instruction, null, out isStructAccess, "Int");
+                    if (!InstructionHelper.NextInstructionIs(instruction, Code.Call) && !InstructionHelper.NextInstructionIs(instruction, Code.Calli) && !InstructionHelper.NextInstructionIs(instruction, Code.Callvirt))
+                        GetTargetVariable(instruction, null, out isStructAccess, "Int");
 
                     // Equiviliant Papyrus: <MathOp> <sumOutput> <denumerator> <numerator>
 
@@ -723,7 +724,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             }
             else
             {
-                targetVar = "::NoneVar";
+                if (methodRef != null && methodRef.ReturnType.FullName != "System.Void")
+                {
+                    var tVar =
+                        CreateTempVariable(
+                            !string.IsNullOrEmpty(fallbackType) ? fallbackType : methodRef.ReturnType.FullName,
+                            methodRef);
+                    targetVar = tVar.Name.Value;
+                }
+                else
+                    targetVar = "::NoneVar";
             }
 
 

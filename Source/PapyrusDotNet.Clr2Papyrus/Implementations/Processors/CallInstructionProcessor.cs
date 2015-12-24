@@ -326,9 +326,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             // Property Access within same class (Property exists within the same class)
             if (methodDefinition != null)
             {
+                var targetPropertyName = methodRef.Name.Substring(4);
+
                 var matchingProperty = mainInstructionProcessor.PapyrusType.Properties.FirstOrDefault(
                     p => (p.SetMethod != null && p.SetMethod.Name.Value.ToLower().Equals(methodRef.Name.ToLower())) ||
-                         (p.GetMethod != null && p.GetMethod.Name.Value.ToLower().Equals(methodRef.Name.ToLower())));
+                         (p.GetMethod != null && p.GetMethod.Name.Value.ToLower().Equals(methodRef.Name.ToLower())) ||
+                         p.Name.Value.ToLower() == targetPropertyName.ToLower());
                 if (matchingProperty != null)
                 {
                     if (methodDefinition.IsSetter)
@@ -411,11 +414,21 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         }
                         else
                         {
+                            var dest = mainInstructionProcessor.CreateVariableReferenceFromName(destinationVariable);
                             instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.PropGet,
                                     targetProperty,
                                     locationVariable,
-                                     mainInstructionProcessor.CreateVariableReferenceFromName(destinationVariable)
+                                     dest
                                 ));
+
+                            if (InstructionHelper.NextInstructionIs(instruction, InstructionHelper.IsConditional))
+                            {
+                                mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                                {
+                                    Value = dest,
+                                    TypeName = Utility.GetPapyrusReturnType(methodRef.ReturnType)
+                                });
+                            }
                         }
                     }
                 }

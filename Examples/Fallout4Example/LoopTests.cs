@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿#if false
 using PapyrusDotNet.Core;
 
 namespace Fallout4Example
@@ -54,3 +50,4 @@ namespace Fallout4Example
         }
     }
 }
+#endif

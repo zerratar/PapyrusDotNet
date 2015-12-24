@@ -1,3 +1,4 @@
+#if false
 namespace Fallout4Example
 {
     public class DelegateTests
@@ -82,3 +83,4 @@ namespace Fallout4Example
 
     }
 }
+#endif

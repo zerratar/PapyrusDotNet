@@ -1,7 +1,12 @@
+
+#if false
+
 using PapyrusDotNet.Core;
 
 namespace Fallout4Example
 {
+
+
     public class EnumTests : ObjectReference
     {
 
@@ -52,3 +57,4 @@ namespace Fallout4Example
 
     }
 }
+#endif

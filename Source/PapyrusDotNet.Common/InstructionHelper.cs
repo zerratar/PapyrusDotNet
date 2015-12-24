@@ -17,6 +17,7 @@
 
 #region
 
+using System;
 using Mono.Cecil.Cil;
 
 #endregion
@@ -163,6 +164,14 @@ namespace PapyrusDotNet.Common
                    (instruction.Next != null && instruction.Next.OpCode.Code == Code.Nop &&
                     instruction.Next.Next != null &&
                     instruction.Next.Next.OpCode.Code == targetOpCode);
+        }
+
+        public static bool NextInstructionIs(Instruction instruction, Func<Code, bool> targetOpCode)
+        {
+            return (instruction.Next != null && targetOpCode(instruction.Next.OpCode.Code)) ||
+                   (instruction.Next != null && instruction.Next.OpCode.Code == Code.Nop &&
+                    instruction.Next.Next != null &&
+                    targetOpCode(instruction.Next.Next.OpCode.Code));
         }
 
         public static int NextInstructionIsOffset(Instruction instruction, Code targetOpCode)
