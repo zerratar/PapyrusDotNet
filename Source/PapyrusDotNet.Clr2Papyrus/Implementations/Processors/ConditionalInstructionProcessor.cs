@@ -216,7 +216,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     }
 
 
-                    varIndex = (int)mainInstructionProcessor.GetNumericValue(next);
+                    var numericValue = mainInstructionProcessor.GetNumericValue(next);
+                    varIndex = (int)numericValue;
                 }
 
                 output.Add(mainInstructionProcessor.CreatePapyrusInstruction(papyrusOpCode, vars[varIndex], denumerator, numerator));

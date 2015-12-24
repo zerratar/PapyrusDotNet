@@ -157,7 +157,7 @@ namespace PapyrusDotNet
         {
             assembliesReadTick++;
             assembliesRead++;
-            if (assembliesReadTick >= 100 || assembliesRead == maxCount)
+            if (assembliesReadTick >= 100 || assembliesRead == maxCount || maxCount < 1000)
             {
                 ui.DrawProgressBarWithInfo(assembliesRead, maxCount);
                 assembliesReadTick = 0;

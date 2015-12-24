@@ -115,7 +115,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                     {
                         var type = papyrusAssemblyToTypeDefinition[pex];
 
-                        CreateMethods(papyrusAssemblies, type, t, pex, processorOptions).ForEach(t.States.FirstOrDefault().Methods.Add);
+                        CreateMethods(papyrusAssemblies, type, t, pex, processorOptions)
+                            .ForEach(t.States.FirstOrDefault().Methods.Add);
 
                         CreateDebugInfo(pex, t, type);
                     }
@@ -123,8 +124,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             }
             catch (ProhibitedCodingBehaviourException exc)
             {
-                Console.WriteLine("Error: Prohibited use of " + exc.OpCode.GetValueOrDefault().Code + " in " + exc.Method.FullName + " at " + exc.Offset);
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Error: Prohibited use of " + exc.OpCode.GetValueOrDefault().Code + " in " +
+                                  exc.Method.FullName + " at " + exc.Offset);
             }
+            catch (Exception exc)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Error: Unhandled Exception - " + exc);
+            }
+            Console.ResetColor();
             return new PapyrusAssemblyOutput(papyrusAssemblies.ToArray());
         }
 
@@ -386,7 +395,14 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             m.IsGlobal = method.IsStatic;
             m.IsNative = method.CustomAttributes.Any(i => i.AttributeType.Name.Equals("NativeAttribute"));
             m.Name = method.Name.Ref(asm);
-            m.ReturnTypeName = Utility.GetPapyrusReturnType(method.ReturnType, activeClrType).Ref(asm); // method.ReturnType.Name
+            var papyrusReturnType = Utility.GetPapyrusReturnType(method.ReturnType, activeClrType);
+
+            if (EnumDefinitions.Any(m2 => m2.FullName == method.ReturnType.FullName))
+            {
+                papyrusReturnType = "Int";
+            }
+
+            m.ReturnTypeName = papyrusReturnType.Ref(asm); // method.ReturnType.Name
             m.Parameters = new List<PapyrusParameterDefinition>();
             foreach (var p in method.Parameters)
             {

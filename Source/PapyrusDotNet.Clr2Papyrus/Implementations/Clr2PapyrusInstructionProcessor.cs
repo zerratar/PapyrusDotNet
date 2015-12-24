@@ -104,7 +104,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             MethodBody body, Collection<Instruction> instructions,
             PapyrusCompilerOptions options = PapyrusCompilerOptions.Strict)
         {
-            
+
             PapyrusAssemblyCollection = new System.Collections.ObjectModel.ReadOnlyCollection<PapyrusAssemblyDefinition>(papyrusAssemblyCollection.ToArray());
             PapyrusAssembly = targetPapyrusAssembly;
             PapyrusType = targetPapyrusType;
@@ -118,7 +118,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             Instruction currentInstruction = null;
 
             EvaluationStack.Clear();
-
+            instructionReferences.Clear(); // Forgot to clear out after each type :P
             var outputInstructions = new List<PapyrusInstruction>();
             try
             {
