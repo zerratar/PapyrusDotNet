@@ -43,6 +43,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         private List<MethodDefinition> propertyMethods = new List<MethodDefinition>();
         private MethodDefinition constructor;
         private IPapyrusAttributeReader attributeReader;
+        private readonly IPropertyAnalyzer propertyAnalyzer = new PropertyAnalyzer();
         private List<PapyrusAssemblyDefinition> papyrusAssemblies = new List<PapyrusAssemblyDefinition>();
         private List<TypeDefinition> EnumDefinitions = new List<TypeDefinition>();
         private TypeDefinition activeClrType;
@@ -317,31 +318,41 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                     Userflags = properties.UserFlagsValue
                 };
 
-                if (prop.SetMethod != null)
-                {
-                    papyrusPropertyDefinition.HasSetter = true;
-                    papyrusPropertyDefinition.SetMethod = CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, prop.SetMethod,
-                        delegatePairDefinition,
-                        processorOptions);
-                    propertyMethods.Add(prop.SetMethod);
-                }
+                var result = propertyAnalyzer.Analyze(prop);
 
-                if (prop.GetMethod != null)
-                {
-                    papyrusPropertyDefinition.HasGetter = true;
-                    papyrusPropertyDefinition.GetMethod = CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, prop.GetMethod,
-                        delegatePairDefinition,
-                        processorOptions);
-                    propertyMethods.Add(prop.GetMethod);
-                }
-
-                if (prop.SetMethod == null && prop.GetMethod == null)
+                if (result.IsAutoVar)
                 {
                     papyrusPropertyDefinition.IsAuto = true;
-                    papyrusPropertyDefinition.AutoName =
-                        papyrusType.Fields.FirstOrDefault(f => f.Name.Value.Contains("_" + prop.Name + "_") && f.Name.Value.EndsWith("_BackingField")).Name.Value;
+                    papyrusPropertyDefinition.AutoName = result.AutoVarName;
                 }
+                else
+                {
 
+                    if (prop.SetMethod != null)
+                    {
+                        papyrusPropertyDefinition.HasSetter = true;
+                        papyrusPropertyDefinition.SetMethod = CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, prop.SetMethod,
+                            delegatePairDefinition,
+                            processorOptions);
+                        propertyMethods.Add(prop.SetMethod);
+                    }
+
+                    if (prop.GetMethod != null)
+                    {
+                        papyrusPropertyDefinition.HasGetter = true;
+                        papyrusPropertyDefinition.GetMethod = CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, prop.GetMethod,
+                            delegatePairDefinition,
+                            processorOptions);
+                        propertyMethods.Add(prop.GetMethod);
+                    }
+
+                    if (prop.SetMethod == null && prop.GetMethod == null)
+                    {
+                        papyrusPropertyDefinition.IsAuto = true;
+                        papyrusPropertyDefinition.AutoName =
+                            papyrusType.Fields.FirstOrDefault(f => f.Name.Value.Contains("_" + prop.Name + "_") && f.Name.Value.EndsWith("_BackingField")).Name.Value;
+                    }
+                }
                 propList.Add(papyrusPropertyDefinition);
             }
             return propList;
