@@ -82,8 +82,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             {
                 var papyrusAssemblyToTypeDefinition = new Dictionary<PapyrusAssemblyDefinition, TypeDefinition>();
 
-                // Find all delegate types and methods and create references to them.                                
-                delegatePairDefinition = delegateFinder.FindDelegateTypes(mainModule);
 
                 // Keep track on the enum types so we can verify any parameter, variables, etc, and change the type into integers.
                 ResolveEnumDefinitions(mainModule);
@@ -93,6 +91,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                     // We will skip this one for now
                     // as it will not really provide us with any necessary information at this early stage.
                     if (type.Name == "<Module>") continue;
+
+                    // Find all delegate types and methods and create references to them.                                
+                    delegatePairDefinition = delegateFinder.FindDelegateTypes(type);
 
                     activeClrType = type;
 
@@ -105,23 +106,20 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                     papyrusAssemblies.Add(pex);
 
                     papyrusAssemblyToTypeDefinition.Add(pex, type);
-                }
 
-                // After the type has been processed
-                // we will create the methods and then create the debug info as we do not have any info regarding the methods until those have been created ;-)
 
-                foreach (var pex in papyrusAssemblies)
-                {
+                    // After the type has been processed
+                    // we will create the methods and then create the debug info as we do not have any info regarding the methods until those have been created ;-)
+
                     foreach (var t in pex.Types)
                     {
-                        var type = papyrusAssemblyToTypeDefinition[pex];
-
                         CreateMethods(papyrusAssemblies, type, t, pex, processorOptions)
                             .ForEach(t.States.FirstOrDefault().Methods.Add);
 
                         CreateDebugInfo(pex, t, type);
                     }
                 }
+
             }
             catch (ProhibitedCodingBehaviourException exc)
             {

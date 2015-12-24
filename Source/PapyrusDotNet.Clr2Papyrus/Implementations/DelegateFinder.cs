@@ -9,73 +9,69 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 {
     public class DelegateFinder : IDelegateFinder
     {
-        public IDelegatePairDefinition FindDelegateTypes(ModuleDefinition mainModule)
+        public IDelegatePairDefinition FindDelegateTypes(TypeDefinition type)
         {
             var del = new DelegatePairDefinition();
-            foreach (var type in mainModule.Types)
+
+            // Map all local variables that uses the delegates
+            foreach (var m in type.Methods)
             {
-                if (type.Name == "<Module>") continue;
-
-                // Map all local variables that uses the delegates
-                foreach (var m in type.Methods)
+                var locals = new List<VariableReference>();
+                foreach (var local in m.Body.Variables)
                 {
-                    var locals = new List<VariableReference>();
-                    foreach (var local in m.Body.Variables)
+                    var varType = local.VariableType;
+                    var varTypeDef = varType.Resolve();
+                    if (varTypeDef.BaseType.FullName.ToLower().Contains("multicastdelegate"))
                     {
-                        var varType = local.VariableType;
-                        var varTypeDef = varType.Resolve();
-                        if (varTypeDef.BaseType.FullName.ToLower().Contains("multicastdelegate"))
-                        {
-                            locals.Add(local);
-                        }
+                        locals.Add(local);
                     }
-                    if (locals.Count > 0)
-                        del.DelegateMethodLocalPair.Add(m, locals);
                 }
+                if (locals.Count > 0)
+                    del.DelegateMethodLocalPair.Add(m, locals);
+            }
 
-                // Get any compile time generated classes. We want to omit these when creating the Pex files                      
-                foreach (var nt in type.NestedTypes.Where(n => n.BaseType.FullName.ToLower().Contains("multicastdelegate")))
+            // Get any compile time generated classes. We want to omit these when creating the Pex files                      
+            foreach (var nt in type.NestedTypes.Where(n => n.BaseType.FullName.ToLower().Contains("multicastdelegate")))
+            {
+                del.DelegateTypeDefinitions.Add(nt);
+            }
+            foreach (var nt in type.NestedTypes.Where(n => n.Name.StartsWith("<>")))
+            {
+                del.DelegateTypeDefinitions.Add(nt);
+                foreach (var m in nt.Methods.Where(mn => mn.Name.StartsWith("<")))
                 {
-                    del.DelegateTypeDefinitions.Add(nt);
-                }
-                foreach (var nt in type.NestedTypes.Where(n => n.Name.StartsWith("<>")))
-                {
-                    del.DelegateTypeDefinitions.Add(nt);
-                    foreach (var m in nt.Methods.Where(mn => mn.Name.StartsWith("<")))
+                    m.IsStatic = false;
+                    m.Name = m.Name.Replace("<", "_").Replace(">", "_");
+                    del.DelegateMethodDefinitions.Add(m);
+
+                    var fieldDefinitions = new List<FieldDefinition>();
+                    foreach (var instruction in m.Body.Instructions)
                     {
-                        m.IsStatic = false;
-                        m.Name = m.Name.Replace("<", "_").Replace(">", "_");
-                        del.DelegateMethodDefinitions.Add(m);
-
-                        var fieldDefinitions = new List<FieldDefinition>();
-                        foreach (var instruction in m.Body.Instructions)
+                        var op = instruction.Operand;
+                        var fieldRef = op as FieldReference;
+                        if (fieldRef != null)
                         {
-                            var op = instruction.Operand;
-                            var fieldRef = op as FieldReference;
-                            if (fieldRef != null)
+                            foreach (var field in nt.Fields)
                             {
-                                foreach (var field in nt.Fields)
+                                if (fieldRef.FullName == field.FullName)
                                 {
-                                    if (fieldRef.FullName == field.FullName)
-                                    {
-                                        fieldDefinitions.Add(field);
-                                        if (!del.DelegateFields.Contains(field))
-                                            del.DelegateFields.Add(field);
-                                    }
+                                    fieldDefinitions.Add(field);
+                                    if (!del.DelegateFields.Contains(field))
+                                        del.DelegateFields.Add(field);
                                 }
                             }
                         }
-                        if (fieldDefinitions.Count > 0)
-                            del.DelegateMethodFieldPair.Add(m, fieldDefinitions);
                     }
+                    if (fieldDefinitions.Count > 0)
+                        del.DelegateMethodFieldPair.Add(m, fieldDefinitions);
                 }
-                // Search for delegate methods inside the current class
-                foreach (var m in type.Methods.Where(j => IsDelegateMethod(type, j)))
-                {
-                    m.Name = m.Name.Replace("<", "_").Replace(">", "_");
-                    m.IsStatic = false;
-                    del.DelegateMethodDefinitions.Add(m);
-                }
+            }
+            // Search for delegate methods inside the current class
+            foreach (var m in type.Methods.Where(j => IsDelegateMethod(type, j)))
+            {
+                m.Name = m.Name.Replace("<", "_").Replace(">", "_");
+                m.IsStatic = false;
+                del.DelegateMethodDefinitions.Add(m);
             }
             return del;
         }

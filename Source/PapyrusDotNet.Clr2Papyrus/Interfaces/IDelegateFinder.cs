@@ -10,7 +10,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
     {
         string FindDelegateInvokeReference(IDelegatePairDefinition pairDefinitions,
             PapyrusMethodDefinition papyrusMethod);
-        IDelegatePairDefinition FindDelegateTypes(ModuleDefinition mainModule);
+        IDelegatePairDefinition FindDelegateTypes(TypeDefinition type);
         bool IsDelegateMethod(TypeDefinition type, MethodDefinition m);
     }
 }
