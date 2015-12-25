@@ -180,7 +180,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                     while (next != null &&
                            !InstructionHelper.IsStoreLocalVariable(next.OpCode.Code) &&
-                           !InstructionHelper.IsStoreField(next.OpCode.Code) &&
+                           !InstructionHelper.IsStoreFieldObject(next.OpCode.Code) &&
                            !InstructionHelper.IsCallMethod(next.OpCode.Code))
                     {
                         next = next.Next;

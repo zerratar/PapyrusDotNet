@@ -34,6 +34,16 @@ namespace PapyrusDotNet.Common.Utilities
 {
     public class Utility : IUtility
     {
+        public static T GetKeyByValue<T, T2>(Dictionary<T, List<T2>> dict, T2 item)
+        {
+            foreach (var i in dict)
+            {
+                if (i.Value.Contains(item))
+                    return i.Key;
+            }
+            return default(T);
+        }
+
         public static string GetInitialValue(FieldDefinition variable)
         {
             var initialValue = "None";

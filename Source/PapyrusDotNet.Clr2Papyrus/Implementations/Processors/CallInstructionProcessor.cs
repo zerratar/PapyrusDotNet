@@ -209,6 +209,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             var targetDelegate = stack.Pop().Value as PapyrusVariableReference;
                             var targetDelegateMethodName = targetDelegate.DelegateInvokeReference;
 
+                            // In case we are invoking a delegate from inside a delegate then we need to find the 
+                            // reference to the previous delegate method and use that one instead.
+                            var target = InstructionHelper.FindPreviousInstruction(instruction, InstructionHelper.IsLoadMethodRef);
+                            if (target != null && target.Operand is MethodReference)
+                            {
+                                methodRef = target.Operand as MethodReference;
+                                targetDelegateMethodName = methodRef.Name;
+                            }
+
                             processInstruction.Add(CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, methodRef, callerLocation, destinationVariable, parameters, out structGets, targetDelegateMethodName));
                             processInstruction.InsertRange(processInstruction.Count - 1, structGets);
                         }

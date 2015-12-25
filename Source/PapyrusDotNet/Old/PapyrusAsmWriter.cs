@@ -702,7 +702,7 @@ namespace PapyrusDotNet.Old
                 //    value2 = obj2.Value.ToString();
             }
 
-            if (InstructionHelper.IsLoadStaticField(instruction.OpCode.Code))
+            if (InstructionHelper.IsLoadFieldValue(instruction.OpCode.Code))
             {
                 return "";
             }
@@ -929,7 +929,7 @@ namespace PapyrusDotNet.Old
                 evaluationStack.Push(new EvaluationStackItem { Value = "None", TypeName = "None" });
             }
 
-            if (InstructionHelper.IsLoadField(instruction.OpCode.Code))
+            if (InstructionHelper.IsLoadFieldObject(instruction.OpCode.Code))
             {
                 if (instruction.Operand is FieldReference)
                 {
@@ -972,7 +972,7 @@ namespace PapyrusDotNet.Old
 
 
             if (InstructionHelper.IsStoreLocalVariable(instruction.OpCode.Code) ||
-                InstructionHelper.IsStoreField(instruction.OpCode.Code))
+                InstructionHelper.IsStoreFieldObject(instruction.OpCode.Code))
             {
                 if (instruction.Operand is FieldReference)
                 {
@@ -1508,7 +1508,7 @@ namespace PapyrusDotNet.Old
 
         public VariableReference GetFieldFromSTFLD(Instruction whereToPlace)
         {
-            if (InstructionHelper.IsStoreField(whereToPlace.OpCode.Code))
+            if (InstructionHelper.IsStoreFieldObject(whereToPlace.OpCode.Code))
             {
                 if (whereToPlace.Operand is FieldReference)
                 {
@@ -1536,9 +1536,9 @@ namespace PapyrusDotNet.Old
 
             if (whereToPlace != null &&
                 (InstructionHelper.IsStoreLocalVariable(whereToPlace.OpCode.Code) ||
-                 InstructionHelper.IsStoreField(whereToPlace.OpCode.Code)))
+                 InstructionHelper.IsStoreFieldObject(whereToPlace.OpCode.Code)))
             {
-                if (InstructionHelper.IsStoreField(whereToPlace.OpCode.Code))
+                if (InstructionHelper.IsStoreFieldObject(whereToPlace.OpCode.Code))
                 {
                     var fieldData = GetFieldFromSTFLD(whereToPlace);
                     if (fieldData != null)
@@ -1639,7 +1639,7 @@ namespace PapyrusDotNet.Old
                 {
                     var next = instruction.Next;
                     while (next != null && !InstructionHelper.IsStoreLocalVariable(next.OpCode.Code) &&
-                           !InstructionHelper.IsStoreField(next.OpCode.Code) &&
+                           !InstructionHelper.IsStoreFieldObject(next.OpCode.Code) &&
                            !InstructionHelper.IsCallMethod(next.OpCode.Code))
                     {
                         next = next.Next;

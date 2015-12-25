@@ -18,6 +18,7 @@
 #region
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 #endregion
@@ -58,3 +59,6 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: InternalsVisibleTo("PapyrusDotNet.Converters.Papyrus2CSharp")]
+[assembly: InternalsVisibleTo("PapyrusDotNet.Converters.Papyrus2Clr")]
+[assembly: InternalsVisibleTo("PapyrusDotNet.Converters.Clr2Papyrus")]

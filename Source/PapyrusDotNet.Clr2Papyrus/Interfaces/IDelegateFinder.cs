@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
+﻿using Mono.Cecil;
 using PapyrusDotNet.PapyrusAssembly;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces

@@ -380,6 +380,23 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             var type = targetMethod.DeclaringType;
             var code = instruction.OpCode.Code;
 
+            if (InstructionHelper.IsNewObjectInstance(code))
+            {
+                var popCount = Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop);
+                // the obj objN = new obj
+                // is not supported by Papyrus.
+                // this opCode should be ignored, but we should still pop the values from the stack
+                // so we don't end up with a Stack overflow.
+
+                for (var pops = 0; pops < popCount; pops++)
+                {
+                    if (EvaluationStack.Count > 0)
+                        EvaluationStack.Pop();
+                }
+                int oi;
+                GetNextStoreLocalVariableInstruction(instruction, out oi);
+            }
+
             // bool temp = object is type
             // is tempVar object type
             // This only works if the type instance is not guaranteed
@@ -556,7 +573,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         /// <returns>Returns a <see cref="PapyrusFieldDefinition"/> if the found field was inside the same type or returns a <see cref="PapyrusStructFieldReference"/> if the target field was inside a struct; otherwise null.</returns>
         public PapyrusFieldDefinition GetFieldFromStfld(Instruction whereToPlace)
         {
-            if (InstructionHelper.IsStoreField(whereToPlace.OpCode.Code))
+            if (InstructionHelper.IsStoreFieldObject(whereToPlace.OpCode.Code))
             {
                 if (whereToPlace.Operand is FieldReference)
                 {
@@ -622,9 +639,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (whereToPlace != null &&
                 (InstructionHelper.IsStoreLocalVariable(whereToPlace.OpCode.Code) ||
-                 InstructionHelper.IsStoreField(whereToPlace.OpCode.Code)))
+                 InstructionHelper.IsStoreFieldObject(whereToPlace.OpCode.Code)))
             {
-                if (InstructionHelper.IsStoreField(whereToPlace.OpCode.Code))
+                if (InstructionHelper.IsStoreFieldObject(whereToPlace.OpCode.Code))
                 {
                     var fieldData = GetFieldFromStfld(whereToPlace);
                     var structRef = fieldData as PapyrusStructFieldReference;
@@ -922,6 +939,34 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             }
             return args;
+        }
+
+        public IDelegatePairDefinition GetDelegatePairDefinition()
+        {
+            return ClrDelegatePairDefinition;
+        }
+
+        public PapyrusFieldDefinition GetDelegateField(FieldReference fieldRef)
+        {
+            var delegatePairs = GetDelegatePairDefinition();
+
+            // If the target field was not found
+            // then it is most guaranteed that it is a field used inside a delegate
+            // so we will have to find the appropriate name by combining the name of the used method and the field name.
+            // (This combination is to ensure the field name is kept unique)
+            PapyrusFieldDefinition targetField = null;
+
+            var item = delegatePairs.DelegateFields.FirstOrDefault(f => f.FullName == fieldRef.FullName);
+            if (item != null)
+            {
+                var method = Utility.GetKeyByValue(delegatePairs.DelegateMethodFieldPair, item);
+                var targetFieldName = "::" + method.Name + "_" +
+                                      fieldRef.Name.Replace('<', '_').Replace('>', '_').Replace("::", "");
+                targetField = PapyrusType.Fields
+                    .FirstOrDefault(f => f.Name.Value == targetFieldName);
+            }
+
+            return targetField;
         }
 
 

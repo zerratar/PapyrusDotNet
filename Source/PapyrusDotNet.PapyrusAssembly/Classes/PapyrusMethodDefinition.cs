@@ -81,7 +81,7 @@ namespace PapyrusDotNet.PapyrusAssembly
 
         public bool IsEvent { get; set; }
 
-        public int DelegateInvokeCount { get; set; }
+        internal int DelegateInvokeCount { get; set; }
 
 //=> (Flags & 4) > 0;
 

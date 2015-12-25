@@ -212,5 +212,18 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
         /// <param name="values">The values.</param>
         /// <returns></returns>
         List<PapyrusVariableReference> ParsePapyrusParameters(object[] values);
+
+        /// <summary>
+        /// Gets the delegate pair definition.
+        /// </summary>
+        /// <returns></returns>
+        IDelegatePairDefinition GetDelegatePairDefinition();
+
+        /// <summary>
+        /// Gets the delegate field.
+        /// </summary>
+        /// <param name="fieldRef">The field reference.</param>
+        /// <returns></returns>
+        PapyrusFieldDefinition GetDelegateField(FieldReference fieldRef);
     }
 }

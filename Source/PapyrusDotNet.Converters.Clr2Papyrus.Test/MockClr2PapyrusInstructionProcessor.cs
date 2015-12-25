@@ -129,5 +129,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Test
         {
             return values.Select(i => new PapyrusVariableReference() { Value = i }).ToList();
         }
+
+        public IDelegatePairDefinition GetDelegatePairDefinition()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public PapyrusFieldDefinition GetDelegateField(FieldReference fieldRef)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

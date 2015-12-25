@@ -54,8 +54,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             bool isStructAccess;
             var outputInstructions = new List<PapyrusInstruction>();
 
-
-
             if (InstructionHelper.NextInstructionIs(instruction, Code.Ldnull) &&
                 InstructionHelper.NextInstructionIs(instruction.Next, Code.Cgt_Un))
             {
@@ -97,6 +95,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     //    mainInstructionProcessor.CreateVariableReferenceFromName(typeToCheckAgainst.Name)));
                     return outputInstructions;
                 }
+            }
+
+            if (InstructionHelper.IsLoadMethodRef(instruction.OpCode.Code))
+            {
+                // Often used for delegates or Action/func parameters, when loading a reference pointer to a method and pushing it to the stack.
+                // To maintain the evaluation stack, this could add a dummy item, but for now im not going to do so.
+
             }
 
             if (InstructionHelper.IsLoadLength(instruction.OpCode.Code))
@@ -221,13 +226,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem { Value = value, TypeName = "String" });
             }
 
-            if (InstructionHelper.IsLoadField(instruction.OpCode.Code))
+            if (InstructionHelper.IsLoadFieldObject(instruction.OpCode.Code))
             {
-                if (instruction.OpCode.Code == Code.Ldflda)
-                {
-
-                }
-
                 if (instruction.Operand is FieldReference)
                 {
                     var fieldRef = instruction.Operand as FieldReference;
@@ -237,6 +237,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                     targetField = mainInstructionProcessor.PapyrusType.Fields.FirstOrDefault(
                        f => f.Name.Value == "::" + fieldRef.Name.Replace('<', '_').Replace('>', '_'));
+
+                    if (targetField == null)
+                        targetField = mainInstructionProcessor.GetDelegateField(fieldRef);
+
 
                     if (targetField != null)
                     {

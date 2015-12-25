@@ -1,4 +1,4 @@
-#if false
+
 namespace Fallout4Example
 {
     public class DelegateTests
@@ -49,38 +49,37 @@ namespace Fallout4Example
             awesome(horror);
         }
 
-        //// Not working
-        //public delegate void SecondDelegate();
-        //public void UtilizeDelegate2()
-        //{
-        //    string whatHorrorLiesHere = "test123";
+        // Working
+        public delegate void SecondDelegate();
+        public void UtilizeDelegate2()
+        {
+            string whatHorrorLiesHere = "test123";
 
-        //    SecondDelegate arrr = () =>
-        //    {
-        //        PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate2 was used!" + whatHorrorLiesHere, 0);
-        //    };
+            SecondDelegate arrr = () =>
+            {
+                PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate2 was used!" + whatHorrorLiesHere, 0);
+            };
 
-        //    arrr();
-        //}
+            arrr();
+        }
 
-        //// Not Working
-        //public delegate void HorribleDelegate();
-        //public void UtilizeDelegate4()
-        //{
-        //    string magic = "helloo";
-        //    HorribleDelegate awesome = () =>
-        //    {
-        //        AnotherDelegate awe2 = (s) =>
-        //        {
-        //            PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate4 was used!" + s, 0);
-        //        };
+        // Working
+        public delegate void HorribleDelegate();
+        public void Delegate_In_Delegate()
+        {
+            string magic = "helloo";
+            HorribleDelegate awesome = () =>
+            {
+                AnotherDelegate awe2 = (s) =>
+                {
+                    PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate4 was used!" + s, 0);
+                };
 
-        //        awe2(magic);
+                awe2(magic);
 
-        //    };
-        //    awesome();
-        //}
+            };
+            awesome();
+        }
 
     }
 }
-#endif

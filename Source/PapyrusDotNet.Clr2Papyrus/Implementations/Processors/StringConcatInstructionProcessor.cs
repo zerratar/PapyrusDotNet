@@ -15,6 +15,7 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
+using System;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -47,6 +48,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
         /// <returns></returns>
         public List<PapyrusInstruction> Process(Instruction instruction, MethodReference methodRef, List<object> parameters)
         {
+            // BUG: We are always concating the string with itself, ex: temp0 = temp0 + "val"; - This works if the instruction isnt looped.
             var output = new List<PapyrusInstruction>();
             // Equiviliant Papyrus: StrCat <output_destination> <val1> <val2>
 
@@ -59,6 +61,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 var stackItem = parameters[i] as EvaluationStackItem;
                 if (stackItem != null)
                 {
+                    var fieldVar = stackItem.Value as PapyrusFieldDefinition;
                     var paramVar = stackItem.Value as PapyrusParameterDefinition;
                     var targetVar = stackItem.Value as PapyrusVariableReference;
                     if (targetVar != null)
@@ -91,6 +94,22 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             paramVar));
+                    }
+                    else if (fieldVar != null)
+                    {
+                        if (!stackItem.TypeName.ToLower().Contains("string"))
+                        {
+                            // Not a string? Not a problem!
+                            // Since we already have a variable reference, we do not need to create an additional
+                            // temp variable before casting.
+                            // So we can go directly and do: cast ::temp0 ::awesomeVariable
+                            output.Add(mainInstructionProcessor.CreatePapyrusCastInstruction(destinationVariable,
+                                mainInstructionProcessor.CreateVariableReferenceFromName(fieldVar.Name.Value)));
+                        }
+                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
+                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
+                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
+                            fieldVar));
                     }
                     else
                     {

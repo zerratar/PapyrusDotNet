@@ -21,7 +21,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 {
                     var varType = local.VariableType;
                     var varTypeDef = varType.Resolve();
-                    if (varTypeDef.BaseType.FullName.ToLower().Contains("multicastdelegate"))
+                    if (varTypeDef.BaseType.FullName.ToLower().Contains("multicastdelegate") || varTypeDef.FullName.Contains("/<>"))
                     {
                         locals.Add(local);
                     }
@@ -31,39 +31,22 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             }
 
             // Get any compile time generated classes. We want to omit these when creating the Pex files                      
-            foreach (var nt in type.NestedTypes.Where(n => n.BaseType.FullName.ToLower().Contains("multicastdelegate")))
-            {
-                del.DelegateTypeDefinitions.Add(nt);
-            }
-            foreach (var nt in type.NestedTypes.Where(n => n.Name.StartsWith("<>")))
+            var nestedTypes = type.NestedTypes;
+            var delegates = nestedTypes.Where(n => n.BaseType.FullName.ToLower().Contains("multicastdelegate"));
+            foreach (var nt in delegates)
             {
                 del.DelegateTypeDefinitions.Add(nt);
                 foreach (var m in nt.Methods.Where(mn => mn.Name.StartsWith("<")))
                 {
-                    m.IsStatic = false;
-                    m.Name = m.Name.Replace("<", "_").Replace(">", "_");
-                    del.DelegateMethodDefinitions.Add(m);
-
-                    var fieldDefinitions = new List<FieldDefinition>();
-                    foreach (var instruction in m.Body.Instructions)
-                    {
-                        var op = instruction.Operand;
-                        var fieldRef = op as FieldReference;
-                        if (fieldRef != null)
-                        {
-                            foreach (var field in nt.Fields)
-                            {
-                                if (fieldRef.FullName == field.FullName)
-                                {
-                                    fieldDefinitions.Add(field);
-                                    if (!del.DelegateFields.Contains(field))
-                                        del.DelegateFields.Add(field);
-                                }
-                            }
-                        }
-                    }
-                    if (fieldDefinitions.Count > 0)
-                        del.DelegateMethodFieldPair.Add(m, fieldDefinitions);
+                    AddDelegateMethod(m, del, nt);
+                }
+            }
+            foreach (var nt in nestedTypes.Where(n => n.Name.StartsWith("<>")))
+            {
+                del.DelegateTypeDefinitions.Add(nt);
+                foreach (var m in nt.Methods.Where(mn => mn.Name.StartsWith("<")))
+                {
+                    AddDelegateMethod(m, del, nt);
                 }
             }
             // Search for delegate methods inside the current class
@@ -74,6 +57,47 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 del.DelegateMethodDefinitions.Add(m);
             }
             return del;
+        }
+
+        private void AddDelegateMethod(MethodDefinition m, DelegatePairDefinition del, TypeDefinition nt)
+        {
+            var locals = new List<VariableReference>();
+            foreach (var local in m.Body.Variables)
+            {
+                var varType = local.VariableType;
+                var varTypeDef = varType.Resolve();
+                if (varTypeDef.BaseType.FullName.ToLower().Contains("multicastdelegate") || varTypeDef.FullName.Contains("/<>"))
+                {
+                    locals.Add(local);
+                }
+            }
+            if (locals.Count > 0)
+                del.DelegateMethodLocalPair.Add(m, locals);
+
+            m.IsStatic = false;
+            m.Name = m.Name.Replace("<", "_").Replace(">", "_");
+            del.DelegateMethodDefinitions.Add(m);
+
+            var fieldDefinitions = new List<FieldDefinition>();
+            foreach (var instruction in m.Body.Instructions)
+            {
+                var op = instruction.Operand;
+                var fieldRef = op as FieldReference;
+                if (fieldRef != null)
+                {
+                    foreach (var field in nt.Fields)
+                    {
+                        if (fieldRef.FullName == field.FullName)
+                        {
+                            fieldDefinitions.Add(field);
+                            if (!del.DelegateFields.Contains(field))
+                                del.DelegateFields.Add(field);
+                        }
+                    }
+                }
+            }
+            if (fieldDefinitions.Count > 0)
+                del.DelegateMethodFieldPair.Add(m, fieldDefinitions);
         }
 
         public bool IsDelegateMethod(TypeDefinition type, MethodDefinition m)

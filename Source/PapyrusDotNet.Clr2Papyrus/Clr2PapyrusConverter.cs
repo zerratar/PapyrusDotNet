@@ -356,12 +356,30 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             return propList;
         }
 
+
+
         private IEnumerable<PapyrusFieldDefinition> CreateFields(TypeDefinition type, PapyrusAssemblyDefinition pex)
         {
             var fields = new List<PapyrusFieldDefinition>();
-            foreach (var field in type.Fields)
+
+
+            var delegateFields = delegatePairDefinition.DelegateMethodFieldPair.SelectMany(i => i.Value).ToList();
+
+            var typeFields = new List<FieldDefinition>();
+            typeFields.AddRange(delegateFields);
+            typeFields.AddRange(type.Fields);
+
+
+            foreach (var field in typeFields)
             {
-                var papyrusFriendlyName = "::" + field.Name.Replace('<', '_').Replace('>', '_'); // Only for the VariableReference
+                var papyrusFriendlyName = "::" + field.Name.Replace("::", "").Replace('<', '_').Replace('>', '_'); // Only for the VariableReference
+                var fieldName = field.Name;
+                if (delegateFields.Contains(field))
+                {
+                    var method = Utility.GetKeyByValue(delegatePairDefinition.DelegateMethodFieldPair, field);
+                    papyrusFriendlyName = ("::" + method.Name + "_" + papyrusFriendlyName.Replace("::", ""));
+                    fieldName = papyrusFriendlyName;
+                }
 
                 var properties = attributeReader.ReadPapyrusAttributes(field);
                 var fieldType = Utility.GetPapyrusReturnType(field.FieldType, type);
@@ -370,7 +388,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                     fieldType = "Int";
 
                 var nameRef = papyrusFriendlyName.Ref(pex);
-                var papyrusFieldDefinition = new PapyrusFieldDefinition(pex, field.Name,
+                var papyrusFieldDefinition = new PapyrusFieldDefinition(pex, fieldName,
                     fieldType)
                 {
                     FieldVariable = new PapyrusVariableReference()

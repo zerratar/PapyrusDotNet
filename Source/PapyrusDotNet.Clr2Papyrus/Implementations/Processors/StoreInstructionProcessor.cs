@@ -103,7 +103,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 }
             }
 
-            if (InstructionHelper.IsStoreLocalVariable(instruction.OpCode.Code) || InstructionHelper.IsStoreField(instruction.OpCode.Code))
+            if (InstructionHelper.IsStoreLocalVariable(instruction.OpCode.Code) || InstructionHelper.IsStoreFieldObject(instruction.OpCode.Code))
             {
                 if (instruction.Operand is FieldReference)
                 {
@@ -125,6 +125,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                         var definedField = mainInstructionProcessor.PapyrusType.Fields.FirstOrDefault(
                                                     f => f.Name.Value == "::" + fref.Name.Replace('<', '_').Replace('>', '_'));
+
+                        if (definedField == null)
+                            definedField = mainInstructionProcessor.GetDelegateField(fref);
+
                         if (mainInstructionProcessor.EvaluationStack.Count > 0)
                         {
                             var nextObj = mainInstructionProcessor.EvaluationStack.Peek();

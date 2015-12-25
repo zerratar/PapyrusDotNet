@@ -62,17 +62,19 @@ namespace PapyrusDotNet.Common
 
         public static bool IsLoadInteger(Code code) => code == Code.Ldc_I4 || code == Code.Ldc_I4_0 || code == Code.Ldc_I4_1 || code == Code.Ldc_I4_2 || code == Code.Ldc_I4_3 || code == Code.Ldc_I4_4 || code == Code.Ldc_I4_5 || code == Code.Ldc_I4_6 || code == Code.Ldc_I4_7 || code == Code.Ldc_I4_8 || code == Code.Ldc_I4_S || code == Code.Ldc_I8 || code == Code.Ldc_R4 || code == Code.Ldc_R8;
 
-        public static bool IsLoadField(Code code) => code == Code.Ldfld || code == Code.Ldflda;
+        public static bool IsLoadFieldObject(Code code) => code == Code.Ldfld || code == Code.Ldflda;
+
+        public static bool IsLoadMethodRef(Code code) => code == Code.Ldftn;
 
         public static bool IsLoadLocalVariable(Code code) => code == Code.Ldloc_0 || code == Code.Ldloc || code == Code.Ldloc_1 || code == Code.Ldloc_2 || code == Code.Ldloc_3 || code == Code.Ldloc_S;
 
         public static bool IsLoadLength(Code code) => code == Code.Ldlen;
 
-        public static bool IsLoad(Code code) => IsLoadArgs(code) || IsLoadInteger(code) || IsLoadLocalVariable(code) || IsLoadString(code) || IsLoadField(code) || IsLoadStaticField(code) || IsLoadElement(code) || IsLoadLength(code);
+        public static bool IsLoad(Code code) => IsLoadMethodRef(code) || IsLoadArgs(code) || IsLoadInteger(code) || IsLoadLocalVariable(code) || IsLoadString(code) || IsLoadFieldObject(code) || IsLoadFieldValue(code) || IsLoadElement(code) || IsLoadLength(code);
 
-        public static bool IsStore(Code code) => IsStoreElement(code) || IsStoreField(code) || IsStoreLocalVariable(code) || IsStoreStaticField(code);
+        public static bool IsStore(Code code) => IsStoreElement(code) || IsStoreFieldObject(code) || IsStoreLocalVariable(code) || IsStoreFieldValue(code);
 
-        public static bool IsStoreField(Code code) => code == Code.Stfld;
+        public static bool IsStoreFieldObject(Code code) => code == Code.Stfld;
 
         public static bool IsStoreLocalVariable(Code code) => code == Code.Stloc || code == Code.Stloc_0 || code == Code.Stloc_1 || code == Code.Stloc_2 || code == Code.Stloc_3 || code == Code.Stloc_S;
 
@@ -86,9 +88,9 @@ namespace PapyrusDotNet.Common
 
         public static bool IsMath(Code code) => code == Code.Add || code == Code.Sub || code == Code.Div || code == Code.Mul;
 
-        public static bool IsLoadStaticField(Code code) => code == Code.Ldsfld || code == Code.Ldsflda;
+        public static bool IsLoadFieldValue(Code code) => code == Code.Ldsfld || code == Code.Ldsflda;
 
-        public static bool IsStoreStaticField(Code code) => code == Code.Stsfld;
+        public static bool IsStoreFieldValue(Code code) => code == Code.Stsfld;
 
         public static bool IsLoadElement(Code code) => code == Code.Ldelem_Any || code == Code.Ldelem_I || code == Code.Ldelem_I1 || code == Code.Ldelem_I2 || code == Code.Ldelem_I4 || code == Code.Ldelem_I8 || code == Code.Ldelem_R4 || code == Code.Ldelem_R8 || code == Code.Ldelem_Ref || code == Code.Ldelem_U1 || code == Code.Ldelem_U2 || code == Code.Ldelem_U4 || code == Code.Ldelema;
 
@@ -165,6 +167,15 @@ namespace PapyrusDotNet.Common
                     instruction.Next.Next != null &&
                     instruction.Next.Next.OpCode.Code == targetOpCode);
         }
+
+        public static Instruction FindPreviousInstruction(Instruction instruction, Func<Code, bool> pred)
+        {
+            if (instruction == null) return null;
+            var prev = instruction.Previous;
+            while (prev != null && !pred(prev.OpCode.Code)) prev = prev.Previous;
+            return prev;
+        }
+
 
         public static bool NextInstructionIs(Instruction instruction, Func<Code, bool> targetOpCode)
         {

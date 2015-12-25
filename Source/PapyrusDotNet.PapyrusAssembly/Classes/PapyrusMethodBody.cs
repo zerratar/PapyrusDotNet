@@ -33,7 +33,6 @@ namespace PapyrusDotNet.PapyrusAssembly
             this.method = method;
             Instructions = new PapyrusInstructionCollection();
             Variables = new List<PapyrusVariableReference>();
-            Fields = new List<PapyrusVariableReference>();
             TempVariables = new List<PapyrusVariableReference>();
         }
 
@@ -41,8 +40,6 @@ namespace PapyrusDotNet.PapyrusAssembly
         public bool IsEmpty => !Instructions.Any();
 
         public List<PapyrusVariableReference> Variables { get; set; }
-
-        public List<PapyrusVariableReference> Fields { get; set; }
 
         public List<PapyrusVariableReference> TempVariables { get; set; }
 

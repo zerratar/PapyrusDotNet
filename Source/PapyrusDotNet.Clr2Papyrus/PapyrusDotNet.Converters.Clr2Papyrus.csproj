@@ -76,10 +76,14 @@
     <Compile Include="Clr2PapyrusConverter.cs" />
     <Compile Include="Base\Clr2PapyrusConverterBase.cs" />
     <Compile Include="Implementations\PapyrusAssemblyOutput.cs" />
+    <Compile Include="Interfaces\IMethodBodyOptimizer.cs" />
+    <Compile Include="Interfaces\IMethodBodyOptimizerResult.cs" />
     <Compile Include="Interfaces\IPropertyAnalyzer.cs" />
     <Compile Include="Interfaces\IPropertyAnalyzerResult.cs" />
     <Compile Include="Implementations\PropertyAnalyzerResult.cs" />
     <Compile Include="Implementations\PropertyAnalyzer.cs" />
+    <Compile Include="Implementations\MethodBodyOptimizerResult.cs" />
+    <Compile Include="Interfaces\MethodBodyOptimizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-PapyrusDotNet 1.0 Technical Preview
+PapyrusDotNet 1.0 Technical Preview 2
 =============
 
 PapyrusDotNet is a Papyrus compiler, difference between this one and Bethesda's is that this one takes<br/>
@@ -101,11 +101,12 @@ Keep in mind that the generated PapyrusDotNet.Core.dll does __not__ contain any 
 Which means you can't (absolutely should not) use PapyrusDotNet.Core.dll with PapyrusDotNet.exe to re-generate .pex files. As these .pex files will completely break your scripts and you WILL have to reinstall skyrim or fallout 4 completely unless you took backups...
 
 ## Technical Preview
-The first technical preview (TP1) does **not** have support for `Delegates` or `Generics`
 
-These features will be added again when the base functionality is stable enough. To use it, you will have to checkout an earlier version of PapyrusDotNet but unfortunately it only works for Skyrim.
+The second technical preview (TP2) does **not** have support for `Generics`
 
-Short: Delegates and Generics will be added very soon but is not implemented in TP1.
+This feature will be added again when the base functionality is stable enough. To use it, you will have to checkout an earlier version of PapyrusDotNet but unfortunately it only works for Skyrim.
+
+Short: Generics will be added very soon but is not implemented in TP2.
 
 ## Limitations of PapyrusDotNet
 #### .NET Framework is NOT supported!
@@ -242,12 +243,14 @@ A3.3. If you are still not sure, you can e-mail me your code, see contact at bot
 Known Issues
 ======
 1. Script States are not yet supported.<br/>
-2. Delegates are not supported in TP1
-3. Generics are not supported in TP1
+2. StringCat has a bug causing the string to append to itself (This was previously intended but was never really thought-through).
+3. Generics are not supported in TP2
 
 
 Changelog
 ========
+### v1.0.0f2 TP2
+ * Delegate support added. Be aware: Delegates cannot be used as Properties, Parameters or as Return Type of a method. You can check the DelegateTests.cs inside the fallout4example project for different examples of what is currently working.
 
 ### v1.0.0 TP1
 * Completely rewrote the whole project from scratch.

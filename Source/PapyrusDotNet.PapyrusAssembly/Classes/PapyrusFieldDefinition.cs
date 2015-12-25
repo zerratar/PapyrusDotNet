@@ -36,6 +36,7 @@ namespace PapyrusDotNet.PapyrusAssembly
             : this(assembly)
         {
             name = "::" + name.Replace('<', '_').Replace('>', '_');
+            name = name.Replace("::::", "::");
             Name = name.Ref(assembly);
             TypeName = typeName;
         }
