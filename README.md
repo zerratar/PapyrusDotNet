@@ -167,7 +167,7 @@ unsafe, extern, DllImport, etc.
 2. Conditional statements, function return points and loops including:
 for, foreach, while, switch, do, if, else, break, return
 3. Enum works.
-4. ~~Delegates works.~~
+4. Delegates works.
 4. Following operators: +,++,-,--,%,%=,=,==,!=,<,>,<=,>=,\*,/,\*=,/=,&&,||
 5. Explicit casts works. Ex: 
     **var x = (Actor)myObjectReference;** and **var y = myObjectReference as Actor;**
