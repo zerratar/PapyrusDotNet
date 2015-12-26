@@ -210,6 +210,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		todo.txt = todo.txt
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{CACF0D57-6200-4689-B991-DAB2E0A4F66A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector", "PapyrusDotNet.PexInspector\PapyrusDotNet.PexInspector.csproj", "{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector.ViewModels", "PapyrusDotNet.PexInspector.ViewModels\PapyrusDotNet.PexInspector.ViewModels.csproj", "{194AA6AE-668E-4633-BA12-5DB6D4DC0622}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -272,6 +278,14 @@ Global
 		{0F72BF82-253B-4588-9029-7C091C104118}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F72BF82-253B-4588-9029-7C091C104118}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F72BF82-253B-4588-9029-7C091C104118}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{194AA6AE-668E-4633-BA12-5DB6D4DC0622}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{194AA6AE-668E-4633-BA12-5DB6D4DC0622}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{194AA6AE-668E-4633-BA12-5DB6D4DC0622}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{194AA6AE-668E-4633-BA12-5DB6D4DC0622}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -287,5 +301,7 @@ Global
 		{D47C236E-5E6B-4E75-A3CD-DF63CB99F00D} = {2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}
 		{F3D27E01-2FEF-410A-8705-1A92855F13C6} = {2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}
 		{ABEE7921-79B8-45AF-B10B-FE4E421AE53F} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
+		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8} = {CACF0D57-6200-4689-B991-DAB2E0A4F66A}
+		{194AA6AE-668E-4633-BA12-5DB6D4DC0622} = {CACF0D57-6200-4689-B991-DAB2E0A4F66A}
 	EndGlobalSection
 EndGlobal

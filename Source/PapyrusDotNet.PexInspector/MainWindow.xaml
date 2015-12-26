@@ -1,0 +1,87 @@
+﻿<Window x:Class="PapyrusDotNet.PexInspector.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PapyrusDotNet.PexInspector"
+        xmlns:viewModels="clr-namespace:PapyrusDotNet.PexInspector.ViewModels;assembly=PapyrusDotNet.PexInspector.ViewModels"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:command="http://www.galasoft.ch/mvvmlight"
+        xmlns:converters="clr-namespace:PapyrusDotNet.PexInspector.Converters"
+        d:DataContext="{x:Static viewModels:MainWindowViewModel.DesignInstance}"
+        mc:Ignorable="d"
+        Title="PapyrusDotNet PexInspector - PreAlpha" Height="610" Width="871">
+    <Window.Resources>
+        <converters:PapyrusInstructionDisplayConverter x:Key="PapyrusInstructionDisplayConverter"/>
+    </Window.Resources>
+    <Grid>
+        <Menu x:Name="menu" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <Menu.Items>
+                <MenuItem Header="File">
+                    <MenuItem.Items>
+                        <MenuItem Header="Open" Command="{Binding OpenPexCommand}"></MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Save" Command="{Binding SavePexCommand}"></MenuItem>
+                        <MenuItem Header="Save As" Command="{Binding SavePexAsCommand}"></MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Exit" Command="{Binding ExitCommand}"></MenuItem>
+                    </MenuItem.Items>
+                </MenuItem>
+            </Menu.Items>
+        </Menu>
+        <Grid Margin="0,18,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="190*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="400*"/>
+            </Grid.ColumnDefinitions>
+            <TreeView x:Name="treeView" ItemsSource="{Binding PexTree}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="SelectedItemChanged">
+                        <command:EventToCommand Command="{Binding SelectedMemberCommand}" CommandParameter="{Binding ElementName=treeView,Path=SelectedValue}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    </Style>
+                </TreeView.ItemContainerStyle>
+
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Name="img" Width="16" Height="16" Stretch="Fill" Source="{Binding Icon}"/>
+                            <TextBlock Text="{Binding Text}" Margin="5,0" />
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+
+                <TreeView.ContextMenu>
+                    <ContextMenu>
+
+                    </ContextMenu>
+                </TreeView.ContextMenu>
+            </TreeView>
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+            <ListBox x:Name="listBox" Grid.Column="2" ItemsSource="{Binding SelectedMethodInstructions}">
+
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding ., Converter={StaticResource PapyrusInstructionDisplayConverter}}">
+                            <TextBlock.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Insert Instruction Before" Command="{Binding InsertBeforeCommand}"></MenuItem>
+                                    <MenuItem Header="Insert Instruction After" Command="{Binding InsertAfterCommand}"></MenuItem>
+                                    <MenuItem Header="Edit Instruction" Command="{Binding EditInstructionCommand}"></MenuItem>
+                                    <MenuItem Header="Remove Instruction" Command="{Binding RemoveInstructionCommand}"></MenuItem>
+                                </ContextMenu>
+                            </TextBlock.ContextMenu>
+                        </TextBlock>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Grid>
+</Window>
