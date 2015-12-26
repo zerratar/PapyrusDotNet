@@ -8,14 +8,18 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:command="http://www.galasoft.ch/mvvmlight"
         xmlns:converters="clr-namespace:PapyrusDotNet.PexInspector.Converters"
+        xmlns:papyrusAssembly="clr-namespace:PapyrusDotNet.PapyrusAssembly;assembly=PapyrusDotNet.PapyrusAssembly"
+        xmlns:behaviours="clr-namespace:PapyrusDotNet.PexInspector.Behaviours"
         d:DataContext="{x:Static viewModels:MainWindowViewModel.DesignInstance}"
         mc:Ignorable="d"
         Title="PapyrusDotNet PexInspector - PreAlpha" Height="610" Width="871">
     <Window.Resources>
         <converters:PapyrusInstructionDisplayConverter x:Key="PapyrusInstructionDisplayConverter"/>
+        <converters:PapyrusInstructionOperandConverter x:Key="PapyrusInstructionOperandConverter"/>
+        <converters:PapyrusArrayDisplayConverter x:Key="PapyrusArrayDisplayConverter"/>
     </Window.Resources>
     <Grid>
-        <Menu x:Name="menu" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+        <Menu x:Name="menu" HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="{x:Null}">
             <Menu.Items>
                 <MenuItem Header="File">
                     <MenuItem.Items>
@@ -29,7 +33,7 @@
                 </MenuItem>
             </Menu.Items>
         </Menu>
-        <Grid Margin="0,18,0,0">
+        <Grid Margin="0,26,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="190*"/>
                 <ColumnDefinition Width="5"/>
@@ -65,23 +69,179 @@
                 </TreeView.ContextMenu>
             </TreeView>
             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-            <ListBox x:Name="listBox" Grid.Column="2" ItemsSource="{Binding SelectedMethodInstructions}">
-
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding ., Converter={StaticResource PapyrusInstructionDisplayConverter}}">
-                            <TextBlock.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Insert Instruction Before" Command="{Binding InsertBeforeCommand}"></MenuItem>
-                                    <MenuItem Header="Insert Instruction After" Command="{Binding InsertAfterCommand}"></MenuItem>
-                                    <MenuItem Header="Edit Instruction" Command="{Binding EditInstructionCommand}"></MenuItem>
-                                    <MenuItem Header="Remove Instruction" Command="{Binding RemoveInstructionCommand}"></MenuItem>
+            <TabControl Grid.Column="2" >
+                <TabItem Header="Instructions">
+                    <TabItem.Content>
+                        <DataGrid x:Name="instructionsList" ItemsSource="{Binding SelectedMethodInstructions}" 
+                                  MinRowHeight="22"
+                                  VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"                                  
+                                  AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
+                                  behaviours:DataGridBehaviour.DisplayRowNumber="True">
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </DataGrid.CellStyle>
+                            <DataGrid.Resources>
+                                <ContextMenu x:Key="ItemContextMenu">
+                                    <MenuItem Header="Insert Before..." Command="{Binding InsertBeforeCommand}"></MenuItem>
+                                    <MenuItem Header="Insert After..." Command="{Binding InsertAfterCommand}"></MenuItem>
+                                    <MenuItem Header="Edit..." Command="{Binding EditInstructionCommand}"></MenuItem>
+                                    <Separator/>
+                                    <MenuItem Header="Delete" Command="{Binding RemoveInstructionCommand}"></MenuItem>
+                                    <!--<MenuItem Header="More Info" Command="{Binding Path=DataContext.MoreInfo, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" Background="WhiteSmoke" />-->
                                 </ContextMenu>
-                            </TextBlock.ContextMenu>
-                        </TextBlock>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                            </DataGrid.Resources>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="{x:Type DataGridRow}" >
+                                    <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+
+                                <DataGridTemplateColumn  Header="Offset" >
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                                            <TextBlock Text="{Binding Offset}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn  Header="OpCode">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                                            <TextBlock Text="{Binding OpCode}" VerticalAlignment="Center" Margin="5,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn  Header="Operand">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                                            <TextBlock Text="{Binding Operand, Converter={StaticResource PapyrusInstructionOperandConverter}}" VerticalAlignment="Center"  Margin="5,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn  Header="Arguments">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                                            <TextBlock Text="{Binding Arguments, Converter={StaticResource PapyrusArrayDisplayConverter}}" VerticalAlignment="Center" Margin="5,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn  Header="Operand Arguments">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                                            <TextBlock Text="{Binding OperandArguments, Converter={StaticResource PapyrusArrayDisplayConverter}}" VerticalAlignment="Center" Margin="5,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem.Content>
+                </TabItem>
+                <TabItem Header="Variables">
+                    <TabItem.Content>
+
+
+                        <DataGrid x:Name="variableList"  ItemsSource="{Binding SelectedMethodVariables}"
+                                  MinRowHeight="22"
+                                  VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"
+                                  AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
+                                  behaviours:DataGridBehaviour.DisplayRowNumber="True">
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </DataGrid.CellStyle>
+                            <DataGrid.Resources>
+                                <ContextMenu x:Key="ItemContextMenu">
+                                    <MenuItem Header="Create new..." Command="{Binding CreateVariableCommand}"></MenuItem>
+                                    <MenuItem Header="Edit..." Command="{Binding EditVariableCommand}"></MenuItem>
+                                    <Separator/>
+                                    <MenuItem Header="Delete" Command="{Binding DeleteVariableCommand}"></MenuItem>
+                                </ContextMenu>
+
+                            </DataGrid.Resources>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="{x:Type DataGridRow}" >
+                                    <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+
+                                <DataGridTemplateColumn  Header="Name" >
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusVariableReference}">
+                                            <TextBlock Text="{Binding Path=Name.Value}" VerticalAlignment="Center" Margin="5,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn  Header="Variable Type" >
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusVariableReference}">
+                                            <TextBlock Text="{Binding Path=TypeName.Value}" VerticalAlignment="Center" Margin="5,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                    </TabItem.Content>
+                </TabItem>
+                <TabItem Header="Parameters">
+                    <TabItem.Content>
+                        <DataGrid x:Name="parameterist"  ItemsSource="{Binding SelectedMethodParameters}"
+                                  MinRowHeight="22"
+                                  VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"
+                                  AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
+                                  behaviours:DataGridBehaviour.DisplayRowNumber="True">
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </DataGrid.CellStyle>
+                            <DataGrid.Resources>
+                                <ContextMenu x:Key="ItemContextMenu">
+                                    <MenuItem Header="Create new..." Command="{Binding CreateParameterCommand}"></MenuItem>
+                                    <MenuItem Header="Edit..." Command="{Binding EditParameterCommand}"></MenuItem>
+                                    <Separator/>
+                                    <MenuItem Header="Delete" Command="{Binding DeleteParameterCommand}"></MenuItem>
+                                </ContextMenu>
+
+                            </DataGrid.Resources>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="{x:Type DataGridRow}" >
+                                    <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Columns>
+
+                                <DataGridTemplateColumn  Header="Name" >
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusParameterDefinition}">
+                                            <TextBlock Text="{Binding Path=Name.Value}" VerticalAlignment="Center" Margin="5,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn  Header="Variable Type" >
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusParameterDefinition}">
+                                            <TextBlock Text="{Binding Path=TypeName.Value}" VerticalAlignment="Center" Margin="5,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem.Content>
+                </TabItem>
+            </TabControl>
+
         </Grid>
     </Grid>
 </Window>

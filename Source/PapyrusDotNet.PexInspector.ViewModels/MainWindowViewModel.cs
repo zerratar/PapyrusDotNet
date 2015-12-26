@@ -171,16 +171,38 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(
                         method.Body.Instructions
                     );
+
+                SelectedMethodParameters = new ObservableCollection<PapyrusParameterDefinition>(
+                        method.Parameters
+                    );
+
+                SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(
+                        method.GetVariables()
+                    );
             }
         }
 
         private ObservableCollection<PapyrusInstruction> selectedMethodInstructions;
         private ObservableCollection<PapyrusViewModel> pexTree;
+        private ObservableCollection<PapyrusParameterDefinition> selectedMethodParameters;
+        private ObservableCollection<PapyrusVariableReference> selectedMethodVariables;
 
         public ObservableCollection<PapyrusInstruction> SelectedMethodInstructions
         {
             get { return selectedMethodInstructions; }
             set { Set(ref selectedMethodInstructions, value); }
+        }
+
+        public ObservableCollection<PapyrusParameterDefinition> SelectedMethodParameters
+        {
+            get { return selectedMethodParameters; }
+            set { Set(ref selectedMethodParameters, value); }
+        }
+
+        public ObservableCollection<PapyrusVariableReference> SelectedMethodVariables
+        {
+            get { return selectedMethodVariables; }
+            set { Set(ref selectedMethodVariables, value); }
         }
 
         public ICommand OpenPexCommand { get; set; }
