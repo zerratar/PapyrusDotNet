@@ -51,7 +51,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             // BUG: We are always concating the string with itself, ex: temp0 = temp0 + "val"; - This works if the instruction isnt looped.
             var output = new List<PapyrusInstruction>();
             // Equiviliant Papyrus: StrCat <output_destination> <val1> <val2>
-
             // Make sure we have a temp variable if necessary
             bool isStructAccess;
             var destinationVariable = mainInstructionProcessor.GetTargetVariable(instruction, methodRef, out isStructAccess);
@@ -67,30 +66,32 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     if (targetVar != null)
                     {
                         if (!stackItem.TypeName.ToLower().Contains("string"))
-                        {
-                            // Not a string? Not a problem!
-                            // Since we already have a variable reference, we do not need to create an additional
-                            // temp variable before casting.
-                            // So we can go directly and do: cast ::temp0 ::awesomeVariable
                             output.Add(mainInstructionProcessor.CreatePapyrusCastInstruction(destinationVariable, targetVar));
+
+                        if (i == 0) // Is First? Then we just want to assign the destinationVariable with the target value
+                        {
+                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign,
+                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable), targetVar));
                         }
-                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
-                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
-                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
-                            targetVar));
+                        else
+                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
+                                mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
+                                mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
+                                targetVar));
                     }
                     else if (paramVar != null)
                     {
                         if (!stackItem.TypeName.ToLower().Contains("string"))
-                        {
-                            // Not a string? Not a problem!
-                            // Since we already have a variable reference, we do not need to create an additional
-                            // temp variable before casting.
-                            // So we can go directly and do: cast ::temp0 ::awesomeVariable
                             output.Add(mainInstructionProcessor.CreatePapyrusCastInstruction(destinationVariable,
                                 mainInstructionProcessor.CreateVariableReferenceFromName(paramVar.Name.Value)));
+
+                        if (i == 0) // Is First? Then we just want to assign the destinationVariable with the target value
+                        {
+                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign,
+                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable), paramVar));
                         }
-                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
+                        else
+                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             paramVar));
@@ -98,15 +99,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     else if (fieldVar != null)
                     {
                         if (!stackItem.TypeName.ToLower().Contains("string"))
-                        {
-                            // Not a string? Not a problem!
-                            // Since we already have a variable reference, we do not need to create an additional
-                            // temp variable before casting.
-                            // So we can go directly and do: cast ::temp0 ::awesomeVariable
                             output.Add(mainInstructionProcessor.CreatePapyrusCastInstruction(destinationVariable,
                                 mainInstructionProcessor.CreateVariableReferenceFromName(fieldVar.Name.Value)));
+
+                        if (i == 0) // Is First? Then we just want to assign the destinationVariable with the target value
+                        {
+                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign,
+                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable), fieldVar));
                         }
-                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
+                        else
+                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             fieldVar));
@@ -117,7 +119,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         var newTempVar = false;
                         if (!stackItem.TypeName.ToLower().Contains("string"))
                         {
-                            // output.Add("Cast " + destinationVariable + " " + targetVar.Name.Value);
                             // First, get a new temp variable of type string.
                             // This new temp variable will be used for casting the source object into a string.                            
                             value = mainInstructionProcessor.GetTargetVariable(instruction, methodRef, out isStructAccess, "String", true);
@@ -143,7 +144,17 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             // Make sure that our newly ::temp1 is used when concating the string.
                             value = valueToCastTemp;
                         }
-                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
+
+                        if (i == 0) // Is First? Then we just want to assign the destinationVariable with the target value
+                        {
+                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign,
+                            mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
+                            mainInstructionProcessor.CreateVariableReference(newTempVar
+                                ? PapyrusPrimitiveType.Reference
+                                : PapyrusPrimitiveType.String, value)));
+                        }
+                        else
+                            output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Strcat,
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             mainInstructionProcessor.CreateVariableReference(PapyrusPrimitiveType.Reference, destinationVariable),
                             mainInstructionProcessor.CreateVariableReference(newTempVar

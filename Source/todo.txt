@@ -5,7 +5,7 @@ TODO: (1/1 completed)
     * [Completed] Properties cannot be currently be accessed
         
 ==================================
-    Clr2Papyrus (8/32 completed)
+    Clr2Papyrus (13/32 completed)
 ==================================
 TODO:
   (1) Instructions: (4/15 completed)
@@ -16,7 +16,7 @@ TODO:
     * StructCreate - new StructName() ?
     * [Completed] StructGet - Struct Variable/Property Get		
     * [Completed] StructSet - Struct Variable/Property Set		
-    * Is - Is it used the same way as the 'is' keyword in c# ?	
+    * [Completed] Is - It has the same usage as the 'is' keyword in c#
     
     -\\ Proposed API for accessing the Array Functions using Extension methods \\-
     ------------------------------------------------------------------------------
@@ -46,10 +46,10 @@ TODO:
     * [Completed] Create delegates
     * [Completed] Simple Delegates without parameters and no use of outside variables.
 	* [Completed] Simple Delegates with parameters and no use of outside variables.
-	* Simple Delegates without parameters and uses outside variables.
-	* Simple Delegates with parameters and uses outside variables.
-	* Nested Delegates without parameters
-	* Nested Delegates with parameters
+	* [Completed] Simple Delegates without parameters and uses outside variables.
+	* [Completed] Simple Delegates with parameters and uses outside variables.
+	* [Completed] Nested Delegates without parameters
+	* [Completed] Nested Delegates with parameters
 
   (5) [TP3] Generics: (0/3 completed)
         (Note to self: Look at the old code where I've already solved this :))
