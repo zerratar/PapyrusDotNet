@@ -81,7 +81,7 @@ namespace PapyrusDotNet
             var clr2Papyrus = !Enumerable.Contains(args, "-clr");
             var input = args[0];
             var output = args[1];
-
+            bool autoClose = args.Contains("x") || args.Contains("X") || args.Contains("-x") || args.Contains("-X");
             if (clr2Papyrus)
             {
                 var targetVersion = Enumerable.Contains(args, "-skyrim") ? PapyrusVersionTargets.Skyrim
@@ -90,8 +90,13 @@ namespace PapyrusDotNet
                 var compilerOptions = !Enumerable.Contains(args, "-easy") ? PapyrusCompilerOptions.Strict
                     : PapyrusCompilerOptions.Easy;
                 var readerParameters = new ReaderParameters { ReadSymbols = true };
+
                 converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), compilerOptions);
-                inputData = new ClrAssemblyInput(AssemblyDefinition.ReadAssembly(input, readerParameters), targetVersion);
+
+                var assemblyDefinition = AssemblyDefinition.ReadAssembly(input, readerParameters);
+                assemblyDefinition.MainModule.ReadSymbols();
+
+                inputData = new ClrAssemblyInput(assemblyDefinition, targetVersion);
             }
             else
             {
@@ -120,6 +125,11 @@ namespace PapyrusDotNet
                 outputData.Save(output);
 
                 // Do something...
+            }
+
+            if (autoClose)
+            {
+                return;
             }
 
             while (true)

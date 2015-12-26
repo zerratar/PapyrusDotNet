@@ -173,7 +173,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
                     outputInstructions.AddRange(papyrusInstructions);
 
-                    instructionReferences[i] = papyrusInstructions;
+                    instructionReferences[i].AddRange(papyrusInstructions);
                 }
 
                 // Adds the Line number association for each instruction

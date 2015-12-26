@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
@@ -89,11 +90,25 @@ namespace PapyrusDotNet.ConsoleTests
                 targetFolder = "c" + dir;
             }
 
+//            var provider = new Mono.Cecil.Pdb.PdbReaderProvider();
+
+//            provider.GetSymbolReader()
+
+//            PdbFactory factory = new PdbFactory();
+//            ISymbolReader reader =
+//factory.CreateReader(assdef.MainModule, ass_file);
+
+            var readerParameters = new ReaderParameters { ReadSymbols = true };
+
             var converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(), PapyrusCompilerOptions.Strict);
+            var assemblyDefinition = AssemblyDefinition.ReadAssembly(
+                targetFolder + "fallout4example.dll", readerParameters);
+
+            assemblyDefinition.MainModule.ReadSymbols();
+
             var value = converter.Convert(
                 new ClrAssemblyInput(
-                    AssemblyDefinition.ReadAssembly(
-                        targetFolder + "fallout4example.dll"),
+                    assemblyDefinition,
                     PapyrusVersionTargets.Fallout4)) as PapyrusAssemblyOutput;
 #if false
                         var folder = @"d:\git\PapyrusDotNet\Source\Test Scripts\Fallout 4\";

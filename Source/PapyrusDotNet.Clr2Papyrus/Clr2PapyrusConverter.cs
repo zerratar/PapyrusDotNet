@@ -250,10 +250,18 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                     {
                         m.MethodType = PapyrusMethodTypes.Method;
                     }
-
+                    int lastStart = 0;
                     method.Body.Instructions.ForEach(i =>
                     {
-                        if (i.SequencePoint != null) m.BodyLineNumbers.Add((short)i.SequencePoint.StartLine);
+                        if (i.SequencePoint != null)
+                        {
+                            lastStart = i.SequencePoint.StartLine;
+                            m.BodyLineNumbers.Add((short)i.SequencePoint.StartLine);
+                        }
+                        else
+                        {
+                            m.BodyLineNumbers.Add((short)lastStart);
+                        }
                     });
 
                     debug.MethodDescriptions.Add(m);
@@ -461,18 +469,22 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                     // This local variable is pointing to a delegate
                     // and since we are removing all Delegate types, this wont work. So we have to change the type into something else.
                     // in this case, we are changing it into a Int
-                    var varName = (!string.IsNullOrEmpty(clrVar.Name) ? clrVar.Name : clrVar.ToString()).Ref(asm);
 
-                    var delegateInvokeRef = delegateFinder.FindDelegateInvokeReference(delegatePairDefinition, m);
-
-                    m.Body.Variables.Add(new PapyrusVariableReference(varName, "Int".Ref(asm))
+                    if (!clrVar.Name.Contains("$<>")) // if we are reading symbols, delegate variables contains unwanted characters in their names. 
+                                                      // And since those are not going to be used. We can just skip these.
                     {
-                        IsDelegateReference = true,
-                        DelegateInvokeReference = delegateInvokeRef,
-                        Value = varName.Value,
-                        ValueType = PapyrusPrimitiveType.Reference
-                    });
+                        var varName = (!string.IsNullOrEmpty(clrVar.Name) ? clrVar.Name : clrVar.ToString()).Ref(asm);
 
+                        var delegateInvokeRef = delegateFinder.FindDelegateInvokeReference(delegatePairDefinition, m);
+
+                        m.Body.Variables.Add(new PapyrusVariableReference(varName, "Int".Ref(asm))
+                        {
+                            IsDelegateReference = true,
+                            DelegateInvokeReference = delegateInvokeRef,
+                            Value = varName.Value,
+                            ValueType = PapyrusPrimitiveType.Reference
+                        });
+                    }
                 }
                 else
                 {

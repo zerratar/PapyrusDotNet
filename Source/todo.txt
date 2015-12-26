@@ -57,9 +57,9 @@ TODO:
     * Create a new Type for each used generic type replacing the Generic Parameter Type with the used Type.
 	* Update references to use the newly generated types
 
-  (6) Debug: (0/2 completed)
-	* Finish the debug table
-	* Add debug line numbers based on the c# source code
+  (6) Debug: (2/2 completed)
+	* [Completed] Finish the debug table
+	* [Completed] Add debug line numbers based on the c# source code
   
   (7) Documentation: (0/1 completed)
 	* Add Documentation using XML Documentation
