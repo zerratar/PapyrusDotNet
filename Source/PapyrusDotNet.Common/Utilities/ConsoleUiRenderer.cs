@@ -106,6 +106,7 @@ namespace PapyrusDotNet.Common.Utilities
                 "  \t-clr :: Converts a .pex or folder containg .pex files into a .NET library usable when modding.");
             Console.WriteLine("  \t* <input> :: .pex file or folder");
             Console.WriteLine("  \t* <output> :: folder (File will be named PapyrusDotNet.Core.dll)");
+            Console.WriteLine("  \t-x :: Skips the waiting keyinput the process is completed and closes PapyrusDotNet automatically.");
         }
 
     }
