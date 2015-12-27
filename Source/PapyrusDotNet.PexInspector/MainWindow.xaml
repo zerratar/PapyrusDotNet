@@ -73,6 +73,7 @@
                 <TabItem Header="Instructions">
                     <TabItem.Content>
                         <DataGrid x:Name="instructionsList" ItemsSource="{Binding SelectedMethodInstructions}" 
+                                  SelectedItem="{Binding SelectedMethodInstruction}"
                                   MinRowHeight="22"
                                   VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"                                  
                                   AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
@@ -84,11 +85,11 @@
                             </DataGrid.CellStyle>
                             <DataGrid.Resources>
                                 <ContextMenu x:Key="ItemContextMenu">
-                                    <MenuItem Header="Insert Before..." Command="{Binding InsertBeforeCommand}"></MenuItem>
-                                    <MenuItem Header="Insert After..." Command="{Binding InsertAfterCommand}"></MenuItem>
-                                    <MenuItem Header="Edit..." Command="{Binding EditInstructionCommand}"></MenuItem>
+                                    <MenuItem Header="Insert Before..." Command="{Binding DataContext.InsertBeforeCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
+                                    <MenuItem Header="Insert After..." Command="{Binding DataContext.InsertAfterCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" ></MenuItem>
+                                    <MenuItem Header="Edit..." Command="{Binding DataContext.EditInstructionCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" ></MenuItem>
                                     <Separator/>
-                                    <MenuItem Header="Delete" Command="{Binding RemoveInstructionCommand}"></MenuItem>
+                                    <MenuItem Header="Delete" Command="{Binding DataContext.RemoveInstructionCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" ></MenuItem>
                                     <!--<MenuItem Header="More Info" Command="{Binding Path=DataContext.MoreInfo, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" Background="WhiteSmoke" />-->
                                 </ContextMenu>
                             </DataGrid.Resources>
@@ -157,10 +158,10 @@
                             </DataGrid.CellStyle>
                             <DataGrid.Resources>
                                 <ContextMenu x:Key="ItemContextMenu">
-                                    <MenuItem Header="Create new..." Command="{Binding CreateVariableCommand}"></MenuItem>
-                                    <MenuItem Header="Edit..." Command="{Binding EditVariableCommand}"></MenuItem>
+                                    <MenuItem Header="Create new..." Command="{Binding DataContext.CreateVariableCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
+                                    <MenuItem Header="Edit..." Command="{Binding DataContext.EditVariableCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
                                     <Separator/>
-                                    <MenuItem Header="Delete" Command="{Binding DeleteVariableCommand}"></MenuItem>
+                                    <MenuItem Header="Delete" Command="{Binding DataContext.DeleteVariableCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
                                 </ContextMenu>
 
                             </DataGrid.Resources>
@@ -206,10 +207,10 @@
                             </DataGrid.CellStyle>
                             <DataGrid.Resources>
                                 <ContextMenu x:Key="ItemContextMenu">
-                                    <MenuItem Header="Create new..." Command="{Binding CreateParameterCommand}"></MenuItem>
-                                    <MenuItem Header="Edit..." Command="{Binding EditParameterCommand}"></MenuItem>
+                                    <MenuItem Header="Create new..." Command="{Binding DataContext.CreateParameterCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
+                                    <MenuItem Header="Edit..." Command="{Binding DataContext.EditParameterCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
                                     <Separator/>
-                                    <MenuItem Header="Delete" Command="{Binding DeleteParameterCommand}"></MenuItem>
+                                    <MenuItem Header="Delete" Command="{Binding DataContext.DeleteParameterCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
                                 </ContextMenu>
 
                             </DataGrid.Resources>

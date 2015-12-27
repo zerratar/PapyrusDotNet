@@ -83,6 +83,8 @@ namespace PapyrusDotNet.PapyrusAssembly
 
         internal int DelegateInvokeCount { get; set; }
 
+        public PapyrusStateDefinition DeclaringState { get; set; }
+
 //=> (Flags & 4) > 0;
 
         public void SetFlags(PapyrusMethodFlags flags)

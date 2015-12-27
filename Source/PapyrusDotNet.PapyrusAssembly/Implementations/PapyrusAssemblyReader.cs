@@ -286,6 +286,8 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 {
                     var name = pexReader.ReadString();
                     var method = ReadMethod(asm);
+
+                    method.DeclaringState = state;
                     method.Name = new PapyrusStringRef(asm, name);
                     if (method.Name.Value.ToLower().StartsWith("on"))
                     {
@@ -311,7 +313,11 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             {
                 foreach (var m in state.Methods)
                 {
-                    foreach (var inst in m.Body.Instructions) UpdateOperand(inst, m.Body.Instructions, allMethods);
+                    foreach (var inst in m.Body.Instructions)
+                    {
+                        inst.Method = m;
+                        UpdateOperand(inst, m.Body.Instructions, allMethods);
+                    }
                 }
             }
         }
@@ -495,13 +501,13 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var desc = PapyrusInstructionOpCodeDescription.FromOpCode(instruction.OpCode);
 
             var references = new List<PapyrusVariableReference>();
-            var instructionParamSize = desc.ParamSize;
+            var instructionParamSize = desc.ArgumentCount;
             for (var p = 0; p < instructionParamSize; p++)
             {
                 references.Add(ReadValueReference(asm));
             }
 
-            if (desc.HasVariableArguments)
+            if (desc.HasOperandArguments)
             {
                 var typeRef = ReadValueReference(asm);
                 if (typeRef.ValueType == PapyrusPrimitiveType.Integer)

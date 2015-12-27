@@ -140,7 +140,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var desc = PapyrusInstructionOpCodeDescription.FromOpCode(instruction.OpCode);
             foreach (var arg in instruction.Arguments)
                 WriteValueReference(arg);
-            if (desc.HasVariableArguments)
+            if (desc.HasOperandArguments)
             {
                 WriteValueReference(new PapyrusVariableReference
                 {

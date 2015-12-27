@@ -15,19 +15,10 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
-
-namespace PapyrusDotNet.PapyrusAssembly.Extensions
+namespace PapyrusDotNet.PexInspector.ViewModels.Interfaces
 {
-    public static class PapyrusInstructionOpCodesExtensions
+    public interface IOpCodeDescriptionReader
     {
-        /// <summary>
-        ///     Gets the size of the instruction parameter.
-        /// </summary>
-        /// <param name="opcode">The opcode.</param>
-        /// <returns></returns>
-        public static int GetInstructionParamSize(this PapyrusOpCodes opcode)
-        {
-            return PapyrusInstructionOpCodeDescription.FromOpCode(opcode).ArgumentCount;
-        }
+        IOpCodeDescriptionDefinition Read(string file);
     }
 }

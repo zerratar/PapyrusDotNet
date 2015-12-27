@@ -37,6 +37,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         public PapyrusInstruction Previous { get; set; }
         public PapyrusInstruction Next { get; set; }
         public List<PapyrusVariableReference> OperandArguments { get; set; }
+        public PapyrusMethodDefinition Method { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instruction is temporarily added or not.

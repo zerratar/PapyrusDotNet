@@ -1,0 +1,71 @@
+﻿<Window x:Class="PapyrusDotNet.PexInspector.Windows.PapyrusInstructionEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PapyrusDotNet.PexInspector.Windows"
+        xmlns:viewModels="clr-namespace:PapyrusDotNet.PexInspector.ViewModels;assembly=PapyrusDotNet.PexInspector.ViewModels"
+        mc:Ignorable="d"
+        Title="Instruction Editor"
+        SizeToContent="Height"
+        Width="566.333"
+        d:DataContext="{x:Static viewModels:PapyrusInstructionEditorViewModel.DesignInstance}" d:DesignWidth="566.333">
+    <Window.Resources>
+        <FontFamily x:Key="FontAwesome">
+            pack://application:,,,/Assets/Fonts/#FontAwesome
+        </FontFamily>
+        <BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="239*"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical" Margin="20,20,20,0" Grid.Row="0">
+            <TextBlock Text="OpCode" Margin="0,0,0,5"/>
+            <ComboBox IsEditable="True" ItemsSource="{Binding AvailableOpCodes}" SelectedItem="{Binding SelectedOpCode}" Margin="0"/>
+
+            <TextBlock Text="Description" Margin="0,10,0,0"/>
+            <TextBlock Text="{Binding SelectedOpCodeDescription}" Margin="0,10,0,0" VerticalAlignment="Top" TextWrapping="Wrap" Foreground="#FF2E2E2E" FontSize="10.667"/>
+
+            <DockPanel Margin="0,25,0,5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.49*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="0.49*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Vertical" DockPanel.Dock="Left" Grid.Column="0">
+                        <TextBlock Text="Arguments" Margin="0,0,0,5" />
+                        <TextBlock Text="{Binding ArgumentsDescription}" Margin="0,0,0,10" VerticalAlignment="Top" TextWrapping="Wrap" Foreground="#FF2E2E2E" FontSize="10.667"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0">
+                            <Button ToolTip="Remove" Content="&#xf00d;" Width="22" Background="#FFC0392B" FontSize="8" Height="18" BorderBrush="#FFC0392B" Foreground="White" Margin="0,0,5,0" FontFamily="{StaticResource FontAwesome}"/>
+                            <Button ToolTip="Edit" Content="&#xf040;" Width="22" Background="#FFDDDDDD" FontSize="8" BorderBrush="#FF707070" Foreground="Black" Margin="0,0,5,0"  FontFamily="{StaticResource FontAwesome}"/>
+                            <Button ToolTip="Add" Content="&#xf067;" Width="22" Background="#FF3498DB" FontSize="8" BorderBrush="#FF3498DB" Foreground="White" VerticalContentAlignment="Center" FontFamily="{StaticResource FontAwesome}"/>
+                        </StackPanel>
+                        <ListBox ItemsSource="{Binding Arguments}" Margin="0,10,0,0" MinHeight="145"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" DockPanel.Dock="Right"  Grid.Column="2">
+                        <TextBlock Text="Operand Arguments" Margin="0,0,0,5" />
+                        <TextBlock Text="{Binding OperandArgumentsDescription}" Margin="0,0,0,10" VerticalAlignment="Top" TextWrapping="Wrap" Foreground="#FF2E2E2E" FontSize="10.667"/>
+                        <StackPanel Orientation="Vertical" Visibility="{Binding OperandArgumentsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0">
+                                <Button ToolTip="Remove" Content="&#xf00d;" Width="22" Background="#FFC0392B" FontSize="8" Height="18" BorderBrush="#FFC0392B" Foreground="White" Margin="0,0,5,0" FontFamily="{StaticResource FontAwesome}"/>
+                                <Button ToolTip="Edit" Content="&#xf040;" Width="22" Background="#FFDDDDDD" FontSize="8" BorderBrush="#FF707070" Foreground="Black" Margin="0,0,5,0"  FontFamily="{StaticResource FontAwesome}"/>
+                                <Button ToolTip="Add" Content="&#xf067;" Width="22" Background="#FF3498DB" FontSize="8" BorderBrush="#FF3498DB" Foreground="White" VerticalContentAlignment="Center"  FontFamily="{StaticResource FontAwesome}"/>
+                            </StackPanel>
+                            <ListBox ItemsSource="{Binding OperandArguments}" Margin="0,10,0,0" MinHeight="145"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </DockPanel>
+
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="20,10">
+            <Button Content="OK" Width="72" Margin="2,0,10,0" Background="#FF3498DB" BorderBrush="#FF3498DB" Foreground="White" Click="Button_Click"/>
+            <Button Content="Cancel" Width="72" Click="Button_Click_1"/>
+        </StackPanel>
+    </Grid>
+</Window>

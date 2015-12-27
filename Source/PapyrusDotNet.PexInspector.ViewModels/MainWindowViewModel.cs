@@ -4,10 +4,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Views;
 using Microsoft.Win32;
 using PapyrusDotNet.PapyrusAssembly;
 
@@ -17,8 +19,9 @@ namespace PapyrusDotNet.PexInspector.ViewModels
     {
         private PapyrusAssemblyDefinition loadedAssembly;
         private string loadedAssemblyName;
-        public MainWindowViewModel()
+        public MainWindowViewModel(Interfaces.IDialogService dialogService)
         {
+            this.dialogService = dialogService;
             ExitCommand = new RelayCommand(Exit);
             OpenPexCommand = new RelayCommand(OpenPex);
             SavePexCommand = new RelayCommand(SavePex, CanSave);
@@ -26,29 +29,52 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
             SelectedMemberCommand = new RelayCommand<PapyrusViewModel>(SelectMember);
 
-            InsertAfterCommand = new RelayCommand<PapyrusInstruction>(InsertAfter, CanInsert);
-            InsertBeforeCommand = new RelayCommand<PapyrusInstruction>(InsertBefore, CanInsert);
-            EditInstructionCommand = new RelayCommand<PapyrusInstruction>(EditInstruction, CanInsert);
-            RemoveInstructionCommand = new RelayCommand<PapyrusInstruction>(RemoveInstruction, CanInsert);
+            InsertAfterCommand = new RelayCommand(InsertAfter, CanInsert);
+            InsertBeforeCommand = new RelayCommand(InsertBefore, CanInsert);
+            EditInstructionCommand = new RelayCommand(EditInstruction, CanInsert);
+            RemoveInstructionCommand = new RelayCommand(RemoveInstruction, CanInsert);
         }
 
-        private void RemoveInstruction(PapyrusInstruction obj)
+        private void RemoveInstruction()
         {
+            var obj = SelectedMethodInstruction;
+            if (MessageBox.Show("Are you sure you want to delete this instruction?",
+                "Delete Instruction ( " + obj.Offset + " ) " + obj.OpCode, MessageBoxButton.OKCancel)
+                == MessageBoxResult.OK)
+            {
+                var method = obj.Method;
+
+                method.Body.Instructions.Remove(obj);
+
+                SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(
+                        method.Body.Instructions
+                    );
+
+                SelectedMethodParameters = new ObservableCollection<PapyrusParameterDefinition>(
+                        method.Parameters
+                    );
+
+                SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(
+                        method.GetVariables()
+                    );
+            }
         }
 
-        private void EditInstruction(PapyrusInstruction obj)
+        private void EditInstruction()
         {
+            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel(SelectedMethodInstruction));
         }
 
-        private void InsertBefore(PapyrusInstruction obj)
+        private void InsertBefore()
         {
+            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel());
         }
 
-        private bool CanInsert(PapyrusInstruction arg) => arg != null;
+        private bool CanInsert() => SelectedMethodInstruction != null;
 
-        private void InsertAfter(PapyrusInstruction obj)
+        private void InsertAfter()
         {
-
+            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel());
         }
 
         private void Exit()
@@ -186,6 +212,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private ObservableCollection<PapyrusViewModel> pexTree;
         private ObservableCollection<PapyrusParameterDefinition> selectedMethodParameters;
         private ObservableCollection<PapyrusVariableReference> selectedMethodVariables;
+        private PapyrusInstruction selectedMethodInstruction;
 
         public ObservableCollection<PapyrusInstruction> SelectedMethodInstructions
         {
@@ -214,21 +241,28 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         public ICommand ExitCommand { get; set; }
 
 
-        public RelayCommand<PapyrusInstruction> InsertBeforeCommand { get; set; }
+        public RelayCommand InsertBeforeCommand { get; set; }
 
-        public RelayCommand<PapyrusInstruction> InsertAfterCommand { get; set; }
+        public RelayCommand InsertAfterCommand { get; set; }
 
-        public RelayCommand<PapyrusInstruction> EditInstructionCommand { get; set; }
+        public RelayCommand EditInstructionCommand { get; set; }
 
-        public RelayCommand<PapyrusInstruction> RemoveInstructionCommand { get; set; }
+        public RelayCommand RemoveInstructionCommand { get; set; }
 
         public RelayCommand<PapyrusViewModel> SelectedMemberCommand { get; set; }
+
+        public PapyrusInstruction SelectedMethodInstruction
+        {
+            get { return selectedMethodInstruction; }
+            set { Set(ref selectedMethodInstruction, value); }
+        }
 
 
         private static MainWindowViewModel designInstance;
 
         public static MainWindowViewModel DesignInstance = designInstance ??
-                                                           (designInstance = new MainWindowViewModel());
+                                                           (designInstance = new MainWindowViewModel(null));
 
+        private Interfaces.IDialogService dialogService;
     }
 }

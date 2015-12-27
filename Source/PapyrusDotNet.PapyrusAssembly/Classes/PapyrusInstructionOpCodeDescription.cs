@@ -65,7 +65,6 @@ namespace PapyrusDotNet.PapyrusAssembly
             Descriptions.Add(PapyrusOpCodes.ArrayGetElement, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArraySetElement, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArrayFindElement, new PapyrusInstructionOpCodeDescription(4, false));
-            //Descriptions.Add(PapyrusInstructionOpCodes.ArrayFindelement, new PapyrusInstructionOpCodeDescription(4, false));
             Descriptions.Add(PapyrusOpCodes.Is, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.StructCreate, new PapyrusInstructionOpCodeDescription(1, false));
             Descriptions.Add(PapyrusOpCodes.StructGet, new PapyrusInstructionOpCodeDescription(3, false));
@@ -78,14 +77,16 @@ namespace PapyrusDotNet.PapyrusAssembly
             Descriptions.Add(PapyrusOpCodes.ArrayClearElements, new PapyrusInstructionOpCodeDescription(1, false));
         }
 
-        public PapyrusInstructionOpCodeDescription(int paramSize, bool hasVariableArguments)
+        public PapyrusInstructionOpCodeDescription(int argumentCount, bool hasOperandArguments)
         {
-            ParamSize = paramSize;
-            HasVariableArguments = hasVariableArguments;
+            ArgumentCount = argumentCount;
+
+            this.HasOperandArguments = hasOperandArguments;
+
         }
 
-        public int ParamSize { get; }
-        public bool HasVariableArguments { get; }
+        public int ArgumentCount { get; }
+        public bool HasOperandArguments { get; }
 
         public static PapyrusInstructionOpCodeDescription FromOpCode(PapyrusOpCodes opcode)
         {

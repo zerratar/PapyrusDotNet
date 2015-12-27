@@ -515,6 +515,20 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     {
                         return DoMath(i, "+");
                     }
+                case PapyrusOpCodes.Imod:
+                    {
+                        return DoMath(i, "%");
+                    }
+                case PapyrusOpCodes.Fdiv:
+                case PapyrusOpCodes.Idiv:
+                    {
+                        return DoMath(i, "/");
+                    }
+                case PapyrusOpCodes.Fmul:
+                case PapyrusOpCodes.Imul:
+                    {
+                        return DoMath(i, "*");
+                    }
                 case PapyrusOpCodes.Ineg:
                     {
                         var asignee = GetArgumentValue(i.Arguments[0]);

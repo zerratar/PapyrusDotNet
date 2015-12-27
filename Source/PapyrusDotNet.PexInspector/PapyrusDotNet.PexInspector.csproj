@@ -79,7 +79,15 @@
     <Compile Include="Converters\PapyrusArrayDisplayConverter.cs" />
     <Compile Include="Converters\PapyrusInstructionDisplayConverter.cs" />
     <Compile Include="Converters\PapyrusInstructionOperandConverter.cs" />
+    <Compile Include="Implementations\DialogResult.cs" />
+    <Compile Include="Implementations\DialogService.cs" />
     <Compile Include="TreeViewHelper.cs" />
+    <Compile Include="Windows\PapyrusInstructionEditorWindow.xaml.cs">
+      <DependentUpon>PapyrusInstructionEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\PapyrusParameterAndVariableEditorWindow.xaml.cs">
+      <DependentUpon>PapyrusParameterAndVariableEditorWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -92,6 +100,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Windows\PapyrusInstructionEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\PapyrusParameterAndVariableEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -111,6 +127,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Resource Include="Assets\Fonts\fontawesome.ttf" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -166,6 +183,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\states.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="OpCodeDescriptions.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

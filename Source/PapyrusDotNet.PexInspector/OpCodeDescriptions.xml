@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Instructions>
+  <Instruction OpCode="Nop">
+    <Arguments/>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="Iadd,Fadd,Fsub,Isub,Fdiv,Idiv,Fmul,Imul,Imod">
+    <Arguments>
+      <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments />
+  </Instruction>
+  <Instruction OpCode="Strcat">
+    <Arguments>
+      <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments />
+  </Instruction>
+  <Instruction OpCode="PropSet">
+    <Arguments>
+      <Argument Index="0" Alias="PropertyName" Description="Constant String: Property Name" ValueType="Constant" />
+      <Argument Index="1" Alias="Location" Description="Reference or Constant: Location" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value" Description="Reference or Constant: Value" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments />
+  </Instruction>
+  <Instruction OpCode="PropGet">
+    <Arguments>
+      <Argument Index="0" Alias="PropertyName" Description="Constant String: Property Name" ValueType="Constant" />
+      <Argument Index="1" Alias="Location" Description="Reference or Constant: Location" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
+    </Arguments>
+    <OperandArguments />
+  </Instruction>
+  <Instruction OpCode="Assign">
+    <Arguments>
+      <Argument Index="0" Alias="Value" Description="Reference or Constant: Value" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
+    </Arguments>
+    <OperandArguments />
+  </Instruction>
+  <Instruction OpCode="Callstatic">
+    <Arguments>
+      <Argument Index="0" Alias="Location" Description="Reference or Constant: Location" ValueType="ReferenceOrConstant" Ref="Type"/>
+      <Argument Index="1" Alias="Method" Description="Constant: Method Name" ValueType="Constant" Ref="Method"/>
+      <Argument Index="2" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
+    </Arguments>
+    <OperandArguments>
+      <OperandArgument Alias="MethodParameters" Description="Reference or Constant: Parameter" ValueType="ReferenceOrConstant" />
+    </OperandArguments>
+  </Instruction>
+  <Instruction OpCode="Callmethod">
+    <Arguments>
+      <Argument Index="0" Alias="Method" Description="Constant: Method Name" ValueType="Constant" Ref="Method"/>
+      <Argument Index="1" Alias="Location" Description="Reference or Constant: Location" ValueType="ReferenceOrConstant" Ref="Type"/>
+      <Argument Index="2" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
+    </Arguments>
+    <OperandArguments>
+      <OperandArgument Alias="MethodParameters" Description="Reference or Constant: Parameter" ValueType="ReferenceOrConstant" />
+    </OperandArguments>
+  </Instruction>
+  <Instruction OpCode="Callparent">
+    <Arguments>
+      <Argument Index="0" Alias="Method" Description="Constant: Method Name" ValueType="Constant" />
+      <Argument Index="1" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
+    </Arguments>
+    <OperandArguments>
+      <OperandArgument Alias="MethodParameters" Description="Reference or Constant: Parameter" ValueType="ReferenceOrConstant" />
+    </OperandArguments>
+  </Instruction>
+  <Instruction OpCode="Return">
+    <Arguments>
+      <Argument Index="0" Alias="Value" Description="Reference or Constant: Value" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="Jmp">
+    <Arguments>
+      <Argument Index="0" Alias="Offset" Description="Constant: Offset from current position" ValueType="Constant" Ref="Instruction" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="Jmpf">
+    <Arguments>
+      <Argument Index="0" Alias="Conditional" Description="Reference: Conditional Variable" ValueType="Reference" />
+      <Argument Index="1" Alias="Offset" Description="Constant: Offset from current position" ValueType="Constant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="Jmpt">
+    <Arguments>
+      <Argument Index="0" Alias="Conditional" Description="Reference: Conditional Variable" ValueType="Reference" />
+      <Argument Index="1" Alias="Offset" Description="Constant: Offset from current position" ValueType="Constant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="CmpEq,CmpGte,CmpGt,CmpLt,CmpLte">
+    <Arguments>
+      <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant"/>
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+</Instructions>
