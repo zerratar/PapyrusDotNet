@@ -47,10 +47,6 @@
       <HintPath>..\packages\MvvmLightLibs.5.2.0.0\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -76,18 +72,36 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Behaviours\DataGridBehaviour.cs" />
+    <Compile Include="Controls\InstructionArgumentEditor.xaml.cs">
+      <DependentUpon>InstructionArgumentEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\PapyrusArrayDisplayConverter.cs" />
     <Compile Include="Converters\PapyrusInstructionDisplayConverter.cs" />
     <Compile Include="Converters\PapyrusInstructionOperandConverter.cs" />
-    <Compile Include="Implementations\DialogResult.cs" />
     <Compile Include="Implementations\DialogService.cs" />
     <Compile Include="TreeViewHelper.cs" />
+    <Compile Include="Windows\PapyrusTypeSelectorWindow.xaml.cs">
+      <DependentUpon>PapyrusTypeSelectorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\PapyrusMethodSelectorWindow.xaml.cs">
+      <DependentUpon>PapyrusMethodSelectorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\PapyrusInstructionSelectorWindow.xaml.cs">
+      <DependentUpon>PapyrusInstructionSelectorWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\PapyrusInstructionEditorWindow.xaml.cs">
       <DependentUpon>PapyrusInstructionEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\PapyrusConstantValueEditorWindow.xaml.cs">
+      <DependentUpon>PapyrusConstantValueEditorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\PapyrusParameterAndVariableEditorWindow.xaml.cs">
       <DependentUpon>PapyrusParameterAndVariableEditorWindow.xaml</DependentUpon>
     </Compile>
+    <Page Include="Controls\InstructionArgumentEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -100,9 +114,25 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Windows\PapyrusTypeSelectorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\PapyrusMethodSelectorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\PapyrusInstructionSelectorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Windows\PapyrusInstructionEditorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\PapyrusConstantValueEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Windows\PapyrusParameterAndVariableEditorWindow.xaml">
       <SubType>Designer</SubType>

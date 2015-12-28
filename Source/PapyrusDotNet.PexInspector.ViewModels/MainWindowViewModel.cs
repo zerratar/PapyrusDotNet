@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,8 +18,10 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private PapyrusAssemblyDefinition loadedAssembly;
-        private string loadedAssemblyName;
+        public List<PapyrusAssemblyDefinition> LoadedAssemblies = new List<PapyrusAssemblyDefinition>();
+        public List<string> LoadedAssemblyNames = new List<string>();
+        public List<string> LoadedAssemblyFolders = new List<string>();
+
         public MainWindowViewModel(Interfaces.IDialogService dialogService)
         {
             this.dialogService = dialogService;
@@ -62,19 +65,38 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void EditInstruction()
         {
-            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel(SelectedMethodInstruction));
+            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel(dialogService, LoadedAssemblies, selectedMethod.DeclaringState?.DeclaringType?.Assembly,
+                selectedMethod.DeclaringState?.DeclaringType,
+                selectedMethod, SelectedMethodInstruction));
+            if (result == DialogResult.OK)
+            {
+
+            }
         }
 
         private void InsertBefore()
         {
-            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel());
+            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel(dialogService,
+                LoadedAssemblies,
+                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
+                selectedMethod.DeclaringState?.DeclaringType, selectedMethod));
+            if (result == DialogResult.OK)
+            {
+
+            }
         }
 
         private bool CanInsert() => SelectedMethodInstruction != null;
 
         private void InsertAfter()
         {
-            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel());
+            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel(dialogService, LoadedAssemblies,
+                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
+                selectedMethod.DeclaringState?.DeclaringType, selectedMethod));
+            if (result == DialogResult.OK)
+            {
+
+            }
         }
 
         private void Exit()
@@ -87,7 +109,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         }
 
-        private bool CanSave() => loadedAssembly != null;
+        private bool CanSave() => false;
 
         private void SavePex()
         {
@@ -106,8 +128,39 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void LoadPex(string fileName)
         {
-            loadedAssembly = PapyrusAssemblyDefinition.ReadAssembly(fileName);
-            loadedAssemblyName = System.IO.Path.GetFileName(fileName);
+            var name = System.IO.Path.GetFileName(fileName);
+            var directoryName = System.IO.Path.GetDirectoryName(fileName);
+
+            if (LoadedAssemblyNames.Contains(name))
+            {
+                if (MessageBox.Show("This file has already been loaded.\r\nDo you want to reload it?", "Reload?",
+                        MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+
+            var loadedAssembly = PapyrusAssemblyDefinition.ReadAssembly(fileName);
+            int loadIndex = -1;
+            if (LoadedAssemblyNames.Contains(name))
+            {
+                loadIndex = LoadedAssemblyNames.IndexOf(name);
+            }
+
+            if (loadIndex == -1)
+            {
+                LoadedAssemblies.Add(loadedAssembly);
+
+                LoadedAssemblyNames.Add(name);
+            }
+            else
+            {
+                LoadedAssemblies[loadIndex] = loadedAssembly;
+            }
+
+            if (!LoadedAssemblyFolders.Contains(directoryName))
+                LoadedAssemblyFolders.Add(directoryName);
+
             BuildPexTree();
 
             SavePexCommand.RaiseCanExecuteChanged();
@@ -116,62 +169,115 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void BuildPexTree()
         {
-            var asm = loadedAssembly;
-            var root = new PapyrusViewModel();
-            root.Item = "root";
-            root.Text = loadedAssemblyName;
-            foreach (var type in asm.Types)
+            var RootNodes = new List<PapyrusViewModel>();
+            for (int index = 0; index < LoadedAssemblies.Count; index++)
             {
-                var typeNode = new PapyrusViewModel(root);
-                typeNode.Item = type;
-                typeNode.Text = type.Name.Value;
-                foreach (var structType in type.NestedTypes)
+                var asm = LoadedAssemblies[index];
+                var root = new PapyrusViewModel();
+                root.Item = "root";
+                root.Text = LoadedAssemblyNames[index];
+                foreach (var type in asm.Types)
                 {
-                    var structTypeNode = new PapyrusViewModel(typeNode);
-                    structTypeNode.Item = structType;
-                    structTypeNode.Text = structType.Name.Value;
-                    foreach (var field in structType.Fields)
+                    var typeNode = new PapyrusViewModel(root);
+                    typeNode.Item = type;
+                    typeNode.Text = type.Name.Value + (!string.IsNullOrEmpty(type.BaseTypeName.Value) ? " : " + type.BaseTypeName.Value : "");
+
+                    if (!string.IsNullOrEmpty(type.BaseTypeName.Value))
                     {
-                        var fieldNode = new PapyrusViewModel(structTypeNode);
+                        if (EnsureAssemblyLoaded(type.BaseTypeName.Value)) return; // the tree will be reloaded, so we don't wanna finish it here.
+                    }
+
+                    foreach (var structType in type.NestedTypes.OrderBy(i => i.Name.Value))
+                    {
+                        var structTypeNode = new PapyrusViewModel(typeNode);
+                        structTypeNode.Item = structType;
+                        structTypeNode.Text = structType.Name.Value;
+                        foreach (var field in structType.Fields)
+                        {
+                            var fieldNode = new PapyrusViewModel(structTypeNode);
+                            fieldNode.Item = field;
+                            fieldNode.Text = field.Name.Value + " : " + field.TypeName;
+
+                            if (!string.IsNullOrEmpty(field.TypeName))
+                            {
+                                if (EnsureAssemblyLoaded(type.BaseTypeName.Value)) return; // the tree will be reloaded, so we don't wanna finish it here.
+                            }
+                        }
+                    }
+
+                    var statesNode = new PapyrusViewModel(typeNode);
+                    statesNode.Item = "states";
+                    statesNode.Text = "States";
+                    foreach (var item in type.States.OrderBy(i => i.Name.Value))
+                    {
+                        var stateNode = new PapyrusViewModel(statesNode);
+                        stateNode.Item = item;
+                        stateNode.Text = (!string.IsNullOrEmpty(item.Name.Value) ? item.Name.Value : "default");
+                        foreach (var method in item.Methods.OrderBy(i=>i.Name.Value))
+                        {
+                            var m = new PapyrusViewModel(stateNode);
+                            m.Item = method;
+                            m.Text = method.Name.Value + GetParameterString(method.Parameters) + " : " +
+                                     method.ReturnTypeName.Value;
+
+                            if (!string.IsNullOrEmpty(method.ReturnTypeName.Value))
+                            {
+                                if (EnsureAssemblyLoaded(method.ReturnTypeName.Value)) return; // the tree will be reloaded, so we don't wanna finish it here.
+                            }
+                        }
+                    }
+
+                    foreach (var field in type.Fields.OrderBy(i => i.Name.Value))
+                    {
+                        var fieldNode = new PapyrusViewModel(typeNode);
                         fieldNode.Item = field;
                         fieldNode.Text = field.Name.Value + " : " + field.TypeName;
-                    }
-                }
 
-                var statesNode = new PapyrusViewModel(typeNode);
-                statesNode.Item = "states";
-                statesNode.Text = "States";
-                foreach (var item in type.States)
-                {
-                    var stateNode = new PapyrusViewModel(statesNode);
-                    stateNode.Item = item;
-                    stateNode.Text = (!string.IsNullOrEmpty(item.Name.Value) ? item.Name.Value : "default");
-                    foreach (var method in item.Methods)
+                        if (!string.IsNullOrEmpty(field.TypeName))
+                        {
+                            if (EnsureAssemblyLoaded(field.TypeName)) return; // the tree will be reloaded, so we don't wanna finish it here.
+                        }
+                    }
+
+                    foreach (var item in type.Properties.OrderBy(i=>i.Name.Value))
                     {
-                        var m = new PapyrusViewModel(stateNode);
-                        m.Item = method;
-                        m.Text = method.Name.Value + GetParameterString(method.Parameters) + " : " +
-                                 method.ReturnTypeName.Value;
+                        var fieldNode = new PapyrusViewModel(typeNode);
+                        fieldNode.Item = item;
+                        fieldNode.Text = item.Name.Value + " : " + item.TypeName.Value;
+
+                        if (!string.IsNullOrEmpty(item.TypeName.Value))
+                        {
+                            if (EnsureAssemblyLoaded(item.TypeName.Value)) return; // the tree will be reloaded, so we don't wanna finish it here.
+                        }
                     }
                 }
-
-                foreach (var field in type.Fields)
-                {
-                    var fieldNode = new PapyrusViewModel(typeNode);
-                    fieldNode.Item = field;
-                    fieldNode.Text = field.Name.Value + " : " + field.TypeName;
-                }
-
-                foreach (var item in type.Properties)
-                {
-                    var fieldNode = new PapyrusViewModel(typeNode);
-                    fieldNode.Item = item;
-                    fieldNode.Text = item.Name.Value + " : " + item.TypeName.Value;
-                }
-
-
+                RootNodes.Add(root);
             }
-            PexTree = new ObservableCollection<PapyrusViewModel>(new[] { root });
+            PexTree = new ObservableCollection<PapyrusViewModel>(RootNodes.OrderBy(i => i.Text));
+        }
+
+        private bool EnsureAssemblyLoaded(string value)
+        {
+            if (value == null) return false;
+
+            var lower = value.ToLower();
+            // do not try and load any value types
+            if (lower == "int" || lower == "string" || lower == "bool" || lower == "none" || lower == "float") return false;
+
+            if (LoadedAssemblyNames.All(a => !string.Equals(Path.GetFileNameWithoutExtension(a.ToLower()), value, StringComparison.CurrentCultureIgnoreCase)))
+            {
+                var scripts = LoadedAssemblyFolders.SelectMany(
+                    i => System.IO.Directory.GetFiles(i, "*.pex", SearchOption.AllDirectories)).ToList();
+
+                var targetScriptFile = scripts.FirstOrDefault(s => Path.GetFileNameWithoutExtension(s).ToLower() == lower);
+                if (targetScriptFile != null)
+                {
+                    // Load the script and enforce to reload the tree.
+                    LoadPex(targetScriptFile);
+                    return true;
+                }
+            }
+            return false;
         }
 
         private string GetParameterString(List<PapyrusParameterDefinition> parameters, bool includeParameterNames = false)
@@ -194,6 +300,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
             if (method != null)
             {
+                selectedMethod = method;
                 SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(
                         method.Body.Instructions
                     );
@@ -264,5 +371,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                                                            (designInstance = new MainWindowViewModel(null));
 
         private Interfaces.IDialogService dialogService;
+        private PapyrusMethodDefinition selectedMethod;
     }
 }

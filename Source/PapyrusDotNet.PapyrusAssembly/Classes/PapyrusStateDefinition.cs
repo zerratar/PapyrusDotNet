@@ -25,17 +25,17 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusStateDefinition : PapyrusStateReference
     {
-        private readonly PapyrusTypeDefinition type;
+        public readonly PapyrusTypeDefinition DeclaringType;
 
         public PapyrusStateDefinition()
         {
             Methods = new Collection<PapyrusMethodDefinition>();
         }
 
-        public PapyrusStateDefinition(PapyrusTypeDefinition type) : this()
+        public PapyrusStateDefinition(PapyrusTypeDefinition declaringType) : this()
         {
-            this.type = type;
-            this.type.States.Add(this);
+            this.DeclaringType = declaringType;
+            this.DeclaringType.States.Add(this);
         }
 
         public PapyrusStringRef Name { get; set; }

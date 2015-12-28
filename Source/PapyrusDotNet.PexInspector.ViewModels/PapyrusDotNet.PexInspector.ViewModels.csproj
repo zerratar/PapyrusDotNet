@@ -64,20 +64,27 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DialogResult.cs" />
     <Compile Include="Extensions\PapyrusOpCodeExtensions.cs" />
     <Compile Include="Implementations\OpCodeArgumentDescription.cs" />
     <Compile Include="Implementations\OpCodeDescription.cs" />
     <Compile Include="Implementations\OpCodeRef.cs" />
     <Compile Include="Implementations\OpCodeValueTypes.cs" />
-    <Compile Include="Interfaces\IDialogResult.cs" />
+    <Compile Include="InstructionArgumentEditorViewModel.cs" />
     <Compile Include="Interfaces\IDialogService.cs" />
     <Compile Include="Interfaces\IOpCodeDescriptionDefinition.cs" />
     <Compile Include="Interfaces\IOpCodeDescriptionReader.cs" />
     <Compile Include="Implementations\OpCodeDescriptionDefinition.cs" />
     <Compile Include="Implementations\OpCodeDescriptionReader.cs" />
     <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="Selectors\PapyrusConstantValueViewModel.cs" />
     <Compile Include="PapyrusInstructionEditorViewModel.cs" />
+    <Compile Include="Selectors\PapyrusInstructionSelectorViewModel.cs" />
+    <Compile Include="Selectors\PapyrusMethodSelectorViewModel.cs" />
     <Compile Include="PapyrusParameterEditorViewModel.cs" />
+    <Compile Include="Selectors\PapyrusReferenceAndConstantValueViewModel.cs" />
+    <Compile Include="Selectors\PapyrusReferenceValueViewModel.cs" />
+    <Compile Include="Selectors\PapyrusTypeSelectorViewModel.cs" />
     <Compile Include="PapyrusVariableEditorViewModel.cs" />
     <Compile Include="PapyrusViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

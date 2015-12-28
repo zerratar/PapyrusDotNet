@@ -25,7 +25,7 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusTypeDefinition : PapyrusVariableReference
     {
-        private readonly PapyrusAssemblyDefinition assembly;
+        public readonly PapyrusAssemblyDefinition Assembly;
 
         public PapyrusTypeDefinition()
         {
@@ -38,10 +38,10 @@ namespace PapyrusDotNet.PapyrusAssembly
         public PapyrusTypeDefinition(PapyrusAssemblyDefinition assembly, bool isStruct = false)
             : this()
         {
-            this.assembly = assembly;
+            this.Assembly = assembly;
             if (!isStruct)
             {
-                this.assembly.Types.Add(this);
+                this.Assembly.Types.Add(this);
             }
         }
 

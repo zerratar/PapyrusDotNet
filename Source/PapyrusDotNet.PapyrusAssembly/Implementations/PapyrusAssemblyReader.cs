@@ -279,7 +279,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
             for (var i = 0; i < stateCount; i++)
             {
-                var state = new PapyrusStateDefinition();
+                var state = new PapyrusStateDefinition(typeDef);
                 state.Name = pexReader.ReadStringRef();
                 var methodCount = pexReader.ReadInt16();
                 for (var k = 0; k < methodCount; k++)
@@ -296,7 +296,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     }
                     state.Methods.Add(method);
                 }
-                typeDef.States.Add(state);
+                // typeDef.States.Add(state);
             }
 
             UpdateOperands(typeDef.States);

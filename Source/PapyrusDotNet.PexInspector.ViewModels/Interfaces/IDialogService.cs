@@ -9,6 +9,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Interfaces
 {
     public interface IDialogService
     {
-        IDialogResult ShowDialog(ViewModelBase viewModel);
+        DialogResult ShowDialog(ViewModelBase viewModel);
     }
 }

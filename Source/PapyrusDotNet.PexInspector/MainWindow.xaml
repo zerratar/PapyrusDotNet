@@ -25,9 +25,9 @@
                     <MenuItem.Items>
                         <MenuItem Header="Open" Command="{Binding OpenPexCommand}"></MenuItem>
                         <Separator/>
-                        <MenuItem Header="Save" Command="{Binding SavePexCommand}"></MenuItem>
+                        <!-- <MenuItem Header="Save" Command="{Binding SavePexCommand}"></MenuItem>
                         <MenuItem Header="Save As" Command="{Binding SavePexAsCommand}"></MenuItem>
-                        <Separator/>
+                        <Separator/> -->
                         <MenuItem Header="Exit" Command="{Binding ExitCommand}"></MenuItem>
                     </MenuItem.Items>
                 </MenuItem>
