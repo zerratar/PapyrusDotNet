@@ -43,6 +43,7 @@
     <Compile Include="Classes\PapyrusHeaderUserflagCollection.cs" />
     <Compile Include="Classes\PapyrusInstruction.cs" />
     <Compile Include="Classes\PapyrusInstructionCollection.cs" />
+    <Compile Include="Classes\PapyrusMemberReference.cs" />
     <Compile Include="Classes\PapyrusMethodBody.cs" />
     <Compile Include="Classes\PapyrusMethodDefinition.cs" />
     <Compile Include="Classes\PapyrusMethodReference.cs" />

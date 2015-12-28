@@ -17,7 +17,7 @@
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusMethodReference
+    public class PapyrusMethodReference: PapyrusMemberReference
     {
     }
 }

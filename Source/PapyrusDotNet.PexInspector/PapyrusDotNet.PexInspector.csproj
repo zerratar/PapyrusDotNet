@@ -80,6 +80,12 @@
     <Compile Include="Converters\PapyrusInstructionOperandConverter.cs" />
     <Compile Include="Implementations\DialogService.cs" />
     <Compile Include="TreeViewHelper.cs" />
+    <Compile Include="Windows\PapyrusReferenceValueEditorWindow.xaml.cs">
+      <DependentUpon>PapyrusReferenceValueEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\PapyrusReferenceAndConstantValueEditorWindow.xaml.cs">
+      <DependentUpon>PapyrusReferenceAndConstantValueEditorWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\PapyrusTypeSelectorWindow.xaml.cs">
       <DependentUpon>PapyrusTypeSelectorWindow.xaml</DependentUpon>
     </Compile>
@@ -114,6 +120,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Windows\PapyrusReferenceValueEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\PapyrusReferenceAndConstantValueEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Windows\PapyrusTypeSelectorWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

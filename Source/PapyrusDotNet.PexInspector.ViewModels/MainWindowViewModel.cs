@@ -13,13 +13,14 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Views;
 using Microsoft.Win32;
 using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 namespace PapyrusDotNet.PexInspector.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
         public List<PapyrusAssemblyDefinition> LoadedAssemblies = new List<PapyrusAssemblyDefinition>();
-        public List<string> LoadedAssemblyNames = new List<string>();
+        public Dictionary<string, string> LoadedAssemblyNames = new Dictionary<string, string>();
         public List<string> LoadedAssemblyFolders = new List<string>();
 
         public MainWindowViewModel(Interfaces.IDialogService dialogService)
@@ -131,7 +132,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             var name = System.IO.Path.GetFileName(fileName);
             var directoryName = System.IO.Path.GetDirectoryName(fileName);
 
-            if (LoadedAssemblyNames.Contains(name))
+            if (LoadedAssemblyNames.ContainsKey(name.ToLower()))
             {
                 if (MessageBox.Show("This file has already been loaded.\r\nDo you want to reload it?", "Reload?",
                         MessageBoxButton.YesNo) != MessageBoxResult.Yes)
@@ -142,16 +143,16 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
             var loadedAssembly = PapyrusAssemblyDefinition.ReadAssembly(fileName);
             int loadIndex = -1;
-            if (LoadedAssemblyNames.Contains(name))
+            if (LoadedAssemblyNames.ContainsKey(name.ToLower()))
             {
-                loadIndex = LoadedAssemblyNames.IndexOf(name);
+                loadIndex = Array.IndexOf(LoadedAssemblyNames.Values.ToArray(), name.ToLower());
             }
 
             if (loadIndex == -1)
             {
                 LoadedAssemblies.Add(loadedAssembly);
 
-                LoadedAssemblyNames.Add(name);
+                LoadedAssemblyNames.Add(name.ToLower(), name.ToLower());
             }
             else
             {
@@ -169,13 +170,14 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void BuildPexTree()
         {
+            var asmnames = LoadedAssemblyNames.Values.ToArray();
             var RootNodes = new List<PapyrusViewModel>();
             for (int index = 0; index < LoadedAssemblies.Count; index++)
             {
                 var asm = LoadedAssemblies[index];
                 var root = new PapyrusViewModel();
                 root.Item = "root";
-                root.Text = LoadedAssemblyNames[index];
+                root.Text = asmnames[index];
                 foreach (var type in asm.Types)
                 {
                     var typeNode = new PapyrusViewModel(root);
@@ -213,7 +215,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                         var stateNode = new PapyrusViewModel(statesNode);
                         stateNode.Item = item;
                         stateNode.Text = (!string.IsNullOrEmpty(item.Name.Value) ? item.Name.Value : "default");
-                        foreach (var method in item.Methods.OrderBy(i=>i.Name.Value))
+                        foreach (var method in item.Methods.OrderBy(i => i.Name.Value))
                         {
                             var m = new PapyrusViewModel(stateNode);
                             m.Item = method;
@@ -239,7 +241,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                         }
                     }
 
-                    foreach (var item in type.Properties.OrderBy(i=>i.Name.Value))
+                    foreach (var item in type.Properties.OrderBy(i => i.Name.Value))
                     {
                         var fieldNode = new PapyrusViewModel(typeNode);
                         fieldNode.Item = item;
@@ -261,20 +263,37 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             if (value == null) return false;
 
             var lower = value.ToLower();
+            lower = lower.Replace("[]", "");
             // do not try and load any value types
             if (lower == "int" || lower == "string" || lower == "bool" || lower == "none" || lower == "float") return false;
 
-            if (LoadedAssemblyNames.All(a => !string.Equals(Path.GetFileNameWithoutExtension(a.ToLower()), value, StringComparison.CurrentCultureIgnoreCase)))
-            {
-                var scripts = LoadedAssemblyFolders.SelectMany(
-                    i => System.IO.Directory.GetFiles(i, "*.pex", SearchOption.AllDirectories)).ToList();
+            if (discoveredScriptNames == null)
+                discoveredScriptNames =
+                    new Dictionary<string, string>();
 
-                var targetScriptFile = scripts.FirstOrDefault(s => Path.GetFileNameWithoutExtension(s).ToLower() == lower);
-                if (targetScriptFile != null)
+            if (!LoadedAssemblyNames.ContainsKey(lower + ".pex"))
+            {
+                if (discoveredScripts == null)
                 {
-                    // Load the script and enforce to reload the tree.
-                    LoadPex(targetScriptFile);
-                    return true;
+                    discoveredScripts = LoadedAssemblyFolders.SelectMany(
+                          i => System.IO.Directory.GetFiles(i, "*.pex", SearchOption.AllDirectories)).ToList();
+
+                    var items = discoveredScripts.Select(
+                        i => new { Name = Path.GetFileNameWithoutExtension(i).ToLower(), FullPath = i });
+
+
+
+                    items.ForEach(i => { if (!discoveredScriptNames.ContainsKey(i.Name)) discoveredScriptNames.Add(i.Name, i.FullPath); });
+                }
+                if (discoveredScriptNames.ContainsKey(lower))
+                {
+                    var targetScriptFile = discoveredScriptNames[lower];
+                    if (targetScriptFile != null)
+                    {
+                        // Load the script and enforce to reload the tree.
+                        LoadPex(targetScriptFile);
+                        return true;
+                    }
                 }
             }
             return false;
@@ -372,5 +391,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private Interfaces.IDialogService dialogService;
         private PapyrusMethodDefinition selectedMethod;
+        private List<string> discoveredScripts;
+        private Dictionary<string, string> discoveredScriptNames;
     }
 }

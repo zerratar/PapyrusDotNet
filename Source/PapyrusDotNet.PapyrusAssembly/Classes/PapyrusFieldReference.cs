@@ -17,7 +17,7 @@
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusFieldReference
+    public class PapyrusFieldReference : PapyrusMemberReference
     {
         public PapyrusVariableReference FieldVariable { get; set; }
     }

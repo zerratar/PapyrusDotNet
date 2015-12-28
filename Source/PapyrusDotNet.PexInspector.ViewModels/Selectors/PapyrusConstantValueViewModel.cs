@@ -7,7 +7,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
     {
         public PapyrusConstantValueViewModel(OpCodeArgumentDescription opCodeArgumentDescription)
         {
-
+            //SelectedValueType = ReferenceCollection.LastOrDefault();
         }
 
         public object SelectedValue

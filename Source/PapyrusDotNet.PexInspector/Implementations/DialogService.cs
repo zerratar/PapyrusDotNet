@@ -44,7 +44,7 @@ namespace PapyrusDotNet.PexInspector.Implementations
             // When selecting either a constant value or a reference
             if (viewModel is PapyrusReferenceAndConstantValueViewModel)
             {
-                dialog = new PapyrusConstantValueEditorWindow();
+                dialog = new PapyrusReferenceAndConstantValueEditorWindow();
             }
             // When selecting a instruction
             if (viewModel is PapyrusInstructionSelectorViewModel)

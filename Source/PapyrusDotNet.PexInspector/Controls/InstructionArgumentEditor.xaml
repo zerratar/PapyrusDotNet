@@ -90,6 +90,20 @@
                 </Hyperlink>
             </TextBlock>
         </StackPanel>
+        <StackPanel Orientation="Horizontal" Visibility="{Binding MathVisibility}">
+            <TextBlock TextWrapping="Wrap">                                
+                <Hyperlink Command="{Binding Argument0Command}" Foreground="#FF3C3C3C" ToolTip="{Binding Argument0Description}">
+                    <Run Text="{Binding Argument0Alias, Mode=OneWay}" />
+                </Hyperlink> =
+                <Hyperlink Command="{Binding Argument1Command}" Foreground="#FF3C3C3C" ToolTip="{Binding Argument1Description}">
+                    <Run Text="{Binding Argument1Alias, Mode=OneWay}" />
+                </Hyperlink>
+                <Run Text="{Binding MathOperatorValue, Mode=OneWay}" />
+                <Hyperlink Command="{Binding Argument2Command}" Foreground="#FF3C3C3C" ToolTip="{Binding Argument2Description}">
+                    <Run Text="{Binding Argument2Alias, Mode=OneWay}" />
+                </Hyperlink>
+            </TextBlock>
+        </StackPanel>
 
         <StackPanel Orientation="Horizontal" Visibility="{Binding OneArgsVisibility}">
             <TextBlock TextWrapping="Wrap">                                

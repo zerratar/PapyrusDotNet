@@ -23,7 +23,7 @@
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusVariableReference
+    public class PapyrusVariableReference : PapyrusMemberReference
     {
         public PapyrusStringRef Name { get; set; }
         public PapyrusStringRef TypeName { get; set; }
@@ -46,6 +46,24 @@ namespace PapyrusDotNet.PapyrusAssembly
         {
             Name = name;
             TypeName = variableTypeName;
+        }
+
+        public override string ToString()
+        {
+            string name = Value + "";
+            string type = ValueType.ToString();
+
+            if (TypeName != null && !string.IsNullOrEmpty(TypeName.Value))
+            {
+                type = TypeName.Value;
+            }
+
+            if (Name != null && !string.IsNullOrEmpty(Name.Value))
+            {
+                name = Name.Value;
+            }
+
+            return name + " : " + type;
         }
     }
 }

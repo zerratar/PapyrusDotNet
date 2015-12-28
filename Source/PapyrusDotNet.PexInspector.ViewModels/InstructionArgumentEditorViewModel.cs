@@ -80,7 +80,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
                     if (Arguments[2] != null)
                     {
-                        Argument1Alias = GetStringRepresentation(Arguments[2]);
+                        Argument2Alias = GetStringRepresentation(Arguments[2]);
                     }
                 }
             }
@@ -102,8 +102,15 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             var varRef = o as PapyrusVariableReference;
             if (varRef != null)
             {
-                return varRef.Value?.ToString();
+                return (varRef.Value ?? varRef.Name?.Value)?.ToString();
             }
+
+            var fieldRef = o as PapyrusFieldDefinition;
+            if (fieldRef != null)
+            {
+                return fieldRef.Name.Value;
+            }
+
             return o.ToString();
         }
 
@@ -230,6 +237,12 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 {
                     JumpConditionalVisibility = Visibility.Visible;
                 }
+                else if (desc.OpCode == PapyrusOpCodes.Isub || desc.OpCode == PapyrusOpCodes.Fsub || desc.OpCode == PapyrusOpCodes.Idiv || desc.OpCode == PapyrusOpCodes.Fdiv 
+                    || desc.OpCode == PapyrusOpCodes.Iadd || desc.OpCode == PapyrusOpCodes.Fadd || desc.OpCode == PapyrusOpCodes.Imul || desc.OpCode == PapyrusOpCodes.Fmul 
+                    || desc.OpCode == PapyrusOpCodes.Imod)
+                {
+                    MathVisibility = Visibility.Visible;
+                }
                 else if (desc.Arguments.Count == 1)
                 {
                     OneArgsVisibility = Visibility.Visible;
@@ -261,6 +274,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             TwoArgsVisibility = Visibility.Collapsed;
             ThreeArgsVisibility = Visibility.Collapsed;
             MathConditionalVisibility = Visibility.Collapsed;
+            MathVisibility = Visibility.Collapsed;
         }
 
         public Visibility AssignmentVisibility
@@ -397,10 +411,46 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
         }
 
+        public string MathOperatorValue
+        {
+            get
+            {
+                if (desc == null) return "";
+                if (desc.OpCode == PapyrusOpCodes.Iadd || desc.OpCode == PapyrusOpCodes.Fadd)
+                    return "+";
+
+                if (desc.OpCode == PapyrusOpCodes.Isub || desc.OpCode == PapyrusOpCodes.Fsub)
+                    return "-";
+
+                if (desc.OpCode == PapyrusOpCodes.Idiv || desc.OpCode == PapyrusOpCodes.Fdiv)
+                    return "/";
+
+                if (desc.OpCode == PapyrusOpCodes.Imod)
+                    return "%";
+
+                if (desc.OpCode == PapyrusOpCodes.Imul || desc.OpCode == PapyrusOpCodes.Fmul)
+                    return "*";
+
+                return "";
+            }
+        }
+
+        public Visibility MathVisibility
+        {
+            get { return mathVisibility; }
+            set { Set(ref mathVisibility, value); }
+        }
+
         private static InstructionArgumentEditorViewModel CreateViewModel()
         {
             var reader = new OpCodeDescriptionReader();
-            var data = reader.Read(@"C:\git\PapyrusDotNet\Source\PapyrusDotNet.PexInspector\OpCodeDescriptions.xml");
+            IOpCodeDescriptionDefinition data = null;
+            if (System.IO.File.Exists("OpCodeDescriptions.xml"))
+                data = reader.Read("OpCodeDescriptions.xml");
+            else if (System.IO.File.Exists(@"C:\git\PapyrusDotNet\Source\PapyrusDotNet.PexInspector\OpCodeDescriptions.xml"))
+                data = reader.Read(@"C:\git\PapyrusDotNet\Source\PapyrusDotNet.PexInspector\OpCodeDescriptions.xml");
+            else
+                data = reader.Read(@"D:\git\PapyrusDotNet\Source\PapyrusDotNet.PexInspector\OpCodeDescriptions.xml");
 
             var desc = data.GetDesc(PapyrusOpCodes.Cast);
 
@@ -449,5 +499,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private Visibility jumpVisibility;
         private Visibility jumpConditionalVisibility;
         private Visibility mathConditionalVisibility;
+        private Visibility mathVisibility;
     }
 }

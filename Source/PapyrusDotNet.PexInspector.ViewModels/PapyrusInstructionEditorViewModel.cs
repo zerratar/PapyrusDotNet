@@ -37,11 +37,15 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
             if (System.IO.File.Exists("OpCodeDescriptions.xml"))
                 opCodeDescriptionDefinition = opCodeDescriptionReader.Read("OpCodeDescriptions.xml");
+            else if (System.IO.File.Exists(
+                    @"C:\git\PapyrusDotNet\Source\PapyrusDotNet.PexInspector\OpCodeDescriptions.xml"))
+                opCodeDescriptionDefinition =
+                    opCodeDescriptionReader.Read(
+                        @"C:\git\PapyrusDotNet\Source\PapyrusDotNet.PexInspector\OpCodeDescriptions.xml");
             else
-            {
-                opCodeDescriptionDefinition = opCodeDescriptionReader.Read(@"C:\git\PapyrusDotNet\Source\PapyrusDotNet.PexInspector\OpCodeDescriptions.xml");
-            }
-
+                opCodeDescriptionDefinition =
+                    opCodeDescriptionReader.Read(
+                        @"D:\git\PapyrusDotNet\Source\PapyrusDotNet.PexInspector\OpCodeDescriptions.xml");
 
             this.dialogService = dialogService;
             this.loadedAssemblies = loadedAssemblies;
@@ -65,7 +69,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 SelectedOpCode = instruction.OpCode;
                 SelectedOpCodeDescriptionString = instruction.OpCode.GetDescription();
-                SelectedOpCodeDescription = new InstructionArgumentEditorViewModel(dialogService, loadedAssemblies, loadedAssembly, 
+                SelectedOpCodeDescription = new InstructionArgumentEditorViewModel(dialogService, loadedAssemblies, loadedAssembly,
                     currentType, currentMethod, opCodeDescriptionDefinition.GetDesc(instruction.OpCode)); // instruction.OpCode.GetDescription();
                 ArgumentsDescription = instruction.OpCode.GetArgumentsDescription();
                 OperandArgumentsDescription = instruction.OpCode.GetOperandArgumentsDescription();

@@ -17,7 +17,7 @@
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusStateReference
+    public class PapyrusStateReference : PapyrusMemberReference
     {
     }
 }

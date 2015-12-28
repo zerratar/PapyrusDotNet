@@ -50,7 +50,8 @@ namespace PapyrusDotNet.PapyrusAssembly
 
         public override string ToString()
         {
-            return "FieldDef: " + TypeName + " " + Name;
+            return Name.Value + " : " + TypeName;
+            // return "FieldDef: " + TypeName + " " + Name;
         }
     }
 }

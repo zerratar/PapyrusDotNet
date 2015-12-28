@@ -17,9 +17,14 @@
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusParameterDefinition
+    public class PapyrusParameterDefinition : PapyrusMemberReference
     {
         public PapyrusStringRef TypeName { get; set; }
         public PapyrusStringRef Name { get; set; }
+
+        public override string ToString()
+        {
+            return Name.Value + " : " + TypeName.Value;
+        }
     }
 }

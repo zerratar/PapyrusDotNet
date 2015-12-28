@@ -23,7 +23,7 @@
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusPropertyReference
+    public class PapyrusPropertyReference : PapyrusMemberReference
     {
         public PapyrusPropertyReference()
         {
