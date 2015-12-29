@@ -4,11 +4,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly.Extensions;
 using PapyrusDotNet.PexInspector.ViewModels.Extensions;
 using PapyrusDotNet.PexInspector.ViewModels.Implementations;
 using PapyrusDotNet.PexInspector.ViewModels.Interfaces;
+using PapyrusDotNet.PexInspector.ViewModels.Selectors;
 
 namespace PapyrusDotNet.PexInspector.ViewModels
 {
@@ -30,6 +35,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private string operandArgumentsDescription;
         private bool operandArgumentsVisible;
         private string selectedOpCodeDescriptionString;
+        private ObservableCollection<PapyrusVariableReference> operandArguments;
+        private PapyrusVariableReference selectedOperandArgument;
 
         public PapyrusInstructionEditorViewModel(IDialogService dialogService, List<PapyrusAssemblyDefinition> loadedAssemblies, PapyrusAssemblyDefinition loadedAssembly, PapyrusTypeDefinition currentType, PapyrusMethodDefinition currentMethod, PapyrusInstruction instruction = null)
         {
@@ -64,6 +71,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 ArgumentsDescription = defaultOpCode.GetArgumentsDescription();
                 OperandArgumentsDescription = defaultOpCode.GetOperandArgumentsDescription();
                 OperandArgumentsVisible = !operandArgumentsDescription.ToLower().Contains("no operand");
+
+                OperandArguments = new ObservableCollection<PapyrusVariableReference>();
             }
             else
             {
@@ -74,8 +83,107 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 ArgumentsDescription = instruction.OpCode.GetArgumentsDescription();
                 OperandArgumentsDescription = instruction.OpCode.GetOperandArgumentsDescription();
                 OperandArgumentsVisible = !operandArgumentsDescription.ToLower().Contains("no operand");
+                OperandArguments = new ObservableCollection<PapyrusVariableReference>(instruction.OperandArguments);
             }
             AvailableOpCodes = new ObservableCollection<PapyrusOpCodes>(Enum.GetValues(typeof(PapyrusOpCodes)).Cast<PapyrusOpCodes>());
+
+            AddOperandArgumentCommand = new RelayCommand(AddOpArg);
+            RemoveOperandArgumentCommand = new RelayCommand(RemoveOpArg, CanEdit);
+            EditOperandArgumentCommand = new RelayCommand(EditOpArg, CanEdit);
+        }
+
+        private void AddOpArg()
+        {
+            var dialog = new PapyrusReferenceAndConstantValueViewModel(loadedAssemblies, currentType, currentMethod, null);
+            var result = dialogService.ShowDialog(dialog);
+            if (result == DialogResult.OK)
+            {
+                var asm = currentType.Assembly;
+                var papyrusVariableReference = new PapyrusVariableReference();
+                var targetType = Utility.GetPapyrusValueType(Utility.GetPapyrusReturnType(dialog.SelectedTypeName));
+                if (dialog.SelectedReferenceValue != null)
+                {
+                    var paramRef = dialog.SelectedReferenceValue as PapyrusParameterDefinition;
+                    var fieldRef = dialog.SelectedReferenceValue as PapyrusFieldDefinition;
+                    var varRef = dialog.SelectedReferenceValue as PapyrusVariableReference;
+                    if (varRef != null)
+                    {
+                        papyrusVariableReference.Value = varRef.Value;
+                        papyrusVariableReference.Name = varRef.Name;
+                        papyrusVariableReference.TypeName = varRef.TypeName;
+                        papyrusVariableReference.ValueType = PapyrusPrimitiveType.Reference;
+                        OperandArguments.Add(papyrusVariableReference);
+                    }
+                    else if (fieldRef != null)
+                    {
+                        papyrusVariableReference.Value = fieldRef.Name.Value;
+                        papyrusVariableReference.Name = fieldRef.Name;
+                        papyrusVariableReference.TypeName = fieldRef.TypeName.Ref(asm);
+                        papyrusVariableReference.ValueType = PapyrusPrimitiveType.Reference;
+                        OperandArguments.Add(papyrusVariableReference);
+                    }
+                    else if (paramRef != null)
+                    {
+                        papyrusVariableReference.Value = paramRef.Name.Value;
+                        papyrusVariableReference.Name = paramRef.Name;
+                        papyrusVariableReference.TypeName = paramRef.TypeName;
+                        papyrusVariableReference.ValueType = PapyrusPrimitiveType.Reference;
+                        OperandArguments.Add(papyrusVariableReference);
+                    }
+                    //else
+                    //{
+
+                    //}
+                }
+                else
+                {
+                    var type =
+                    Utility.GetPrimitiveTypeFromValue(dialog.SelectedConstantValue);
+                    papyrusVariableReference.Value = dialog.SelectedConstantValue;
+                    papyrusVariableReference.ValueType = targetType;
+                    OperandArguments.Add(papyrusVariableReference);
+                }
+            }
+        }
+
+        private void EditOpArg()
+        {
+            var dialog = new PapyrusReferenceAndConstantValueViewModel(loadedAssemblies, currentType, currentMethod, null);
+            var result = dialogService.ShowDialog(dialog);
+            if (result == DialogResult.OK)
+            {
+                // TODO
+            }
+        }
+
+        private void RemoveOpArg()
+        {
+            var obj = SelectedOperandArgument;
+            string name = obj.Name?.Value ?? "";
+            if (MessageBox.Show("Are you sure you want to delete this Argument?",
+                "Delete Argument " + name, MessageBoxButton.OKCancel)
+                == MessageBoxResult.OK)
+            {
+
+                OperandArguments.Remove(SelectedOperandArgument);
+
+                //OperandArguments
+
+                //var method = selectedMethod;
+
+                //if (method.Parameters.Contains(obj))
+                //    method.Parameters.Remove(obj);
+
+                //SelectedMethodParameters = new ObservableCollection<PapyrusParameterDefinition>(
+                //        method.Parameters
+                //    );
+            }
+        }
+
+
+        private bool CanEdit()
+        {
+            return SelectedOperandArgument != null;
         }
 
 
@@ -132,9 +240,37 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             set { Set(ref operandArgumentsVisible, value); }
         }
 
+        //private List<PapyrusVariableReference> GetOperandArguments()
+        //{
+        //    return new List<PapyrusVariableReference>();
+        //}
+
         public List<PapyrusVariableReference> Arguments => SelectedOpCodeDescription.GetArguments();
-        public List<PapyrusVariableReference> OperandArguments => SelectedOpCodeDescription.GetOperandArguments();
-        public object Operand => SelectedOpCodeDescription.GetOperand();
+
+        public ObservableCollection<PapyrusVariableReference> OperandArguments
+        {
+            get { return operandArguments; }
+            set { Set(ref operandArguments, value); }
+        }
+
+        public PapyrusVariableReference SelectedOperandArgument
+        {
+            get { return selectedOperandArgument; }
+            set
+            {
+                if (Set(ref selectedOperandArgument, value))
+                {
+                    RemoveOperandArgumentCommand.RaiseCanExecuteChanged();
+                    EditOperandArgumentCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        public RelayCommand RemoveOperandArgumentCommand { get; set; }
+
+        public RelayCommand EditOperandArgumentCommand { get; set; }
+
+        public RelayCommand AddOperandArgumentCommand { get; set; }
 
         public static PapyrusInstructionEditorViewModel DesignInstance = designInstance ??
                                                                          (designInstance =

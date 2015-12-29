@@ -59,12 +59,12 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             if (result == DialogResult.OK)
             {
                 var inst = SelectedMethodInstruction;
-                inst.Operand = dialog.Operand;
+                //inst.Operand = dialog.Operand;
                 inst.OpCode = dialog.SelectedOpCode;
                 inst.Arguments = dialog.Arguments;
-                inst.OperandArguments = dialog.OperandArguments;
+                inst.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
                 selectedMethod.Body.Instructions.RecalculateOffsets();
-
+                selectedMethod.UpdateInstructionOperands();
                 SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
             }
         }
@@ -79,17 +79,17 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             if (result == DialogResult.OK)
             {
                 var inst = SelectedMethodInstruction;
-                var index = SelectedMethodInstructions.IndexOf(inst) - 1;
+                var index = SelectedMethodInstructions.IndexOf(inst);
                 if (index < 0) index = 0;
 
                 var newInstruction = new PapyrusInstruction();
                 newInstruction.OpCode = dialog.SelectedOpCode;
-                newInstruction.Operand = dialog.Operand;
+                //newInstruction.Operand = dialog.Operand;
                 newInstruction.Arguments = dialog.Arguments;
-                newInstruction.OperandArguments = dialog.OperandArguments;
+                newInstruction.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
                 selectedMethod.Body.Instructions.Insert(index, newInstruction);
                 selectedMethod.Body.Instructions.RecalculateOffsets();
-
+                selectedMethod.UpdateInstructionOperands();
                 SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
             }
         }
@@ -107,11 +107,14 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
                 var newInstruction = new PapyrusInstruction();
                 newInstruction.OpCode = dialog.SelectedOpCode;
-                newInstruction.Operand = dialog.Operand;
+                //newInstruction.Operand = dialog.Operand;
                 newInstruction.Arguments = dialog.Arguments;
-                newInstruction.OperandArguments = dialog.OperandArguments;
+                newInstruction.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
                 selectedMethod.Body.Instructions.Insert(index, newInstruction);
                 selectedMethod.Body.Instructions.RecalculateOffsets();
+
+                selectedMethod.UpdateInstructionOperands();
+                //selectedMethod.Body.Instructions.ForEach(i => selectedMethod.DeclaringState.DeclaringType.UpdateOperand(i, selectedMethod.Body.Instructions));
 
                 SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
             }
@@ -132,9 +135,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 var.Name = varName.Ref(asm);
                 var.TypeName = typeName.ToString().Ref(asm);
 
-                SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(
-                        selectedMethod.GetVariables()
-                    );
+                SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(selectedMethod.GetVariables());
             }
         }
 

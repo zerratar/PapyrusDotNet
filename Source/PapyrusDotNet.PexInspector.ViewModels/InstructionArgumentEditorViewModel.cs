@@ -4,7 +4,9 @@ using System.Windows;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly.Extensions;
 using PapyrusDotNet.PexInspector.ViewModels.Implementations;
 using PapyrusDotNet.PexInspector.ViewModels.Interfaces;
 using PapyrusDotNet.PexInspector.ViewModels.Selectors;
@@ -193,18 +195,70 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         public List<PapyrusVariableReference> GetArguments()
         {
-            throw new System.NotImplementedException();
+            return Arguments.Select(ToPapyrusVariableRef).ToList();
         }
 
-        public List<PapyrusVariableReference> GetOperandArguments()
+        private PapyrusVariableReference ToPapyrusVariableRef(object arg)
         {
-            throw new System.NotImplementedException();
+            if (arg == null) return null;
+
+            if (arg is PapyrusVariableReference)
+                return arg as PapyrusVariableReference;
+            else if (arg is PapyrusMethodDefinition)
+            {
+                var m = arg as PapyrusMethodDefinition;
+                Operand = arg;
+                return new PapyrusVariableReference()
+                {
+                    Value = m.Name.Value,
+                    ValueType = PapyrusPrimitiveType.Reference
+                };
+            }
+            else if (arg is PapyrusParameterDefinition)
+            {
+                var m = arg as PapyrusParameterDefinition;
+                return new PapyrusVariableReference()
+                {
+                    Value = m.Name.Value,
+                    ValueType = PapyrusPrimitiveType.Reference
+                };
+            }
+            else if (arg is PapyrusFieldDefinition)
+            {
+                var m = arg as PapyrusFieldDefinition;
+                return new PapyrusVariableReference()
+                {
+                    Value = m.Name.Value,
+                    ValueType = PapyrusPrimitiveType.Reference
+                };
+            }
+            else if (arg is PapyrusInstruction)
+            {
+                var m = arg as PapyrusInstruction;
+                Operand = arg;
+                return new PapyrusVariableReference()
+                {
+                    Value = currentInstruction.Offset + m.Offset,
+                    ValueType = PapyrusPrimitiveType.Integer
+                };
+            }
+            else
+            {
+                return new PapyrusVariableReference()
+                {
+                    Value = arg,
+                    ValueType = Utility.GetPrimitiveTypeFromValue(arg)
+                };
+            }
         }
 
-        public object GetOperand()
-        {
-            throw new System.NotImplementedException();
-        }
+        public object Operand { get; set; }
+
+        //public object GetOperand()
+        //{
+        //    OperandLookup()
+        //    throw new System.NotImplementedException();
+        //}
 
         private void ShowArgumentSelectionDialog(OpCodeArgumentDescription d)
         {

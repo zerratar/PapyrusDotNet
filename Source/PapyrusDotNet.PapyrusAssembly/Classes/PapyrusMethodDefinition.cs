@@ -47,6 +47,11 @@ namespace PapyrusDotNet.PapyrusAssembly
         public byte Flags { get; set; }
         public List<PapyrusParameterDefinition> Parameters { get; set; }
 
+        public void UpdateInstructionOperands()
+        {
+            this.Body.Instructions.ForEach(i => this.DeclaringState.DeclaringType.UpdateOperand(i, this.Body.Instructions));
+        }
+
         public bool IsGlobal
         {
             get { return (Flags & (byte)PapyrusMethodFlags.Global) > 0; }
@@ -85,7 +90,7 @@ namespace PapyrusDotNet.PapyrusAssembly
 
         public PapyrusStateDefinition DeclaringState { get; set; }
 
-//=> (Flags & 4) > 0;
+        //=> (Flags & 4) > 0;
 
         public void SetFlags(PapyrusMethodFlags flags)
         {

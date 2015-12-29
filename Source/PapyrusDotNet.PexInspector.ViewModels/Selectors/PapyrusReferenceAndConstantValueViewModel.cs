@@ -73,7 +73,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 elements.Add(new ComboBoxItem { Content = "Variable" });
                 elements.Add(new ComboBoxItem { Content = "Field" });
 
-                // elements.Add(new ComboBoxItem { Content = "Self" });
+                // if(desc.)
+                elements.Add(new ComboBoxItem { Content = "Self" });
                 return elements;
             }
 
@@ -134,6 +135,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 {
                     var val = value as ComboBoxItem;
                     var tar = val.Content.ToString().ToLower();
+                    SelectedTypeName = tar;
                     var isRef = false;
                     if (tar == "variable")
                     {
@@ -193,6 +195,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 }
             }
         }
+
+        public string SelectedTypeName { get; set; }
 
 
         private IEnumerable<PapyrusMemberReference> Filter(List<PapyrusParameterDefinition> collection)

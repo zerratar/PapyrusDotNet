@@ -22,18 +22,21 @@ namespace PapyrusDotNet.PexInspector.Converters
 
                 foreach (var obj in items)
                 {
-                    var variable =
-                    obj as PapyrusVariableReference;
-                    if (variable != null)
+                    if (obj != null)
                     {
-                        if (variable.Value == null)
-                            display.Add("NONE");
+                        var variable =
+                        obj as PapyrusVariableReference;
+                        if (variable != null)
+                        {
+                            if (variable.Value == null)
+                                display.Add("NONE");
+                            else
+                                display.Add(variable.Value.ToString());
+                        }
                         else
-                            display.Add(variable.Value.ToString());
-                    }
-                    else
-                    {
-                        display.Add(obj.ToString());
+                        {
+                            display.Add(obj.ToString());
+                        }
                     }
                 }
 

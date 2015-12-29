@@ -17,7 +17,9 @@
 
 #region
 
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 #endregion
 
@@ -62,5 +64,61 @@ namespace PapyrusDotNet.PapyrusAssembly
         {
             return (IsClass ? "class " : "struct ") + Name + (BaseTypeName != null ? " : " + BaseTypeName : "");
         }
+
+        public void UpdateOperand(PapyrusInstruction instruction, PapyrusInstructionCollection instructions)
+        {
+            var allmethods = States.SelectMany(m => m.Methods);
+            var papyrusMethodDefinitions = allmethods.ToList();
+            var i = instruction;
+            if (i.OpCode == PapyrusOpCodes.Jmpt || i.OpCode == PapyrusOpCodes.Jmpf)
+            {
+                i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + int.Parse(i.GetArg(1)));
+                if (i.Operand == null)
+                    i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + (int.Parse(i.GetArg(1)) - 1));
+            }
+            else if (i.OpCode == PapyrusOpCodes.Jmp)
+            {
+                i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + int.Parse(i.GetArg(0)));
+                if (i.Operand == null)
+                    i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + (int.Parse(i.GetArg(0)) - 1));
+            }
+
+            else if (i.OpCode == PapyrusOpCodes.Callparent)
+            {
+                var arg = i.GetArg(0);
+                i.Operand = papyrusMethodDefinitions
+                            .FirstOrDefault(m => m.Name.Value.ToLower() == arg.ToLower());
+                if (i.Operand == null)
+                {
+                    i.Operand = "<Method Reference Not Loaded>";
+                }
+            }
+            else if (i.OpCode == PapyrusOpCodes.Callmethod)
+            {
+                var arg = i.GetArg(0);
+                i.Operand = papyrusMethodDefinitions
+                            .FirstOrDefault(m => m.Name.Value.ToLower() == arg.ToLower());
+                if (i.Operand == null)
+                {
+                    i.Operand = "<Method Reference Not Loaded>";
+                }
+            }
+            else if (i.OpCode == PapyrusOpCodes.Callstatic)
+            {
+                var arg = i.GetArg(0);
+                i.Operand = papyrusMethodDefinitions
+                            .FirstOrDefault(m => m.Name.Value.ToLower() == arg.ToLower());
+                if (i.Operand == null)
+                {
+                    i.Operand = "<Method Reference Not Loaded>";
+                }
+            }
+
+            else
+            {
+                i.Operand = null;
+            }
+        }
+
     }
 }

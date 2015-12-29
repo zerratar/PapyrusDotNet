@@ -110,8 +110,10 @@ namespace PapyrusDotNet.Common.Utilities
 
         public static string GetPapyrusReturnType(string reference, TypeDefinition caller = null)
         {
-            return GetPapyrusReturnType(reference.Split('.').LastOrDefault(),
-                reference.Remove(reference.LastIndexOf('.')), caller);
+            if (reference.Contains("."))
+                return GetPapyrusReturnType(reference.Split('.').LastOrDefault(),
+                    reference.Remove(reference.LastIndexOf('.')), caller);
+            else return GetPapyrusReturnType(reference, "", caller);
         }
 
         public static string GetPapyrusBaseType(TypeReference typeRef)
@@ -355,6 +357,8 @@ namespace PapyrusDotNet.Common.Utilities
         public static PapyrusPrimitiveType GetPapyrusValueType(string type)
         {
             var s = type.ToLower();
+            if (s.StartsWith("none") || s.StartsWith("void"))
+                return PapyrusPrimitiveType.None;
             if (s.StartsWith("bool"))
                 return PapyrusPrimitiveType.Boolean;
             if (s.StartsWith("string"))

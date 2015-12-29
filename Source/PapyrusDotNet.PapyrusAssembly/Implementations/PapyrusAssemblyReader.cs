@@ -316,7 +316,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     foreach (var inst in m.Body.Instructions)
                     {
                         inst.Method = m;
-                        UpdateOperand(inst, m.Body.Instructions, allMethods);
+                        state.DeclaringType.UpdateOperand(inst, m.Body.Instructions);
                     }
                 }
             }
@@ -437,59 +437,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private bool IsJump(PapyrusOpCodes opCode)
         {
             return opCode == PapyrusOpCodes.Jmp || opCode == PapyrusOpCodes.Jmpf || opCode == PapyrusOpCodes.Jmpt;
-        }
-        private void UpdateOperand(PapyrusInstruction instruction, PapyrusInstructionCollection instructions, IEnumerable<PapyrusMethodDefinition> allmethods)
-        {
-            var papyrusMethodDefinitions = allmethods.ToList();
-            var i = instruction;
-            if (i.OpCode == PapyrusOpCodes.Jmpt || i.OpCode == PapyrusOpCodes.Jmpf)
-            {
-                i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + int.Parse(i.GetArg(1)));
-                if (i.Operand == null)
-                    i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + (int.Parse(i.GetArg(1)) - 1));
-            }
-            else if (i.OpCode == PapyrusOpCodes.Jmp)
-            {
-                i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + int.Parse(i.GetArg(0)));
-                if (i.Operand == null)
-                    i.Operand = instructions.FirstOrDefault(i2 => i2.Offset == i.Offset + (int.Parse(i.GetArg(0)) - 1));
-            }
-
-            else if (i.OpCode == PapyrusOpCodes.Callparent)
-            {
-                var arg = i.GetArg(0);
-                i.Operand = papyrusMethodDefinitions
-                            .FirstOrDefault(m => m.Name.Value.ToLower() == arg.ToLower());
-                if (i.Operand == null)
-                {
-                    i.Operand = "<Method Reference Not Loaded>";
-                }
-            }
-            else if (i.OpCode == PapyrusOpCodes.Callmethod)
-            {
-                var arg = i.GetArg(0);
-                i.Operand = papyrusMethodDefinitions
-                            .FirstOrDefault(m => m.Name.Value.ToLower() == arg.ToLower());
-                if (i.Operand == null)
-                {
-                    i.Operand = "<Method Reference Not Loaded>";
-                }
-            }
-            else if (i.OpCode == PapyrusOpCodes.Callstatic)
-            {
-                var arg = i.GetArg(0);
-                i.Operand = papyrusMethodDefinitions
-                            .FirstOrDefault(m => m.Name.Value.ToLower() == arg.ToLower());
-                if (i.Operand == null)
-                {
-                    i.Operand = "<Method Reference Not Loaded>";
-                }
-            }
-
-            else
-            {
-                i.Operand = null;
-            }
         }
 
         private PapyrusInstruction ReadInstruction(PapyrusAssemblyDefinition asm)
