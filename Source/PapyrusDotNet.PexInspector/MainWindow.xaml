@@ -72,7 +72,8 @@
             <TabControl Grid.Column="2" >
                 <TabItem Header="Instructions">
                     <TabItem.Content>
-                        <DataGrid x:Name="instructionsList" ItemsSource="{Binding SelectedMethodInstructions}" 
+                        <DataGrid x:Name="instructionsList" 
+                                  ItemsSource="{Binding SelectedMethodInstructions}" 
                                   SelectedItem="{Binding SelectedMethodInstruction}"
                                   MinRowHeight="22"
                                   VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"                                  
@@ -147,9 +148,11 @@
 
 
                         <DataGrid x:Name="variableList"  ItemsSource="{Binding SelectedMethodVariables}"
+                                  SelectedItem="{Binding SelectedMethodVariable}"
                                   MinRowHeight="22"
                                   VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"
-                                  AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
+                                  AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" 
+                                  CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
                                   behaviours:DataGridBehaviour.DisplayRowNumber="True">
                             <DataGrid.CellStyle>
                                 <Style TargetType="DataGridCell">
@@ -195,10 +198,13 @@
                 </TabItem>
                 <TabItem Header="Parameters">
                     <TabItem.Content>
-                        <DataGrid x:Name="parameterist"  ItemsSource="{Binding SelectedMethodParameters}"
+                        <DataGrid x:Name="parameterist"  
+                                  ItemsSource="{Binding SelectedMethodParameters}"
+                                  SelectedItem="{Binding SelectedMethodParameter}"
                                   MinRowHeight="22"
                                   VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"
-                                  AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
+                                  AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" 
+                                  CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
                                   behaviours:DataGridBehaviour.DisplayRowNumber="True">
                             <DataGrid.CellStyle>
                                 <Style TargetType="DataGridCell">

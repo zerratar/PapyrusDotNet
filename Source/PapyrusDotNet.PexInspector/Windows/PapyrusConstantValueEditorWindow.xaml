@@ -16,17 +16,12 @@
 
         <StackPanel Orientation="Vertical" Margin="20,20,20,0" Grid.Row="0">
             <TextBlock Text="Type" Margin="0,0,0,5" />
-            <ComboBox IsEditable="True" Margin="0" SelectedIndex="0" SelectedItem="{Binding SelectedValueType, Mode=TwoWay}">
-                <ComboBoxItem Content="None"/>
-                <ComboBoxItem Content="Integer"/>
-                <ComboBoxItem Content="Float"/>
-                <ComboBoxItem Content="Boolean"/>
-                <ComboBoxItem Content="String"/>
-            </ComboBox>
+            <ComboBox Margin="0" ItemsSource="{Binding ComboBoxItems}" SelectedItem="{Binding SelectedValueType, Mode=TwoWay}" />
 
-            <TextBlock Text="Value" Margin="0,10,0,5"/>
-            <TextBox Height="24" Text="{Binding SelectedValue, Mode=TwoWay}"/>
-
+            <StackPanel Orientation="Vertical" Visibility="{Binding ValueInputVisibility}">
+                <TextBlock Text="Value" Margin="0,10,0,5"/>
+                <TextBox Height="24" Text="{Binding SelectedValue, Mode=TwoWay}"/>
+            </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="20,10">
             <Button Content="OK" Width="72" Margin="2,0,10,0" Background="#FF3498DB" BorderBrush="#FF3498DB" Foreground="White" Click="Button_Click"/>

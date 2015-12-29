@@ -18,6 +18,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             PapyrusAssemblyDefinition loadedAssembly,
             PapyrusTypeDefinition currentType,
             PapyrusMethodDefinition currentMethod,
+            PapyrusInstruction currentInstruction,
             OpCodeDescription desc)
         {
             this.dialogService = dialogService;
@@ -25,11 +26,24 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             this.loadedAssembly = loadedAssembly;
             this.currentType = currentType;
             this.currentMethod = currentMethod;
+            this.currentInstruction = currentInstruction;
             this.desc = desc;
 
             Argument0Command = new RelayCommand(SelectArgument0);
             Argument1Command = new RelayCommand(SelectArgument1);
             Argument2Command = new RelayCommand(SelectArgument2);
+
+            if (currentInstruction != null)
+            {
+
+                var args = currentInstruction.Arguments.ToArray().Cast<object>().ToList();
+
+                while (args.Count < 3)
+                {
+                    args.Add(null);
+                }
+                Arguments = OperandLookup(args.ToArray());
+            }
 
             if (this.desc != null)
             {
@@ -44,6 +58,43 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     // this.desc was null after all.
                 }
             }
+        }
+
+        private object[] OperandLookup(object[] toArray)
+        {
+
+            if (currentInstruction.Operand != null)
+            {
+                if (currentInstruction.OpCode == PapyrusOpCodes.Jmp)
+                {
+                    toArray[0] = currentInstruction.Operand;
+                }
+                else if (currentInstruction.OpCode == PapyrusOpCodes.Jmpt || currentInstruction.OpCode == PapyrusOpCodes.Jmpf)
+                {
+                    toArray[1] = currentInstruction.Operand;
+                }
+                else if (currentInstruction.OpCode == PapyrusOpCodes.Callmethod)
+                {
+                    if (!(currentInstruction.Operand is string))
+                    {
+                        toArray[0] = currentInstruction.Operand;
+                    }
+                }
+                // --- We most likely won't have a operand for Callstatic.
+                /* else if (currentInstruction.OpCode == PapyrusOpCodes.Callstatic)
+                {
+
+                } */
+                else if (currentInstruction.OpCode == PapyrusOpCodes.Callparent)
+                {
+                    if (!(currentInstruction.Operand is string))
+                    {
+                        toArray[1] = currentInstruction.Operand;
+                    }
+                }
+            }
+
+            return toArray;
         }
 
         private void UpdateArguments()
@@ -237,8 +288,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 {
                     JumpConditionalVisibility = Visibility.Visible;
                 }
-                else if (desc.OpCode == PapyrusOpCodes.Isub || desc.OpCode == PapyrusOpCodes.Fsub || desc.OpCode == PapyrusOpCodes.Idiv || desc.OpCode == PapyrusOpCodes.Fdiv 
-                    || desc.OpCode == PapyrusOpCodes.Iadd || desc.OpCode == PapyrusOpCodes.Fadd || desc.OpCode == PapyrusOpCodes.Imul || desc.OpCode == PapyrusOpCodes.Fmul 
+                else if (desc.OpCode == PapyrusOpCodes.Isub || desc.OpCode == PapyrusOpCodes.Fsub || desc.OpCode == PapyrusOpCodes.Idiv || desc.OpCode == PapyrusOpCodes.Fdiv
+                    || desc.OpCode == PapyrusOpCodes.Iadd || desc.OpCode == PapyrusOpCodes.Fadd || desc.OpCode == PapyrusOpCodes.Imul || desc.OpCode == PapyrusOpCodes.Fmul
                     || desc.OpCode == PapyrusOpCodes.Imod)
                 {
                     MathVisibility = Visibility.Visible;
@@ -473,7 +524,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 }
             }
 
-            return new InstructionArgumentEditorViewModel(null, null, null, null, null, desc);
+            return new InstructionArgumentEditorViewModel(null, null, null, null, null, null, desc);
         }
 
         private static InstructionArgumentEditorViewModel designInstance;
@@ -495,6 +546,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private readonly PapyrusAssemblyDefinition loadedAssembly;
         private readonly PapyrusTypeDefinition currentType;
         private readonly PapyrusMethodDefinition currentMethod;
+        private readonly PapyrusInstruction currentInstruction;
         private OpCodeDescription desc;
         private Visibility jumpVisibility;
         private Visibility jumpConditionalVisibility;

@@ -41,13 +41,19 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Implementations
             {
                 foreach (var arg in args)
                 {
+                    OpCodeConstraint[] constraints = new OpCodeConstraint[0];
+                    var constraintValue = arg.Attribute("Constraint")?.Value;
+                    if (constraintValue != null)
+                        constraints = constraintValue.Split(',').Select(ConstraintFromString).ToArray();
+
                     i.Arguments.Add(new OpCodeArgumentDescription
                     {
                         Index = int.Parse(arg.Attribute("Index").Value),
                         Alias = arg.Attribute("Alias")?.Value,
                         Description = arg.Attribute("Description")?.Value,
                         ValueType = ValueTypeFromString(arg.Attribute("ValueType")?.Value),
-                        Ref = RefFromString(arg.Attribute("Ref")?.Value)
+                        Ref = RefFromString(arg.Attribute("Ref")?.Value),
+                        Constraints = constraints
                     });
                 }
             }
@@ -58,18 +64,32 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Implementations
             {
                 foreach (var arg in opargs)
                 {
+                    OpCodeConstraint[] constraints = new OpCodeConstraint[0];
+                    var constraintValue = arg.Attribute("Constraint")?.Value;
+                    if (constraintValue != null)
+                        constraints = constraintValue.Split(',').Select(ConstraintFromString).ToArray();
+
                     i.OperandArguments.Add(new OpCodeArgumentDescription
                     {
                         Index = -1,
                         Alias = arg.Attribute("Alias")?.Value,
                         Description = arg.Attribute("Description")?.Value,
                         ValueType = ValueTypeFromString(arg.Attribute("ValueType")?.Value),
-                        Ref = RefFromString(arg.Attribute("Ref")?.Value)
+                        Ref = RefFromString(arg.Attribute("Ref")?.Value),
+                        Constraints = constraints
                     });
                 }
             }
 
             return i;
+        }
+
+        private static OpCodeConstraint ConstraintFromString(string n)
+        {
+            if (n == null) return OpCodeConstraint.NoConstraints;
+            return Enum.GetValues(typeof(OpCodeConstraint))
+                    .Cast<OpCodeConstraint>()
+                    .FirstOrDefault(op => op.ToString().ToLower() == n.ToLower());
         }
 
         private static OpCodeRef RefFromString(string n)

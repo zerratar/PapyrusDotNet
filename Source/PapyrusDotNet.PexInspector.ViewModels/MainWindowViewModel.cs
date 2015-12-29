@@ -37,13 +37,118 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             InsertBeforeCommand = new RelayCommand(InsertBefore, CanInsert);
             EditInstructionCommand = new RelayCommand(EditInstruction, CanInsert);
             RemoveInstructionCommand = new RelayCommand(RemoveInstruction, CanInsert);
+
+
+            CreateVariableCommand = new RelayCommand(CreateVariable);
+            EditVariableCommand = new RelayCommand(EditVariable, CanEditVar);
+            DeleteVariableCommand = new RelayCommand(DeleteVariable, CanEditVar);
+
+
+            CreateParameterCommand = new RelayCommand(CreateParameter);
+            EditParameterCommand = new RelayCommand(EditParameter, CanEditParameter);
+            DeleteParameterCommand = new RelayCommand(DeleteParameter, CanEditParameter);
+
+        }
+
+        private bool CanEditParameter()
+        {
+            return SelectedMethodParameter != null;
+        }
+
+        private bool CanEditVar()
+        {
+            return SelectedMethodVariable != null;
+        }
+
+
+        private void EditVariable()
+        {
+            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+
+            var result = dialogService.ShowDialog(new PapyrusVariableEditorViewModel(loadedTypes, SelectedMethodVariable));
+            if (result == DialogResult.OK)
+            {
+
+            }
+        }
+
+        private void CreateVariable()
+        {
+            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var result = dialogService.ShowDialog(new PapyrusVariableEditorViewModel(loadedTypes));
+            if (result == DialogResult.OK)
+            {
+
+            }
+        }
+
+
+        private void EditParameter()
+        {
+            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var result = dialogService.ShowDialog(new PapyrusParameterEditorViewModel(loadedTypes, SelectedMethodParameter));
+            if (result == DialogResult.OK)
+            {
+
+            }
+        }
+
+        private void CreateParameter()
+        {
+            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var result = dialogService.ShowDialog(new PapyrusParameterEditorViewModel(loadedTypes));
+            if (result == DialogResult.OK)
+            {
+
+            }
+        }
+
+
+        private void DeleteParameter()
+        {
+            var obj = SelectedMethodParameter;
+            string name = obj.Name?.Value ?? "";
+            if (MessageBox.Show("WARNING: It could be used by any existing instructions, and if this method is being called from somewhere else, that call needs to be updated or the scripts will stop working.\r\n----------------------\r\nDeleting this parameter will not modify any existing instructions.\r\nAre you sure you want to delete this parameter?",
+                "Delete Parameter " + name, MessageBoxButton.OKCancel)
+                == MessageBoxResult.OK)
+            {
+                var method = selectedMethod;
+
+                if (method.Parameters.Contains(obj))
+                    method.Parameters.Remove(obj);
+
+                SelectedMethodParameters = new ObservableCollection<PapyrusParameterDefinition>(
+                        method.Parameters
+                    );
+            }
+        }
+
+        private void DeleteVariable()
+        {
+            var obj = SelectedMethodVariable;
+            string name = obj.Name?.Value ?? "";
+            if (MessageBox.Show("WARNING: It could be used by any existing instructions.\r\n----------------------\r\nDeleting this variable will not modify any existing instructions.\r\nAre you sure you want to delete this variable?",
+                "Delete Variable " + name, MessageBoxButton.OKCancel)
+                == MessageBoxResult.OK)
+            {
+                var method = selectedMethod;
+
+                if (method.Body.TempVariables.Contains(obj))
+                    method.Body.TempVariables.Remove(obj);
+                else
+                    method.Body.Variables.Remove(obj);
+
+                SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(
+                        method.GetVariables()
+                    );
+            }
         }
 
         private void RemoveInstruction()
         {
             var obj = SelectedMethodInstruction;
-            if (MessageBox.Show("Are you sure you want to delete this instruction?",
-                "Delete Instruction ( " + obj.Offset + " ) " + obj.OpCode, MessageBoxButton.OKCancel)
+            if (MessageBox.Show("WARNING: Are you sure you want to delete this instruction?",
+                "Delete Instruction L_" + obj.Offset.ToString("000") + ": " + obj.OpCode, MessageBoxButton.OKCancel)
                 == MessageBoxResult.OK)
             {
                 var method = obj.Method;
@@ -334,6 +439,32 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
         }
 
+        public PapyrusVariableReference SelectedMethodVariable
+        {
+            get { return selectedMethodVariable; }
+            set
+            {
+                if (Set(ref selectedMethodVariable, value))
+                {
+                    EditVariableCommand.RaiseCanExecuteChanged();
+                    DeleteVariableCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        public PapyrusParameterDefinition SelectedMethodParameter
+        {
+            get { return selectedMethodParameter; }
+            set
+            {
+                if (Set(ref selectedMethodParameter, value))
+                {
+                    EditParameterCommand.RaiseCanExecuteChanged();
+                    DeleteParameterCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         private ObservableCollection<PapyrusInstruction> selectedMethodInstructions;
         private ObservableCollection<PapyrusViewModel> pexTree;
         private ObservableCollection<PapyrusParameterDefinition> selectedMethodParameters;
@@ -383,6 +514,17 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             set { Set(ref selectedMethodInstruction, value); }
         }
 
+        public ICommand CreateVariableCommand { get; set; }
+
+        public RelayCommand EditVariableCommand { get; set; }
+
+        public RelayCommand DeleteVariableCommand { get; set; }
+
+        public ICommand CreateParameterCommand { get; set; }
+
+        public RelayCommand EditParameterCommand { get; set; }
+
+        public RelayCommand DeleteParameterCommand { get; set; }
 
         private static MainWindowViewModel designInstance;
 
@@ -393,5 +535,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private PapyrusMethodDefinition selectedMethod;
         private List<string> discoveredScripts;
         private Dictionary<string, string> discoveredScriptNames;
+        private PapyrusVariableReference selectedMethodVariable;
+        private PapyrusParameterDefinition selectedMethodParameter;
     }
 }

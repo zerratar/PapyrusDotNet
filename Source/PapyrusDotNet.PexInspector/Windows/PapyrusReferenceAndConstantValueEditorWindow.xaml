@@ -16,16 +16,7 @@
 
         <StackPanel Orientation="Vertical" Margin="20,20,20,0" Grid.Row="0">
             <TextBlock Text="Type" Margin="0,0,0,5" />
-            <ComboBox Margin="0" SelectedIndex="5" SelectedItem="{Binding SelectedValueType, Mode=TwoWay}">
-                <!--<ComboBoxItem Content="None"/>-->
-                <ComboBoxItem Content="Integer"/>
-                <ComboBoxItem Content="Float"/>
-                <ComboBoxItem Content="Boolean"/>
-                <ComboBoxItem Content="String"/>
-                <Separator/>
-                <ComboBoxItem Content="Reference (Variable, Parameter, Field)"/>
-                <!--<ComboBoxItem Content="Property Reference"/>-->
-            </ComboBox>
+            <ComboBox Margin="0" ItemsSource="{Binding ComboBoxItems}" SelectedItem="{Binding SelectedValueType, Mode=TwoWay}"/>
 
             <StackPanel Orientation="Vertical" Visibility="{Binding ConstantValueVisibility}">
                 <TextBlock Text="Value" Margin="0,10,0,5"/>

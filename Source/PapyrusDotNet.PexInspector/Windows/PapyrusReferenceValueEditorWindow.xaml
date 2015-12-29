@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:PapyrusDotNet.PexInspector.Windows"
         xmlns:selectors="clr-namespace:PapyrusDotNet.PexInspector.ViewModels.Selectors;assembly=PapyrusDotNet.PexInspector.ViewModels"
         mc:Ignorable="d"
-        Title="Edit Reference / Constant Value" Height="350" Width="425.212"
+        Title="Edit Reference" Height="260.541" Width="425.212"
         d:DataContext="{x:Static selectors:PapyrusReferenceValueViewModel.DesignInstance}">
     <Grid>
         <Grid.RowDefinitions>
@@ -15,16 +15,12 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical" Margin="20,20,20,0" Grid.Row="0">
-            <TextBlock Text="Type" Margin="0,0,0,5" />
-            <ComboBox Margin="0" SelectedIndex="0" SelectedItem="{Binding SelectedValueType, Mode=TwoWay}">
-                <ComboBoxItem Content="Reference (Variable, Parameter, Field)"/>
-                <ComboBoxItem Content="Property Reference"/>
-            </ComboBox>
+            <TextBlock Text="Reference Type" Margin="0,0,0,5" />
+            <ComboBox Margin="0" ItemsSource="{Binding ComboBoxItems}" SelectedItem="{Binding SelectedReferenceType, Mode=TwoWay}"/>
 
-            <StackPanel Orientation="Vertical">
-                <TextBlock Text="Select reference" Margin="0,10,0,5"/>
-                <ComboBox IsEditable="True" Margin="0" ItemsSource="{Binding ReferenceCollection}" SelectedItem="{Binding SelectedReferenceValue, Mode=TwoWay}" />
-            </StackPanel>
+            <TextBlock Text="Reference" Margin="0,10,0,5"/>
+            <ComboBox IsEditable="True" Margin="0" ItemsSource="{Binding ReferenceCollection}" SelectedItem="{Binding SelectedReference, Mode=TwoWay}" />
+
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="20,10">
             <Button Content="OK" Width="72" Margin="2,0,10,0" Background="#FF3498DB" BorderBrush="#FF3498DB" Foreground="White" Click="Button_Click"/>

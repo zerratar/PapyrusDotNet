@@ -79,6 +79,7 @@
     <Compile Include="Converters\PapyrusInstructionDisplayConverter.cs" />
     <Compile Include="Converters\PapyrusInstructionOperandConverter.cs" />
     <Compile Include="Implementations\DialogService.cs" />
+    <Compile Include="Implementations\User32.cs" />
     <Compile Include="TreeViewHelper.cs" />
     <Compile Include="Windows\PapyrusReferenceValueEditorWindow.xaml.cs">
       <DependentUpon>PapyrusReferenceValueEditorWindow.xaml</DependentUpon>

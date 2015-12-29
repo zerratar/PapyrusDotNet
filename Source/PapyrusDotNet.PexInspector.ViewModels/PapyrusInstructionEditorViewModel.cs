@@ -57,7 +57,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 isNewInstruction = true;
                 var defaultOpCode = PapyrusOpCodes.Nop;
-                SelectedOpCodeDescription = new InstructionArgumentEditorViewModel(dialogService, loadedAssemblies, loadedAssembly, currentType, currentMethod, opCodeDescriptionDefinition.GetDesc(defaultOpCode));
+                SelectedOpCodeDescription = new InstructionArgumentEditorViewModel(dialogService, loadedAssemblies, loadedAssembly, currentType, currentMethod, null, opCodeDescriptionDefinition.GetDesc(defaultOpCode));
 
                 SelectedOpCode = defaultOpCode;
 
@@ -70,7 +70,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 SelectedOpCode = instruction.OpCode;
                 SelectedOpCodeDescriptionString = instruction.OpCode.GetDescription();
                 SelectedOpCodeDescription = new InstructionArgumentEditorViewModel(dialogService, loadedAssemblies, loadedAssembly,
-                    currentType, currentMethod, opCodeDescriptionDefinition.GetDesc(instruction.OpCode)); // instruction.OpCode.GetDescription();
+                    currentType, currentMethod, instruction, opCodeDescriptionDefinition.GetDesc(instruction.OpCode)); // instruction.OpCode.GetDescription();
                 ArgumentsDescription = instruction.OpCode.GetArgumentsDescription();
                 OperandArgumentsDescription = instruction.OpCode.GetOperandArgumentsDescription();
                 OperandArgumentsVisible = !operandArgumentsDescription.ToLower().Contains("no operand");
@@ -93,7 +93,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 if (Set(ref selectedOpCode, value))
                 {
                     SelectedOpCodeDescription = new InstructionArgumentEditorViewModel(dialogService, loadedAssemblies, loadedAssembly,
-                        currentType, currentMethod, opCodeDescriptionDefinition.GetDesc(selectedOpCode));
+                        currentType, currentMethod, instruction, opCodeDescriptionDefinition.GetDesc(selectedOpCode));
                     SelectedOpCodeDescriptionString = selectedOpCode.GetDescription();
                     ArgumentsDescription = selectedOpCode.GetArgumentsDescription();
                     OperandArgumentsDescription = selectedOpCode.GetOperandArgumentsDescription();

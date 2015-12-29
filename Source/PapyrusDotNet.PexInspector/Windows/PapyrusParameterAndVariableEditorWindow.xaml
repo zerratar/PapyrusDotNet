@@ -4,8 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PapyrusDotNet.PexInspector.Windows"
+        xmlns:viewModels="clr-namespace:PapyrusDotNet.PexInspector.ViewModels;assembly=PapyrusDotNet.PexInspector.ViewModels"
         mc:Ignorable="d"
-        Title="Edit Parameter or Variable" Height="213.559" Width="425.212">
+        Title="Edit Parameter or Variable" Height="213.559" Width="425.212"
+        d:DataContext="{x:Static viewModels:PapyrusVariableParameterEditorViewModel.DesignInstance}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="239*"/>
@@ -14,10 +16,10 @@
 
         <StackPanel Orientation="Vertical" Margin="20,20,20,0" Grid.Row="0">
             <TextBlock Text="Name" Margin="0,0,0,5"/>
-            <TextBox Margin="0,0,0,10" Height="24"/>
+            <TextBox Margin="0,0,0,10" Height="24" Text="{Binding Name}"/>
 
             <TextBlock Text="Type" Margin="0,0,0,5" />
-            <ComboBox IsEditable="True" ItemsSource="{Binding TypeReferences}" Margin="0"/>
+            <ComboBox IsEditable="True" ItemsSource="{Binding TypeReferences}" SelectedItem="{Binding SelectedType}" Margin="0"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="20,10">
             <Button Content="OK" Width="72" Margin="2,0,10,0" Background="#FF3498DB" BorderBrush="#FF3498DB" Foreground="White" Click="Button_Click"/>

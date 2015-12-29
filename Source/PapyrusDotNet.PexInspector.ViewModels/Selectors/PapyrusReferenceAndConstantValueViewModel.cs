@@ -15,15 +15,15 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
         private readonly List<PapyrusAssemblyDefinition> loadedAssemblies;
         private readonly PapyrusTypeDefinition currentType;
         private readonly PapyrusMethodDefinition currentMethod;
-        private readonly OpCodeArgumentDescription opCodeArgumentDescription;
+        private readonly OpCodeArgumentDescription desc;
 
         public PapyrusReferenceAndConstantValueViewModel(List<PapyrusAssemblyDefinition> loadedAssemblies, PapyrusTypeDefinition currentType,
-            PapyrusMethodDefinition currentMethod, OpCodeArgumentDescription opCodeArgumentDescription)
+            PapyrusMethodDefinition currentMethod, OpCodeArgumentDescription desc)
         {
             this.loadedAssemblies = loadedAssemblies;
             this.currentType = currentType;
             this.currentMethod = currentMethod;
-            this.opCodeArgumentDescription = opCodeArgumentDescription;
+            this.desc = desc;
 
             if (currentMethod != null)
             {
@@ -40,7 +40,59 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
 
                 //SelectedValueType = ReferenceCollection.LastOrDefault();
             }
+            ComboBoxItems = new ObservableCollection<FrameworkElement>(CreateComboBoxItems());
+            SelectedValueType = ComboBoxItems.First() as ComboBoxItem;
         }
+
+        private ObservableCollection<FrameworkElement> comboBoxItems;
+        public ObservableCollection<FrameworkElement> ComboBoxItems
+        {
+            get { return comboBoxItems; }
+            set { Set(ref comboBoxItems, value); }
+        }
+
+        private List<FrameworkElement> CreateComboBoxItems()
+        {
+            var elements = new List<FrameworkElement>();
+
+            if (desc != null && desc.Constraints.Length > 0)
+            {
+                if (desc.Constraints.Contains(OpCodeConstraint.None))
+                    elements.Add(new ComboBoxItem { Content = "None" });
+                if (desc.Constraints.Contains(OpCodeConstraint.Integer))
+                    elements.Add(new ComboBoxItem { Content = "Integer" });
+                if (desc.Constraints.Contains(OpCodeConstraint.Float))
+                    elements.Add(new ComboBoxItem { Content = "Float" });
+                if (desc.Constraints.Contains(OpCodeConstraint.Boolean))
+                    elements.Add(new ComboBoxItem { Content = "Boolean" });
+                if (desc.Constraints.Contains(OpCodeConstraint.String))
+                    elements.Add(new ComboBoxItem { Content = "String" });
+
+                elements.Add(new Separator());
+                elements.Add(new ComboBoxItem { Content = "Parameter" });
+                elements.Add(new ComboBoxItem { Content = "Variable" });
+                elements.Add(new ComboBoxItem { Content = "Field" });
+
+                // elements.Add(new ComboBoxItem { Content = "Self" });
+                return elements;
+            }
+
+
+            elements.Add(new ComboBoxItem { Content = "None" });
+            elements.Add(new ComboBoxItem { Content = "Integer" });
+            elements.Add(new ComboBoxItem { Content = "Float" });
+            elements.Add(new ComboBoxItem { Content = "Boolean" });
+            elements.Add(new ComboBoxItem { Content = "String" });
+            elements.Add(new Separator());
+            elements.Add(new ComboBoxItem { Content = "Parameter" });
+            elements.Add(new ComboBoxItem { Content = "Variable" });
+            elements.Add(new ComboBoxItem { Content = "Field" });
+
+            elements.Add(new ComboBoxItem { Content = "Self" });
+            return elements;
+        }
+
+        //elements.Add(new Separator());
 
         private void HideValueInputs()
         {
@@ -81,7 +133,30 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 if (Set(ref selectedValueType, value))
                 {
                     var val = value as ComboBoxItem;
-                    if (val.Content.ToString().ToLower().Contains("reference"))
+                    var tar = val.Content.ToString().ToLower();
+                    var isRef = false;
+                    if (tar == "variable")
+                    {
+                        var papyrusVariableReferences = Filter(currentMethod.GetVariables());
+
+                        ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(papyrusVariableReferences);
+                        isRef = true;
+                    }
+                    else if (tar == "parameter")
+                    {
+                        var papyrusParameterDefinitions = Filter(currentMethod.Parameters);
+                        ReferenceCollection =
+                            new ObservableCollection<PapyrusMemberReference>(papyrusParameterDefinitions);
+                        isRef = true;
+                    }
+                    else if (tar == "field")
+                    {
+                        var papyrusFieldDefinitions = Filter(currentType.Fields.ToList());
+                        ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(papyrusFieldDefinitions);
+                        isRef = true;
+                    }
+
+                    if (isRef)
                     {
                         ReferenceValueVisibility = Visibility.Visible;
                         ConstantValueVisibility = Visibility.Collapsed;
@@ -91,8 +166,79 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                         ReferenceValueVisibility = Visibility.Collapsed;
                         ConstantValueVisibility = Visibility.Visible;
                     }
+
+                    if (tar == "self")
+                    {
+                        ConstantValueVisibility = Visibility.Collapsed;
+                        SelectedConstantValue = null;
+
+                        if (currentType.Assembly != null)
+                        {
+                            SelectedItem = new PapyrusVariableReference
+                            {
+                                Value = "self",
+                                ValueType = PapyrusPrimitiveType.Reference
+                            };
+                        }
+                        else
+                            SelectedItem = "Self";
+                    }
+                    if (tar == "none")
+                    {
+                        ConstantValueVisibility = Visibility.Collapsed;
+                        SelectedConstantValue = null;
+                        SelectedItem = null;
+                    }
+
                 }
             }
+        }
+
+
+        private IEnumerable<PapyrusMemberReference> Filter(List<PapyrusParameterDefinition> collection)
+        {
+            if (desc == null || desc.Constraints.Length == 0) return collection;
+            var result = new List<PapyrusMemberReference>();
+            foreach (var constraint in desc.Constraints)
+            {
+                var type = constraint.ToString().ToLower();
+                if (type == "boolean") type = "bool";
+                if (type == "integer") type = "int";
+                var range = collection.Where(i => i.TypeName.Value.ToLower() == type);
+                result.AddRange(range);
+            }
+            return result;
+        }
+
+
+        private IEnumerable<PapyrusMemberReference> Filter(List<PapyrusFieldDefinition> collection)
+        {
+            if (desc == null || desc.Constraints.Length == 0) return collection;
+            var result = new List<PapyrusMemberReference>();
+            foreach (var constraint in desc.Constraints)
+            {
+                var type = constraint.ToString().ToLower();
+                if (type == "boolean") type = "bool";
+                if (type == "integer") type = "int";
+                var range = collection.Where(i => i.TypeName.ToLower() == type);
+                result.AddRange(range);
+            }
+            return result;
+        }
+
+        private IEnumerable<PapyrusMemberReference> Filter(List<PapyrusVariableReference> collection)
+        {
+            if (desc == null || desc.Constraints.Length == 0) return collection;
+            var result = new List<PapyrusMemberReference>();
+            foreach (var constraint in desc.Constraints)
+            {
+                var type = constraint.ToString().ToLower();
+                if (type == "boolean") type = "bool";
+                if (type == "integer") type = "int";
+                var range = collection.Where(i => i.TypeName.Value.ToLower() == type);
+                result.AddRange(range);
+            }
+            return result;
         }
 
         public Visibility ReferenceValueVisibility
@@ -100,6 +246,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
             get { return referenceValueVisibility; }
             set { Set(ref referenceValueVisibility, value); }
         }
+
 
         public object SelectedReferenceValue
         {
