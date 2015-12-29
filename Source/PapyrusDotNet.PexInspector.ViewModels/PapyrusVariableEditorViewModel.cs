@@ -16,6 +16,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 Name = this.variable.Name.Value;
                 SelectedType = TypeReferences.FirstOrDefault(t => t.ToString().ToLower() == this.variable.TypeName.Value.ToLower());
+                if (SelectedType == null)
+                    SelectedType = this.variable.TypeName.Value.ToLower();
             }
         }
     }

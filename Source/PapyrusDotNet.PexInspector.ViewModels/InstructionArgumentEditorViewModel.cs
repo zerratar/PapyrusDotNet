@@ -189,8 +189,23 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private void SelectArgument2()
         {
             ShowArgumentSelectionDialog(desc.Arguments[2]);
-
         }
+
+        public List<PapyrusVariableReference> GetArguments()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public List<PapyrusVariableReference> GetOperandArguments()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public object GetOperand()
+        {
+            throw new System.NotImplementedException();
+        }
+
         private void ShowArgumentSelectionDialog(OpCodeArgumentDescription d)
         {
             if (d.Ref == OpCodeRef.Instruction)
@@ -552,5 +567,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private Visibility jumpConditionalVisibility;
         private Visibility mathConditionalVisibility;
         private Visibility mathVisibility;
+
+
     }
 }

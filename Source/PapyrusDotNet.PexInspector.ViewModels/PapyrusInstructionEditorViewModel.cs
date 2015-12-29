@@ -132,6 +132,10 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             set { Set(ref operandArgumentsVisible, value); }
         }
 
+        public List<PapyrusVariableReference> Arguments => SelectedOpCodeDescription.GetArguments();
+        public List<PapyrusVariableReference> OperandArguments => SelectedOpCodeDescription.GetOperandArguments();
+        public object Operand => SelectedOpCodeDescription.GetOperand();
+
         public static PapyrusInstructionEditorViewModel DesignInstance = designInstance ??
                                                                          (designInstance =
                                                                              new PapyrusInstructionEditorViewModel(null, null, null, null, null,

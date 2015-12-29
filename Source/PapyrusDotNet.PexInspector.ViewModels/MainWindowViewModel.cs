@@ -50,35 +50,125 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         }
 
-        private bool CanEditParameter()
+        private void EditInstruction()
         {
-            return SelectedMethodParameter != null;
+            var dialog = new PapyrusInstructionEditorViewModel(dialogService, LoadedAssemblies, selectedMethod.DeclaringState?.DeclaringType?.Assembly,
+                selectedMethod.DeclaringState?.DeclaringType,
+                selectedMethod, SelectedMethodInstruction);
+            var result = dialogService.ShowDialog(dialog);
+            if (result == DialogResult.OK)
+            {
+                var inst = SelectedMethodInstruction;
+                inst.Operand = dialog.Operand;
+                inst.OpCode = dialog.SelectedOpCode;
+                inst.Arguments = dialog.Arguments;
+                inst.OperandArguments = dialog.OperandArguments;
+                selectedMethod.Body.Instructions.RecalculateOffsets();
+
+                SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
+            }
         }
 
-        private bool CanEditVar()
+        private void InsertBefore()
         {
-            return SelectedMethodVariable != null;
+            var dialog = new PapyrusInstructionEditorViewModel(dialogService,
+                LoadedAssemblies,
+                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
+                selectedMethod.DeclaringState?.DeclaringType, selectedMethod);
+            var result = dialogService.ShowDialog(dialog);
+            if (result == DialogResult.OK)
+            {
+                var inst = SelectedMethodInstruction;
+                var index = SelectedMethodInstructions.IndexOf(inst) - 1;
+                if (index < 0) index = 0;
+
+                var newInstruction = new PapyrusInstruction();
+                newInstruction.OpCode = dialog.SelectedOpCode;
+                newInstruction.Operand = dialog.Operand;
+                newInstruction.Arguments = dialog.Arguments;
+                newInstruction.OperandArguments = dialog.OperandArguments;
+                selectedMethod.Body.Instructions.Insert(index, newInstruction);
+                selectedMethod.Body.Instructions.RecalculateOffsets();
+
+                SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
+            }
         }
 
+        private void InsertAfter()
+        {
+            var dialog = new PapyrusInstructionEditorViewModel(dialogService, LoadedAssemblies,
+                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
+                selectedMethod.DeclaringState?.DeclaringType, selectedMethod);
+            var result = dialogService.ShowDialog(dialog);
+            if (result == DialogResult.OK)
+            {
+                var inst = SelectedMethodInstruction;
+                var index = SelectedMethodInstructions.IndexOf(inst) + 1;
+
+                var newInstruction = new PapyrusInstruction();
+                newInstruction.OpCode = dialog.SelectedOpCode;
+                newInstruction.Operand = dialog.Operand;
+                newInstruction.Arguments = dialog.Arguments;
+                newInstruction.OperandArguments = dialog.OperandArguments;
+                selectedMethod.Body.Instructions.Insert(index, newInstruction);
+                selectedMethod.Body.Instructions.RecalculateOffsets();
+
+                SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
+            }
+        }
 
         private void EditVariable()
         {
             var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
-
-            var result = dialogService.ShowDialog(new PapyrusVariableEditorViewModel(loadedTypes, SelectedMethodVariable));
+            var dialog = new PapyrusVariableEditorViewModel(loadedTypes, SelectedMethodVariable);
+            var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
             {
+                var asm = selectedMethod.DeclaringState.DeclaringType.Assembly;
+                var var = SelectedMethodVariable;
+                var typeName = dialog.SelectedType;
+                var varName = dialog.Name;
 
+                var.Name = varName.Ref(asm);
+                var.TypeName = typeName.ToString().Ref(asm);
+
+                SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(
+                        selectedMethod.GetVariables()
+                    );
             }
         }
 
         private void CreateVariable()
         {
             var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
-            var result = dialogService.ShowDialog(new PapyrusVariableEditorViewModel(loadedTypes));
+            var dialog = new PapyrusVariableEditorViewModel(loadedTypes);
+            var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
             {
+                var asm = selectedMethod.DeclaringState.DeclaringType.Assembly;
+                var typeName = dialog.SelectedType;
+                var varName = dialog.Name;
 
+                if (varName.ToLower().StartsWith("::temp"))
+                {
+                    selectedMethod.Body.TempVariables.Add(new PapyrusVariableReference
+                    {
+                        Name = varName.Ref(asm),
+                        TypeName = typeName.ToString().Ref(asm)
+                    });
+                }
+                else
+                {
+                    selectedMethod.Body.Variables.Add(new PapyrusVariableReference
+                    {
+                        Name = varName.Ref(asm),
+                        TypeName = typeName.ToString().Ref(asm)
+                    });
+                }
+
+                SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(
+                    selectedMethod.GetVariables()
+                );
             }
         }
 
@@ -86,20 +176,44 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private void EditParameter()
         {
             var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
-            var result = dialogService.ShowDialog(new PapyrusParameterEditorViewModel(loadedTypes, SelectedMethodParameter));
+            var dialog = new PapyrusParameterEditorViewModel(loadedTypes, SelectedMethodParameter);
+            var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
             {
+                var asm = selectedMethod.DeclaringState.DeclaringType.Assembly;
+                var var = SelectedMethodParameter;
+                var typeName = dialog.SelectedType;
+                var varName = dialog.Name;
 
+                var.Name = varName.Ref(asm);
+                var.TypeName = typeName.ToString().Ref(asm);
+
+                SelectedMethodParameters = new ObservableCollection<PapyrusParameterDefinition>(
+                        selectedMethod.Parameters
+                    );
             }
         }
 
         private void CreateParameter()
         {
             var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
-            var result = dialogService.ShowDialog(new PapyrusParameterEditorViewModel(loadedTypes));
+            var dialog = new PapyrusParameterEditorViewModel(loadedTypes);
+            var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
             {
+                var asm = selectedMethod.DeclaringState.DeclaringType.Assembly;
+                var typeName = dialog.SelectedType;
+                var varName = dialog.Name;
 
+                selectedMethod.Parameters.Add(new PapyrusParameterDefinition()
+                {
+                    Name = varName.Ref(asm),
+                    TypeName = typeName.ToString().Ref(asm)
+                });
+
+                SelectedMethodParameters = new ObservableCollection<PapyrusParameterDefinition>(
+                        selectedMethod.Parameters
+                    );
             }
         }
 
@@ -169,57 +283,27 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
         }
 
-        private void EditInstruction()
-        {
-            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel(dialogService, LoadedAssemblies, selectedMethod.DeclaringState?.DeclaringType?.Assembly,
-                selectedMethod.DeclaringState?.DeclaringType,
-                selectedMethod, SelectedMethodInstruction));
-            if (result == DialogResult.OK)
-            {
 
-            }
-        }
-
-        private void InsertBefore()
-        {
-            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel(dialogService,
-                LoadedAssemblies,
-                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
-                selectedMethod.DeclaringState?.DeclaringType, selectedMethod));
-            if (result == DialogResult.OK)
-            {
-
-            }
-        }
-
-        private bool CanInsert() => SelectedMethodInstruction != null;
-
-        private void InsertAfter()
-        {
-            var result = dialogService.ShowDialog(new PapyrusInstructionEditorViewModel(dialogService, LoadedAssemblies,
-                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
-                selectedMethod.DeclaringState?.DeclaringType, selectedMethod));
-            if (result == DialogResult.OK)
-            {
-
-            }
-        }
 
         private void Exit()
         {
-
+            Application.Current.Shutdown(-1);
         }
 
         private void SavePexAs()
         {
 
         }
+        private bool CanInsert() => SelectedMethodInstruction != null;
+
+        private bool CanEditParameter() => SelectedMethodParameter != null;
+
+        private bool CanEditVar() => SelectedMethodVariable != null;
 
         private bool CanSave() => false;
 
         private void SavePex()
         {
-
         }
 
         private void OpenPex()
