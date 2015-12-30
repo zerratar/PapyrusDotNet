@@ -18,9 +18,10 @@
             <TextBlock Text="Reference Type" Margin="0,0,0,5" />
             <ComboBox Margin="0" ItemsSource="{Binding ComboBoxItems}" SelectedItem="{Binding SelectedReferenceType, Mode=TwoWay}"/>
 
-            <TextBlock Text="Reference" Margin="0,10,0,5"/>
-            <ComboBox IsEditable="True" Margin="0" ItemsSource="{Binding ReferenceCollection}" SelectedItem="{Binding SelectedReference, Mode=TwoWay}" />
-
+            <StackPanel Orientation="Vertical" Visibility="{Binding ReferenceSelectionVisible}">
+                <TextBlock Text="Reference" Margin="0,10,0,5"/>
+                <ComboBox IsEditable="True" Margin="0" ItemsSource="{Binding ReferenceCollection}" TextBoxBase.TextChanged="ComboBox_TextChanged"  SelectedItem="{Binding SelectedReference, Mode=TwoWay}" />
+            </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="20,10">
             <Button Content="OK" Width="72" Margin="2,0,10,0" Background="#FF3498DB" BorderBrush="#FF3498DB" Foreground="White" Click="Button_Click"/>

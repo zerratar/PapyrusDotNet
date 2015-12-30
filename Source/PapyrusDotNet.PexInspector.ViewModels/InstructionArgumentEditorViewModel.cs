@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -15,6 +16,16 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 {
     public class InstructionArgumentEditorViewModel : ViewModelBase
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InstructionArgumentEditorViewModel"/> class.
+        /// </summary>
+        /// <param name="dialogService">The dialog service.</param>
+        /// <param name="loadedAssemblies">The loaded assemblies.</param>
+        /// <param name="loadedAssembly">The loaded assembly.</param>
+        /// <param name="currentType">Type of the current.</param>
+        /// <param name="currentMethod">The current method.</param>
+        /// <param name="currentInstruction">The current instruction.</param>
+        /// <param name="desc">The desc.</param>
         public InstructionArgumentEditorViewModel(IDialogService dialogService,
             List<PapyrusAssemblyDefinition> loadedAssemblies,
             PapyrusAssemblyDefinition loadedAssembly,
@@ -34,13 +45,23 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             Argument0Command = new RelayCommand(SelectArgument0);
             Argument1Command = new RelayCommand(SelectArgument1);
             Argument2Command = new RelayCommand(SelectArgument2);
+            Argument3Command = new RelayCommand(SelectArgument3);
+            Argument4Command = new RelayCommand(SelectArgument4);
+
+            var maxArgCount = 5;
+
+            if (this.desc != null)
+            {
+                maxArgCount = this.desc.Arguments.Count;
+                Arguments = new object[maxArgCount];
+            }
 
             if (currentInstruction != null)
             {
 
                 var args = currentInstruction.Arguments.ToArray().Cast<object>().ToList();
 
-                while (args.Count < 3)
+                while (args.Count < maxArgCount)
                 {
                     args.Add(null);
                 }
@@ -99,11 +120,24 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             return toArray;
         }
 
+
+
         private void UpdateArguments()
         {
             var argCount = desc.Arguments.Count;
             if (argCount > 0)
             {
+                //for (var i = 0; i < argCount; i++)
+                //{
+                //    Argument0Alias = desc.Arguments[i].Alias;
+                //    Argument0Description = desc.Arguments[i].Description;
+
+                //    if (Arguments[i] != null)
+                //    {
+                //        Argument0Alias = GetStringRepresentation(Arguments[i]);
+                //    }
+                //}
+
                 if (argCount >= 1)
                 {
                     Argument0Alias = desc.Arguments[0].Alias;
@@ -134,6 +168,26 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     if (Arguments[2] != null)
                     {
                         Argument2Alias = GetStringRepresentation(Arguments[2]);
+                    }
+                }
+                if (argCount >= 4)
+                {
+                    Argument3Alias = desc.Arguments[3].Alias;
+                    Argument3Description = desc.Arguments[3].Description;
+
+                    if (Arguments[3] != null)
+                    {
+                        Argument3Alias = GetStringRepresentation(Arguments[3]);
+                    }
+                }
+                if (argCount >= 5)
+                {
+                    Argument4Alias = desc.Arguments[4].Alias;
+                    Argument4Description = desc.Arguments[4].Description;
+
+                    if (Arguments[4] != null)
+                    {
+                        Argument4Alias = GetStringRepresentation(Arguments[4]);
                     }
                 }
             }
@@ -175,7 +229,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             return "(" + paramDefs + ")";
         }
 
-        public object[] Arguments = new object[3];
+        public object[] Arguments = new object[5];
 
         private void SelectArgument0()
         {
@@ -192,6 +246,17 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         {
             ShowArgumentSelectionDialog(desc.Arguments[2]);
         }
+
+        private void SelectArgument3()
+        {
+            ShowArgumentSelectionDialog(desc.Arguments[3]);
+        }
+
+        private void SelectArgument4()
+        {
+            ShowArgumentSelectionDialog(desc.Arguments[4]);
+        }
+
 
         public List<PapyrusVariableReference> GetArguments()
         {
@@ -286,11 +351,18 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 var result = dialogService.ShowDialog(dialog); // change currentType to selected type later
                 if (result == DialogResult.OK)
                 {
-                    Arguments[d.Index] = dialog.SelectedMethod.Item;
+                    var method = dialog.SelectedMethod.Item as PapyrusMethodDefinition;
+                    if ((method != null && dialog.SelectedMethodName != null && (method.Name.Value != dialog.SelectedMethodName)) || (method == null && dialog.SelectedMethodName != null))
+                    {
+                        Arguments[d.Index] = CreateReferenceFromName(dialog.SelectedMethodName);
+                    }
+                    else
+                        Arguments[d.Index] = method;
                 }
             }
             else
             {
+
                 if (d.ValueType == OpCodeValueTypes.Constant)
                 {
                     var dialog = new PapyrusConstantValueViewModel(d);
@@ -306,7 +378,15 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     var result = dialogService.ShowDialog(dialog);
                     if (result == DialogResult.OK)
                     {
-                        Arguments[d.Index] = dialog.SelectedReference;
+                        if (dialog.SelectedReference == null)
+                        {
+                            var name = dialog.SelectedReferenceName;
+                            Arguments[d.Index] = CreateReferenceFromName(name);
+                        }
+                        else
+                        {
+                            Arguments[d.Index] = dialog.SelectedReference;
+                        }
                     }
                 }
                 else
@@ -315,12 +395,33 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     var result = dialogService.ShowDialog(dialog);
                     if (result == DialogResult.OK)
                     {
-                        Arguments[d.Index] = dialog.SelectedItem;
+                        if (dialog.SelectedItem == null)
+                        {
+                            var name = dialog.SelectedReferenceName;
+                            Arguments[d.Index] = CreateReferenceFromName(name);
+                        }
+                        else
+                        {
+                            Arguments[d.Index] = dialog.SelectedItem;
+                        }
                     }
                 }
             }
             UpdateArguments();
         }
+
+        public PapyrusVariableReference CreateReferenceFromName(string name)
+        {
+            var asm = currentType.Assembly;
+            var nameRef = name.Ref(asm);
+            return new PapyrusVariableReference()
+            {
+                Name = nameRef,
+                Value = nameRef.Value,
+                ValueType = PapyrusPrimitiveType.Reference
+            };
+        }
+
         private void UpdateVisibilities()
         {
             HideAll();
@@ -375,6 +476,14 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 {
                     ThreeArgsVisibility = Visibility.Visible;
                 }
+                else if (desc.Arguments.Count == 4)
+                {
+                    FourArgsVisibility = Visibility.Visible;
+                }
+                else if (desc.Arguments.Count == 5)
+                {
+                    FiveArgsVisibility = Visibility.Visible;
+                }
             }
             catch
             {
@@ -395,6 +504,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             ThreeArgsVisibility = Visibility.Collapsed;
             MathConditionalVisibility = Visibility.Collapsed;
             MathVisibility = Visibility.Collapsed;
+            FourArgsVisibility = Visibility.Collapsed;
+            FiveArgsVisibility = Visibility.Collapsed;
         }
 
         public Visibility AssignmentVisibility
@@ -459,9 +570,22 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             get { return threeArgsVisibility; }
             set { threeArgsVisibility = value; }
         }
+        public Visibility MathVisibility
+        {
+            get { return mathVisibility; }
+            set { Set(ref mathVisibility, value); }
+        }
 
-        public static InstructionArgumentEditorViewModel DesignInstance = designInstance ?? (designInstance = CreateViewModel());
-
+        public Visibility FourArgsVisibility
+        {
+            get { return fourArgsVisibility; }
+            set { Set(ref fourArgsVisibility, value); }
+        }
+        public Visibility FiveArgsVisibility
+        {
+            get { return fiveArgsVisibility; }
+            set { Set(ref fiveArgsVisibility, value); }
+        }
 
         public string Argument0Alias
         {
@@ -479,6 +603,18 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         {
             get { return argument2Alias; }
             set { Set(ref argument2Alias, value); }
+        }
+
+        public string Argument3Alias
+        {
+            get { return argument3Alias; }
+            set { Set(ref argument3Alias, value); }
+        }
+
+        public string Argument4Alias
+        {
+            get { return argument4Alias; }
+            set { Set(ref argument4Alias, value); }
         }
 
         public string Argument0Description
@@ -499,11 +635,29 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             set { Set(ref argument2Description, value); }
         }
 
+        public string Argument3Description
+        {
+            get { return argument3Description; }
+            set { Set(ref argument3Description, value); }
+        }
+
+
+        public string Argument4Description
+        {
+            get { return argument4Description; }
+            set { Set(ref argument4Description, value); }
+        }
+
+
         public ICommand Argument0Command { get; set; }
 
         public ICommand Argument1Command { get; set; }
 
         public ICommand Argument2Command { get; set; }
+
+        public ICommand Argument3Command { get; set; }
+
+        public ICommand Argument4Command { get; set; }
 
         public string ExpectedConditionValue
         {
@@ -555,12 +709,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
         }
 
-        public Visibility MathVisibility
-        {
-            get { return mathVisibility; }
-            set { Set(ref mathVisibility, value); }
-        }
-
         private static InstructionArgumentEditorViewModel CreateViewModel()
         {
             var reader = new OpCodeDescriptionReader();
@@ -596,13 +744,21 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             return new InstructionArgumentEditorViewModel(null, null, null, null, null, null, desc);
         }
 
-        private static InstructionArgumentEditorViewModel designInstance;
+        private static Lazy<InstructionArgumentEditorViewModel> lazyDesignInstance =
+            new Lazy<InstructionArgumentEditorViewModel>(CreateViewModel);
+
+        public static InstructionArgumentEditorViewModel DesignInstance = lazyDesignInstance.Value;
+
         private string argument0Alias;
         private string argument1Alias;
         private string argument2Alias;
+        private string argument3Alias;
+        private string argument4Alias;
         private string argument0Description;
         private string argument1Description;
         private string argument2Description;
+        private string argument3Description;
+        private string argument4Description;
         private Visibility assignmentVisibility;
         private Visibility callMethodVisibility;
         private Visibility callStaticVisibility;
@@ -610,6 +766,12 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private Visibility oneArgsVisibility;
         private Visibility twoArgsVisibility;
         private Visibility threeArgsVisibility;
+        private Visibility jumpVisibility;
+        private Visibility jumpConditionalVisibility;
+        private Visibility mathConditionalVisibility;
+        private Visibility mathVisibility;
+        private Visibility fourArgsVisibility;
+        private Visibility fiveArgsVisibility;
         private readonly IDialogService dialogService;
         private readonly List<PapyrusAssemblyDefinition> loadedAssemblies;
         private readonly PapyrusAssemblyDefinition loadedAssembly;
@@ -617,11 +779,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private readonly PapyrusMethodDefinition currentMethod;
         private readonly PapyrusInstruction currentInstruction;
         private OpCodeDescription desc;
-        private Visibility jumpVisibility;
-        private Visibility jumpConditionalVisibility;
-        private Visibility mathConditionalVisibility;
-        private Visibility mathVisibility;
-
 
     }
 }

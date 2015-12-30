@@ -12,7 +12,6 @@
     </Arguments>
     <OperandArguments />
   </Instruction>
-
   <Instruction OpCode="Fdiv,Fadd,Fsub,Fmul">
     <Arguments>
       <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" Constraint="Integer,Float"/>
@@ -21,27 +20,143 @@
     </Arguments>
     <OperandArguments />
   </Instruction>
-   
-  <Instruction OpCode="ArrayClearElements" />
-  <Instruction OpCode="ArrayRemoveElements" />
-  <Instruction OpCode="ArrayRemoveLastElement" />
+  <Instruction OpCode="Ineg">
+    <Arguments>
+      <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" Constraint="Integer"/>
+      <Argument Index="1" Alias="Value" Description="Reference: Value" ValueType="Reference" Constraint="Integer"/>
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="Fneg">
+    <Arguments>
+      <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" Constraint="Float"/>
+      <Argument Index="1" Alias="Value" Description="Reference: Value" ValueType="Reference" Constraint="Float"/>
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="ArrayClearElements">
+    <Arguments>
+      <Argument Index="0" Alias="Array" Description="Reference: Array to Clear" ValueType="Reference" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="ArrayRemoveElements">
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="ArrayRemoveLastElement" >
+    <Arguments>
+      <Argument Index="0" Alias="Array" Description="Reference: Array" ValueType="Reference" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="ArrayFindElement" >
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+      <Argument Index="3" Alias="Value3" Description="Reference or Constant: Value 3" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="ArrayRFindElement" >
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+      <Argument Index="3" Alias="Value3" Description="Reference or Constant: Value 3" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>  
+  <Instruction OpCode="ArrayFindStruct" >
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+      <Argument Index="3" Alias="Value3" Description="Reference or Constant: Value 3" ValueType="ReferenceOrConstant" />
+      <Argument Index="4" Alias="Value4" Description="Reference or Constant: Value 4" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="ArrayRFindStruct" >
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+      <Argument Index="3" Alias="Value3" Description="Reference or Constant: Value 3" ValueType="ReferenceOrConstant" />
+      <Argument Index="4" Alias="Value4" Description="Reference or Constant: Value 4" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+
+  <Instruction OpCode="ArrayInsertElement">
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="ArrayAddElements">
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+
+  <Instruction OpCode="StructCreate">
+    <Arguments>
+      <Argument Index="0" Alias="Struct" Description="Reference: Struct" ValueType="Reference" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
   
-  <Instruction OpCode="ArrayFindElement" />
-  <Instruction OpCode="ArrayRfindelement" />  
-  <Instruction OpCode="ArrayFindStruct" />
-  <Instruction OpCode="ArrayRfindstruct" />
-
-  <Instruction OpCode="ArrayInsertElement" />
-  <Instruction OpCode="ArrayAddElements" />
-
-  <Instruction OpCode="StructCreate" />
-  <Instruction OpCode="StructGet" />
-  <Instruction OpCode="StructSet" />
-  <Instruction OpCode="PropSet" />
-  <Instruction OpCode="PropGet" />
-  
-  <Instruction OpCode="Is" />  
-
+  <Instruction OpCode="StructGet">
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="StructSet">
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="PropSet">
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="PropGet">
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
+  <Instruction OpCode="Is">
+    <Arguments>
+      <Argument Index="0" Alias="Value0" Description="Reference or Constant: Value 0" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" />
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" />
+    </Arguments>
+    <OperandArguments/>
+  </Instruction>
   <Instruction OpCode="ArrayLength">
     <Arguments>
       <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
@@ -97,7 +212,7 @@
     <OperandArguments />
   </Instruction>
   <Instruction OpCode="Assign">
-    <Arguments>     
+    <Arguments>
       <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
       <Argument Index="1" Alias="Value" Description="Reference or Constant: Value" ValueType="ReferenceOrConstant" />
     </Arguments>
@@ -116,7 +231,8 @@
   <Instruction OpCode="Callmethod">
     <Arguments>
       <Argument Index="0" Alias="Method" Description="Constant: Method Name" ValueType="Constant" Ref="Method" />
-      <Argument Index="1" Alias="Location" Description="Reference or Constant: Location" ValueType="ReferenceOrConstant" Constraint="String"/> <!--  Ref="Type" -->
+      <Argument Index="1" Alias="Location" Description="Reference or Constant: Location" ValueType="ReferenceOrConstant" Constraint="String"/>
+      <!--  Ref="Type" -->
       <Argument Index="2" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
     </Arguments>
     <OperandArguments>
@@ -162,13 +278,6 @@
     <Arguments>
       <Argument Index="0" Alias="Variable" Description="Reference: Variable to cast" ValueType="Reference" />
       <Argument Index="1" Alias="TargetType" Description="Reference: Variable of type to cast to" ValueType="Reference" />
-    </Arguments>
-    <OperandArguments/>
-  </Instruction>
-  <Instruction OpCode="Ineg">
-    <Arguments>
-      <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" Constraint="Boolean"/>
-      <Argument Index="1" Alias="Value" Description="Reference or Constant: Value to match" ValueType="ReferenceOrConstant" Constraint="Integer"/>
     </Arguments>
     <OperandArguments/>
   </Instruction>

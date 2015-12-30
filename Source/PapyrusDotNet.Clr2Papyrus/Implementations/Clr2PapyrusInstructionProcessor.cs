@@ -593,7 +593,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                         {
                             var targetStructVariable = EvaluationStack.Pop().Value;
 
-                            return new PapyrusStructFieldReference(PapyrusAssembly)
+                            return new PapyrusStructFieldReference(PapyrusAssembly, null)
                             {
                                 StructSource = targetStructVariable,
                                 StructVariable = CreateVariableReferenceFromName(fref.Name)
@@ -867,7 +867,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 name = variableName;
             }
 
-            var varname = "::temp" + PapyrusMethod.Body.TempVariables.Count;
+            var varname = "::temp" + PapyrusMethod.Body.Variables.Count;
             var type = Utility.GetPapyrusReturnType(name, @namespace, null);
             // var def = ".local " + varname + " " + type.Replace("<T>", "");
             var varnameRef = varname.Ref(PapyrusAssembly);
@@ -877,7 +877,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 Value = varnameRef.Value,
                 ValueType = PapyrusPrimitiveType.Reference
             };
-            PapyrusMethod.Body.TempVariables.Add(varRef);
+            PapyrusMethod.Body.Variables.Add(varRef);
             return varRef;
         }
 

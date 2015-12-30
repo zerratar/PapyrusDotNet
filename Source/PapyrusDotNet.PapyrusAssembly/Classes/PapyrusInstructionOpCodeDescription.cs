@@ -65,11 +65,14 @@ namespace PapyrusDotNet.PapyrusAssembly
             Descriptions.Add(PapyrusOpCodes.ArrayGetElement, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArraySetElement, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArrayFindElement, new PapyrusInstructionOpCodeDescription(4, false));
+            Descriptions.Add(PapyrusOpCodes.ArrayRFindElement, new PapyrusInstructionOpCodeDescription(4, false));
+
             Descriptions.Add(PapyrusOpCodes.Is, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.StructCreate, new PapyrusInstructionOpCodeDescription(1, false));
             Descriptions.Add(PapyrusOpCodes.StructGet, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.StructSet, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArrayFindStruct, new PapyrusInstructionOpCodeDescription(5, false));
+            Descriptions.Add(PapyrusOpCodes.ArrayRFindStruct, new PapyrusInstructionOpCodeDescription(5, false));
             Descriptions.Add(PapyrusOpCodes.ArrayAddElements, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArrayInsertElement, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArrayRemoveLastElement, new PapyrusInstructionOpCodeDescription(1, false));

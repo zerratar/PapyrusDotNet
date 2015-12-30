@@ -44,6 +44,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             SelectedType = "None";
         }
 
+        public string SelectedTypeName { get; set; }
+
         private static Lazy<PapyrusVariableParameterEditorViewModel> lazyDesignInstance = new Lazy<PapyrusVariableParameterEditorViewModel>(CreateDesignViewModel);
 
         private static PapyrusVariableParameterEditorViewModel CreateDesignViewModel() => new PapyrusVariableParameterEditorViewModel(new List<string>())

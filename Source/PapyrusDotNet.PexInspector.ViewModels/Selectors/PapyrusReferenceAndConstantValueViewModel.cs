@@ -30,7 +30,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 var references = new List<PapyrusMemberReference>();
                 references.AddRange(currentMethod.Parameters);
                 references.AddRange(currentMethod.GetVariables());
-                references.AddRange(currentType.Fields);
+                if (currentType != null)
+                    references.AddRange(currentType.Fields);
 
                 ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(references);
 
@@ -75,6 +76,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
 
                 // if(desc.)
                 elements.Add(new ComboBoxItem { Content = "Self" });
+                elements.Add(new ComboBoxItem { Content = "SelfRef" });
                 return elements;
             }
 
@@ -90,6 +92,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
             elements.Add(new ComboBoxItem { Content = "Field" });
 
             elements.Add(new ComboBoxItem { Content = "Self" });
+            elements.Add(new ComboBoxItem { Content = "SelfRef" });
             return elements;
         }
 
@@ -185,6 +188,22 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                         else
                             SelectedItem = "Self";
                     }
+                    if (tar == "selfref")
+                    {
+                        ConstantValueVisibility = Visibility.Collapsed;
+                        SelectedConstantValue = null;
+
+                        if (currentType.Assembly != null)
+                        {
+                            SelectedItem = new PapyrusVariableReference
+                            {
+                                Value = "SelfRef",
+                                ValueType = PapyrusPrimitiveType.Reference
+                            };
+                        }
+                        else
+                            SelectedItem = "SelfRef";
+                    }
                     if (tar == "none")
                     {
                         ConstantValueVisibility = Visibility.Collapsed;
@@ -270,6 +289,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
             get { return referenceCollection; }
             set { Set(ref referenceCollection, value); }
         }
+
+        public string SelectedReferenceName { get; set; }
 
         private static Lazy<PapyrusReferenceAndConstantValueViewModel> lazyDesignInstance =
             new Lazy<PapyrusReferenceAndConstantValueViewModel>(CreateDesignViewModel);

@@ -25,19 +25,20 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusFieldDefinition : PapyrusFieldReference
     {
-        private readonly PapyrusAssemblyDefinition assembly;
+        public readonly PapyrusAssemblyDefinition DeclaringAssembly;
 
-        public PapyrusFieldDefinition(PapyrusAssemblyDefinition assembly)
+        public PapyrusFieldDefinition(PapyrusAssemblyDefinition declaringAssembly, PapyrusTypeDefinition declaringType)
         {
-            this.assembly = assembly;
+            DeclaringType = declaringType;
+            this.DeclaringAssembly = declaringAssembly;
         }
 
-        public PapyrusFieldDefinition(PapyrusAssemblyDefinition assembly, string name, string typeName)
-            : this(assembly)
+        public PapyrusFieldDefinition(PapyrusAssemblyDefinition declaringAssembly, PapyrusTypeDefinition declaringType, string name, string typeName)
+            : this(declaringAssembly, declaringType)
         {
             name = "::" + name.Replace('<', '_').Replace('>', '_');
             name = name.Replace("::::", "::");
-            Name = name.Ref(assembly);
+            Name = name.Ref(declaringAssembly);
             TypeName = typeName;
         }
 
@@ -46,7 +47,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         public PapyrusTypeDefinition DeclaringType { get; set; }
         public string Documentation { get; set; }
         public string TypeName { get; set; }
-        public bool IsConst { get; set; }
+        public byte Flags { get; set; }
 
         public override string ToString()
         {

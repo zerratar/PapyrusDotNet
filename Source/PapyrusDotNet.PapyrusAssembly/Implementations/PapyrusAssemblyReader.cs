@@ -208,7 +208,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var classCount = pexReader.ReadInt16();
             for (var j = 0; j < classCount; j++)
             {
-                var typeDef = new PapyrusTypeDefinition();
+                var typeDef = new PapyrusTypeDefinition(asm);
                 typeDef.IsClass = true;
 
                 if (asm.VersionTarget == PapyrusVersionTargets.Fallout4)
@@ -250,7 +250,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             typeDef.Size = pexReader.ReadInt32();
             typeDef.BaseTypeName = pexReader.ReadStringRef();
             typeDef.Documentation = pexReader.ReadStringRef();
-            typeDef.ConstFlag = pexReader.ReadByte();
+            typeDef.Flags = pexReader.ReadByte();
             typeDef.UserFlags = pexReader.ReadInt32();
             typeDef.AutoStateName = pexReader.ReadStringRef();
         }
@@ -260,14 +260,14 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var structCount = pexReader.ReadInt16();
             for (var i = 0; i < structCount; i++)
             {
-                var structDef = new PapyrusTypeDefinition();
+                var structDef = new PapyrusTypeDefinition(asm, true);
                 structDef.IsStruct = true;
                 structDef.Name = pexReader.ReadStringRef();
 
                 var variableCount = pexReader.ReadInt16();
                 for (var l = 0; l < variableCount; l++)
                 {
-                    structDef.Fields.Add(ReadDocumentedField(asm));
+                    structDef.Fields.Add(ReadDocumentedField(asm, typeDef));
                 }
                 typeDef.NestedTypes.Add(structDef);
             }
@@ -343,10 +343,14 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     if (prop.HasGetter)
                     {
                         prop.GetMethod = ReadMethod(asm);
+                        prop.GetMethod.IsGetter = true;
+                        prop.GetMethod.PropName = prop.Name.Value;
                     }
                     if (prop.HasSetter)
                     {
                         prop.SetMethod = ReadMethod(asm);
+                        prop.SetMethod.IsSetter = true;
+                        prop.GetMethod.PropName = prop.Name.Value;
                     }
                 }
                 propDefs.Add(prop);
@@ -359,7 +363,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var fieldCount = pexReader.ReadInt16();
             for (var i = 0; i < fieldCount; i++)
             {
-                typeDef.Fields.Add(ReadFieldDefinition(asm));
+                typeDef.Fields.Add(ReadFieldDefinition(asm, typeDef));
             }
         }
 
@@ -508,16 +512,16 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 );
         }
 
-        private PapyrusFieldDefinition ReadDocumentedField(PapyrusAssemblyDefinition asm)
+        private PapyrusFieldDefinition ReadDocumentedField(PapyrusAssemblyDefinition asm, PapyrusTypeDefinition declaringType)
         {
-            var sfd = ReadFieldDefinition(asm);
+            var sfd = ReadFieldDefinition(asm, declaringType);
             sfd.Documentation = pexReader.ReadString();
             return sfd;
         }
 
-        private PapyrusFieldDefinition ReadFieldDefinition(PapyrusAssemblyDefinition asm)
+        private PapyrusFieldDefinition ReadFieldDefinition(PapyrusAssemblyDefinition asm, PapyrusTypeDefinition declaringType)
         {
-            var fd = new PapyrusFieldDefinition(asm);
+            var fd = new PapyrusFieldDefinition(asm, declaringType);
             // Field Definition
 
             fd.Name = pexReader.ReadStringRef();
@@ -527,7 +531,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                 // Type Reference
                 fd.FieldVariable = ReadValueReference(asm, fd.TypeName);
             }
-            fd.IsConst = pexReader.ReadByte() == 1;
+            fd.Flags = pexReader.ReadByte(); //== 1;
             return fd;
         }
 

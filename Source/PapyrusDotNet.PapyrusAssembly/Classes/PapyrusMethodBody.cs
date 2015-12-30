@@ -33,7 +33,7 @@ namespace PapyrusDotNet.PapyrusAssembly
             this.method = method;
             Instructions = new PapyrusInstructionCollection();
             Variables = new List<PapyrusVariableReference>();
-            TempVariables = new List<PapyrusVariableReference>();
+            //TempVariables = new List<PapyrusVariableReference>();
         }
 
         public bool HasVariables => Variables.Any();
@@ -41,7 +41,7 @@ namespace PapyrusDotNet.PapyrusAssembly
 
         public List<PapyrusVariableReference> Variables { get; set; }
 
-        public List<PapyrusVariableReference> TempVariables { get; set; }
+        //public List<PapyrusVariableReference> TempVariables { get; set; }
 
         public PapyrusInstructionCollection Instructions { get; set; }
 

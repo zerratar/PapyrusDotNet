@@ -68,7 +68,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
                 SelectedOpCode = defaultOpCode;
 
-                ArgumentsDescription = defaultOpCode.GetArgumentsDescription();
+                // ArgumentsDescription = defaultOpCode.GetArgumentsDescription();
                 OperandArgumentsDescription = defaultOpCode.GetOperandArgumentsDescription();
                 OperandArgumentsVisible = !operandArgumentsDescription.ToLower().Contains("no operand");
 
@@ -80,7 +80,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 SelectedOpCodeDescriptionString = instruction.OpCode.GetDescription();
                 SelectedOpCodeDescription = new InstructionArgumentEditorViewModel(dialogService, loadedAssemblies, loadedAssembly,
                     currentType, currentMethod, instruction, opCodeDescriptionDefinition.GetDesc(instruction.OpCode)); // instruction.OpCode.GetDescription();
-                ArgumentsDescription = instruction.OpCode.GetArgumentsDescription();
+                // ArgumentsDescription = instruction.OpCode.GetArgumentsDescription();
                 OperandArgumentsDescription = instruction.OpCode.GetOperandArgumentsDescription();
                 OperandArgumentsVisible = !operandArgumentsDescription.ToLower().Contains("no operand");
                 OperandArguments = new ObservableCollection<PapyrusVariableReference>(instruction.OperandArguments);
@@ -98,51 +98,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
             {
-                var asm = currentType.Assembly;
                 var papyrusVariableReference = new PapyrusVariableReference();
-                var targetType = Utility.GetPapyrusValueType(Utility.GetPapyrusReturnType(dialog.SelectedTypeName));
-                if (dialog.SelectedReferenceValue != null)
-                {
-                    var paramRef = dialog.SelectedReferenceValue as PapyrusParameterDefinition;
-                    var fieldRef = dialog.SelectedReferenceValue as PapyrusFieldDefinition;
-                    var varRef = dialog.SelectedReferenceValue as PapyrusVariableReference;
-                    if (varRef != null)
-                    {
-                        papyrusVariableReference.Value = varRef.Value;
-                        papyrusVariableReference.Name = varRef.Name;
-                        papyrusVariableReference.TypeName = varRef.TypeName;
-                        papyrusVariableReference.ValueType = PapyrusPrimitiveType.Reference;
-                        OperandArguments.Add(papyrusVariableReference);
-                    }
-                    else if (fieldRef != null)
-                    {
-                        papyrusVariableReference.Value = fieldRef.Name.Value;
-                        papyrusVariableReference.Name = fieldRef.Name;
-                        papyrusVariableReference.TypeName = fieldRef.TypeName.Ref(asm);
-                        papyrusVariableReference.ValueType = PapyrusPrimitiveType.Reference;
-                        OperandArguments.Add(papyrusVariableReference);
-                    }
-                    else if (paramRef != null)
-                    {
-                        papyrusVariableReference.Value = paramRef.Name.Value;
-                        papyrusVariableReference.Name = paramRef.Name;
-                        papyrusVariableReference.TypeName = paramRef.TypeName;
-                        papyrusVariableReference.ValueType = PapyrusPrimitiveType.Reference;
-                        OperandArguments.Add(papyrusVariableReference);
-                    }
-                    //else
-                    //{
-
-                    //}
-                }
-                else
-                {
-                    var type =
-                    Utility.GetPrimitiveTypeFromValue(dialog.SelectedConstantValue);
-                    papyrusVariableReference.Value = dialog.SelectedConstantValue;
-                    papyrusVariableReference.ValueType = targetType;
-                    OperandArguments.Add(papyrusVariableReference);
-                }
+                OperandArguments.Add(UpdateOperandArgument(dialog, ref papyrusVariableReference));
             }
         }
 
@@ -152,7 +109,22 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
             {
-                // TODO
+                var i = OperandArguments.IndexOf(selectedOperandArgument);
+
+                OperandArguments.RemoveAt(i);
+
+                var papyrusVariableReference = new PapyrusVariableReference();
+
+                UpdateOperandArgument(dialog, ref papyrusVariableReference);
+
+                OperandArguments.Insert(i, papyrusVariableReference);
+
+                SelectedOperandArgument = papyrusVariableReference;
+                
+                //// FFS! Just update? But nooo.. ObservableCollection refresh only triggers on remove/add :p
+                //var dummy = new PapyrusVariableReference();
+                //OperandArguments.Add(dummy);
+                //OperandArguments.Remove(dummy);
             }
         }
 
@@ -164,28 +136,69 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 "Delete Argument " + name, MessageBoxButton.OKCancel)
                 == MessageBoxResult.OK)
             {
-
                 OperandArguments.Remove(SelectedOperandArgument);
-
-                //OperandArguments
-
-                //var method = selectedMethod;
-
-                //if (method.Parameters.Contains(obj))
-                //    method.Parameters.Remove(obj);
-
-                //SelectedMethodParameters = new ObservableCollection<PapyrusParameterDefinition>(
-                //        method.Parameters
-                //    );
             }
         }
+        private PapyrusVariableReference UpdateOperandArgument(PapyrusReferenceAndConstantValueViewModel dialog, ref PapyrusVariableReference papyrusVariableReference)
+        {
+            var asm = currentType.Assembly;
+            var targetType = Utility.GetPapyrusValueType(Utility.GetPapyrusReturnType(dialog.SelectedTypeName));
+            if (dialog.SelectedReferenceValue != null)
+            {
+                var paramRef = dialog.SelectedReferenceValue as PapyrusParameterDefinition;
+                var fieldRef = dialog.SelectedReferenceValue as PapyrusFieldDefinition;
+                var varRef = dialog.SelectedReferenceValue as PapyrusVariableReference;
+                if (varRef != null)
+                {
+                    papyrusVariableReference.Value = varRef.Value;
+                    papyrusVariableReference.Name = varRef.Name;
+                    papyrusVariableReference.TypeName = varRef.TypeName;
+                    papyrusVariableReference.ValueType = PapyrusPrimitiveType.Reference;
+                }
+                else if (fieldRef != null)
+                {
+                    papyrusVariableReference.Value = fieldRef.Name.Value;
+                    papyrusVariableReference.Name = fieldRef.Name;
+                    papyrusVariableReference.TypeName = fieldRef.TypeName.Ref(asm);
+                    papyrusVariableReference.ValueType = PapyrusPrimitiveType.Reference;
+                }
+                else if (paramRef != null)
+                {
+                    papyrusVariableReference.Value = paramRef.Name.Value;
+                    papyrusVariableReference.Name = paramRef.Name;
+                    papyrusVariableReference.TypeName = paramRef.TypeName;
+                    papyrusVariableReference.ValueType = PapyrusPrimitiveType.Reference;
+                }
+            }
+            else
+            {
+                if (dialog.SelectedConstantValue == null && dialog.SelectedReferenceName != null)
+                {
+                    return CreateReferenceFromName(dialog.SelectedReferenceName);
+                }
 
+                papyrusVariableReference.Value = dialog.SelectedConstantValue;
+                papyrusVariableReference.ValueType = targetType;
+            }
+            return papyrusVariableReference;
+        }
 
         private bool CanEdit()
         {
             return SelectedOperandArgument != null;
         }
 
+        public PapyrusVariableReference CreateReferenceFromName(string name)
+        {
+            var asm = currentType.Assembly;
+            var nameRef = name.Ref(asm);
+            return new PapyrusVariableReference()
+            {
+                Name = nameRef,
+                Value = nameRef.Value,
+                ValueType = PapyrusPrimitiveType.Reference
+            };
+        }
 
         public ObservableCollection<PapyrusOpCodes> AvailableOpCodes
         {
@@ -203,7 +216,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     SelectedOpCodeDescription = new InstructionArgumentEditorViewModel(dialogService, loadedAssemblies, loadedAssembly,
                         currentType, currentMethod, instruction, opCodeDescriptionDefinition.GetDesc(selectedOpCode));
                     SelectedOpCodeDescriptionString = selectedOpCode.GetDescription();
-                    ArgumentsDescription = selectedOpCode.GetArgumentsDescription();
+                    // ArgumentsDescription = selectedOpCode.GetArgumentsDescription();
                     OperandArgumentsDescription = selectedOpCode.GetOperandArgumentsDescription();
                     OperandArgumentsVisible = !operandArgumentsDescription.ToLower().Contains("no operand");
                 }

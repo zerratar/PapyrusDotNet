@@ -29,6 +29,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
             }
             ComboBoxItems = new ObservableCollection<FrameworkElement>(CreateComboBoxItems());
             SelectedReferenceType = ComboBoxItems.First() as ComboBoxItem;
+            ReferenceSelectionVisible = Visibility.Visible;
         }
 
         private ObservableCollection<FrameworkElement> comboBoxItems;
@@ -44,9 +45,10 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
             elements.Add(new ComboBoxItem { Content = "Parameter" });
             elements.Add(new ComboBoxItem { Content = "Variable" });
             elements.Add(new ComboBoxItem { Content = "Field" });
-            if (desc == null || desc.Constraints.Length == 0)
+            //if (desc == null || desc.Constraints.Length == 0)
             {
                 elements.Add(new ComboBoxItem { Content = "Self" });
+                elements.Add(new ComboBoxItem { Content = "SelfRef" });
             }
             return elements;
         }
@@ -73,28 +75,46 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
         {
             if (currentMethod == null) return;
             var tar = value.Content.ToString().ToLower();
+            ReferenceSelectionVisible = Visibility.Visible;
             if (tar == "variable")
             {
-                ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(Filter(currentMethod.GetVariables()));
+                var papyrusVariableReferences = currentMethod.GetVariables();
+                papyrusVariableReferences.ForEach(i => i.ValueType = PapyrusPrimitiveType.Reference);
+                ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(Filter(papyrusVariableReferences));
             }
             else if (tar == "parameter")
             {
-                ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(Filter(currentMethod.Parameters));
+                var papyrusParameterDefinitions = currentMethod.Parameters;
+                ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(Filter(papyrusParameterDefinitions));
             }
             else if (tar == "field")
             {
-                ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(Filter(currentType.Fields.ToList()));
+                var papyrusFieldDefinitions = currentType.Fields.ToList();
+                ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(Filter(papyrusFieldDefinitions));
             }
-            if (tar == "self")
+            else if (tar == "self")
             {
                 if (currentType.Assembly != null)
                 {
                     SelectedReference = new PapyrusVariableReference
                     {
-                        Value = "self",
+                        Value = "Self",
                         ValueType = PapyrusPrimitiveType.Reference
                     };
                 }
+                ReferenceSelectionVisible = Visibility.Collapsed;
+            }
+            else if (tar == "selfref")
+            {
+                if (currentType.Assembly != null)
+                {
+                    SelectedReference = new PapyrusVariableReference
+                    {
+                        Value = "SelfRef",
+                        ValueType = PapyrusPrimitiveType.Reference
+                    };
+                }
+                ReferenceSelectionVisible = Visibility.Collapsed;
             }
         }
 
@@ -152,6 +172,14 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
             set { Set(ref referenceCollection, value); }
         }
 
+        public string SelectedReferenceName { get; set; }
+
+        public Visibility ReferenceSelectionVisible
+        {
+            get { return referenceSelectionVisible; }
+            set { Set(ref referenceSelectionVisible, value); }
+        }
+
         public static PapyrusReferenceValueViewModel DesignInstance = designInstance ??
                                                          (designInstance =
                                                              new PapyrusReferenceValueViewModel(null, null, null, null));
@@ -160,5 +188,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
         private PapyrusMemberReference selectedReference;
         private ComboBoxItem selectedReferenceType;
         private ObservableCollection<PapyrusMemberReference> referenceCollection;
+        private Visibility referenceSelectionVisible;
     }
 }

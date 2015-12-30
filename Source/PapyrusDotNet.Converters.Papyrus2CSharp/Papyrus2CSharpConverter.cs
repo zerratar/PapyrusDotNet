@@ -529,11 +529,13 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     {
                         return DoMath(i, "*");
                     }
+                case PapyrusOpCodes.Fneg:
                 case PapyrusOpCodes.Ineg:
                     {
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
                         var asignee = GetArgumentValue(i.Arguments[0]);
                         var target = GetArgumentValue(i.Arguments[1]);
-                        return (asignee + " = " + target + " < 0;");
+                        return comment + (asignee + " = -" + target + ";");
                     }
                 case PapyrusOpCodes.CmpEq:
                     {

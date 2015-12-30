@@ -20,5 +20,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     SelectedType = this.variable.TypeName.Value.ToLower();
             }
         }
+
     }
 }

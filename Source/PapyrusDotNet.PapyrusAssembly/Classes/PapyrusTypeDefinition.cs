@@ -28,28 +28,24 @@ namespace PapyrusDotNet.PapyrusAssembly
     public class PapyrusTypeDefinition : PapyrusVariableReference
     {
         public readonly PapyrusAssemblyDefinition Assembly;
-
-        public PapyrusTypeDefinition()
+        
+        public PapyrusTypeDefinition(PapyrusAssemblyDefinition assembly, bool isStruct = false)
         {
+            Assembly = assembly;
             Fields = new Collection<PapyrusFieldDefinition>();
             NestedTypes = new Collection<PapyrusTypeDefinition>();
             Properties = new Collection<PapyrusPropertyDefinition>();
             States = new Collection<PapyrusStateDefinition>();
-        }
 
-        public PapyrusTypeDefinition(PapyrusAssemblyDefinition assembly, bool isStruct = false)
-            : this()
-        {
-            this.Assembly = assembly;
             if (!isStruct)
             {
-                this.Assembly.Types.Add(this);
+                Assembly.Types.Add(this);
             }
         }
 
         public int Size { get; set; }
         public PapyrusStringRef BaseTypeName { get; set; }
-        public byte ConstFlag { get; set; }
+        public byte Flags { get; set; }
         public PapyrusStringRef Documentation { get; set; }
         public int UserFlags { get; set; }
         public PapyrusStringRef AutoStateName { get; set; }

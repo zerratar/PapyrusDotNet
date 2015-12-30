@@ -10,7 +10,8 @@
         xmlns:converters="clr-namespace:PapyrusDotNet.PexInspector.Converters"
         xmlns:selectors="clr-namespace:PapyrusDotNet.PexInspector.ViewModels.Selectors;assembly=PapyrusDotNet.PexInspector.ViewModels"
         mc:Ignorable="d"
-        Title="Select Instruction" Height="500" Width="600"
+        Title="Select Instruction" d:DesignHeight="500" d:DesignWidth="600"
+        SizeToContent="WidthAndHeight"
         d:DataContext="{x:Static selectors:PapyrusInstructionSelectorViewModel.DesignInstance}">
     <Window.Resources>
         <converters:PapyrusInstructionDisplayConverter x:Key="PapyrusInstructionDisplayConverter"/>

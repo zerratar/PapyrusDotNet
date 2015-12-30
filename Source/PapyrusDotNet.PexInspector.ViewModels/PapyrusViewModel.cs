@@ -12,6 +12,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private string icon;
         private string text;
         private object item;
+        private bool isDirty;
 
         public object Item
         {
@@ -25,12 +26,27 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
         }
 
+        public void SetDirty(bool dirty)
+        {
+            IsDirty = dirty;
+            if (dirty)
+            {
+                Parent?.SetDirty(true);
+            }
+        }
+
+        public bool IsDirty
+        {
+            get { return isDirty; }
+            set { Set(ref isDirty, value); }
+        }
+
         private void SetIconFromItem(object value)
         {
 
             string packUri = "pack://application:,,,/PapyrusDotNet.PexInspector;component/";
 
-            if (value == null || value.ToString() == "root")
+            if (value == null || value.ToString() == "root" || value is PapyrusAssemblyDefinition)
             {
                 Icon = packUri + "Assets/Icons/type.png";
             }
@@ -87,6 +103,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         public PapyrusViewModel(PapyrusViewModel parent = null)
         {
+            Parent = parent;
             if (parent != null)
             {
                 parent.Children.Add(this);
@@ -118,6 +135,12 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         {
             get { return isExpanded; }
             set { Set(ref isExpanded, value); }
+        }
+
+        public PapyrusViewModel GetTopParent()
+        {
+            if (Parent == null) return this;
+            return Parent.GetTopParent();
         }
     }
 }

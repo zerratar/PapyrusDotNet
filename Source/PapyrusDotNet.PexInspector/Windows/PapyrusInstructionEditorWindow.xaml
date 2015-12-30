@@ -7,8 +7,7 @@
         xmlns:controls="clr-namespace:PapyrusDotNet.PexInspector.Controls"
         mc:Ignorable="d"
         Title="Instruction Editor"
-        SizeToContent="Height"
-        Width="566.333"
+        SizeToContent="WidthAndHeight"        
         d:DataContext="{x:Static viewModels:PapyrusInstructionEditorViewModel.DesignInstance}" d:DesignWidth="566.333">
     <Window.Resources>
         <FontFamily x:Key="FontAwesome">
@@ -32,9 +31,9 @@
             <DockPanel Margin="0,25,0,5">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="0.49*" />
+                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="10" />
-                        <ColumnDefinition Width="0.49*" />
+                        <ColumnDefinition Width="250" />
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Orientation="Vertical" DockPanel.Dock="Left" Grid.Column="0">

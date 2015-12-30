@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using PapyrusDotNet.PexInspector.ViewModels.Selectors;
 
 namespace PapyrusDotNet.PexInspector.Windows
 {
@@ -32,6 +33,16 @@ namespace PapyrusDotNet.PexInspector.Windows
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
+        }
+
+        private void ComboBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var cb = sender as ComboBox;
+            var vm = DataContext as PapyrusReferenceValueViewModel;
+            if (vm != null)
+            {
+                vm.SelectedReferenceName = cb.Text;
+            }
         }
     }
 }

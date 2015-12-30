@@ -48,13 +48,30 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
         public PapyrusViewModel SelectedMethod
         {
             get { return selectedMethod; }
-            set { Set(ref selectedMethod, value); }
+            set
+            {
+                if (Set(ref selectedMethod, value))
+                {
+                    if (value != null)
+                    {
+                        var method = value.Item as PapyrusMethodDefinition;
+                        if (method != null)
+                            SelectedMethodName = method.Name.Value;
+                    }
+                }
+            }
         }
 
         public ObservableCollection<PapyrusViewModel> Methods
         {
             get { return methods; }
             set { Set(ref methods, value); }
+        }
+
+        public string SelectedMethodName
+        {
+            get { return selectedMethodName; }
+            set { Set(ref selectedMethodName, value); }
         }
 
         public static PapyrusMethodSelectorViewModel DesignInstance = designInstance ??
@@ -64,5 +81,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
         private static PapyrusMethodSelectorViewModel designInstance;
         private PapyrusViewModel selectedMethod;
         private ObservableCollection<PapyrusViewModel> methods;
+        private string selectedMethodName;
     }
 }

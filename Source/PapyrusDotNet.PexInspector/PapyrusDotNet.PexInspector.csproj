@@ -72,6 +72,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Behaviours\DataGridBehaviour.cs" />
+    <Compile Include="Controls\BindableTextBlock.cs" />
     <Compile Include="Controls\InstructionArgumentEditor.xaml.cs">
       <DependentUpon>InstructionArgumentEditor.xaml</DependentUpon>
     </Compile>

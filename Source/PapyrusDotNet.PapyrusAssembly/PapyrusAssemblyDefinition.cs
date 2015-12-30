@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using PapyrusDotNet.PapyrusAssembly.Implementations;
 
 #endregion
@@ -28,9 +29,6 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusAssemblyDefinition : IDisposable
     {
-        private readonly bool disposed = false;
-        private bool hasDebugInfo;
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="PapyrusAssemblyDefinition" /> class.
         /// </summary>
@@ -148,6 +146,7 @@ namespace PapyrusDotNet.PapyrusAssembly
                 pexFile, throwsException))
             {
                 var def = reader.Read();
+                def.filePath = pexFile;
                 def.IsCorrupted = reader.IsCorrupted;
                 return def;
             }
@@ -161,6 +160,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         public static PapyrusAssemblyDefinition ReadAssembly(string pexFile)
         {
             var asm = new PapyrusAssemblyDefinition();
+            asm.filePath = pexFile;
             using (var reader = new PapyrusAssemblyReader(asm, pexFile))
             {
                 var def = reader.Read();
@@ -179,6 +179,34 @@ namespace PapyrusDotNet.PapyrusAssembly
             {
                 writer.Write(outputFile);
             }
+        }
+
+        /// <summary>
+        ///     Overwrites the loaded papyrus binary with any modifications made.
+        /// </summary>
+        public void Write()
+        {
+            using (var writer = new PapyrusAssemblyWriter(this))
+            {
+                writer.Write(filePath);
+            }
+        }
+
+        /// <summary>
+        ///     Creates a backup of the original papyrus assembly. If this is a new instance, nothing will happen.
+        /// </summary>
+        /// <returns>True if a backup was made; otherwise false.</returns>
+        public bool Backup()
+        {
+            if (string.IsNullOrEmpty(filePath)) return false;
+            if (!File.Exists(filePath)) return false;
+
+            var destination = filePath + ".bak";
+            int index = 0;
+            while (File.Exists(destination)) destination = filePath + ".bak" + (++index);
+
+            File.Copy(filePath, destination, true);
+            return true;
         }
 
         /// <summary>
@@ -202,5 +230,19 @@ namespace PapyrusDotNet.PapyrusAssembly
         {
             Dispose(false);
         }
+
+        /// <summary>
+        /// Reloads the papyrus assembly specified.
+        /// </summary>
+        /// <param name="definitionToReload">The definition to reload.</param>
+        /// <returns></returns>
+        public static PapyrusAssemblyDefinition ReloadAssembly(PapyrusAssemblyDefinition definitionToReload)
+        {
+            return PapyrusAssemblyDefinition.ReadAssembly(definitionToReload.filePath, false);
+        }
+
+        private readonly bool disposed = false;
+        private bool hasDebugInfo;
+        private string filePath;
     }
 }

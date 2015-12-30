@@ -17,6 +17,7 @@
 
 #region
 
+using System;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -44,6 +45,8 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
             Assert.IsNotNull(dest.Header.SourceHeader.Source);
 
             Assert.AreEqual(src.Header.SourceHeader.Source, dest.Header.SourceHeader.Source);
+
+            Assert.AreEqual(new FileInfo(sourceScript).Length, new FileInfo(destinationScript).Length);
         }
 
         [TestMethod]
@@ -61,6 +64,30 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
             var assembly = PapyrusAssemblyDefinition.ReadAssembly(str);
             Assert.IsNotNull(assembly.Header.SourceHeader.Source);
             Assert.AreNotEqual(0, assembly.Types.Count);
+        }
+
+        [TestMethod]
+        public void TestManyFallout4Papyrus()
+        {
+            var scripts = Directory.GetFiles(@"D:\Spel\Fallout 4 Scripts\scripts\", "*.pex", SearchOption.AllDirectories);
+            var success = 0;
+            var items = scripts.Length;
+            var corruptCount = 0;
+            string failedScripts = "";
+            foreach (var script in scripts)
+            {
+                var assembly = PapyrusAssemblyDefinition.ReadAssembly(script);
+                if (assembly.IsCorrupted)
+                {
+                    corruptCount++;
+                    failedScripts += script + Environment.NewLine;
+                }
+                Assert.IsNotNull(assembly.Header.SourceHeader.Source);
+                Assert.AreNotEqual(0, assembly.Types.Count);
+                success++;
+            }
+            Assert.AreEqual(0, corruptCount, failedScripts);
+            Assert.AreEqual(items, success);
         }
 
         [TestMethod]

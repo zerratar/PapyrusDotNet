@@ -10,6 +10,7 @@
         xmlns:converters="clr-namespace:PapyrusDotNet.PexInspector.Converters"
         xmlns:papyrusAssembly="clr-namespace:PapyrusDotNet.PapyrusAssembly;assembly=PapyrusDotNet.PapyrusAssembly"
         xmlns:behaviours="clr-namespace:PapyrusDotNet.PexInspector.Behaviours"
+        xmlns:controls="clr-namespace:PapyrusDotNet.PexInspector.Controls"
         d:DataContext="{x:Static viewModels:MainWindowViewModel.DesignInstance}"
         mc:Ignorable="d"
         Title="PapyrusDotNet PexInspector - PreAlpha" Height="610" Width="871">
@@ -17,6 +18,7 @@
         <converters:PapyrusInstructionDisplayConverter x:Key="PapyrusInstructionDisplayConverter"/>
         <converters:PapyrusInstructionOperandConverter x:Key="PapyrusInstructionOperandConverter"/>
         <converters:PapyrusArrayDisplayConverter x:Key="PapyrusArrayDisplayConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
     </Window.Resources>
     <Grid>
         <Menu x:Name="menu" HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="{x:Null}">
@@ -39,41 +41,77 @@
                 <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="400*"/>
             </Grid.ColumnDefinitions>
-            <TreeView x:Name="treeView" ItemsSource="{Binding PexTree}">
+            <TreeView x:Name="treeView" ItemsSource="{Binding PexTree}" Margin="0,0,0,90" SelectedItemChanged="TreeView_OnSelectedItemChanged">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="SelectedItemChanged">
                         <command:EventToCommand Command="{Binding SelectedMemberCommand}" CommandParameter="{Binding ElementName=treeView,Path=SelectedValue}"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
-
                 <TreeView.ItemContainerStyle>
                     <Style TargetType="{x:Type TreeViewItem}">
+                        <EventSetter Event="RequestBringIntoView" Handler="TreeViewItem_RequestBringIntoView"/>
                         <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                         <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
                     </Style>
                 </TreeView.ItemContainerStyle>
 
+                <TreeView.Resources>
+                    <ContextMenu x:Key="rowContextMenu" Opened="RowContextMenu_OnOpened">
+                        <MenuItem Header="Reload" CommandParameter="{Binding}" Command="{Binding Path=DataContext.ReloadPexCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Save" CommandParameter="{Binding}" Command="{Binding Path=DataContext.SavePexCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
+                        <!--<MenuItem Header="Save As" CommandParameter="{Binding}" Command="{Binding Path=DataContext.SavePexAsCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>-->
+                    </ContextMenu>
+                </TreeView.Resources>
+
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                        <StackPanel Orientation="Horizontal" Margin="0,2">
-                            <Image Name="img" Width="16" Height="16" Stretch="Fill" Source="{Binding Icon}"/>
-                            <TextBlock Text="{Binding Text}" Margin="5,0" />
-                        </StackPanel>
+                        <Border x:Name="Border">
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Image Name="img" Width="16" Height="16" Stretch="Fill" Source="{Binding Icon}"/>
+                                <TextBlock Text="{Binding Text}" x:Name="RowText" Margin="5,0" />
+                                <TextBlock Text="[Modded]" Foreground="Red" Visibility="{Binding IsDirty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            </StackPanel>
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}" >
+                                    <Setter Property="ContextMenu" Value="{StaticResource rowContextMenu}" />
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <HierarchicalDataTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="RowText" Property="TextDecorations" Value="Underline"/>
+                            </Trigger>
+                            <!--<Trigger Property="IsMouseOver" Value="false">
+                                <Setter TargetName="RowText" Property="TextDecorations" Value="{x:Static TextDecorations.}"/>
+                            </Trigger>-->
+                        </HierarchicalDataTemplate.Triggers>
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
 
-                <TreeView.ContextMenu>
-                    <ContextMenu>
 
-                    </ContextMenu>
-                </TreeView.ContextMenu>
             </TreeView>
+            <Border Grid.Column="0" Height="90" VerticalAlignment="Bottom" BorderBrush="#FF828790" BorderThickness="1,0" >
+                <Grid Background="White">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                        <StackPanel Orientation="Vertical" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top">
+                            <!--<TextBlock Text="{Binding SelectedMemberName}" HorizontalAlignment="Left" VerticalAlignment="Top" />-->
+                            <controls:BindableTextBlock HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="15" Margin="0,0,0,3" InlineList="{Binding SelectedMemberName}"/>
+                            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top">
+                                <Run>Flags:</Run><Run Text="    "/><Run Text="{Binding SelectedMemberFlags}" FontWeight="DemiBold"/>
+                            </TextBlock>
+                            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top">
+                                <Run>Game:</Run><Run Text="   "/><Run Text="{Binding TargetGameName}" FontWeight="DemiBold"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
             <TabControl Grid.Column="2" >
                 <TabItem Header="Instructions">
                     <TabItem.Content>
-                        <DataGrid x:Name="instructionsList" 
-                                  ItemsSource="{Binding SelectedMethodInstructions}" 
+                        <DataGrid ItemsSource="{Binding SelectedMethodInstructions}" 
                                   SelectedItem="{Binding SelectedMethodInstruction}"
                                   MinRowHeight="22"
                                   VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"                                  
@@ -84,6 +122,11 @@
                                     <Setter Property="BorderThickness" Value="0"/>
                                 </Style>
                             </DataGrid.CellStyle>
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="New..." Command="{Binding CreateInstructionCommand}"></MenuItem>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
                             <DataGrid.Resources>
                                 <ContextMenu x:Key="ItemContextMenu">
                                     <MenuItem Header="Insert Before..." Command="{Binding DataContext.InsertBeforeCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"></MenuItem>
@@ -147,13 +190,18 @@
                     <TabItem.Content>
 
 
-                        <DataGrid x:Name="variableList"  ItemsSource="{Binding SelectedMethodVariables}"
+                        <DataGrid ItemsSource="{Binding SelectedMethodVariables}"
                                   SelectedItem="{Binding SelectedMethodVariable}"
                                   MinRowHeight="22"
                                   VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"
                                   AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" 
                                   CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
                                   behaviours:DataGridBehaviour.DisplayRowNumber="True">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="New..." Command="{Binding CreateVariableCommand}"></MenuItem>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
                             <DataGrid.CellStyle>
                                 <Style TargetType="DataGridCell">
                                     <Setter Property="BorderThickness" Value="0"/>
@@ -198,14 +246,18 @@
                 </TabItem>
                 <TabItem Header="Parameters">
                     <TabItem.Content>
-                        <DataGrid x:Name="parameterist"  
-                                  ItemsSource="{Binding SelectedMethodParameters}"
+                        <DataGrid ItemsSource="{Binding SelectedMethodParameters}"
                                   SelectedItem="{Binding SelectedMethodParameter}"
                                   MinRowHeight="22"
                                   VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"
                                   AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" 
                                   CanUserReorderColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
                                   behaviours:DataGridBehaviour.DisplayRowNumber="True">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="New..." Command="{Binding CreateParameterCommand}"></MenuItem>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
                             <DataGrid.CellStyle>
                                 <Style TargetType="DataGridCell">
                                     <Setter Property="BorderThickness" Value="0"/>

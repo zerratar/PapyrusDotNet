@@ -24,14 +24,14 @@
             <RowDefinition Height="239*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
-
-        <TreeView x:Name="treeView" ItemsSource="{Binding Methods}">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="SelectedItemChanged">
-                    <command:EventToCommand Command="{Binding SelectedMethodCommand}" CommandParameter="{Binding ElementName=treeView,Path=SelectedValue}"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-            <!--
+        <Grid>
+            <TreeView x:Name="treeView" ItemsSource="{Binding Methods}" Margin="0,0,0,75">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="SelectedItemChanged">
+                        <command:EventToCommand Command="{Binding SelectedMethodCommand}" CommandParameter="{Binding ElementName=treeView,Path=SelectedValue}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <!--
             <TreeView.ItemContainerStyle>
                 <Style TargetType="{x:Type TreeViewItem}">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
@@ -39,25 +39,24 @@
                 </Style>
             </TreeView.ItemContainerStyle>
 -->
-            <TreeView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Name="img" Width="16" Height="16" Stretch="Fill" Source="{Binding Icon}"/>
-                        <TextBlock Text="{Binding Text}" Margin="5,0" />
-                    </StackPanel>
-                </DataTemplate>
-            </TreeView.ItemTemplate>
+                <TreeView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Name="img" Width="16" Height="16" Stretch="Fill" Source="{Binding Icon}"/>
+                            <TextBlock Text="{Binding Text}" Margin="5,0" />
+                        </StackPanel>
+                    </DataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
 
-            <TreeView.ContextMenu>
-                <ContextMenu>
-
-                </ContextMenu>
-            </TreeView.ContextMenu>
-        </TreeView>
-
-        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="20,10">
-            <Button Content="OK" Width="72" Margin="2,0,10,0" Background="#FF3498DB" BorderBrush="#FF3498DB" Foreground="White" Click="Button_Click"/>
-            <Button Content="Cancel" Width="72" Click="Button_Click_1"/>
-        </StackPanel>
+            <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,0,0,44" TextWrapping="Wrap" Text="Target Method Name" Height="16" VerticalAlignment="Bottom"/>
+            <TextBox x:Name="textBox" Height="23" Margin="10,382,10,0" TextWrapping="Wrap" Text="{Binding SelectedMethodName}" VerticalAlignment="Top"/>
+        </Grid>
+        <Grid Row="1" Background="#FFF3F3F3">
+            <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="20,10">
+                <Button Content="OK" Width="72" Margin="2,0,10,0" Background="#FF3498DB" BorderBrush="#FF3498DB" Foreground="White" Click="Button_Click"/>
+                <Button Content="Cancel" Width="72" Click="Button_Click_1"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

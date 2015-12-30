@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 #endregion
 
@@ -26,11 +27,11 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusMethodDefinition : PapyrusMethodReference
     {
-        private readonly PapyrusAssemblyDefinition assembly;
+        public readonly PapyrusAssemblyDefinition DeclaringAssembly;
 
-        public PapyrusMethodDefinition(PapyrusAssemblyDefinition assembly)
+        public PapyrusMethodDefinition(PapyrusAssemblyDefinition declaringAssembly)
         {
-            this.assembly = assembly;
+            this.DeclaringAssembly = declaringAssembly;
             Parameters = new List<PapyrusParameterDefinition>();
             Body = new PapyrusMethodBody(this);
         }
@@ -44,13 +45,22 @@ namespace PapyrusDotNet.PapyrusAssembly
         public bool HasBody => Body != null && !Body.IsEmpty;
 
         public int UserFlags { get; set; }
+
         public byte Flags { get; set; }
+
         public List<PapyrusParameterDefinition> Parameters { get; set; }
 
         public void UpdateInstructionOperands()
         {
-            this.Body.Instructions.ForEach(i => this.DeclaringState.DeclaringType.UpdateOperand(i, this.Body.Instructions));
+            if (DeclaringState != null)
+                this.Body.Instructions.ForEach(i => this.DeclaringState.DeclaringType.UpdateOperand(i, this.Body.Instructions));
+            else if (DeclaringAssembly != null)
+                this.Body.Instructions.ForEach(i => DeclaringAssembly.Types.First().UpdateOperand(i, this.Body.Instructions));
         }
+
+        public string PropName { get; set; }
+        public bool IsGetter { get; set; }
+        public bool IsSetter { get; set; }
 
         public bool IsGlobal
         {
@@ -105,10 +115,10 @@ namespace PapyrusDotNet.PapyrusAssembly
         public List<PapyrusVariableReference> GetVariables()
         {
             var vars = Body.Variables;
-            var tempVars = Body.TempVariables;
+            //var tempVars = Body.TempVariables;
             var output = new List<PapyrusVariableReference>();
             output.AddRange(vars);
-            output.AddRange(tempVars);
+            //output.AddRange(tempVars);
 
             return output; // We only want a readonly list
         }

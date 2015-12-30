@@ -18,6 +18,7 @@
 #region
 
 using System;
+using System.Linq;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 #endregion
@@ -26,19 +27,24 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusPropertyDefinition : PapyrusPropertyReference
     {
-        private readonly PapyrusAssemblyDefinition assembly;
+        public readonly PapyrusAssemblyDefinition DeclaringAssembly;
 
-        public PapyrusPropertyDefinition(PapyrusAssemblyDefinition assembly)
+        public PapyrusPropertyDefinition(PapyrusAssemblyDefinition declaringAssembly)
         {
-            this.assembly = assembly;
+            this.DeclaringAssembly = declaringAssembly;
         }
 
-        public PapyrusPropertyDefinition(PapyrusAssemblyDefinition assembly, string name, string typeName)
-            : base(new PapyrusStringRef(assembly, name), null, PapyrusPrimitiveType.None)
+        public PapyrusPropertyDefinition(PapyrusAssemblyDefinition declaringAssembly, string name, string typeName)
+            : base(new PapyrusStringRef(declaringAssembly, name), null, PapyrusPrimitiveType.None)
         {
-            this.assembly = assembly;
-            TypeName = typeName.Ref(assembly);
+            this.DeclaringAssembly = declaringAssembly;
+
+            TypeName = typeName.Ref(declaringAssembly);
+
+            DeclaringType = this.DeclaringAssembly.Types.FirstOrDefault();
         }
+
+        public PapyrusTypeDefinition DeclaringType { get; }
 
         public PapyrusStringRef TypeName { get; set; }
         public PapyrusStringRef Documentation { get; set; }
@@ -94,7 +100,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
 
-        public string AutoName { get; set; }
+        public string AutoName { get; set; }        
         public PapyrusMethodDefinition GetMethod { get; set; }
         public PapyrusMethodDefinition SetMethod { get; set; }
 

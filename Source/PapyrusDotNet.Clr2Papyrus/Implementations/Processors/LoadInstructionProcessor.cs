@@ -257,7 +257,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                         var targetStructVariable = mainInstructionProcessor.EvaluationStack.Pop().Value;
 
-                        var structRef = new PapyrusStructFieldReference(mainInstructionProcessor.PapyrusAssembly)
+                        var structRef = new PapyrusStructFieldReference(mainInstructionProcessor.PapyrusAssembly, null)
                         {
                             StructSource = targetStructVariable,
                             StructVariable = mainInstructionProcessor.CreateVariableReferenceFromName(fieldRef.Name)

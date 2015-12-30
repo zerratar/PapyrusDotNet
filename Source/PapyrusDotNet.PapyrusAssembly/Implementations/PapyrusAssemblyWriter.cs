@@ -19,6 +19,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using PapyrusDotNet.PapyrusAssembly.Interfaces;
 using PapyrusDotNet.PapyrusAssembly.IO;
 
@@ -125,8 +126,8 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             pexWriter.Write((short)method.Body.Variables.Count);
             foreach (var variable in method.Body.Variables)
                 WriteVariable(variable);
-
-            pexWriter.Write((short)method.Body.Instructions.Count);
+            
+            pexWriter.Write((short)method.Body.Instructions.ToArray().Count(i => !i.TemporarilyInstruction));
             foreach (var instruction in method.Body.Instructions)
             {
                 if (!instruction.TemporarilyInstruction)
@@ -225,7 +226,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
             WriteValueReference(field.FieldVariable);
 
-            pexWriter.Write(field.IsConst);
+            pexWriter.Write(field.Flags);
         }
 
         private void WriteValueReference(PapyrusVariableReference fieldVariable)
@@ -275,7 +276,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             pexWriter.Write(def.Documentation);
             if (Assembly.VersionTarget == PapyrusVersionTargets.Fallout4)
             {
-                pexWriter.Write(def.ConstFlag);
+                pexWriter.Write(def.Flags);
             }
             pexWriter.Write(def.UserFlags);
             pexWriter.Write(def.AutoStateName);

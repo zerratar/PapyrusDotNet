@@ -4,40 +4,40 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Extensions
 {
     public static class PapyrusOpCodeExtensions
     {
-        public static string GetArgumentsDescription(this PapyrusOpCodes code)
-        {
-            var noArgs = "No arguments expected.";
+        //public static string GetArgumentsDescription(this PapyrusOpCodes code)
+        //{
+        //    var noArgs = "No arguments expected.";
 
-            switch (code)
-            {
-                case PapyrusOpCodes.PropSet:
-                    return "[0] Constant String: Property Name\r\n[1] Reference or Constant: Location\r\n[2] Reference or Constant: Value";
-                case PapyrusOpCodes.PropGet:
-                    return "[0] Constant String: Property Name\r\n[1] Reference or Constant: Location\r\n[2] Reference: Destination";
-                case PapyrusOpCodes.Assign:
-                    return "[0] Reference or Constant: Value\r\n[1] Reference: Destination";
-                case PapyrusOpCodes.Callstatic:
-                    return "[0] Reference or Constant: Location/Class\r\n[1] Constant String: Method Name\r\n[2] Reference: Destination";
-                case PapyrusOpCodes.Callmethod:
-                    return "[0] Constant String: Method Name\r\n[1] Reference or Constant: Location/Class\r\n[2] Reference: Destination";
-                case PapyrusOpCodes.Return:
-                    return "[0] Reference or Constant: value\r\n[1] (Expects ::nonevar if void)";
-                case PapyrusOpCodes.CmpEq:
-                case PapyrusOpCodes.CmpGte:
-                case PapyrusOpCodes.CmpGt:
-                case PapyrusOpCodes.CmpLt:
-                case PapyrusOpCodes.CmpLte:
-                    return "[0] Reference: Destination\r\n[1] Reference or Constant: Value\r\n[2]  Reference or Constant: Value";
-                case PapyrusOpCodes.Jmp:
-                    return "[0] Constant Integer: offset from current position";
-                case PapyrusOpCodes.Jmpf:
-                    return "[0] Reference Bool: Conditional\r\n[1] Constant Integer: offset from current position";
-                case PapyrusOpCodes.Jmpt:
-                    return "[0] Reference Bool: Conditional\r\n[1] Constant Integer: offset from current position";
-            }
+        //    switch (code)
+        //    {
+        //        case PapyrusOpCodes.PropSet:
+        //            return "[0] Constant String: Property Name\r\n[1] Reference or Constant: Location\r\n[2] Reference or Constant: Value";
+        //        case PapyrusOpCodes.PropGet:
+        //            return "[0] Constant String: Property Name\r\n[1] Reference or Constant: Location\r\n[2] Reference: Destination";
+        //        case PapyrusOpCodes.Assign:
+        //            return "[0] Reference or Constant: Value\r\n[1] Reference: Destination";
+        //        case PapyrusOpCodes.Callstatic:
+        //            return "[0] Reference or Constant: Location/Class\r\n[1] Constant String: Method Name\r\n[2] Reference: Destination";
+        //        case PapyrusOpCodes.Callmethod:
+        //            return "[0] Constant String: Method Name\r\n[1] Reference or Constant: Location/Class\r\n[2] Reference: Destination";
+        //        case PapyrusOpCodes.Return:
+        //            return "[0] Reference or Constant: value\r\n[1] (Expects ::nonevar if void)";
+        //        case PapyrusOpCodes.CmpEq:
+        //        case PapyrusOpCodes.CmpGte:
+        //        case PapyrusOpCodes.CmpGt:
+        //        case PapyrusOpCodes.CmpLt:
+        //        case PapyrusOpCodes.CmpLte:
+        //            return "[0] Reference: Destination\r\n[1] Reference or Constant: Value\r\n[2]  Reference or Constant: Value";
+        //        case PapyrusOpCodes.Jmp:
+        //            return "[0] Constant Integer: offset from current position";
+        //        case PapyrusOpCodes.Jmpf:
+        //            return "[0] Reference Bool: Conditional\r\n[1] Constant Integer: offset from current position";
+        //        case PapyrusOpCodes.Jmpt:
+        //            return "[0] Reference Bool: Conditional\r\n[1] Constant Integer: offset from current position";
+        //    }
 
-            return "This OpCode has no arguments or the arguments has not yet been documented.";
-        }
+        //    return "This OpCode has no arguments or the arguments has not yet been documented.";
+        //}
 
         public static string GetOperandArgumentsDescription(this PapyrusOpCodes code)
         {
@@ -47,7 +47,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Extensions
                 case PapyrusOpCodes.Callparent:
                 case PapyrusOpCodes.Callstatic:
                 case PapyrusOpCodes.Callmethod:
-                    return "Method Parameters that can be either Constant or Reference. Add a new operand argument per parameter.";
+                    return "Method Parameters can be either Constant or Reference. One parameter per row.";
                 default:
                     return noArgs;
             }

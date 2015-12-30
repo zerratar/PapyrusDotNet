@@ -29,6 +29,17 @@ namespace PapyrusDotNet.Common.Extensions
 {
     public static class CollectionExtensions
     {
+        public static int IndexOf<T>(this List<T> collection, Func<T, bool> predicate)
+        {
+            var item =
+            collection.FirstOrDefault(predicate);
+            if (item != null)
+            {
+                return collection.IndexOf(item);
+            }
+            return -1;
+        }
+
         public static bool Contains<T>(this Collection<T> collection, Func<T, bool> predicate)
         {
             return collection.Any(predicate);
@@ -53,22 +64,22 @@ namespace PapyrusDotNet.Common.Extensions
                 collection.Add(value);
         }
 
-        public static void ForEach<T>(this IEnumerable<T> collection, Action<T> a)
-        {
-            if (a == null) return;
-            foreach (var c in collection)
-            {
-                a(c);
-            }
-        }
+        //public static void ForEach<T>(this IEnumerable<T> collection, Action<T> a)
+        //{
+        //    if (a == null) return;
+        //    foreach (var c in collection)
+        //    {
+        //        a(c);
+        //    }
+        //}
 
-        public static void ForEach(this IEnumerable collection, Action<object> a)
-        {
-            if (a == null) return;
-            foreach (var c in collection)
-            {
-                a(c);
-            }
-        }
+        //public static void ForEach(this IEnumerable collection, Action<object> a)
+        //{
+        //    if (a == null) return;
+        //    foreach (var c in collection)
+        //    {
+        //        a(c);
+        //    }
+        //}
     }
 }
