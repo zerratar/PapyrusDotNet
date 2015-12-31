@@ -13,5 +13,15 @@ namespace PapyrusDotNet.PexInspector
     /// </summary>
     public partial class App : Application
     {
+        public static bool OpenFileAtLaunch = false;
+        public static string OpenFile = null;
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            if (e.Args != null && e.Args.Length > 0)
+            {
+                OpenFileAtLaunch = true;
+                OpenFile = e.Args.FirstOrDefault();
+            }
+        }
     }
 }

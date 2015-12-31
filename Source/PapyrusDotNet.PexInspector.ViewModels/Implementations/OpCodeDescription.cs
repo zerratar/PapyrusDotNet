@@ -8,5 +8,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Implementations
         public PapyrusOpCodes OpCode { get; set; }
         public List<OpCodeArgumentDescription> Arguments { get; set; } = new List<OpCodeArgumentDescription>();
         public List<OpCodeArgumentDescription> OperandArguments { get; set; } = new List<OpCodeArgumentDescription>();
+        public OpCodeDescriptionDefinition Definition { get; set; }
     }
 }

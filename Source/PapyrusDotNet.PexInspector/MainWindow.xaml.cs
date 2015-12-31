@@ -16,7 +16,7 @@ namespace PapyrusDotNet.PexInspector
         {
             InitializeComponent();
 
-            DataContext = new MainWindowViewModel(new DialogService());
+            DataContext = new MainWindowViewModel(new DialogService(), App.OpenFile);
         }
 
         bool userInvokedBringIntoView = false;

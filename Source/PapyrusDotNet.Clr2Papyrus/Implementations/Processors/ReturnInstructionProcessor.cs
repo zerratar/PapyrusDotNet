@@ -89,7 +89,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     {
                         TypeName = StringExtensions.Ref(typeName, mainInstructionProcessor.PapyrusAssembly),
                         Value = newValue,
-                        ValueType = Utility.GetPapyrusValueType(typeName)
+                        ValueType = Utility.GetPapyrusPrimitiveType(typeName)
                     };
                     {
                         output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return, papyrusVariableReference));

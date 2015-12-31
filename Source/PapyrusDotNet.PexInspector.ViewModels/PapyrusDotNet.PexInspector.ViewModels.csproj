@@ -68,6 +68,7 @@
     <Compile Include="DialogResult.cs" />
     <Compile Include="Extensions\PapyrusOpCodeExtensions.cs" />
     <Compile Include="Implementations\OpCodeArgumentDescription.cs" />
+    <Compile Include="Implementations\OpCodeConstraint.cs" />
     <Compile Include="Implementations\OpCodeDescription.cs" />
     <Compile Include="Implementations\OpCodeRef.cs" />
     <Compile Include="Implementations\OpCodeValueTypes.cs" />

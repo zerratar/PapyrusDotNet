@@ -21,19 +21,21 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Implementations
                 var opcodes = ie.Attribute("OpCode").Value;
                 var opcodeToAdd = opcodes.Split(',');
 
-                opcodeToAdd.ForEach(i => result.Instructions.Add(ParseOpCodeDescription(i, ie)));
+                opcodeToAdd.ForEach(i => result.Instructions.Add(ParseOpCodeDescription(i, ie, result)));
             }
 
             return result;
         }
 
-        private static OpCodeDescription ParseOpCodeDescription(string opcode, XElement ie)
+        private static OpCodeDescription ParseOpCodeDescription(string opcode, XElement ie, OpCodeDescriptionDefinition definiton)
         {
             var i = new OpCodeDescription();
             i.OpCode =
                 Enum.GetValues(typeof(PapyrusOpCodes))
                     .Cast<PapyrusOpCodes>()
                     .FirstOrDefault(op => op.ToString().ToLower() == opcode.ToLower());
+
+            i.Definition = definiton;
 
             var args = ie.Element("Arguments")?.Elements("Argument");
 

@@ -7,16 +7,16 @@
   <Instruction OpCode="Iadd,Isub,Idiv,Imul,Imod">
     <Arguments>
       <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" Constraint="Integer"/>
-      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" Constraint="Integer,Float"/>
-      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" Constraint="Integer,Float"/>
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" Constraint="Integer"/>
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" Constraint="Integer"/>
     </Arguments>
     <OperandArguments />
   </Instruction>
   <Instruction OpCode="Fdiv,Fadd,Fsub,Fmul">
     <Arguments>
-      <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" Constraint="Integer,Float"/>
-      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" Constraint="Integer,Float"/>
-      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" Constraint="Integer,Float"/>
+      <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" Constraint="Float"/>
+      <Argument Index="1" Alias="Value1" Description="Reference or Constant: Value 1" ValueType="ReferenceOrConstant" Constraint="Float"/>
+      <Argument Index="2" Alias="Value2" Description="Reference or Constant: Value 2" ValueType="ReferenceOrConstant" Constraint="Float"/>
     </Arguments>
     <OperandArguments />
   </Instruction>
@@ -175,7 +175,7 @@
     <Arguments>
       <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
       <Argument Index="1" Alias="Array" Description="Reference: Array Variable" ValueType="Reference" />
-      <Argument Index="2" Alias="Index" Description="Reference or Constant: Index" ValueType="ReferenceOrConstant" Constraint="Integer,Float"/>
+      <Argument Index="2" Alias="Index" Description="Reference or Constant: Index" ValueType="ReferenceOrConstant" Constraint="Integer"/>
     </Arguments>
     <OperandArguments />
   </Instruction>
@@ -183,7 +183,7 @@
     <Arguments>
       <Argument Index="0" Alias="Array" Description="Reference: Array Variable" ValueType="Reference" />
       <Argument Index="1" Alias="Value" Description="Reference or Constant: Value" ValueType="ReferenceOrConstant" />
-      <Argument Index="2" Alias="Index" Description="Reference or Constant: Index" ValueType="ReferenceOrConstant" Constraint="Integer,Float"/>
+      <Argument Index="2" Alias="Index" Description="Reference or Constant: Index" ValueType="ReferenceOrConstant" Constraint="Integer"/>
     </Arguments>
     <OperandArguments />
   </Instruction>
@@ -214,7 +214,7 @@
   <Instruction OpCode="Assign">
     <Arguments>
       <Argument Index="0" Alias="Destination" Description="Reference: Destination" ValueType="Reference" />
-      <Argument Index="1" Alias="Value" Description="Reference or Constant: Value" ValueType="ReferenceOrConstant" />
+      <Argument Index="1" Alias="Value" Description="Reference or Constant: Value" ValueType="ReferenceOrConstant" Constraint="Value0" />
     </Arguments>
     <OperandArguments />
   </Instruction>

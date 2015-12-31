@@ -7,14 +7,4 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Implementations
         Method,
         Instruction
     }
-
-    public enum OpCodeConstraint
-    {
-        NoConstraints,
-        None,
-        Integer,
-        Float,
-        Boolean,
-        String
-    }
 }

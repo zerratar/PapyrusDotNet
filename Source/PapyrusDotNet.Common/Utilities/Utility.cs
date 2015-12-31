@@ -354,7 +354,7 @@ namespace PapyrusDotNet.Common.Utilities
             return false;
         }
 
-        public static PapyrusPrimitiveType GetPapyrusValueType(string type)
+        public static PapyrusPrimitiveType GetPapyrusPrimitiveType(string type)
         {
             var s = type.ToLower();
             if (s.StartsWith("none") || s.StartsWith("void"))
@@ -411,14 +411,14 @@ namespace PapyrusDotNet.Common.Utilities
         {
             var typeName = GetPapyrusReturnType(type.FullName);
 
-            return GetPapyrusValueType(typeName);
+            return GetPapyrusPrimitiveType(typeName);
         }
 
         public static PapyrusPrimitiveType GetPrimitiveTypeFromType(Type type)
         {
             var typeName = GetPapyrusReturnType(type.FullName);
 
-            return GetPapyrusValueType(typeName);
+            return GetPapyrusPrimitiveType(typeName);
         }
 
         public static PapyrusPrimitiveType GetPrimitiveTypeFromValue(object val)
@@ -429,7 +429,7 @@ namespace PapyrusDotNet.Common.Utilities
 
             var typeName = GetPapyrusReturnType(type.FullName);
 
-            return GetPapyrusValueType(typeName);
+            return GetPapyrusPrimitiveType(typeName);
         }
 
         public static string PapyrusValueTypeToString(PapyrusPrimitiveType valueType)

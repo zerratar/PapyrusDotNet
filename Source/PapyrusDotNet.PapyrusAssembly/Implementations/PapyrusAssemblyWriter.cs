@@ -126,7 +126,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             pexWriter.Write((short)method.Body.Variables.Count);
             foreach (var variable in method.Body.Variables)
                 WriteVariable(variable);
-            
+
             pexWriter.Write((short)method.Body.Instructions.ToArray().Count(i => !i.TemporarilyInstruction));
             foreach (var instruction in method.Body.Instructions)
             {
@@ -248,14 +248,18 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                             var value = (byte)((bool)fieldVariable.Value ? 1 : 0);
                             pexWriter.Write(value);
                         }
-                        else pexWriter.Write((byte)fieldVariable.Value);
+                        else
+                        {
+                            var val = fieldVariable.Value.ToString().ToLower();
+                            pexWriter.Write((byte)(val == "true" || val == "1" ? 1 : 0));
+                        };
                     }
                     break;
                 case PapyrusPrimitiveType.Float:
                     if (fieldVariable.Value is double)
                         pexWriter.Write((float)(double)fieldVariable.Value);
                     else
-                        pexWriter.Write((float)fieldVariable.Value);
+                        pexWriter.Write(float.Parse(fieldVariable.Value.ToString()));
                     break;
                 case PapyrusPrimitiveType.Integer:
 #warning TODO: The value to write should NEVER need to be parsed.

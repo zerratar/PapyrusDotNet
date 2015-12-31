@@ -94,7 +94,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void AddOpArg()
         {
-            var dialog = new PapyrusReferenceAndConstantValueViewModel(loadedAssemblies, currentType, currentMethod, null);
+            var dialog = new PapyrusReferenceAndConstantValueViewModel(loadedAssemblies, currentType, currentMethod, null, null);
             var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
             {
@@ -105,7 +105,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void EditOpArg()
         {
-            var dialog = new PapyrusReferenceAndConstantValueViewModel(loadedAssemblies, currentType, currentMethod, null);
+            var dialog = new PapyrusReferenceAndConstantValueViewModel(loadedAssemblies, currentType, currentMethod, null, null);
             var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
             {
@@ -142,7 +142,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private PapyrusVariableReference UpdateOperandArgument(PapyrusReferenceAndConstantValueViewModel dialog, ref PapyrusVariableReference papyrusVariableReference)
         {
             var asm = currentType.Assembly;
-            var targetType = Utility.GetPapyrusValueType(Utility.GetPapyrusReturnType(dialog.SelectedTypeName));
+            var targetType = Utility.GetPapyrusPrimitiveType(Utility.GetPapyrusReturnType(dialog.SelectedTypeName));
             if (dialog.SelectedReferenceValue != null)
             {
                 var paramRef = dialog.SelectedReferenceValue as PapyrusParameterDefinition;

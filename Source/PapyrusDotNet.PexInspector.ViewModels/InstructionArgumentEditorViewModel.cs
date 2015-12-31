@@ -54,6 +54,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 maxArgCount = this.desc.Arguments.Count;
                 Arguments = new object[maxArgCount];
+                ArgumentTypes = new PapyrusPrimitiveType[maxArgCount];
             }
 
             if (currentInstruction != null)
@@ -91,16 +92,20 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 if (currentInstruction.OpCode == PapyrusOpCodes.Jmp)
                 {
                     toArray[0] = currentInstruction.Operand;
+                    ArgumentTypes[0] = PapyrusPrimitiveType.Integer;
                 }
                 else if (currentInstruction.OpCode == PapyrusOpCodes.Jmpt || currentInstruction.OpCode == PapyrusOpCodes.Jmpf)
                 {
                     toArray[1] = currentInstruction.Operand;
+                    ArgumentTypes[1] = PapyrusPrimitiveType.Integer;
                 }
                 else if (currentInstruction.OpCode == PapyrusOpCodes.Callmethod)
                 {
                     if (!(currentInstruction.Operand is string))
                     {
                         toArray[0] = currentInstruction.Operand;
+
+                        ArgumentTypes[0] = PapyrusPrimitiveType.String;
                     }
                 }
                 // --- We most likely won't have a operand for Callstatic.
@@ -113,6 +118,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     if (!(currentInstruction.Operand is string))
                     {
                         toArray[1] = currentInstruction.Operand;
+
+                        ArgumentTypes[1] = PapyrusPrimitiveType.String;
                     }
                 }
             }
@@ -195,26 +202,35 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private string GetStringRepresentation(object o)
         {
+            var i = Array.IndexOf(Arguments, o);
             var inst = o as PapyrusInstruction;
             if (inst != null)
             {
+                ArgumentTypes[i] = PapyrusPrimitiveType.Integer;
                 return "L_" + inst.Offset.ToString("000") + ": " + inst.OpCode;
             }
             var methodRef = o as PapyrusMethodDefinition;
             if (methodRef != null)
             {
+                ArgumentTypes[i] = PapyrusPrimitiveType.String;
                 return methodRef.Name.Value + GetParameterString(methodRef.Parameters) + " : " +
                        methodRef.ReturnTypeName.Value;
             }
             var varRef = o as PapyrusVariableReference;
             if (varRef != null)
             {
+                var tp = varRef.TypeName?.Value;
+                if (tp != null)
+                    ArgumentTypes[i] = Utility.GetPapyrusPrimitiveType(tp);
+                else
+                    ArgumentTypes[i] = varRef.ValueType;
                 return (varRef.Value ?? varRef.Name?.Value)?.ToString();
             }
 
             var fieldRef = o as PapyrusFieldDefinition;
             if (fieldRef != null)
             {
+                ArgumentTypes[i] = Utility.GetPapyrusPrimitiveType(fieldRef.TypeName);
                 return fieldRef.Name.Value;
             }
 
@@ -230,6 +246,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         }
 
         public object[] Arguments = new object[5];
+
+        public PapyrusPrimitiveType[] ArgumentTypes = new PapyrusPrimitiveType[5];
 
         private void SelectArgument0()
         {
@@ -266,11 +284,22 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private PapyrusVariableReference ToPapyrusVariableRef(object arg)
         {
             if (arg == null) return null;
-
+            var i = Array.IndexOf(Arguments, arg);
             if (arg is PapyrusVariableReference)
-                return arg as PapyrusVariableReference;
+            {
+                var varRef = arg as PapyrusVariableReference;
+
+                var tp = varRef.TypeName?.Value;
+                if (tp != null)
+                    ArgumentTypes[i] = Utility.GetPapyrusPrimitiveType(tp);
+                else
+                    ArgumentTypes[i] = varRef.ValueType;
+
+                return varRef;
+            }
             else if (arg is PapyrusMethodDefinition)
             {
+                ArgumentTypes[i] = PapyrusPrimitiveType.Reference;
                 var m = arg as PapyrusMethodDefinition;
                 Operand = arg;
                 return new PapyrusVariableReference()
@@ -282,6 +311,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             else if (arg is PapyrusParameterDefinition)
             {
                 var m = arg as PapyrusParameterDefinition;
+                ArgumentTypes[i] = Utility.GetPapyrusPrimitiveType(m.TypeName.Value);
                 return new PapyrusVariableReference()
                 {
                     Value = m.Name.Value,
@@ -290,7 +320,9 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
             else if (arg is PapyrusFieldDefinition)
             {
+
                 var m = arg as PapyrusFieldDefinition;
+                ArgumentTypes[i] = Utility.GetPapyrusPrimitiveType(m.TypeName);// m.FieldVariable?.ValueType ?? PapyrusPrimitiveType.Reference;
                 return new PapyrusVariableReference()
                 {
                     Value = m.Name.Value,
@@ -301,6 +333,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 var m = arg as PapyrusInstruction;
                 Operand = arg;
+                ArgumentTypes[i] = PapyrusPrimitiveType.Integer;
                 return new PapyrusVariableReference()
                 {
                     Value = currentInstruction.Offset + m.Offset,
@@ -309,10 +342,12 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
             else
             {
+                var valType = Utility.GetPrimitiveTypeFromValue(arg);
+                ArgumentTypes[i] = valType;
                 return new PapyrusVariableReference()
                 {
                     Value = arg,
-                    ValueType = Utility.GetPrimitiveTypeFromValue(arg)
+                    ValueType = valType
                 };
             }
         }
@@ -391,11 +426,13 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 }
                 else
                 {
-                    var dialog = new PapyrusReferenceAndConstantValueViewModel(loadedAssemblies, currentType, currentMethod, d);
+                    UpdateArgumentConstraintTypes();
+
+                    var dialog = new PapyrusReferenceAndConstantValueViewModel(loadedAssemblies, currentType, currentMethod, d, ArgumentTypes);
                     var result = dialogService.ShowDialog(dialog);
                     if (result == DialogResult.OK)
                     {
-                        if (dialog.SelectedItem == null)
+                        if (dialog.SelectedConstantValue == null)
                         {
                             var name = dialog.SelectedReferenceName;
                             Arguments[d.Index] = CreateReferenceFromName(name);
@@ -408,6 +445,52 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 }
             }
             UpdateArguments();
+        }
+
+        private void UpdateArgumentConstraintTypes()
+        {
+            for (var i = 0; i < ArgumentTypes.Length; i++)
+            {
+                if (ArgumentTypes[i] == PapyrusPrimitiveType.Reference)
+                {
+                    var arg = Arguments[i] as PapyrusVariableReference;
+                    if (arg != null)
+                    {
+                        var tomatch = arg.Name?.Value;
+                        if (string.IsNullOrEmpty(tomatch))
+                            tomatch = arg.Value.ToString();
+                        tomatch = tomatch.ToLower();
+                        var m = currentMethod;
+                        var t = currentType;
+                        if (m != null && t != null)
+                        {
+                            var targetVar =
+                            m.GetVariables().FirstOrDefault(v => v.Name.Value.ToLower() == tomatch);
+                            if (targetVar != null)
+                            {
+                                ArgumentTypes[i] = Utility.GetPapyrusPrimitiveType(targetVar.TypeName.Value);
+                                continue;
+                            }
+
+                            var targetField =
+                            t.Fields.FirstOrDefault(v => v.Name.Value.ToLower() == tomatch);
+                            if (targetField != null)
+                            {
+                                ArgumentTypes[i] = Utility.GetPapyrusPrimitiveType(targetField.TypeName);
+                                continue;
+                            }
+
+                            var targetParam =
+                            m.Parameters.FirstOrDefault(v => v.Name.Value.ToLower() == tomatch);
+                            if (targetParam != null)
+                            {
+                                ArgumentTypes[i] = Utility.GetPapyrusPrimitiveType(targetParam.TypeName.Value);
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public PapyrusVariableReference CreateReferenceFromName(string name)

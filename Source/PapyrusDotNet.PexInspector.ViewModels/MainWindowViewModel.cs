@@ -22,7 +22,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         public Dictionary<string, string> LoadedAssemblyNames = new Dictionary<string, string>();
         public List<string> LoadedAssemblyFolders = new List<string>();
 
-        public MainWindowViewModel(Interfaces.IDialogService dialogService)
+        public MainWindowViewModel(Interfaces.IDialogService dialogService, string fileToOpen = null)
         {
             this.dialogService = dialogService;
             ExitCommand = new RelayCommand(Exit);
@@ -54,6 +54,11 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             TargetGameName = "Unknown";
             SelectedMemberFlags = "<none>";
             SelectedMemberName = new ObservableCollection<Inline>(new[] { new Run("Nothing Selected") });
+
+            if (fileToOpen != null)
+            {
+                LoadPex(fileToOpen);
+            }
         }
 
         private void ReloadPex(object i)
