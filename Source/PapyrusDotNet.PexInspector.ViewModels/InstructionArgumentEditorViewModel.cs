@@ -295,6 +295,11 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 else
                     ArgumentTypes[i] = varRef.ValueType;
 
+                if (varRef.Value == null && varRef.Name != null && varRef.Name.Value.Length > 0 && varRef.ValueType == PapyrusPrimitiveType.Reference)
+                {
+                    varRef.Value = varRef.Name.Value;
+                }
+
                 return varRef;
             }
             else if (arg is PapyrusMethodDefinition)
