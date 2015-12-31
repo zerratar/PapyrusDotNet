@@ -432,7 +432,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     var result = dialogService.ShowDialog(dialog);
                     if (result == DialogResult.OK)
                     {
-                        if (dialog.SelectedConstantValue == null)
+                        if (dialog.SelectedConstantValue == null && dialog.SelectedReferenceValue == null)
                         {
                             var name = dialog.SelectedReferenceName;
                             Arguments[d.Index] = CreateReferenceFromName(name);

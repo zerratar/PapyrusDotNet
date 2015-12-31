@@ -13,7 +13,7 @@
         xmlns:controls="clr-namespace:PapyrusDotNet.PexInspector.Controls"
         d:DataContext="{x:Static viewModels:MainWindowViewModel.DesignInstance}"
         mc:Ignorable="d"
-        Title="PapyrusDotNet PexInspector - PreAlpha" Height="610" Width="871">
+        Title="PapyrusDotNet PexInspector - v0.1 Alpha" Height="610" Width="871">
     <Window.Resources>
         <converters:PapyrusInstructionDisplayConverter x:Key="PapyrusInstructionDisplayConverter"/>
         <converters:PapyrusInstructionOperandConverter x:Key="PapyrusInstructionOperandConverter"/>
