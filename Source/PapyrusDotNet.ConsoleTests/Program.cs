@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PapyrusDotNet.Common.Utilities;
@@ -76,8 +77,14 @@ namespace PapyrusDotNet.ConsoleTests
             //};
         }
 
+        private static void ReadDelegatesPex()
+        {
+            var asm = PapyrusAssemblyDefinition.ReadAssembly(@"C:\PapyrusDotNet\Output\DelegateTests.pex");
+        }
+
         private static void Main(string[] args)
         {
+            //ReadDelegatesPex();
 
             //DecompileAllFallout4Scripts();
 
@@ -90,13 +97,13 @@ namespace PapyrusDotNet.ConsoleTests
                 targetFolder = "c" + dir;
             }
 
-//            var provider = new Mono.Cecil.Pdb.PdbReaderProvider();
+            //            var provider = new Mono.Cecil.Pdb.PdbReaderProvider();
 
-//            provider.GetSymbolReader()
+            //            provider.GetSymbolReader()
 
-//            PdbFactory factory = new PdbFactory();
-//            ISymbolReader reader =
-//factory.CreateReader(assdef.MainModule, ass_file);
+            //            PdbFactory factory = new PdbFactory();
+            //            ISymbolReader reader =
+            //factory.CreateReader(assdef.MainModule, ass_file);
 
             var readerParameters = new ReaderParameters { ReadSymbols = true };
 
@@ -104,7 +111,8 @@ namespace PapyrusDotNet.ConsoleTests
             var assemblyDefinition = AssemblyDefinition.ReadAssembly(
                 targetFolder + "fallout4example.dll", readerParameters);
 
-            assemblyDefinition.MainModule.ReadSymbols();
+            try { assemblyDefinition.MainModule.ReadSymbols(); }
+            catch { }
 
             var value = converter.Convert(
                 new ClrAssemblyInput(
@@ -128,14 +136,10 @@ namespace PapyrusDotNet.ConsoleTests
             var asm = value.Assemblies;
 
             var defs = new List<PapyrusAssemblyDefinition>(pexAssemblies);
-            defs.AddRange(asm);
-
-            var clrNamespaceResolver = new NamespaceResolver();
-            var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
-                new TypeReferenceResolver(clrNamespaceResolver, new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUiRenderer()))));
 
 
-            var output = csharpConverter.Convert(new PapyrusAssemblyInput(defs.ToArray())) as MultiCSharpOutput;
+
+
 
             var targetOutputFolder = "c:\\PapyrusDotNet\\Output";
             if (!Directory.Exists(targetOutputFolder))
@@ -143,8 +147,22 @@ namespace PapyrusDotNet.ConsoleTests
                 Directory.CreateDirectory(targetOutputFolder);
             }
 
-            output.Save(targetOutputFolder);
             value.Save(targetOutputFolder);
+
+            var scripts = Directory.GetFiles(targetOutputFolder, "*.pex").Select(PapyrusAssemblyDefinition.ReadAssembly);
+
+            defs.AddRange(scripts);
+
+            //defs.AddRange(asm);
+
+            var clrNamespaceResolver = new NamespaceResolver();
+            var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
+                new TypeReferenceResolver(clrNamespaceResolver, new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUiRenderer()))));
+
+            var output = csharpConverter.Convert(new PapyrusAssemblyInput(defs.ToArray())) as MultiCSharpOutput;
+
+            output.Save(targetOutputFolder);
+
 
 
 

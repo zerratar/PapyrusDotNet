@@ -972,6 +972,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
         public PapyrusVariableReference CreateVariableReference(PapyrusPrimitiveType papyrusPrimitiveType, object value)
         {
+            if (value is string)
+            {
+                // Ensure we add the string value to the stringtable.
+                value = value.ToString().Ref(PapyrusAssembly).Value; 
+            }
             return new PapyrusVariableReference
             {
                 Value = value,

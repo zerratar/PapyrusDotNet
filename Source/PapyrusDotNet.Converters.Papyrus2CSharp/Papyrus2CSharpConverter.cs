@@ -209,7 +209,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
             {
                 if (method.HasBody)
                 {
-                    var debug = asm.DebugInfo.MethodDescriptions.FirstOrDefault(m => m.Name.Value == method.Name.Value);
+                    var debug = asm.DebugInfo.MethodDescriptions.FirstOrDefault(m => method.Name != null && m.Name.Value == method.Name.Value);
                     if (debug != null)
                     {
                         AppendLine("// DEBUG LINE NUMBER: " + string.Join(",", debug.BodyLineNumbers.ToArray()), indent + 1);
@@ -316,6 +316,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                     }
                 case PapyrusOpCodes.Callstatic:
                     {
+                        var comment = WritePapyrusInstruction(i) + Environment.NewLine;
                         var val = string.Join(",", i.Arguments.Skip(2).Take(i.Arguments.Count - 3).Select(GetArgumentValue));
                         var location = GetArgumentValue(i.Arguments[0]);
                         var functionName = GetArgumentValue(i.Arguments[1]);
@@ -331,7 +332,7 @@ namespace PapyrusDotNet.Converters.Papyrus2CSharp
                                 assignee = string.Empty;
                             }
                         }
-                        return assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");";
+                        return comment + assignee + (location + ".").Replace("self.", "") + functionName + "(" + args + ");";
 
                     }
                 case PapyrusOpCodes.Callmethod:

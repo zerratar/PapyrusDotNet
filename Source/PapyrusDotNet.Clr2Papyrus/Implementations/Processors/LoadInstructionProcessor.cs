@@ -15,6 +15,7 @@
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
@@ -101,7 +102,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             {
                 // Often used for delegates or Action/func parameters, when loading a reference pointer to a method and pushing it to the stack.
                 // To maintain the evaluation stack, this could add a dummy item, but for now im not going to do so.
-
             }
 
             if (InstructionHelper.IsLoadLength(instruction.OpCode.Code))
@@ -112,7 +112,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     var val = mainInstructionProcessor.EvaluationStack.Pop();
                     if (val.TypeName.EndsWith("[]"))
                     {
-                        if (val.Value is PapyrusVariableReference)
+                        if (val.Value is PapyrusPropertyDefinition)
+                        {
+                            // for now, so if this exception is thrown, i will have to remember I have to fix it.
+                            throw new NotImplementedException();
+                        }
+
+                        if (val.Value is PapyrusVariableReference || val.Value is PapyrusFieldDefinition || val.Value is PapyrusParameterDefinition)
                         {
                             int variableIndex;
 

@@ -1,4 +1,4 @@
-#if false
+#if true
 using PapyrusDotNet.Core;
 
 namespace Fallout4Example

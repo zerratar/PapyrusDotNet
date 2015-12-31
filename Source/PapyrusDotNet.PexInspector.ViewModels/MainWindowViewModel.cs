@@ -663,6 +663,9 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private void SelectMember(PapyrusViewModel item)
         {
             selectedNode = item;
+            if (item == null) return;
+
+
             BuildMemberDisplay(item.Item);
             var type = item.Item as PapyrusTypeDefinition;
             if (type != null)
