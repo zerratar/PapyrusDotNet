@@ -41,7 +41,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         public PapyrusInstructionEditorViewModel(IDialogService dialogService, List<PapyrusAssemblyDefinition> loadedAssemblies, PapyrusAssemblyDefinition loadedAssembly, PapyrusTypeDefinition currentType, PapyrusMethodDefinition currentMethod, PapyrusInstruction instruction = null)
         {
             opCodeDescriptionReader = new OpCodeDescriptionReader();
-
+            
             if (System.IO.File.Exists("OpCodeDescriptions.xml"))
                 opCodeDescriptionDefinition = opCodeDescriptionReader.Read("OpCodeDescriptions.xml");
             else if (System.IO.File.Exists(
@@ -120,7 +120,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 OperandArguments.Insert(i, papyrusVariableReference);
 
                 SelectedOperandArgument = papyrusVariableReference;
-                
+
                 //// FFS! Just update? But nooo.. ObservableCollection refresh only triggers on remove/add :p
                 //var dummy = new PapyrusVariableReference();
                 //OperandArguments.Add(dummy);
@@ -176,8 +176,13 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 {
                     return CreateReferenceFromName(dialog.SelectedReferenceName);
                 }
+                var val = dialog.SelectedConstantValue;
+                if (val is string)
+                {
+                    val = val.ToString().Ref(asm).Value;
+                }
 
-                papyrusVariableReference.Value = dialog.SelectedConstantValue;
+                papyrusVariableReference.Value = val;
                 papyrusVariableReference.ValueType = targetType;
             }
             return papyrusVariableReference;

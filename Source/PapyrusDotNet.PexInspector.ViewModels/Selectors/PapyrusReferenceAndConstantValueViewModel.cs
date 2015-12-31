@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using GalaSoft.MvvmLight;
 using PapyrusDotNet.PapyrusAssembly;
+using PapyrusDotNet.PapyrusAssembly.Extensions;
 using PapyrusDotNet.PexInspector.ViewModels.Implementations;
 
 namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
@@ -181,7 +182,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                         {
                             SelectedItem = new PapyrusVariableReference
                             {
-                                Value = "self",
+                                Value = "self".Ref(currentType.Assembly).Value,
                                 ValueType = PapyrusPrimitiveType.Reference
                             };
                         }
@@ -197,7 +198,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                         {
                             SelectedItem = new PapyrusVariableReference
                             {
-                                Value = "SelfRef",
+                                Value = "SelfRef".Ref(currentType.Assembly).Value,
                                 ValueType = PapyrusPrimitiveType.Reference
                             };
                         }

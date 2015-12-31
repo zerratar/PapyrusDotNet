@@ -507,6 +507,18 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             {
                 ProcessInstructions(papyrusAssemblyCollection, delegatePairDef, method, asm, papyrusType, m, options);
 
+                if (papyrusReturnType == "None")
+                {
+                    if (m.Body.Variables.All(n => n.Name.Value.ToLower() != "::nonevar"))
+                    {
+                        var nonevar = "::NoneVar".Ref(asm);
+                        m.Body.Variables.Add(new PapyrusVariableReference(nonevar, "None".Ref(asm))
+                        {
+                            Value = nonevar.Value,
+                            ValueType = PapyrusPrimitiveType.Reference
+                        });
+                    }
+                }
                 m.Body.Instructions.RecalculateOffsets();
             }
 

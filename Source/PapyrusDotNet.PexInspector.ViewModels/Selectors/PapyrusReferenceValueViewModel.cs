@@ -98,7 +98,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 {
                     SelectedReference = new PapyrusVariableReference
                     {
-                        Value = "Self",
+                        Value = "Self".Ref(currentType.Assembly).Value,
                         ValueType = PapyrusPrimitiveType.Reference
                     };
                 }
@@ -110,7 +110,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 {
                     SelectedReference = new PapyrusVariableReference
                     {
-                        Value = "SelfRef",
+                        Value = "SelfRef".Ref(currentType.Assembly).Value,
                         ValueType = PapyrusPrimitiveType.Reference
                     };
                 }

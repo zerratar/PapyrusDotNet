@@ -169,7 +169,7 @@
                                 <DataGridTemplateColumn  Header="Arguments">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
-                                            <TextBlock Text="{Binding Arguments, Converter={StaticResource PapyrusArrayDisplayConverter}}" VerticalAlignment="Center" Margin="5,0" />
+                                            <controls:BindableTextBlock InlineList="{Binding Arguments, Converter={StaticResource PapyrusArrayDisplayConverter}}" VerticalAlignment="Center" Margin="5,0" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -177,7 +177,7 @@
                                 <DataGridTemplateColumn  Header="Operand Arguments">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
-                                            <TextBlock Text="{Binding OperandArguments, Converter={StaticResource PapyrusArrayDisplayConverter}}" VerticalAlignment="Center" Margin="5,0" />
+                                            <controls:BindableTextBlock InlineList="{Binding OperandArguments, Converter={StaticResource PapyrusArrayDisplayConverter}}" VerticalAlignment="Center" Margin="5,0" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>

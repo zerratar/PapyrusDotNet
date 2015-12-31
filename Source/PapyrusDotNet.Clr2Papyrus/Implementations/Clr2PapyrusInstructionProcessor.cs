@@ -752,8 +752,6 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 else
                     targetVar = "::NoneVar";
             }
-
-
             return targetVar;
         }
 

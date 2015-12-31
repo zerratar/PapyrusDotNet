@@ -219,6 +219,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     selectedMethod.Body.Variables.Add(new PapyrusVariableReference
                     {
                         Name = varName.Ref(asm),
+                        Value = varName,
                         TypeName = typeName.ToString().Ref(asm),
                         ValueType = PapyrusPrimitiveType.Reference
                     });
@@ -228,6 +229,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     selectedMethod.Body.Variables.Add(new PapyrusVariableReference
                     {
                         Name = varName.Ref(asm),
+                        Value = varName,
                         TypeName = typeName.ToString().Ref(asm),
                         ValueType = PapyrusPrimitiveType.Reference
                     });
