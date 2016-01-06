@@ -1,4 +1,3 @@
-#if true
 using PapyrusDotNet.Core;
 
 namespace Fallout4Example
@@ -51,4 +50,3 @@ namespace Fallout4Example
         }
     }
 }
-#endif

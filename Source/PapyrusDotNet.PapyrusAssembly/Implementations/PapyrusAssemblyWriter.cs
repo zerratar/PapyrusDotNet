@@ -224,7 +224,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             pexWriter.Write(field.TypeName);
             pexWriter.Write(field.UserFlags);
 
-            WriteValueReference(field.FieldVariable);
+            WriteValueReference(field.DefaultValue);
 
             pexWriter.Write(field.Flags);
         }

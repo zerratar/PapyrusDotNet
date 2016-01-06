@@ -23,7 +23,7 @@ using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusFieldDefinition : PapyrusFieldReference
+    public class PapyrusFieldDefinition : PapyrusMemberReference
     {
         public readonly PapyrusAssemblyDefinition DeclaringAssembly;
 
@@ -36,11 +36,18 @@ namespace PapyrusDotNet.PapyrusAssembly
         public PapyrusFieldDefinition(PapyrusAssemblyDefinition declaringAssembly, PapyrusTypeDefinition declaringType, string name, string typeName)
             : this(declaringAssembly, declaringType)
         {
+
+
             name = "::" + name.Replace('<', '_').Replace('>', '_');
             name = name.Replace("::::", "::");
+
+            if (declaringType.IsStruct)
+                name = name.Replace(":", "");
             Name = name.Ref(declaringAssembly);
             TypeName = typeName;
         }
+
+        public PapyrusVariableReference DefaultValue { get; set; }
 
         public PapyrusStringRef Name { get; set; }
         public int UserFlags { get; set; }

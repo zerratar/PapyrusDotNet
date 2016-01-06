@@ -398,7 +398,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                 var nameRef = papyrusFriendlyName.Ref(pex);
                 var papyrusFieldDefinition = new PapyrusFieldDefinition(pex, null, fieldName, fieldType)
                 {
-                    FieldVariable = new PapyrusVariableReference()
+                    DefaultValue = new PapyrusVariableReference()
                     {
                         Name = nameRef,
                         TypeName = fieldType.Ref(pex),

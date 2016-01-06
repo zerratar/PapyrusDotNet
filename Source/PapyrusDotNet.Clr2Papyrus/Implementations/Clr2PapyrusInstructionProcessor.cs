@@ -907,9 +907,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 {
                     args.Add(varRef);
                 }
-                else if (fieldDef != null && fieldDef.FieldVariable != null)
+                else if (fieldDef != null && fieldDef.DefaultValue != null)
                 {
-                    args.Add(fieldDef.FieldVariable);
+                    args.Add(fieldDef.DefaultValue);
                 }
                 else if (paramDef != null)
                 {

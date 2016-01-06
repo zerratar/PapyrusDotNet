@@ -186,8 +186,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             {
                                 var varRef = obj.Value as PapyrusVariableReference;
                                 // definedField.Value = varRef.Value;
-                                definedField.FieldVariable = varRef;
-                                definedField.FieldVariable.ValueType = PapyrusPrimitiveType.Reference;
+                                definedField.DefaultValue = varRef;
+                                definedField.DefaultValue.ValueType = PapyrusPrimitiveType.Reference;
                                 // CreatePapyrusInstruction(PapyrusOpCode.Assign, definedField.Name.Value, varRef.Name.Value)                                
                                 if (varRef.IsDelegateReference)
                                 {
@@ -197,7 +197,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             }
                             //definedField.FieldVariable.Value =
                             //    Utility.TypeValueConvert(definedField.FieldVariable.TypeName.Value, obj.Value);
-                            var targetValue = valueTypeConverter.Convert(definedField.FieldVariable.TypeName.Value,
+                            var targetValue = valueTypeConverter.Convert(definedField.DefaultValue.TypeName.Value,
                                 obj.Value);
 
                             return ArrayUtility.ArrayOf(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Assign, definedField, targetValue));
@@ -238,7 +238,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                         if (heapObj.Value is PapyrusFieldDefinition)
                         {
-                            heapObj.Value = (heapObj.Value as PapyrusFieldDefinition).FieldVariable;
+                            heapObj.Value = (heapObj.Value as PapyrusFieldDefinition).DefaultValue;
                         }
                         if (heapObj.Value is PapyrusVariableReference)
                         {

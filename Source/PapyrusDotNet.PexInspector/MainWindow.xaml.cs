@@ -2,6 +2,8 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using GalaSoft.MvvmLight.Command;
+using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PexInspector.Implementations;
 using PapyrusDotNet.PexInspector.ViewModels;
 
@@ -16,11 +18,17 @@ namespace PapyrusDotNet.PexInspector
         {
             InitializeComponent();
 
-            DataContext = new MainWindowViewModel(new DialogService(), App.OpenFile);
+            viewModel = new MainWindowViewModel(new DialogService(), App.OpenFile);
+            viewModel.SelectedContentIndexChanged += (sender, args) =>
+            {
+                AnchorablePane.SelectedContentIndex = viewModel.SelectedContentIndex;
+            };
+            DataContext = viewModel;
         }
 
         bool userInvokedBringIntoView = false;
         private double lastHorizontalOffset;
+        private MainWindowViewModel viewModel;
 
         private void TreeViewItem_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
         {
@@ -150,9 +158,23 @@ namespace PapyrusDotNet.PexInspector
             var vm = DataContext as MainWindowViewModel;
             if (vm != null)
             {
-                vm.ReloadPexCommand.RaiseCanExecuteChanged();
-                vm.SavePexAsCommand.RaiseCanExecuteChanged();
-                vm.SavePexCommand.RaiseCanExecuteChanged();
+                vm.RaiseCommandsCanExecute();
+            }
+        }
+
+        private void ToolBar_Loaded(object sender, RoutedEventArgs e)
+        {
+            ToolBar toolBar = sender as ToolBar;
+            var overflowGrid = toolBar.Template.FindName("OverflowGrid", toolBar) as FrameworkElement;
+            if (overflowGrid != null)
+            {
+                overflowGrid.Visibility = Visibility.Collapsed;
+            }
+
+            var mainPanelBorder = toolBar.Template.FindName("MainPanelBorder", toolBar) as FrameworkElement;
+            if (mainPanelBorder != null)
+            {
+                mainPanelBorder.Margin = new Thickness(0);
             }
         }
     }

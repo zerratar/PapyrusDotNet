@@ -23,7 +23,7 @@ using System.Collections.Generic;
 
 namespace PapyrusDotNet.PapyrusAssembly
 {
-    public class PapyrusInstruction
+    public class PapyrusInstruction : PapyrusMemberReference
     {
         public PapyrusInstruction()
         {

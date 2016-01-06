@@ -48,6 +48,49 @@ namespace PapyrusDotNet.PapyrusAssembly
             TypeName = variableTypeName;
         }
 
+        public string GetStringRepresentation()
+        {
+            switch (this.ValueType)
+            {
+                case PapyrusPrimitiveType.Reference:
+                    return this.Value?.ToString();
+                case PapyrusPrimitiveType.String:
+                    {
+                        if (!this.Value.ToString().StartsWith("\""))
+                        {
+                            return "\"" + this.Value + "\"";
+                        }
+                        return this.Value.ToString();
+                    }
+                case PapyrusPrimitiveType.Boolean:
+                    {
+                        if (this.Value != null)
+                        {
+                            return this.Value.Equals(1) ? "true" : "false";
+                        }
+                    }
+                    break;
+                case PapyrusPrimitiveType.Integer:
+                    if (this.Value != null)
+                    {
+                        return ((int)this.Value).ToString();
+                    }
+                    break;
+                case PapyrusPrimitiveType.Float:
+                    if (this.Value != null)
+                    {
+                        return ((float)this.Value).ToString().Replace(",", ".") + "f";
+                    }
+                    break;
+            }
+
+            if (this.Name != null)
+            {
+                return (string)this.Name;
+            }
+            return null;
+        }
+
         public override string ToString()
         {
             string name = Value + "";

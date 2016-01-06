@@ -14,7 +14,6 @@
 //     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
 //  
 //     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
-#if false
 
 #region
 
@@ -90,4 +89,3 @@ namespace Fallout4Example
         }
     }
 }
-#endif

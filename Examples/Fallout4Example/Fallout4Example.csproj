@@ -50,6 +50,7 @@
     <Compile Include="AsIsTests.cs" />
     <Compile Include="DelegateTests.cs" />
     <Compile Include="EnumTests.cs" />
+    <Compile Include="GodMode.cs" />
     <Compile Include="LoopTests.cs" />
     <Compile Include="PropertyGetSetTests.cs" />
     <Compile Include="StructInstructionsTest.cs" />

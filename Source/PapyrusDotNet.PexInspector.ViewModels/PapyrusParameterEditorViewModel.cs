@@ -16,7 +16,16 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             if (this.parameter != null)
             {
                 Name = this.parameter.Name.Value;
-                SelectedType = TypeReferences.FirstOrDefault(t => t.ToString().ToLower() == this.parameter.TypeName.Value.ToLower());
+
+                if (parameter.TypeName.Value.Contains("[]"))
+                    IsArray = true;
+
+                var ft =
+                    parameter.TypeName.Value.ToLower();
+
+                ft = ft.Replace("[]", "");
+
+                SelectedType = TypeReferences.FirstOrDefault(t => t.ToString().ToLower() == ft);
                 if (SelectedType == null)
                     SelectedType = this.parameter.TypeName.Value.ToLower();
             }

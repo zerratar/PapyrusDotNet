@@ -461,5 +461,27 @@ namespace PapyrusDotNet.Common.Utilities
             return typeReference.FullName.ToLower().Equals("system.void")
                    || typeReference.Name.ToLower().Equals("void");
         }
+
+        public static object ConvertToPapyrusValue(string type, object defaultValue)
+        {
+            if (defaultValue == null) return null;
+
+            var val = defaultValue?.ToString();
+            var t = type.ToLower().Trim();
+            switch (t)
+            {
+                case "float":
+                    return float.Parse(val);
+                case "int":
+                    return int.Parse(val);
+                case "bool":
+                    return (byte)((val == "true" || val == "1") ? 1 : 0);
+                case "string":
+                    return val;
+                default:
+                case "none":
+                    return null;
+            }
+        }
     }
 }

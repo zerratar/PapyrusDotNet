@@ -137,6 +137,18 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             set { Set(ref isExpanded, value); }
         }
 
+        public bool IsHierarchyDirty
+        {
+            get
+            {
+                if (IsDirty) return true;
+                if (Parent != null)
+                    return Parent.IsHierarchyDirty;
+
+                return false;
+            }
+        }
+
         public PapyrusViewModel GetTopParent()
         {
             if (Parent == null) return this;

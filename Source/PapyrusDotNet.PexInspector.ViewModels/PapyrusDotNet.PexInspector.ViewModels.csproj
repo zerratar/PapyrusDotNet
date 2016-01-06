@@ -42,6 +42,7 @@
       <HintPath>..\packages\MvvmLightLibs.5.2.0.0\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
       <Private>True</Private>
@@ -79,7 +80,10 @@
     <Compile Include="Implementations\OpCodeDescriptionDefinition.cs" />
     <Compile Include="Implementations\OpCodeDescriptionReader.cs" />
     <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="PapyrusFieldEditorViewModel.cs" />
+    <Compile Include="PapyrusStateEditorViewModel.cs" />
     <Compile Include="PapyrusVariableParameterEditorViewModel.cs" />
+    <Compile Include="Selectors\AboutViewModel.cs" />
     <Compile Include="Selectors\PapyrusConstantValueViewModel.cs" />
     <Compile Include="PapyrusInstructionEditorViewModel.cs" />
     <Compile Include="Selectors\PapyrusInstructionSelectorViewModel.cs" />
@@ -91,6 +95,16 @@
     <Compile Include="PapyrusVariableEditorViewModel.cs" />
     <Compile Include="PapyrusViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tools\FindResultData.cs" />
+    <Compile Include="Tools\FindResult.cs" />
+    <Compile Include="Tools\Interfaces\IFindResult.cs" />
+    <Compile Include="Tools\Interfaces\IPapyrusLocationFinder.cs" />
+    <Compile Include="Tools\Interfaces\IPapyrusItemFinder.cs" />
+    <Compile Include="Tools\Interfaces\IPapyrusReferenceFinder.cs" />
+    <Compile Include="Tools\Interfaces\IPapyrusUsageFinder.cs" />
+    <Compile Include="Tools\PapyrusItemFinder.cs" />
+    <Compile Include="Tools\PapyrusUsageFinder.cs" />
+    <Compile Include="Tools\PapyrusLocationFinder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

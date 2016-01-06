@@ -6,8 +6,9 @@
         xmlns:local="clr-namespace:PapyrusDotNet.PexInspector.Windows"
         xmlns:viewModels="clr-namespace:PapyrusDotNet.PexInspector.ViewModels;assembly=PapyrusDotNet.PexInspector.ViewModels"
         mc:Ignorable="d"
-        Title="Edit Parameter or Variable" Height="213.559" Width="425.212"
-        d:DataContext="{x:Static viewModels:PapyrusVariableParameterEditorViewModel.DesignInstance}">
+        Title="Edit Parameter or Variable" Height="278.011" Width="425.212"
+       >
+    <!--d:DataContext="{x:Static viewModels:PapyrusVariableParameterEditorViewModel.DesignInstance}"-->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="239*"/>
@@ -20,6 +21,11 @@
 
             <TextBlock Text="Type" Margin="0,0,0,5" />
             <ComboBox x:Name="typeRef"  IsEditable="True" ItemsSource="{Binding TypeReferences}" TextBoxBase.TextChanged="TextBoxBase_OnTextChanged"  SelectedItem="{Binding SelectedType}" Margin="0"/>
+
+
+            <TextBlock Text="Is Array" Margin="0,10,0,5" />
+            <CheckBox x:Name="IsArrayVal"  IsChecked="{Binding IsArray}" Margin="0"/>
+
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="20,10">
             <Button Content="OK" Width="72" Margin="2,0,10,0" Background="#FF3498DB" BorderBrush="#FF3498DB" Foreground="White" Click="Button_Click"/>

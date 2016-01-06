@@ -74,12 +74,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                 if (numeratorObject.Value is PapyrusFieldDefinition)
                 {
-                    numeratorObject.Value = (numeratorObject.Value as PapyrusFieldDefinition).FieldVariable;
+                    numeratorObject.Value = (numeratorObject.Value as PapyrusFieldDefinition).DefaultValue;
                 }
 
                 if (denumeratorObject.Value is PapyrusFieldDefinition)
                 {
-                    denumeratorObject.Value = (denumeratorObject.Value as PapyrusFieldDefinition).FieldVariable;
+                    denumeratorObject.Value = (denumeratorObject.Value as PapyrusFieldDefinition).DefaultValue;
                 }
 
                 if (numeratorObject.Value is PapyrusVariableReference)

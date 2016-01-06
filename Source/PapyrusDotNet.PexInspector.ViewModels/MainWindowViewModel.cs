@@ -4,15 +4,19 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using Microsoft.Build.Tasks;
 using Microsoft.Win32;
 using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
 using PapyrusDotNet.Common.Extensions;
+using PapyrusDotNet.PexInspector.ViewModels.Selectors;
+using PapyrusDotNet.PexInspector.ViewModels.Tools;
 
 namespace PapyrusDotNet.PexInspector.ViewModels
 {
@@ -22,48 +26,666 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         public Dictionary<string, string> LoadedAssemblyNames = new Dictionary<string, string>();
         public List<string> LoadedAssemblyFolders = new List<string>();
 
-        public MainWindowViewModel(Interfaces.IDialogService dialogService, string fileToOpen = null)
+        public event EventHandler SelectedContentIndexChanged;
+
+
+        public MainWindowViewModel(Interfaces.IDialogService dialogService, string fileToOpen)
         {
             this.dialogService = dialogService;
-            ExitCommand = new RelayCommand(Exit);
-            OpenPexCommand = new RelayCommand(OpenPex);
-            SavePexCommand = new RelayCommand<object>(SavePex, CanSave);
-            SavePexAsCommand = new RelayCommand<object>(SavePexAs, CanSave);
 
-            ReloadPexCommand = new RelayCommand<object>(ReloadPex, (o) => o != null);
+            // if dialogService == null then this is a design instance :-P
+            if (dialogService != null)
+            {
+                ExitCommand = new RelayCommand(Exit);
+                OpenPexCommand = new RelayCommand(OpenPex);
+                SavePexCommand = new RelayCommand<object>(SavePex, CanSave);
+                SavePexAsCommand = new RelayCommand<object>(SavePexAs, CanSave);
 
-            SelectedMemberCommand = new RelayCommand<PapyrusViewModel>(SelectMember);
+                ReloadPexCommand = new RelayCommand<object>(ReloadPex, (o) => o != null || selectedNode != null);
 
-            InsertAfterCommand = new RelayCommand(InsertAfter, CanInsert);
-            InsertBeforeCommand = new RelayCommand(InsertBefore, CanInsert);
-            EditInstructionCommand = new RelayCommand(EditInstruction, CanInsert);
-            RemoveInstructionCommand = new RelayCommand(RemoveInstruction, CanInsert);
+                EditMemberCommand = new RelayCommand<object>(EditMember, CanEditMember);
 
-            CreateInstructionCommand = new RelayCommand(CreateInstruction, CanCreate);
+                CreatePropertyCommand = new RelayCommand(CreatePropertyItem, () => false /*CanCreateProperty*/);
+
+                CreateFieldCommand = new RelayCommand(CreateFieldItem, CanCreateField);
+
+                CreateStateCommand = new RelayCommand(CreateStateItem, () => (selectedNode != null) && (selectedNode.Item is PapyrusTypeDefinition && (selectedNode.Item as PapyrusTypeDefinition).IsClass));
+
+                CreateMethodCommand = new RelayCommand(CreateMethod, () => false /*() => selectedNode != null && (selectedNode.Item is PapyrusStateDefinition || selectedNode.Item is PapyrusMethodDefinition)*/);
+
+                SelectedMemberCommand = new RelayCommand<PapyrusViewModel>(SelectMember);
+
+                DeleteMemberCommand = new RelayCommand<object>(DeleteMember, CanDeleteMember);
+
+                InsertAfterCommand = new RelayCommand(InsertAfter, CanInsert);
+                InsertBeforeCommand = new RelayCommand(InsertBefore, CanInsert);
+                EditInstructionCommand = new RelayCommand(EditInstruction, CanInsert);
+                RemoveInstructionCommand = new RelayCommand(RemoveInstruction, CanInsert);
+
+                CreateInstructionCommand = new RelayCommand(CreateInstruction, CanCreate);
 
 
-            CreateVariableCommand = new RelayCommand(CreateVariable, CanCreate);
-            EditVariableCommand = new RelayCommand(EditVariable, CanEditVar);
-            DeleteVariableCommand = new RelayCommand(DeleteVariable, CanEditVar);
+                CreateVariableCommand = new RelayCommand(CreateVariable, CanCreate);
+                EditVariableCommand = new RelayCommand(EditVariable, CanEditVar);
+                DeleteVariableCommand = new RelayCommand(DeleteVariable, CanEditVar);
 
 
-            CreateParameterCommand = new RelayCommand(CreateParameter, CanCreate);
-            EditParameterCommand = new RelayCommand(EditParameter, CanEditParameter);
-            DeleteParameterCommand = new RelayCommand(DeleteParameter, CanEditParameter);
+                CreateParameterCommand = new RelayCommand(CreateParameter, CanCreate);
+                EditParameterCommand = new RelayCommand(EditParameter, CanEditParameter);
+                DeleteParameterCommand = new RelayCommand(DeleteParameter, CanEditParameter);
 
+                FindAllUsagesCommand = new RelayCommand<object>(FindAllusages, CanFindUsage);
+                FindAllReferencesCommand = new RelayCommand<object>(FindAllReferences, CanFindReferences);
+
+                OpenAboutCommand = new RelayCommand(OpenAboutWindow);
+
+                if (fileToOpen != null)
+                {
+                    LoadPex(fileToOpen);
+                }
+            }
             TargetGameName = "Unknown";
             SelectedMemberFlags = "<none>";
             SelectedMemberName = new ObservableCollection<Inline>(new[] { new Run("Nothing Selected") });
 
-            if (fileToOpen != null)
+        }
+
+        private bool CanCreateField()
+        {
+            return (selectedNode != null) &&
+                   (selectedNode.Item is PapyrusPropertyDefinition || selectedNode.Item is PapyrusFieldDefinition ||
+                    (selectedNode.Item is PapyrusTypeDefinition));
+        }
+
+
+        private bool CanCreateProperty()
+        {
+            return (selectedNode != null) &&
+                   (selectedNode.Item is PapyrusPropertyDefinition || selectedNode.Item is PapyrusFieldDefinition ||
+                    (selectedNode.Item is PapyrusTypeDefinition && (selectedNode.Item as PapyrusTypeDefinition).IsClass));
+        }
+
+        private bool CanEditMember(object arg)
+        {
+            if (arg == null && selectedNode == null) return false;
+
+            var pvm = arg as PapyrusViewModel;
+            if (pvm == null)
+                pvm = selectedNode;
+
+            if (pvm != null)
             {
-                LoadPex(fileToOpen);
+                if (pvm.Item is PapyrusStateDefinition /*|| pvm.Item is PapyrusMethodDefinition */||
+                    /*pvm.Item is PapyrusPropertyDefinition ||*/ pvm.Item is PapyrusFieldDefinition)
+                    return true;
             }
+
+            return false;
+        }
+
+        private bool CanDeleteMember(object arg)
+        {
+            if (arg == null && selectedNode == null) return false;
+            var pvm = arg as PapyrusViewModel;
+            if (pvm == null)
+                pvm = selectedNode;
+            if (pvm != null)
+            {
+                if (pvm.Item is PapyrusFieldDefinition || pvm.Item is PapyrusMethodDefinition ||
+                    pvm.Item is PapyrusStateDefinition || pvm.Item is PapyrusPropertyDefinition)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void EditMember(object obj)
+        {
+            if (obj == null && selectedNode == null) return;
+            var pvm = obj as PapyrusViewModel;
+            if (pvm == null)
+                pvm = selectedNode;
+            if (pvm != null)
+            {
+                var pap =
+                pvm.Item as PapyrusMemberReference;
+                if (pap == null) return;
+
+                if (pvm.Item is PapyrusStateDefinition)
+                {
+                    EditState(pvm, pvm.Item as PapyrusStateDefinition);
+                    return;
+                }
+
+                var method = pap as PapyrusMethodDefinition;
+                if (method != null)
+                {
+                    EditMethod(pvm, method);
+                }
+
+                var field = pap as PapyrusFieldDefinition;
+                if (field != null)
+                {
+                    EditField(pvm, field);
+                }
+
+                var prop = pap as PapyrusPropertyDefinition;
+                if (prop != null)
+                {
+                    EditProperty(pvm, prop);
+                }
+            }
+        }
+
+        private void EditProperty(PapyrusViewModel node, PapyrusPropertyDefinition prop)
+        {
+            MessageBox.Show("Not yet Implemented");
+        }
+
+        private void EditField(PapyrusViewModel node, PapyrusFieldDefinition field)
+        {
+            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var dialog = new PapyrusFieldEditorViewModel(loadedTypes, field);
+            if (dialogService.ShowDialog(dialog) == DialogResult.OK)
+            {
+                var asm = field.DeclaringAssembly;
+                field.Name = dialog.Name.Ref(asm);
+
+                if (dialog.IsArray)
+                {
+                    field.TypeName = dialog.SelectedTypeName.Replace("[]", "") + "[]";
+                }
+                else
+                {
+                    field.TypeName = dialog.SelectedTypeName.Replace("[]", "");
+                }
+
+                field.DefaultValue = dialog.GetDefaultValue();
+
+                node.Item = field;
+                node.Text = field.Name.Value + " : " + field.TypeName;
+                node.SetDirty(true);
+                RaiseCommandsCanExecute();
+            }
+        }
+
+        private void EditMethod(PapyrusViewModel node, PapyrusMethodDefinition method)
+        {
+            MessageBox.Show("Not yet Implemented");
+        }
+
+        private void EditState(PapyrusViewModel node, PapyrusStateDefinition papyrusStateDefinition)
+        {
+            var dialog = new PapyrusStateEditorViewModel(papyrusStateDefinition);
+            if (dialogService.ShowDialog(dialog) == DialogResult.OK)
+            {
+                papyrusStateDefinition.Name = dialog.Name.Ref(papyrusStateDefinition.DeclaringType.Assembly);
+                node.Item = papyrusStateDefinition;
+                node.Text = (!string.IsNullOrEmpty(papyrusStateDefinition.Name.Value) ? papyrusStateDefinition.Name.Value : "<default>");
+                node.SetDirty(true);
+                RaiseCommandsCanExecute();
+            }
+        }
+
+        private void DeleteMember(object obj)
+        {
+            if (obj == null && selectedNode == null) return;
+            var pvm = obj as PapyrusViewModel;
+            if (pvm == null)
+                pvm = selectedNode;
+            if (pvm != null)
+            {
+                var pap =
+                pvm.Item as PapyrusMemberReference;
+                if (pap == null) return;
+
+                var state = pap as PapyrusStateDefinition;
+                if (state != null)
+                {
+                    DeleteState(pvm, state);
+                }
+
+                var method = pap as PapyrusMethodDefinition;
+                if (method != null)
+                {
+                    DeleteMethod(pvm, method);
+                }
+
+                var field = pap as PapyrusFieldDefinition;
+                if (field != null)
+                {
+                    DeleteField(pvm, field);
+                }
+
+                var prop = pap as PapyrusPropertyDefinition;
+                if (prop != null)
+                {
+                    DeleteProperty(pvm, prop);
+                }
+            }
+        }
+
+        private void DeleteProperty(PapyrusViewModel pvm, PapyrusPropertyDefinition prop)
+        {
+            if (MessageBox.Show("Are you sure you want to delete '" + prop.Name.Value +
+                "' as it could be used and that would break the script if so.\r\n" + "\r\n------------------------\r\n" +
+                "Recommended: Check all usages before deleting by right-clicking on this item and select 'Find All Usages'.", "Delete Property", MessageBoxButton.YesNo)
+                == MessageBoxResult.Yes)
+            {
+                var type = prop.DeclaringType;
+                type.Properties.Remove(prop);
+
+                pvm.SetDirty(true); // This will set the parent as dirty as well. So we gotta do this before removing it.
+                pvm.Parent.Children.Remove(pvm);
+                RaiseCommandsCanExecute();
+            }
+        }
+
+
+        private void DeleteState(PapyrusViewModel pvm, PapyrusStateDefinition state)
+        {
+            if (state.DeclaringType.States.Count(i => string.IsNullOrEmpty(i.Name.Value)) == 1 &&
+                string.IsNullOrEmpty(state.Name.Value))
+            {
+                MessageBox.Show("You cannot delete this state as one <default> state must always exist.");
+                return;
+            }
+            if (state.Methods.Any())
+            {
+                MessageBox.Show(
+                    "This state contains one or more methods and cannot be deleted.\r\nDelete the methods first and then try again.");
+                return;
+            }
+            else
+            {
+                if (MessageBox.Show(
+                    "Are you sure you want to delete '" + state.Name.Value +
+                    "' as it could be used and that would break the script if so.",
+                    "Delete State", MessageBoxButton.YesNo)
+                    == MessageBoxResult.Yes)
+                {
+                    var type = state.DeclaringType;
+                    type.States.Remove(state);
+
+                    pvm.SetDirty(true); // This will set the parent as dirty as well. So we gotta do this before removing it.
+                    pvm.Parent.Children.Remove(pvm);
+                    RaiseCommandsCanExecute();
+                }
+            }
+        }
+
+        private void DeleteField(PapyrusViewModel pvm, PapyrusFieldDefinition field)
+        {
+            var prop = field.DeclaringType.Properties.FirstOrDefault(
+                p => p.AutoName != null && p.AutoName.Replace("::", "").ToLower() == field.Name.Value.Replace("::", "").ToLower());
+            if (prop != null)
+            {
+                MessageBox.Show("This field is being accessed from an Auto Property '" + prop.Name.Value +
+                                "' and cannot be deleted.");
+                return;
+            }
+            else
+            {
+                if (MessageBox.Show(
+                    "Are you sure you want to delete '" + field.Name.Value +
+                    "' as it could be used and that would break the script if so.\r\n" + "\r\n------------------------\r\n" +
+                    "Recommended: Check all usages before deleting by right-clicking on this item and select 'Find All Usages'.", "Delete Field", MessageBoxButton.YesNo)
+                    == MessageBoxResult.Yes)
+                {
+                    var type = field.DeclaringType;
+                    type.Fields.Remove(field);
+
+                    pvm.SetDirty(true); // This will set the parent as dirty as well. So we gotta do this before removing it.
+                    pvm.Parent.Children.Remove(pvm);
+                    RaiseCommandsCanExecute();
+                }
+            }
+        }
+
+        private void DeleteMethod(PapyrusViewModel pvm, PapyrusMethodDefinition method)
+        {
+            if (method.IsNative)
+            {
+                MessageBox.Show("Deleting Native methods are not supported as it would definitely break the script.");
+                return;
+            }
+            else
+            {
+                if (MessageBox.Show(
+                    "Are you sure you want to delete '" + method.Name.Value +
+                    "' as it could be used and would break the script if so.\r\n" + "\r\n------------------------\r\n" +
+                    "Recommended: Check all usages before deleting by right-clicking on this item and select 'Find All Usages'.", "Delete Method", MessageBoxButton.YesNo)
+                    == MessageBoxResult.Yes)
+                {
+
+                    var state = method.DeclaringState;
+                    var debugInfo = state.DeclaringType.Assembly.DebugInfo;
+
+                    if (debugInfo != null)
+                    {
+                        var desc =
+                        debugInfo.MethodDescriptions.FirstOrDefault(m => m.Name.Index == method.Name.Index);
+                        if (desc != null)
+                        {
+                            debugInfo.MethodDescriptions.Remove(desc);
+                        }
+                    }
+
+                    state.Methods.Remove(method);
+
+                    pvm.SetDirty(true); // This will set the parent as dirty as well. So we gotta do this before removing it.
+                    pvm.Parent.Children.Remove(pvm);
+                    RaiseCommandsCanExecute();
+                }
+            }
+        }
+
+        private void CreateMethod()
+        {
+            MessageBox.Show("Not yet Implemented");
+        }
+
+        private void CreateStateItem()
+        {
+            var dialog = new PapyrusStateEditorViewModel();
+            if (dialogService.ShowDialog(dialog) == DialogResult.OK)
+            {
+                var root = selectedNode.GetTopParent();
+                var asm = root.Item as PapyrusAssemblyDefinition;
+                var type = asm.Types.First();
+
+                var state = new PapyrusStateDefinition(type);
+
+                state.Name = dialog.Name.Ref(asm);
+                var node = new PapyrusViewModel(root.Children.First());
+                node.Item = state;
+                node.Text = (!string.IsNullOrEmpty(state.Name.Value) ? state.Name.Value : "<default>");
+                node.SetDirty(true);
+                RaiseCommandsCanExecute();
+            }
+        }
+
+        private void CreateFieldItem()
+        {
+            var root =
+            selectedNode.GetTopParent();
+            var asm = root.Item as PapyrusAssemblyDefinition;
+
+            PapyrusTypeDefinition type = null;
+            PapyrusViewModel typeNode = selectedNode;
+
+            type = selectedNode.Item as PapyrusTypeDefinition;
+            if (type == null)
+            {
+                var f = selectedNode.Item as PapyrusFieldDefinition;
+                if (f != null)
+                {
+                    typeNode = selectedNode.Parent;
+                    type = f.DeclaringType;
+                }
+                var p = selectedNode.Item as PapyrusPropertyDefinition;
+                if (p != null)
+                {
+                    typeNode = selectedNode.Parent;
+                    type = p.DeclaringType;
+                }
+            }
+
+            if (type == null)
+            {
+                MessageBox.Show("Unexpected Error: Unable to determine which type the new field should belong to.");
+                return;
+            }
+
+            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var dialog = new PapyrusFieldEditorViewModel(loadedTypes);
+            if (dialogService.ShowDialog(dialog) == DialogResult.OK)
+            {
+                var field = new PapyrusFieldDefinition(asm, type, dialog.Name, dialog.SelectedTypeName.Replace("[]", ""));
+
+                if (dialog.IsArray)
+                {
+                    field.TypeName = dialog.SelectedTypeName.Replace("[]", "") + "[]";
+                }
+
+                field.DefaultValue = dialog.GetDefaultValue();
+
+                var node = new PapyrusViewModel(typeNode);
+                node.Item = field;
+                node.Text = field.Name.Value + " : " + field.TypeName;
+                node.SetDirty(true);
+                RaiseCommandsCanExecute();
+            }
+        }
+
+        private void CreatePropertyItem()
+        {
+            MessageBox.Show("Not yet Implemented");
+        }
+
+
+        public void RaiseCommandsCanExecute()
+        {
+            (FindAllReferencesCommand as RelayCommand<object>).RaiseCanExecuteChanged();
+            FindAllUsagesCommand.RaiseCanExecuteChanged();
+            ReloadPexCommand.RaiseCanExecuteChanged();
+            SavePexAsCommand.RaiseCanExecuteChanged();
+            SavePexCommand.RaiseCanExecuteChanged();
+            CreatePropertyCommand.RaiseCanExecuteChanged();
+            CreateFieldCommand.RaiseCanExecuteChanged();
+            CreateMethodCommand.RaiseCanExecuteChanged();
+            CreateStateCommand.RaiseCanExecuteChanged();
+            EditMemberCommand.RaiseCanExecuteChanged();
+            CreateInstructionCommand.RaiseCanExecuteChanged();
+            CreateParameterCommand.RaiseCanExecuteChanged();
+            CreateVariableCommand.RaiseCanExecuteChanged();
+            DeleteMemberCommand.RaiseCanExecuteChanged();
+        }
+
+        private void OpenAboutWindow()
+        {
+            dialogService.ShowDialog(new AboutViewModel());
+        }
+
+        private bool CanFindReferences(object arg)
+        {
+            var pvm = arg as PapyrusViewModel;
+            if (pvm == null) return false;
+            return pvm.Item is PapyrusAssemblyDefinition || pvm.Item is PapyrusTypeDefinition;
+        }
+
+
+
+        private bool CanFindUsage(object arg)
+        {
+            var pvm = arg as PapyrusViewModel;
+            if (pvm == null) return false;
+            return pvm.Item is PapyrusFieldDefinition || pvm.Item is PapyrusPropertyDefinition ||
+                   pvm.Item is PapyrusMethodDefinition;
+        }
+
+        public void GoToMember(PapyrusMemberReference papyrusMemberReference)
+        {
+            var targetMethod = papyrusMemberReference as PapyrusMethodDefinition;
+            var inst = papyrusMemberReference as PapyrusInstruction;
+            if (inst != null)
+            {
+                targetMethod = inst.Method;
+            }
+
+            if (targetMethod != null)
+            {
+                var targetState = targetMethod.DeclaringState;
+                var targetType = targetState.DeclaringType;
+                //var targetAssembly = targetType.Assembly;
+
+                var file =
+                PexTree.FirstOrDefault(i => i.Text.ToLower() == targetType.Name.Value.ToLower() + ".pex");
+
+                file.IsExpanded = true;
+                file.IsSelected = true;
+
+                var type =
+                file.Children.First();
+
+                var state = string.IsNullOrEmpty(targetState.Name.Value)
+                    ? type.Children.FirstOrDefault(s => s.Text.ToLower().Contains("<default>"))
+                    : type.Children.FirstOrDefault(t => t.Text.ToLower().Contains(targetState.Name.Value.ToLower()));
+                if (state != null)
+                {
+                    state.IsExpanded = true;
+                    state.IsSelected = true;
+
+                    var method = state.Children.FirstOrDefault(m => m.Item == targetMethod);
+                    if (method != null)
+                    {
+                        method.IsSelected = true;
+                        method.IsExpanded = true;
+                        //if (inst != null && selectedMethodInstructions != null)
+                        //{
+                        //    SelectedMethodInstruction = selectedMethodInstructions.FirstOrDefault(s => s.Offset == inst.Offset);
+                        //}
+
+                    }
+                }
+                SelectedContentIndex = 0;
+                SelectedContentIndexChanged?.Invoke(this, new EventArgs());
+            }
+        }
+
+        private void FindAllReferences(object obj)
+        {
+            //var loadedAsm =
+            //Directory.GetFiles(LoadedAssemblyFolders.FirstOrDefault(), "*.pex", SearchOption.AllDirectories)
+            //    .Select(i => PapyrusAssemblyDefinition.ReadAssembly(i, false))
+            //    .ToList();
+
+            var refFinder =
+                new PapyrusReferenceFinder(LoadedAssemblies);
+
+
+            var pvm = obj as PapyrusViewModel;
+            if (pvm != null)
+            {
+                string searchText = null;
+                var type = pvm.Item as PapyrusTypeDefinition;
+                if (type != null)
+                {
+                    searchText =
+                        type.Name.Value;
+                }
+                var asm = pvm.Item as PapyrusAssemblyDefinition;
+                if (asm != null)
+                {
+                    searchText =
+                        asm.Types.First().Name.Value;
+                }
+                if (searchText != null)
+                {
+                    var res = refFinder.FindTypeReference(searchText);
+                    BuildUsageTree(res);
+                }
+            }
+        }
+
+        private void FindAllusages(object obj)
+        {
+            var usageFinder =
+                new PapyrusUsageFinder(LoadedAssemblies);
+
+            var pvm = obj as PapyrusViewModel;
+            if (pvm != null)
+            {
+                var field = pvm.Item as PapyrusFieldDefinition;
+                if (field != null)
+                {
+                    var result =
+                    usageFinder.FindFieldUsage(field.Name.Value);
+                    BuildUsageTree(result);
+                    return;
+                }
+
+                var prop = pvm.Item as PapyrusPropertyDefinition;
+                if (prop != null)
+                {
+                    var result =
+                    usageFinder.FindFieldUsage(prop.Name.Value);
+                    BuildUsageTree(result);
+                    return;
+                }
+
+                var meth = pvm.Item as PapyrusMethodDefinition;
+                if (meth != null)
+                {
+                    var result =
+                    usageFinder.FindFieldUsage(meth.Name.Value);
+                    BuildUsageTree(result);
+                    return;
+                }
+            }
+        }
+
+        private void BuildUsageTree(IFindResult result)
+        {
+            List<TreeViewItem> items = new List<TreeViewItem>();
+
+            if (result.Results.Any(i => i.Method == null))
+            {
+                foreach (var i in result.Results)
+                {
+                    var item = new TreeViewItem();
+                    item.IsExpanded = true;
+                    item.Header = i.Type.Name.Value + " is based on " + i.SearchText;
+                    items.Add(item);
+                }
+            }
+            else
+            {
+                foreach (var j in result.Results.GroupBy(i => i.Method))
+                {
+                    var item = new TreeViewItem();
+                    item.Tag = j.Key;
+                    item.IsExpanded = true;
+                    item.Header = j.Key.DeclaringState.DeclaringType.Name.Value + "." + j.Key.Name.Value +
+                                  GetParameterString(j.Key.Parameters) + " : " + j.Key.ReturnTypeName.Value;
+
+                    foreach (var res in j)
+                    {
+                        if (res.Method != null)
+                        {
+                            var child = new TreeViewItem();
+
+                            child.MouseDoubleClick += Child_MouseDoubleClick;
+                            child.Tag = res.Instruction;
+                            child.Header = "L_" + res.Instruction.Offset.ToString("000") + ": " + res.Instruction.OpCode + " : " + res.SearchText;
+
+                            item.Items.Add(child);
+                            items.Add(item);
+                        }
+                    }
+                }
+            }
+            if (items.Count == 0)
+            {
+                items.Add(new TreeViewItem() { Header = "The search for '" + result.SearchText + "' gave no results within any of the loaded scripts." });
+            }
+
+            FindResultTree = new ObservableCollection<TreeViewItem>(items);
+            SelectedContentIndex = 1;
+            SelectedContentIndexChanged?.Invoke(this, new EventArgs());
+        }
+
+        private void Child_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            GoToMember((sender as TreeViewItem).Tag as PapyrusMemberReference);
         }
 
         private void ReloadPex(object i)
         {
             var item = i as PapyrusViewModel;
+            if (item == null)
+                item = selectedNode;
             if (item != null)
             {
                 var top = item.GetTopParent();
@@ -109,6 +731,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 selectedMethod.UpdateInstructionOperands();
                 SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
                 selectedMethodNode.SetDirty(true);
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -131,6 +755,9 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 selectedMethod.UpdateInstructionOperands();
                 SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
                 selectedMethodNode.SetDirty(true);
+
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -158,6 +785,9 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 selectedMethod.UpdateInstructionOperands();
                 SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
                 selectedMethodNode.SetDirty(true);
+
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -185,6 +815,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
                 SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
                 selectedMethodNode.SetDirty(true);
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -205,6 +837,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
                 SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(selectedMethod.GetVariables());
                 selectedMethodNode.SetDirty(true);
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -218,6 +852,13 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 var asm = selectedMethod.DeclaringState.DeclaringType.Assembly;
                 var typeName = dialog.SelectedType ?? dialog.SelectedTypeName;
                 var varName = dialog.Name;
+
+                typeName = typeName.ToString().Replace("[]", "");
+
+                if (dialog.IsArray)
+                {
+                    typeName = typeName + "[]";
+                }
 
                 if (varName.ToLower().StartsWith("::temp"))
                 {
@@ -244,6 +885,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     selectedMethod.GetVariables()
                 );
                 selectedMethodNode.SetDirty(true);
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -267,6 +910,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                         selectedMethod.Parameters
                     );
                 selectedMethodNode.SetDirty(true);
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -282,6 +927,13 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
                 var varName = dialog.Name;
 
+                typeName = typeName.ToString().Replace("[]", "");
+
+                if (dialog.IsArray)
+                {
+                    typeName = typeName + "[]";
+                }
+
                 selectedMethod.Parameters.Add(new PapyrusParameterDefinition()
                 {
                     Name = varName.Ref(asm),
@@ -292,6 +944,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                         selectedMethod.Parameters
                     );
                 selectedMethodNode.SetDirty(true);
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -323,6 +977,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                         method.Parameters
                     );
                 selectedMethodNode.SetDirty(true);
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -343,6 +998,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                         method.GetVariables()
                     );
                 selectedMethodNode.SetDirty(true);
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -369,6 +1026,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                         method.GetVariables()
                     );
                 selectedMethodNode.SetDirty(true);
+
+                RaiseCommandsCanExecute();
             }
         }
 
@@ -420,7 +1079,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private bool CanSave(object o)
         {
             var i = o as PapyrusViewModel;
-            return i != null && i.IsDirty;
+            return i != null && i.IsDirty || canSaveItem;
         }
 
         private void OpenPex()
@@ -470,8 +1129,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
             BuildPexTree();
 
-            SavePexCommand.RaiseCanExecuteChanged();
-            SavePexAsCommand.RaiseCanExecuteChanged();
+            RaiseCommandsCanExecute();
         }
 
         private void BuildPexTree(PapyrusViewModel target = null)
@@ -667,11 +1325,14 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             set { Set(ref pexTree, value); }
         }
 
+        bool canSaveItem = false;
+
         private void SelectMember(PapyrusViewModel item)
         {
             selectedNode = item;
             if (item == null) return;
 
+            canSaveItem = item.IsDirty || item.IsHierarchyDirty;
 
             BuildMemberDisplay(item.Item);
             var type = item.Item as PapyrusTypeDefinition;
@@ -679,6 +1340,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 TargetGameName = type.Assembly.VersionTarget.ToString();
                 SelectedMemberFlags = "0x" + type.Flags.ToString("X");
+
             }
             var state = item.Item as PapyrusStateDefinition;
             if (state != null)
@@ -724,15 +1386,14 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 SelectedMemberFlags = "0x" + method.Flags.ToString("X");
 
                 TargetGameName = method.DeclaringAssembly.VersionTarget.ToString();
+
+                selectedContentIndex = 0;
+                SelectedContentIndexChanged?.Invoke(this, new EventArgs());
             }
 
-            CreateInstructionCommand.RaiseCanExecuteChanged();
-            CreateParameterCommand.RaiseCanExecuteChanged();
-            CreateVariableCommand.RaiseCanExecuteChanged();
 
-            ReloadPexCommand.RaiseCanExecuteChanged();
-            SavePexAsCommand.RaiseCanExecuteChanged();
-            SavePexCommand.RaiseCanExecuteChanged();
+
+            RaiseCommandsCanExecute();
         }
 
         public void BuildMemberDisplay(object item)
@@ -924,6 +1585,12 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             set { Set(ref reloadPexCommand, value); }
         }
 
+        public RelayCommand<object> FindAllUsagesCommand
+        {
+            get { return findAllUsagesCommand; }
+            set { Set(ref findAllUsagesCommand, value); }
+        }
+
         public ICommand ExitCommand { get; set; }
         public RelayCommand InsertBeforeCommand { get; set; }
         public RelayCommand InsertAfterCommand { get; set; }
@@ -938,9 +1605,71 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         public RelayCommand DeleteParameterCommand { get; set; }
         public RelayCommand CreateInstructionCommand { get; set; }
 
+        public ICommand ValidateSelectedScriptCommand { get; set; }
+        public ICommand ValidateSelectedScriptAndReferencesCommand { get; set; }
+        public ICommand ValidateAllScriptsCommand { get; set; }
+        public ICommand OpenSettingsCommand { get; set; }
+        public ICommand OpenDocumentationCommand { get; set; }
+        public ICommand OpenAboutCommand { get; set; }
+
+
+        public ObservableCollection<TreeViewItem> FindResultTree
+        {
+            get { return findResultTree; }
+            set { Set(ref findResultTree, value); }
+        }
+
+        public int SelectedContentIndex
+        {
+            get { return selectedContentIndex; }
+            set { Set(ref selectedContentIndex, value); }
+        }
+
+        public ICommand FindAllReferencesCommand
+        {
+            get { return findAllReferencesCommand; }
+            set { Set(ref findAllReferencesCommand, value); }
+        }
+
+        public RelayCommand<object> EditMemberCommand
+        {
+            get { return editMemberCommand; }
+            set { Set(ref editMemberCommand, value); }
+        }
+
+        public RelayCommand CreatePropertyCommand
+        {
+            get { return createPropertyCommand; }
+            set { Set(ref createPropertyCommand, value); }
+        }
+
+        public RelayCommand CreateFieldCommand
+        {
+            get { return createFieldCommand; }
+            set { Set(ref createFieldCommand, value); }
+        }
+
+        public RelayCommand CreateStateCommand
+        {
+            get { return createStateCommand; }
+            set { Set(ref createStateCommand, value); }
+        }
+
+        public RelayCommand CreateMethodCommand
+        {
+            get { return createMethodCommand; }
+            set { Set(ref createMethodCommand, value); }
+        }
+
+        public RelayCommand<object> DeleteMemberCommand
+        {
+            get { return deleteMemberCommand; }
+            set { Set(ref deleteMemberCommand, value); }
+        }
+
         private static MainWindowViewModel designInstance;
         public static MainWindowViewModel DesignInstance = designInstance ??
-                                                           (designInstance = new MainWindowViewModel(null));
+                                                           (designInstance = new MainWindowViewModel(null, null));
 
         private static SolidColorBrush AttributeColor = new SolidColorBrush(Color.FromRgb(30, 78, 135));
         private static SolidColorBrush TypeColor = new SolidColorBrush(Color.FromRgb(30, 135, 75));
@@ -965,5 +1694,16 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private RelayCommand<object> savePexCommand;
         private RelayCommand<object> savePexAsCommand;
         private RelayCommand<object> reloadPexCommand;
+        private RelayCommand<object> findAllUsagesCommand;
+        private ObservableCollection<TreeViewItem> findResultTree;
+        private bool isFindResultSelected;
+        private int selectedContentIndex;
+        private ICommand findAllReferencesCommand;
+        private RelayCommand<object> editMemberCommand;
+        private RelayCommand createPropertyCommand;
+        private RelayCommand createFieldCommand;
+        private RelayCommand createStateCommand;
+        private RelayCommand createMethodCommand;
+        private RelayCommand<object> deleteMemberCommand;
     }
 }

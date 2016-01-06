@@ -56,6 +56,18 @@ namespace PapyrusDotNet.PexInspector.Implementations
         public DialogResult ShowDialog(ViewModelBase viewModel)
         {
             Window dialog = null;
+            if (viewModel is AboutViewModel)
+            {
+                dialog = new AboutWindow();
+            }
+            if (viewModel is PapyrusFieldEditorViewModel)
+            {
+                dialog = new PapyrusFieldEditorWindow();
+            }
+            if (viewModel is PapyrusStateEditorViewModel)
+            {
+                dialog = new PapyrusStateEditorWindow();
+            }
             if (viewModel is PapyrusInstructionEditorViewModel)
             {
                 dialog = new PapyrusInstructionEditorWindow();

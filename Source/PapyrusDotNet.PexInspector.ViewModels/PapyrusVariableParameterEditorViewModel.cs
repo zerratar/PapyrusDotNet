@@ -28,7 +28,56 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         public object SelectedType
         {
             get { return selectedType; }
-            set { Set(ref selectedType, value); }
+            set
+            {
+                if (Set(ref selectedType, value))
+                {
+                    if (value == null)
+                        SelectedTypeName = "None";
+                    else
+                        SelectedTypeName = value.ToString();
+
+                    var i =
+                        TypeReferences.IndexOf(value);
+
+                    IsConstantValueType = i > 0 && i < 5;
+
+                    if (IsArray)
+                    {
+                        SelectedTypeName = SelectedTypeName.Replace("[]", "") + "[]";
+                        IsConstantValueType = false;
+                    }
+                }
+            }
+        }
+
+        private bool isConstantValueType;
+        private bool isArray;
+
+        public bool IsArray
+        {
+            get { return isArray; }
+            set
+            {
+                if (Set(ref isArray, value))
+                {
+                    if (value == true)
+                        IsConstantValueType = false;
+                    else
+                    {
+                        var i =
+                            TypeReferences.IndexOf(SelectedTypeName.Replace("[]", ""));
+
+                        IsConstantValueType = i > 0 && i < 5;
+                    }
+                }
+            }
+        }
+
+        public bool IsConstantValueType
+        {
+            get { return isConstantValueType; }
+            set { Set(ref isConstantValueType, value); }
         }
 
         public PapyrusVariableParameterEditorViewModel(IEnumerable<string> types)

@@ -529,7 +529,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             fd.UserFlags = pexReader.ReadInt32();
             {
                 // Type Reference
-                fd.FieldVariable = ReadValueReference(asm, fd.TypeName);
+                fd.DefaultValue = ReadValueReference(asm, fd.TypeName);
             }
             fd.Flags = pexReader.ReadByte(); //== 1;
             return fd;
