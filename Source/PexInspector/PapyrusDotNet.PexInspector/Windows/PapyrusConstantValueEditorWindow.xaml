@@ -1,0 +1,34 @@
+﻿<Window x:Class="PapyrusDotNet.PexInspector.Windows.PapyrusConstantValueEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PapyrusDotNet.PexInspector.Windows"
+        xmlns:selectors="clr-namespace:PapyrusDotNet.PexInspector.ViewModels.Selectors;assembly=PapyrusDotNet.PexInspector.ViewModels"
+        mc:Ignorable="d"
+        Title="Edit Constant Value" Height="213.559" Width="425.212"
+        d:DataContext="{x:Static selectors:PapyrusConstantValueViewModel.DesignInstance}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="239*" />
+            <RowDefinition Height="50" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical" Margin="20,20,20,0" Grid.Row="0">
+            <TextBlock Text="Type" Margin="0,0,0,5" />
+            <ComboBox Margin="0" ItemsSource="{Binding ComboBoxItems}"
+                      KeyUp="UIElement_OnKeyUp"
+                      SelectedItem="{Binding SelectedValueType, Mode=TwoWay}" />
+
+            <StackPanel Orientation="Vertical" Visibility="{Binding ValueInputVisibility}">
+                <TextBlock Text="Value" Margin="0,10,0,5" />
+                <TextBox Height="24" Text="{Binding SelectedValue, Mode=TwoWay}" KeyUp="UIElement_OnKeyUp" />
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="20,10">
+            <Button Content="OK" Width="72" Margin="2,0,10,0" Background="#FF3498DB" BorderBrush="#FF3498DB"
+                    Foreground="White" Click="Button_Click" />
+            <Button Content="Cancel" Width="72" Click="Button_Click_1" />
+        </StackPanel>
+    </Grid>
+</Window>

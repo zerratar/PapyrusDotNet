@@ -1,0 +1,1 @@
+PapyrusDotNet is an open source project and is available on github: https://github.com/zerratar/PapyrusDotNet

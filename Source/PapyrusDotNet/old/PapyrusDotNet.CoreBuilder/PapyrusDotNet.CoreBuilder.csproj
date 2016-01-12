@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{54B3F2D8-7510-4445-8A4C-420A73994D03}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PapyrusDotNet.CoreBuilder</RootNamespace>
+    <AssemblyName>PapyrusDotNet.CoreBuilder</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Binaries\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\git\cecil\bin\net_4_0_Debug\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>..\..\..\..\..\..\..\git\cecil\bin\net_4_0_Debug\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\..\..\..\..\..\..\git\cecil\bin\net_4_0_Debug\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\..\..\..\..\..\..\git\cecil\bin\net_4_0_Debug\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+    <Reference Include="PowerArgs">
+      <HintPath>..\packages\PowerArgs.2.0.3.0\lib\net40\PowerArgs.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CecilExt.cs" />
+    <Compile Include="PapyrusCilAssemblyBuilder.cs" />
+    <Compile Include="Implementation\CoreAssemblyNameResolver.cs" />
+    <Compile Include="CoreExtensions\AutoAttribute.cs" />
+    <Compile Include="CoreExtensions\AutoReadOnlyAttribute.cs" />
+    <Compile Include="CoreExtensions\ConditionalAttribute.cs" />
+    <Compile Include="CoreExtensions\DocStringAttribute.cs" />
+    <Compile Include="CoreExtensions\GenericIgnoreAttribute.cs" />
+    <Compile Include="CoreExtensions\GenericMemberAttribute.cs" />
+    <Compile Include="CoreExtensions\GenericTypeAttribute.cs" />
+    <Compile Include="CoreExtensions\InitialValueAttribute.cs" />
+    <Compile Include="CoreExtensions\NativeAttribute.cs" />
+    <Compile Include="CoreExtensions\HiddenAttribute.cs" />
+    <Compile Include="CoreExtensions\PropertyAttribute.cs" />
+    <Compile Include="Interfaces\IPapyrusTypeNameResolver.cs" />
+    <Compile Include="Implementation\PapyrusTypeNameResolver.cs" />
+    <Compile Include="Interfaces\IAssemblyNameResolver.cs" />
+    <Compile Include="Interfaces\IPapyrusNamespaceResolver.cs" />
+    <Compile Include="Interfaces\IPapyrusTypeDefinitionResolver.cs" />
+    <Compile Include="Implementation\PapyrusTypeDefinitionResolver.cs" />
+    <Compile Include="Implementation\PapyrusCilAssemblyBuilderBase.cs" />
+    <Compile Include="Implementation\DictionaryPapyrusNameResolver.cs" />
+    <Compile Include="Interfaces\IPapyrusCilAssemblyBuilder.cs" />
+    <Compile Include="Interfaces\IPapyrusAssemblyParser.cs" />
+    <Compile Include="Interfaces\IPapyrusNameResolver.cs" />
+    <Compile Include="Interfaces\IPapyrusScriptParser.cs" />
+    <Compile Include="Interfaces\IPapyrusTypeReferenceResolver.cs" />
+    <Compile Include="Implementation\PapyrusTypeReferenceResolver.cs" />
+    <Compile Include="Implementation\PapyrusNamespaceResolver.cs" />
+    <Compile Include="PapyrusParseType.cs" />
+    <Compile Include="Papyrus\Assembly\PapyrusAssemblyParser.cs" />
+    <Compile Include="Papyrus\Script\PapyrusScriptFunction.cs" />
+    <Compile Include="Papyrus\Script\PapyrusScriptObject.cs" />
+    <Compile Include="Papyrus\Script\PapyrusScriptStateFunction.cs" />
+    <Compile Include="Papyrus\Script\PapyrusScriptVariable.cs" />
+    <Compile Include="Papyrus\Assembly\PapyrusAssemblyFunction.cs" />
+    <Compile Include="Papyrus\Assembly\PapyrusAssemblyObject.cs" />
+    <Compile Include="Papyrus\Assembly\PapyrusAssemblyState.cs" />
+    <Compile Include="Papyrus\Assembly\PapyrusAssemblyVariable.cs" />
+    <Compile Include="PapyrusDotNetArgs.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Papyrus\Script\PapyrusScriptParser.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="wordlist.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
+      <Project>{6b35b6ab-ea3b-42b0-b40f-66e490e59a15}</Project>
+      <Name>PapyrusDotNet.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

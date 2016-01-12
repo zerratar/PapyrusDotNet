@@ -1,17 +1,45 @@
+//     This file is part of PapyrusDotNet.
+// 
+//     PapyrusDotNet is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+// 
+//     PapyrusDotNet is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+// 
+//     You should have received a copy of the GNU General Public License
+//     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
+//  
+//     Copyright 2016, Karl Patrik Johansson, zerratar@gmail.com
+
+#region
+
+using PapyrusDotNet.Core;
+
+#endregion
 
 namespace Fallout4Example
 {
     public class DelegateTests
     {
+        // Working
+        public delegate void AnotherDelegate(string input);
 
         // Working
         public delegate void HelloThereDelegate();
+
+        // Working
+        public delegate void HorribleDelegate();
+
+        // Working
+        public delegate void SecondDelegate();
+
         public void UtilizeDelegate()
         {
-            HelloThereDelegate awesome = () =>
-            {
-                PapyrusDotNet.Core.Debug.Trace("Awesome was used!", 0);
-            };
+            HelloThereDelegate awesome = () => { Debug.Trace("Awesome was used!", 0); };
 
             awesome();
         }
@@ -19,67 +47,43 @@ namespace Fallout4Example
         // Working
         public void UtilizeDelegate1()
         {
-            HelloThereDelegate awesome = () =>
-            {
-                PapyrusDotNet.Core.Debug.Trace("Awesome was used!", 0);
-            };
+            HelloThereDelegate awesome = () => { Debug.Trace("Awesome was used!", 0); };
 
-            HelloThereDelegate secondAwesome = () =>
-            {
-                PapyrusDotNet.Core.Debug.Trace("Second awesome was used!", 0);
-            };
+            HelloThereDelegate secondAwesome = () => { Debug.Trace("Second awesome was used!", 0); };
 
             awesome();
 
             secondAwesome();
         }
 
-        // Working
-        public delegate void AnotherDelegate(string input);
         public void UtilizeDelegate3()
         {
-            string horror = "test";
+            var horror = "test";
 
-            AnotherDelegate awesome = (s) =>
-            {
-
-                PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate3 was used!" + s, 0);
-            };
+            AnotherDelegate awesome = s => { Debug.Trace("UtilizeDelegate3 was used!" + s, 0); };
 
             awesome(horror);
         }
 
-        // Working
-        public delegate void SecondDelegate();
         public void UtilizeDelegate2()
         {
-            string whatHorrorLiesHere = "test123";
+            var whatHorrorLiesHere = "test123";
 
-            SecondDelegate arrr = () =>
-            {
-                PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate2 was used!" + whatHorrorLiesHere, 0);
-            };
+            SecondDelegate arrr = () => { Debug.Trace("UtilizeDelegate2 was used!" + whatHorrorLiesHere, 0); };
 
             arrr();
         }
 
-        // Working
-        public delegate void HorribleDelegate();
         public void Delegate_In_Delegate()
         {
-            string magic = "helloo";
+            var magic = "helloo";
             HorribleDelegate awesome = () =>
             {
-                AnotherDelegate awe2 = (s) =>
-                {
-                    PapyrusDotNet.Core.Debug.Trace("UtilizeDelegate4 was used!" + s, 0);
-                };
+                AnotherDelegate awe2 = s => { Debug.Trace("UtilizeDelegate4 was used!" + s, 0); };
 
                 awe2(magic);
-
             };
             awesome();
         }
-
     }
 }

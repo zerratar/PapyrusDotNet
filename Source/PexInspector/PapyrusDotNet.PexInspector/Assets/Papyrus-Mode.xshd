@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+
+<!-- Syntaxdefinition for VB.NET, v0.1 Rev 1 by Christian Holm -->
+<!-- Updated 2005 by Daniel Grunwald for VB.NET 2.0 -->
+<!-- Converted to AvalonEdit format by Daniel Grunwald in 2010 -->
+<!-- Updated 2010 by Siegfried Oleg Pammer for VB.NET 9 and 10 -->
+<!-- Updated 2011 by Siegfried Oleg Pammer for VB 11 CTP -->
+<SyntaxDefinition name="Papyrus" extensions=".psc" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" foreground="Green" exampleText="' comment" />
+  <Color name="String" exampleText="text = &quot;Hello, World!&quot;" />
+
+  <Color name="DateLiteral" foreground="Blue" exampleText="endOfWorld = #2012-12-21#" />
+  <Color name="Preprocessor" foreground="Maroon" exampleText="#Region &quot;Title&quot;" />
+  <Color name="DataTypes" foreground="#FF6F002F" exampleText="Dim b As Boolean = True" />
+  <Color name="Operators" foreground="#FF8515EA" exampleText="If a OrElse b Then" />
+  <Color name="Constants" foreground="Blue" exampleText="b = False" />
+  <Color name="Keywords" foreground="Blue" exampleText="If a OrElse b Then" />
+  <Color name="FunctionKeywords" foreground="Blue" exampleText="CInt(a)" />
+  <Color name="ContextKeywords" foreground="Blue" exampleText="Declare Unicode Sub SomeMethod" />
+
+  <Property name="DocCommentMarker" value="'''" />
+
+  <RuleSet ignoreCase="true">
+    <Span color="String">
+      <Begin>"</Begin>
+      <End>"</End>
+      <RuleSet>
+        <Span begin="&quot;&quot;" end="" />
+      </RuleSet>
+    </Span>
+    <!--<Span color="Preprocessor" ruleSet="PreprocessorSet">
+      <Begin>(?&lt;=(^\s*))\#</Begin>
+    </Span>-->
+    <!--<Span color="DateLiteral">
+      <Begin>(?&lt;!(^\s*))\#</Begin>
+      <End>\#</End>
+    </Span>-->
+    <Span color="Comment" ruleSet="XmlDoc/DocCommentSet">
+      <Begin color="XmlDoc/DocComment">'''</Begin>
+    </Span>
+    <Span color="Comment">
+      <Begin>;</Begin>
+    </Span>
+    <Span color="Comment">
+      <Begin>{</Begin>
+      <End>}</End>
+    </Span>
+    <Keywords color="DataTypes">
+      <Word>Bool</Word>
+      <Word>String</Word>
+      <Word>Int</Word>
+      <Word>Float</Word>
+      <Word>Var</Word>
+      <Word>GlobalVariable</Word>
+    </Keywords>
+    <Keywords color="Operators">
+      <Word>AddressOf</Word>
+      <Word>And</Word>
+      <Word>AndAlso</Word>
+      <Word>Await</Word>
+      <Word>Is</Word>
+      <Word>IsNot</Word>
+      <Word>Like</Word>
+      <Word>Mod</Word>
+      <Word>New</Word>
+      <Word>Not</Word>
+      <Word>Or</Word>
+      <Word>OrElse</Word>
+      <Word>Xor</Word>
+    </Keywords>
+    <Keywords color="Constants">
+      <Word>False</Word>
+      <Word>Self</Word>
+      <Word>None</Word>
+      <Word>True</Word>
+    </Keywords>
+    <!--<Keywords color="FunctionKeywords">
+		</Keywords>-->
+    <Keywords color="Keywords">
+      <Word>Is</Word>
+      <Word>As</Word>
+      <Word>New</Word>
+      <Word>Else</Word>
+      <Word>ElseIf</Word>
+      <Word>EndFunction</Word>
+      <Word>EndEvent</Word>
+      <Word>EndStruct</Word>
+      <Word>EndStruction</Word>
+      <Word>EndProperty</Word>
+      <Word>EndWhile</Word>
+      <Word>EndIf</Word>
+      <Word>delete</Word>
+      <Word>Event</Word>
+      <Word>Function</Word>
+      <Word>Global</Word>
+      <Word>Native</Word>
+      <Word>If</Word>
+      <Word>While</Word>
+      <Word>Property</Word>
+      <Word>Return</Word>
+      <Word>Struct</Word>
+      <Word>Structure</Word>
+    </Keywords>
+    <!--<Keywords color="ContextKeywords">
+		</Keywords>-->
+  </RuleSet>
+  <RuleSet name="PreprocessorSet" ignoreCase="true">
+    <Keywords fontWeight="bold">
+      <Word>Const</Word>
+      <Word>Else</Word>
+      <Word>ElseIf</Word>
+      <Word>EndIf</Word>
+      <Word>If</Word>
+    </Keywords>
+  </RuleSet>
+</SyntaxDefinition>

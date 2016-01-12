@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PapyrusDotNet.Common</RootNamespace>
+    <AssemblyName>PapyrusDotNet.Common</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Binaries\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\..\..\Binaries\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>..\..\..\Binaries\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\..\..\Binaries\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\..\..\Binaries\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ConsoleExLib\ConsoleEx.cs" />
+    <Compile Include="Interfaces\INameConvetionResolver.cs" />
+    <Compile Include="Interfaces\IPapyrusCodeBlock.cs" />
+    <Compile Include="Papyrus\PapyrusCodeBlock.cs" />
+    <Compile Include="ConsoleStatusCallbackService.cs" />
+    <Compile Include="Interfaces\ILabelDefinition.cs" />
+    <Compile Include="Interfaces\ILabelReference.cs" />
+    <Compile Include="Utilities\ArrayUtility.cs" />
+    <Compile Include="Utilities\ConsoleUiRenderer.cs" />
+    <Compile Include="DebugStatusCallbackService.cs" />
+    <Compile Include="EvaluationStackItem.cs" />
+    <Compile Include="Extensions\AssemblyExtensions.cs" />
+    <Compile Include="Extensions\CollectionExtensions.cs" />
+    <Compile Include="InstructionHelper.cs" />
+    <Compile Include="Interfaces\IAssemblyConverter.cs" />
+    <Compile Include="Interfaces\IAssemblyInput.cs" />
+    <Compile Include="Interfaces\IAssemblyOutput.cs" />
+    <Compile Include="Interfaces\IClrOutputConverter.cs" />
+    <Compile Include="Interfaces\INamespaceResolver.cs" />
+    <Compile Include="Interfaces\IPapyrusOutputConverter.cs" />
+    <Compile Include="Interfaces\IStatusCallbackService.cs" />
+    <Compile Include="Interfaces\ITypeNameResolver.cs" />
+    <Compile Include="Interfaces\ITypeReferenceResolver.cs" />
+    <Compile Include="Interfaces\IUtility.cs" />
+    <Compile Include="Papyrus\FieldAttributes.cs" />
+    <Compile Include="Papyrus\LabelDefinition.cs" />
+    <Compile Include="Papyrus\LabelReference.cs" />
+    <Compile Include="ObjectReplacementHolder.cs" />
+    <Compile Include="SkyrimInstallationPath.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Utilities\GameInstallationPathUtility.cs" />
+    <Compile Include="Enums\Games.cs" />
+    <Compile Include="Interfaces\IValueTypeConverter.cs" />
+    <Compile Include="Interfaces\IUiRenderer.cs" />
+    <Compile Include="Hotkeys.cs" />
+    <Compile Include="Interfaces\IPapyrusAssemblyOptimizer.cs" />
+    <Compile Include="Interfaces\IPapyrusCodeBlockParser.cs" />
+    <Compile Include="Interfaces\IPapyrusAttributeReader.cs" />
+    <Compile Include="Utilities\PapyrusAssemblyOptimizer.cs" />
+    <Compile Include="Utilities\PapyrusAttributeReader.cs" />
+    <Compile Include="Utilities\PapyrusCodeBlockParser.cs" />
+    <Compile Include="Utilities\StringUtility.cs" />
+    <Compile Include="Utilities\UnixTimeConverterUtility.cs" />
+    <Compile Include="Utilities\Utility.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Papyrus\VariableReference.cs" />
+    <Compile Include="Utilities\PapyrusValueTypeConverter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">
+      <Project>{c5f9b5da-f44a-4129-98d1-2efdadf09b52}</Project>
+      <Name>PapyrusDotNet.PapyrusAssembly</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

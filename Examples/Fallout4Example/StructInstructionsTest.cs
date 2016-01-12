@@ -13,7 +13,7 @@
 //     You should have received a copy of the GNU General Public License
 //     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
 //  
-//     Copyright 2015, Karl Patrik Johansson, zerratar@gmail.com
+//     Copyright 2016, Karl Patrik Johansson, zerratar@gmail.com
 
 #region
 
@@ -25,24 +25,18 @@ namespace Fallout4Example
 {
     public class StructInstructionsTest : ObjectReference
     {
-        public struct MyTestStruct
-        {
-            public string StructString;
-            public int StructInteger;
-        }
+        public int FieldIntValue;
 
-        public int MethodIntValue()
-        {
-            return 0;
-        }
+        private MyTestStruct myTestStruct_var;
 
         public int PropertyIntValue => 0;
 
         public int SetPropertyIntValue { get; set; }
 
-        public int FieldIntValue = 0;
-
-        private MyTestStruct myTestStruct_var;
+        public int MethodIntValue()
+        {
+            return 0;
+        }
 
         public void StructSet_StructInteger(int value)
         {
@@ -86,6 +80,12 @@ namespace Fallout4Example
             // Works
             return myTestStruct_var.StructInteger;
             // return test;
+        }
+
+        public struct MyTestStruct
+        {
+            public string StructString;
+            public int StructInteger;
         }
     }
 }

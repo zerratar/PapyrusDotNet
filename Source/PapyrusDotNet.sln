@@ -3,37 +3,27 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet", "PapyrusDotNet\PapyrusDotNet.csproj", "{328A4BC6-9157-4581-B695-C7A51C3D965F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet", "PapyrusDotNet\PapyrusDotNet\PapyrusDotNet.csproj", "{328A4BC6-9157-4581-B695-C7A51C3D965F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.CoreBuilder", "PapyrusDotNet.CoreBuilder\PapyrusDotNet.CoreBuilder.csproj", "{54B3F2D8-7510-4445-8A4C-420A73994D03}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Common", "PapyrusDotNet.Common\PapyrusDotNet.Common.csproj", "{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Common", "PapyrusDotNet\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj", "{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example1", "..\Examples\Example1\Example1.csproj", "{58CA8F82-6071-4212-A745-51C4B4FA0544}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.System", "PapyrusDotNet.System\PapyrusDotNet.System.csproj", "{CAAF38B3-8033-4B23-9B50-0059306EAFAC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PapyrusAssembly", "PapyrusDotNet\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj", "{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.CoreBuilder.Tests", "PapyrusDotNet.CoreBuilder.Tests\PapyrusDotNet.CoreBuilder.Tests.csproj", "{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PapyrusAssembly.Tests", "PapyrusDotNet\PapyrusDotNet.PapyrusAssembly.Tests\PapyrusDotNet.PapyrusAssembly.Tests.csproj", "{E53819BD-3427-4DB1-96CD-6CA5E81AF756}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PapyrusAssembly", "PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj", "{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PapyrusAssembly.Tests", "PapyrusDotNet.PapyrusAssembly.Tests\PapyrusDotNet.PapyrusAssembly.Tests.csproj", "{E53819BD-3427-4DB1-96CD-6CA5E81AF756}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.ConsoleTests", "PapyrusDotNet.ConsoleTests\PapyrusDotNet.ConsoleTests.csproj", "{BD15920E-26D2-49EC-AD79-EB565858A6AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.ConsoleTests", "PapyrusDotNet\PapyrusDotNet.ConsoleTests\PapyrusDotNet.ConsoleTests.csproj", "{BD15920E-26D2-49EC-AD79-EB565858A6AA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test Scripts", "Test Scripts", "{2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Unit Tests", "Unit Tests", "{8F01FC55-0D09-42F5-B04D-93463B86E105}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extended Framework", "Extended Framework", "{3D43E2F5-59B9-4917-9578-8000DA86597D}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{6DFFF8A9-3932-4EFD-BA8F-7C6AB9DDFD24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Papyrus2Clr", "PapyrusDotNet.Papyrus2Clr\PapyrusDotNet.Converters.Papyrus2Clr.csproj", "{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Papyrus2Clr", "PapyrusDotNet\Converters\PapyrusDotNet.Converters.Papyrus2Clr\PapyrusDotNet.Converters.Papyrus2Clr.csproj", "{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Clr2Papyrus", "PapyrusDotNet.Clr2Papyrus\PapyrusDotNet.Converters.Clr2Papyrus.csproj", "{8547F068-C90E-4245-A9F8-20A98797E92B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Old Projects", "Old Projects", "{7017ED49-D123-4EC8-894E-73CA02B972A4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Clr2Papyrus", "PapyrusDotNet\Converters\PapyrusDotNet.Converters.Clr2Papyrus\PapyrusDotNet.Converters.Clr2Papyrus.csproj", "{8547F068-C90E-4245-A9F8-20A98797E92B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fallout4Example", "..\Examples\Fallout4Example\Fallout4Example.csproj", "{CEDA785C-79BD-457B-9A25-3EC69CD29042}"
 EndProject
@@ -201,22 +191,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fallout4", "fallout4", "{F3
 		Test Scripts\Fallout 4\WorkshopTutorialScript.pex = Test Scripts\Fallout 4\WorkshopTutorialScript.pex
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Clr2Papyrus.Test", "PapyrusDotNet.Converters.Clr2Papyrus.Test\PapyrusDotNet.Converters.Clr2Papyrus.Test.csproj", "{ABEE7921-79B8-45AF-B10B-FE4E421AE53F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Clr2Papyrus.Test", "PapyrusDotNet\Converters\PapyrusDotNet.Converters.Clr2Papyrus.Test\PapyrusDotNet.Converters.Clr2Papyrus.Test.csproj", "{ABEE7921-79B8-45AF-B10B-FE4E421AE53F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Papyrus2CSharp", "PapyrusDotNet.Converters.Papyrus2CSharp\PapyrusDotNet.Converters.Papyrus2CSharp.csproj", "{0F72BF82-253B-4588-9029-7C091C104118}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Converters.Papyrus2CSharp", "PapyrusDotNet\Converters\PapyrusDotNet.Converters.Papyrus2CSharp\PapyrusDotNet.Converters.Papyrus2CSharp.csproj", "{0F72BF82-253B-4588-9029-7C091C104118}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F8A2EB41-0C08-48CB-AB7E-2D70A2B036B5}"
 	ProjectSection(SolutionItems) = preProject
 		todo.txt = todo.txt
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{CACF0D57-6200-4689-B991-DAB2E0A4F66A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PexInspector", "PexInspector", "{CACF0D57-6200-4689-B991-DAB2E0A4F66A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector", "PapyrusDotNet.PexInspector\PapyrusDotNet.PexInspector.csproj", "{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector", "PexInspector\PapyrusDotNet.PexInspector\PapyrusDotNet.PexInspector.csproj", "{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector.ViewModels", "PapyrusDotNet.PexInspector.ViewModels\PapyrusDotNet.PexInspector.ViewModels.csproj", "{194AA6AE-668E-4633-BA12-5DB6D4DC0622}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector.ViewModels", "PexInspector\PapyrusDotNet.PexInspector.ViewModels\PapyrusDotNet.PexInspector.ViewModels.csproj", "{194AA6AE-668E-4633-BA12-5DB6D4DC0622}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector.ViewModels.Tests", "PapyrusDotNet.PexInspector.ViewModels.Tests\PapyrusDotNet.PexInspector.ViewModels.Tests.csproj", "{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector.ViewModels.Tests", "PexInspector\PapyrusDotNet.PexInspector.ViewModels.Tests\PapyrusDotNet.PexInspector.ViewModels.Tests.csproj", "{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Decompiler", "Decompiler", "{9E91BF35-5560-433D-85E6-4469E34B6570}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Decompiler", "Decompiler\PapyrusDotNet.Decompiler\PapyrusDotNet.Decompiler.csproj", "{60B17C45-ED1F-409B-A782-A3C264BEA061}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Decompiler.Tests", "Decompiler\PapyrusDotNet.Decompiler.Tests\PapyrusDotNet.Decompiler.Tests.csproj", "{94991FF5-7D68-415E-A884-7D346DE3BF3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -228,10 +224,6 @@ Global
 		{328A4BC6-9157-4581-B695-C7A51C3D965F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{328A4BC6-9157-4581-B695-C7A51C3D965F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{328A4BC6-9157-4581-B695-C7A51C3D965F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{54B3F2D8-7510-4445-8A4C-420A73994D03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{54B3F2D8-7510-4445-8A4C-420A73994D03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{54B3F2D8-7510-4445-8A4C-420A73994D03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{54B3F2D8-7510-4445-8A4C-420A73994D03}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -240,14 +232,6 @@ Global
 		{58CA8F82-6071-4212-A745-51C4B4FA0544}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58CA8F82-6071-4212-A745-51C4B4FA0544}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58CA8F82-6071-4212-A745-51C4B4FA0544}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CAAF38B3-8033-4B23-9B50-0059306EAFAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CAAF38B3-8033-4B23-9B50-0059306EAFAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CAAF38B3-8033-4B23-9B50-0059306EAFAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CAAF38B3-8033-4B23-9B50-0059306EAFAC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -292,15 +276,20 @@ Global
 		{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60B17C45-ED1F-409B-A782-A3C264BEA061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60B17C45-ED1F-409B-A782-A3C264BEA061}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60B17C45-ED1F-409B-A782-A3C264BEA061}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60B17C45-ED1F-409B-A782-A3C264BEA061}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94991FF5-7D68-415E-A884-7D346DE3BF3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94991FF5-7D68-415E-A884-7D346DE3BF3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94991FF5-7D68-415E-A884-7D346DE3BF3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94991FF5-7D68-415E-A884-7D346DE3BF3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{54B3F2D8-7510-4445-8A4C-420A73994D03} = {7017ED49-D123-4EC8-894E-73CA02B972A4}
 		{58CA8F82-6071-4212-A745-51C4B4FA0544} = {6DFFF8A9-3932-4EFD-BA8F-7C6AB9DDFD24}
-		{CAAF38B3-8033-4B23-9B50-0059306EAFAC} = {3D43E2F5-59B9-4917-9578-8000DA86597D}
-		{ACE75D2E-FECC-4409-AA07-7C9CDB287C77} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
 		{E53819BD-3427-4DB1-96CD-6CA5E81AF756} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
 		{BD15920E-26D2-49EC-AD79-EB565858A6AA} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
 		{CEDA785C-79BD-457B-9A25-3EC69CD29042} = {6DFFF8A9-3932-4EFD-BA8F-7C6AB9DDFD24}
@@ -310,5 +299,7 @@ Global
 		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8} = {CACF0D57-6200-4689-B991-DAB2E0A4F66A}
 		{194AA6AE-668E-4633-BA12-5DB6D4DC0622} = {CACF0D57-6200-4689-B991-DAB2E0A4F66A}
 		{4A81E183-AA39-4DAA-AB35-8A0D89BB7896} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
+		{60B17C45-ED1F-409B-A782-A3C264BEA061} = {9E91BF35-5560-433D-85E6-4469E34B6570}
+		{94991FF5-7D68-415E-A884-7D346DE3BF3D} = {9E91BF35-5560-433D-85E6-4469E34B6570}
 	EndGlobalSection
 EndGlobal

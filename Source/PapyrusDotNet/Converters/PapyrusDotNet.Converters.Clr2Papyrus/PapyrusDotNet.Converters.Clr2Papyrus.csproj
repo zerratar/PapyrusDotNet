@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8547F068-C90E-4245-A9F8-20A98797E92B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PapyrusDotNet.Converters.Clr2Papyrus</RootNamespace>
+    <AssemblyName>PapyrusDotNet.Converters.Clr2Papyrus</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Implementations\DelegateFinder.cs" />
+    <Compile Include="Exceptions\MissingVariableException.cs" />
+    <Compile Include="Exceptions\StackUnderflowException.cs" />
+    <Compile Include="Implementations\DelegatePairDefinition.cs" />
+    <Compile Include="Interfaces\IDelegatePairDefinition.cs" />
+    <Compile Include="Interfaces\IDelegateFinder.cs" />
+    <Compile Include="Implementations\Clr2PapyrusInstructionProcessor.cs" />
+    <Compile Include="Enums\PapyrusCompilerOptions.cs" />
+    <Compile Include="Exceptions\ProhibitedCodingBehaviourException.cs" />
+    <Compile Include="Exceptions\InvalidPropertyAccessException.cs" />
+    <Compile Include="Implementations\PapyrusStructFieldReference.cs" />
+    <Compile Include="Implementations\Processors\ReturnInstructionProcessor.cs" />
+    <Compile Include="Implementations\Processors\ConditionalInstructionProcessor.cs" />
+    <Compile Include="Implementations\Processors\CallInstructionProcessor.cs" />
+    <Compile Include="Implementations\Processors\BranchInstructionProcessor.cs" />
+    <Compile Include="Implementations\Processors\StoreInstructionProcessor.cs" />
+    <Compile Include="Implementations\Processors\StringConcatInstructionProcessor.cs" />
+    <Compile Include="Interfaces\IInstructionProcessor.cs" />
+    <Compile Include="Implementations\Processors\LoadInstructionProcessor.cs" />
+    <Compile Include="Interfaces\IClr2PapyrusInstructionProcessor.cs" />
+    <Compile Include="Implementations\ClrAssemblyInput.cs" />
+    <Compile Include="Clr2PapyrusConverter.cs" />
+    <Compile Include="Base\Clr2PapyrusConverterBase.cs" />
+    <Compile Include="Implementations\PapyrusAssemblyOutput.cs" />
+    <Compile Include="Interfaces\IMethodBodyOptimizer.cs" />
+    <Compile Include="Interfaces\IMethodBodyOptimizerResult.cs" />
+    <Compile Include="Interfaces\IPropertyAnalyzer.cs" />
+    <Compile Include="Interfaces\IPropertyAnalyzerResult.cs" />
+    <Compile Include="Implementations\PropertyAnalyzerResult.cs" />
+    <Compile Include="Implementations\PropertyAnalyzer.cs" />
+    <Compile Include="Implementations\MethodBodyOptimizerResult.cs" />
+    <Compile Include="Interfaces\MethodBodyOptimizer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
+      <Project>{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}</Project>
+      <Name>PapyrusDotNet.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">
+      <Project>{c5f9b5da-f44a-4129-98d1-2efdadf09b52}</Project>
+      <Name>PapyrusDotNet.PapyrusAssembly</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

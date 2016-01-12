@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{60B17C45-ED1F-409B-A782-A3C264BEA061}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PapyrusDotNet.Decompiler</RootNamespace>
+    <AssemblyName>PapyrusDotNet.Decompiler</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DecompilerContext.cs" />
+    <Compile Include="Extensions\CollectionExtensions.cs" />
+    <Compile Include="Extensions\TransformExtensions.cs" />
+    <Compile Include="HelperClasses\DynamicVisitor.cs" />
+    <Compile Include="HelperClasses\Visitor.cs" />
+    <Compile Include="NodeComparer.cs" />
+    <Compile Include="PapyrusFlowAnalyzer.cs" />
+    <Compile Include="Interfaces\IPapyrusDecompiler.cs" />
+    <Compile Include="Interfaces\IPapyrusDecompilerResult.cs" />
+    <Compile Include="PapyrusCodeGenerator.cs" />
+    <Compile Include="PapyrusCodeResult.cs" />
+    <Compile Include="PapyrusDecompilerResult.cs" />
+    <Compile Include="PapyrusDecompiler.cs" />
+    <Compile Include="PapyrusCodeBlock.cs" />
+    <Compile Include="Interfaces\ICodeGenerator.cs" />
+    <Compile Include="Interfaces\ICodeResult.cs" />
+    <Compile Include="Interfaces\ICodeResultError.cs" />
+    <Compile Include="Interfaces\IDecompilerContext.cs" />
+    <Compile Include="Interfaces\IFlowAnalyzer.cs" />
+    <Compile Include="Interfaces\INodeVisitor.cs" />
+    <Compile Include="HelperClasses\Map.cs" />
+    <Compile Include="Node\ArrayAccessNode.cs" />
+    <Compile Include="Node\ArrayCreateNode.cs" />
+    <Compile Include="Node\ArrayLengthNode.cs" />
+    <Compile Include="Node\AssignNode.cs" />
+    <Compile Include="Node\AssignOperatorNode.cs" />
+    <Compile Include="Node\BaseNode.cs" />
+    <Compile Include="Node\BinaryOperatorNode.cs" />
+    <Compile Include="Node\CallMethodNode.cs" />
+    <Compile Include="Node\CastNode.cs" />
+    <Compile Include="Node\ConstantNode.cs" />
+    <Compile Include="Interfaces\IVisitable.cs" />
+    <Compile Include="Interfaces\IVisitor.cs" />
+    <Compile Include="Node\CopyNode.cs" />
+    <Compile Include="Node\DeclareNode.cs" />
+    <Compile Include="Node\IdentifierStringNode.cs" />
+    <Compile Include="Node\IfElseNode.cs" />
+    <Compile Include="Node\NodePair.cs" />
+    <Compile Include="Node\ParamsNode.cs" />
+    <Compile Include="Node\PropertyAccessNode.cs" />
+    <Compile Include="Node\ReturnNode.cs" />
+    <Compile Include="Node\ScopeNode.cs" />
+    <Compile Include="Node\StructCreateNode.cs" />
+    <Compile Include="Node\UnaryOperatorNode.cs" />
+    <Compile Include="Node\WhileNode.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\PapyrusDotNet\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
+      <Project>{6B35B6AB-EA3B-42B0-B40F-66E490E59A15}</Project>
+      <Name>PapyrusDotNet.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\PapyrusDotNet\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">
+      <Project>{c5f9b5da-f44a-4129-98d1-2efdadf09b52}</Project>
+      <Name>PapyrusDotNet.PapyrusAssembly</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
