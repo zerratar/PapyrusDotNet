@@ -89,6 +89,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private ObservableCollection<PapyrusVariableReference> selectedMethodVariables;
         private PapyrusViewModel selectedNode;
         private string targetGameName;
+        private ICommand injectCapricaInfoCommand;
 
         public MainWindowViewModel(IDialogService dialogService, string fileToOpen)
         {
@@ -144,6 +145,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
                 OpenAboutCommand = new RelayCommand(OpenAboutWindow);
 
+                InjectCapricaInfoCommand = new RelayCommand(InjectCapricaInfo);
+
                 if (fileToOpen != null)
                 {
                     LoadPex(fileToOpen);
@@ -154,7 +157,29 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
             TargetGameName = "Unknown";
             SelectedMemberFlags = "<none>";
-            SelectedMemberName = new ObservableCollection<Inline>(new[] {new Run("Nothing Selected")});
+            SelectedMemberName = new ObservableCollection<Inline>(new[] { new Run("Nothing Selected") });
+        }
+
+        private void InjectCapricaInfo()
+        {
+            if (selectedMethod != null)
+            {
+                var asm = selectedMethod.DeclaringAssembly;
+
+                var desc = new PapyrusMethodDecription();
+                desc.Name = ":::Caprica".Ref(asm);
+                desc.MethodType = PapyrusMethodTypes.Method;
+                desc.DeclaringTypeName = asm.Types.First().Name;
+                desc.BodyLineNumbers.Add((short)'C');
+                desc.BodyLineNumbers.Add((short)'A');
+                desc.BodyLineNumbers.Add((short)'P');
+                desc.BodyLineNumbers.Add((short)'R');
+                desc.BodyLineNumbers.Add((short)'I');
+                desc.BodyLineNumbers.Add((short)'C');
+                desc.BodyLineNumbers.Add((short)'A');
+                asm.DebugInfo.MethodDescriptions.Add(desc);
+                selectedMethodNode.SetDirty(true);
+            }
         }
 
         public ObservableCollection<PapyrusViewModel> PexTree
@@ -337,6 +362,12 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         {
             get { return decompiledMemberText; }
             set { Set(ref decompiledMemberText, value); }
+        }
+
+        public ICommand InjectCapricaInfoCommand
+        {
+            get { return injectCapricaInfoCommand; }
+            set { Set(ref injectCapricaInfoCommand, value); }
         }
 
         public event EventHandler SelectedContentIndexChanged;
@@ -532,7 +563,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 type.Properties.Remove(prop);
 
                 pvm.SetDirty(true);
-                    // This will set the parent as dirty as well. So we gotta do this before removing it.
+                // This will set the parent as dirty as well. So we gotta do this before removing it.
                 pvm.Parent.Children.Remove(pvm);
                 RaiseCommandsCanExecute();
             }
@@ -564,7 +595,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     type.States.Remove(state);
 
                     pvm.SetDirty(true);
-                        // This will set the parent as dirty as well. So we gotta do this before removing it.
+                    // This will set the parent as dirty as well. So we gotta do this before removing it.
                     pvm.Parent.Children.Remove(pvm);
                     RaiseCommandsCanExecute();
                 }
@@ -596,7 +627,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     type.Fields.Remove(field);
 
                     pvm.SetDirty(true);
-                        // This will set the parent as dirty as well. So we gotta do this before removing it.
+                    // This will set the parent as dirty as well. So we gotta do this before removing it.
                     pvm.Parent.Children.Remove(pvm);
                     RaiseCommandsCanExecute();
                 }
@@ -634,7 +665,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     state.Methods.Remove(method);
 
                     pvm.SetDirty(true);
-                        // This will set the parent as dirty as well. So we gotta do this before removing it.
+                    // This will set the parent as dirty as well. So we gotta do this before removing it.
                     pvm.Parent.Children.Remove(pvm);
                     RaiseCommandsCanExecute();
                 }
@@ -1566,7 +1597,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                         i => Directory.GetFiles(i, "*.pex", SearchOption.AllDirectories)).ToList();
 
                     var items = discoveredScripts.Select(
-                        i => new {Name = Path.GetFileNameWithoutExtension(i)?.ToLower(), FullPath = i});
+                        i => new { Name = Path.GetFileNameWithoutExtension(i)?.ToLower(), FullPath = i });
 
                     items.ForEach(
                         i =>
@@ -1690,11 +1721,11 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             var type = item as PapyrusTypeDefinition;
             if (type != null)
             {
-                displayItems.Add(new Run(type.Name.Value) {Foreground = MethodColor, FontWeight = FontWeights.DemiBold});
+                displayItems.Add(new Run(type.Name.Value) { Foreground = MethodColor, FontWeight = FontWeights.DemiBold });
                 if (type.BaseTypeName != null && !string.IsNullOrEmpty(type.BaseTypeName.Value))
                 {
                     displayItems.Add(new Run(" : "));
-                    displayItems.Add(new Run(type.BaseTypeName.Value) {Foreground = TypeColor});
+                    displayItems.Add(new Run(type.BaseTypeName.Value) { Foreground = TypeColor });
                 }
             }
             var state = item as PapyrusStateDefinition;
@@ -1713,21 +1744,21 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 if (prop.IsAuto)
                 {
-                    displayItems.Add(new Run("Auto") {Foreground = AttributeColor});
+                    displayItems.Add(new Run("Auto") { Foreground = AttributeColor });
                     displayItems.Add(new Run(" "));
                 }
 
-                displayItems.Add(new Run("Property") {Foreground = AttributeColor});
+                displayItems.Add(new Run("Property") { Foreground = AttributeColor });
                 displayItems.Add(new Run(" "));
 
-                displayItems.Add(new Run(prop.TypeName.Value) {Foreground = TypeColor});
+                displayItems.Add(new Run(prop.TypeName.Value) { Foreground = TypeColor });
                 displayItems.Add(new Run(" "));
                 displayItems.Add(new Run(prop.Name.Value));
             }
             var field = item as PapyrusFieldDefinition;
             if (field != null)
             {
-                displayItems.Add(new Run(field.TypeName) {Foreground = TypeColor});
+                displayItems.Add(new Run(field.TypeName) { Foreground = TypeColor });
                 displayItems.Add(new Run(" "));
                 displayItems.Add(new Run(field.Name.Value));
             }
@@ -1736,23 +1767,23 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 if (method.IsNative)
                 {
-                    displayItems.Add(new Run("Native") {Foreground = AttributeColor});
+                    displayItems.Add(new Run("Native") { Foreground = AttributeColor });
                     displayItems.Add(new Run(" "));
                 }
                 if (method.IsGlobal)
                 {
-                    displayItems.Add(new Run("Global") {Foreground = AttributeColor});
+                    displayItems.Add(new Run("Global") { Foreground = AttributeColor });
                     displayItems.Add(new Run(" "));
                 }
 
                 if (method.IsEvent)
                 {
-                    displayItems.Add(new Run("Event") {Foreground = AttributeColor});
+                    displayItems.Add(new Run("Event") { Foreground = AttributeColor });
                     displayItems.Add(new Run(" "));
                 }
                 else
                 {
-                    displayItems.Add(new Run(method.ReturnTypeName.Value) {Foreground = TypeColor});
+                    displayItems.Add(new Run(method.ReturnTypeName.Value) { Foreground = TypeColor });
                     displayItems.Add(new Run(" "));
                 }
                 var nameRef = method.Name;
@@ -1760,7 +1791,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                            (method.IsSetter
                                ? method.PropName + ".Setter"
                                : method.IsGetter ? method.PropName + ".Getter" : "?????");
-                displayItems.Add(new Run(name) {Foreground = MethodColor, FontWeight = FontWeights.DemiBold});
+                displayItems.Add(new Run(name) { Foreground = MethodColor, FontWeight = FontWeights.DemiBold });
                 displayItems.AddRange(GetParameterRuns(method.Parameters));
                 displayItems.Add(new Run(";"));
             }
@@ -1775,7 +1806,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             for (var index = 0; index < parameters.Count; index++)
             {
                 var p = parameters[index];
-                output.Add(new Run(p.TypeName.Value) {Foreground = TypeColor});
+                output.Add(new Run(p.TypeName.Value) { Foreground = TypeColor });
                 output.Add(new Run(" "));
                 output.Add(new Run(p.Name.Value));
 

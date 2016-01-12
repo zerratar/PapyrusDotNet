@@ -57,7 +57,7 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 
         public override void Write(bool s)
         {
-            base.Write(s ? (byte) 1 : (byte) 0);
+            base.Write(s ? (byte)1 : (byte)0);
         }
 
         public void Write(PapyrusStringRef value)
@@ -66,14 +66,15 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
             {
                 assembly.StringTable = new PapyrusStringTable();
             }
+            var val = value?.Value ?? "";
 
-            assembly.StringTable.Add(value.Value);
+            assembly.StringTable.Add(val);
 
             //if (!assembly.StringTable.Contains(value.Value))
             //{
             //    assembly.StringTable.Add(value.Value);
             //}
-            Write(value.Value);
+            Write(val);
         }
 
         public override void Write(string value)
@@ -85,18 +86,18 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
             if (UseStringTable)
             {
                 if (assembly.StringTable == null) throw new NullReferenceException(nameof(assembly.StringTable));
-                Write((short) assembly.StringTable.IndexOf(value));
+                Write((short)assembly.StringTable.IndexOf(value));
                 return;
             }
 
             if (assembly.VersionTarget == PapyrusVersionTargets.Fallout4)
             {
-                base.Write((short) value.Length);
+                base.Write((short)value.Length);
                 base.Write(value.ToCharArray());
             }
             else
             {
-                WriteReversedBytes(BitConverter.GetBytes((short) value.Length));
+                WriteReversedBytes(BitConverter.GetBytes((short)value.Length));
                 base.Write(value.ToCharArray());
             }
         }

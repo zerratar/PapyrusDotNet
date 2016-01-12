@@ -163,7 +163,7 @@ namespace PapyrusDotNet.PapyrusAssembly
             if (!ReferenceEquals(null, a) && ReferenceEquals(null, b)) return false;
             if (ReferenceEquals(null, a)) return true;
 
-            return a.Identifier.ToLower() == b.Identifier.ToLower() ||
+            return a.Identifier == b.Identifier ||
                    a.table == b.table && a.TableIndex == b.TableIndex;
         }
 

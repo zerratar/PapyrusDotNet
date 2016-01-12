@@ -84,7 +84,9 @@
                         ToolTip="Reload Script" FontFamily="/Assets/Fonts/#FontAwesome" FontSize="16" Margin="5,0,0,0" />
                 <Button Command="{Binding SavePexCommand}" Content="&#xf0c7;" TextOptions.TextFormattingMode="Ideal"
                         ToolTip="Save Script" FontFamily="/Assets/Fonts/#FontAwesome" FontSize="16" Margin="5,0,0,0" />
-            </ToolBar>
+            <!--<Button Command="{Binding InjectCapricaInfoCommand}" Content="&#xf25b;" TextOptions.TextFormattingMode="Ideal"
+                        ToolTip="Inject Caprica Info" FontFamily="/Assets/Fonts/#FontAwesome" FontSize="16" Margin="5,0,0,0" />-->
+        </ToolBar>
         </ToolBarTray>
 
         <Grid DockPanel.Dock="Bottom">

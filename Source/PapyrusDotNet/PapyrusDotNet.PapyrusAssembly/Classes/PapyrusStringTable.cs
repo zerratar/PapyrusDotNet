@@ -38,10 +38,10 @@ namespace PapyrusDotNet.PapyrusAssembly
         public int Size => rows.Count;
 
         /// <summary>
-        ///     Gets or sets the <see cref="Index" /> at the specified index.
+        /// Gets or sets the <see cref="PapyrusDotNet.PapyrusAssembly.PapyrusStringTableIndex" /> at the specified index.
         /// </summary>
         /// <value>
-        ///     The <see cref="Index" />.
+        /// The <see cref="PapyrusDotNet.PapyrusAssembly.PapyrusStringTableIndex" />.
         /// </value>
         /// <param name="index">The index.</param>
         /// <returns></returns>
@@ -60,10 +60,10 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
         /// <summary>
-        ///     Gets or sets the <see cref="Index" /> with the specified identifier.
+        /// Gets or sets the <see cref="PapyrusDotNet.PapyrusAssembly.PapyrusStringTableIndex" /> with the specified identifier.
         /// </summary>
         /// <value>
-        ///     The <see cref="Index" />.
+        /// The <see cref="PapyrusDotNet.PapyrusAssembly.PapyrusStringTableIndex" />.
         /// </value>
         /// <param name="identifier">The identifier.</param>
         /// <returns></returns>
@@ -71,12 +71,12 @@ namespace PapyrusDotNet.PapyrusAssembly
         {
             get
             {
-                var idx = rows.FirstOrDefault(r => r.Identifier.ToLower() == identifier.ToLower());
+                var idx = rows.FirstOrDefault(r => r.Identifier == identifier);
                 return idx;
             }
             set
             {
-                var existing = rows.FirstOrDefault(r => r.Identifier.ToLower() == identifier.ToLower());
+                var existing = rows.FirstOrDefault(r => r.Identifier == identifier);
                 if (existing != null)
                 {
                     var i = rows.IndexOf(existing);
@@ -98,7 +98,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         public int IndexOf(string identifier)
         {
             var item =
-                rows.FirstOrDefault(i => i.Identifier.ToLower() == identifier.ToLower());
+                rows.FirstOrDefault(i => i.Identifier == identifier);
             if (item == null) return -1;
             return rows.IndexOf(item);
         }
@@ -111,19 +111,15 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// <returns></returns>
         public PapyrusStringTableIndex Add(string identifier, bool forceAddAlreadyExists = false)
         {
-            if (rowData.ContainsKey(identifier.ToLower()) && !forceAddAlreadyExists)
-                return rowData[identifier.ToLower()];
-
-            //var existing =
-            //rows.FirstOrDefault(i => i.Identifier.ToLower() == identifier.ToLower());
-            //if (existing != null) return existing;
+            if (rowData.ContainsKey(identifier) && !forceAddAlreadyExists)
+                return rowData[identifier];
 
             var papyrusStringTableIndex = new PapyrusStringTableIndex(this, Size, identifier);
 
             rows.Add(papyrusStringTableIndex);
 
-            if (!rowData.ContainsKey(identifier.ToLower()))
-                rowData.Add(identifier.ToLower(), papyrusStringTableIndex);
+            if (!rowData.ContainsKey(identifier))
+                rowData.Add(identifier, papyrusStringTableIndex);
 
             return papyrusStringTableIndex;
         }
