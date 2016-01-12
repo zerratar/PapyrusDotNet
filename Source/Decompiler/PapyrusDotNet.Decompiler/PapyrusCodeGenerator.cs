@@ -111,18 +111,25 @@ namespace PapyrusDotNet.Decompiler
                 returnValue = method.ReturnTypeName.Value + " ";
             }
 
+            var last = "";
+            if (method.IsNative)
+                last += " Native";
+            if (method.IsGlobal)
+                last += " Global";
+
             var parameters = GetParameterString(method.Parameters);
 
-            sb.AppendLine(returnValue + fDesc + " " + name + parameters);
+            sb.AppendLine(returnValue + fDesc + " " + name + parameters + last);
 
             if (!string.IsNullOrEmpty(method.Documentation?.Value))
                 sb.AppendLine("{ " + method.Documentation?.Value + " }");
 
             sb.AppendLine(IndentedLines(1, methodBody.Trim('\n', '\r')));
 
-            sb.AppendLine("End" + fDesc);
+            if (!method.IsNative)
+                sb.AppendLine("End" + fDesc);
 
-            return sb.ToString();
+            return sb.ToString().Trim('\n');
         }
 
         public bool Result { get; private set; }

@@ -126,7 +126,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
             for (var i = 0; i < stringTableLength; i++)
             {
-                stringTable.Add(pexReader.ReadString());
+                stringTable.Add(pexReader.ReadString(), true);
             }
 
             asm.StringTable = stringTable;

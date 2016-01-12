@@ -104,12 +104,14 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
         /// <summary>
-        ///     Adds the specified identifier to the string table, if it already exists it will just return the existing one.
+        /// Adds the specified identifier to the string table, if it already exists it will just return the existing one.
         /// </summary>
         /// <param name="identifier">The identifier.</param>
-        public PapyrusStringTableIndex Add(string identifier)
+        /// <param name="forceAddAlreadyExists">if set to <c>true</c> [force add already exists].</param>
+        /// <returns></returns>
+        public PapyrusStringTableIndex Add(string identifier, bool forceAddAlreadyExists = false)
         {
-            if (rowData.ContainsKey(identifier.ToLower()))
+            if (rowData.ContainsKey(identifier.ToLower()) && !forceAddAlreadyExists)
                 return rowData[identifier.ToLower()];
 
             //var existing =
@@ -120,7 +122,8 @@ namespace PapyrusDotNet.PapyrusAssembly
 
             rows.Add(papyrusStringTableIndex);
 
-            rowData.Add(identifier.ToLower(), papyrusStringTableIndex);
+            if (!rowData.ContainsKey(identifier.ToLower()))
+                rowData.Add(identifier.ToLower(), papyrusStringTableIndex);
 
             return papyrusStringTableIndex;
         }
