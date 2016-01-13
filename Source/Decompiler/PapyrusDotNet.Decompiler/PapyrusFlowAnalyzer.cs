@@ -70,87 +70,87 @@ namespace PapyrusDotNet.Decompiler
                 switch (ins.OpCode)
                 {
                     case PapyrusOpCodes.Jmp:
-                    {
-                        Assert.AreEqual(1, ins.Arguments.Count);
-                        Assert.AreEqual(PapyrusPrimitiveType.Integer, ins.Arguments[0].Type);
-
-                        var target = ip + int.Parse(ins.GetArg(0));
-
-                        // Unconditional jump
-                        // Split the block at the jump and set the next block to the target of the jump.
-
-                        var nextBlock = blocks.Find(ip + 1);
-                        if (nextBlock == null)
                         {
-                            var nblock = blocks[block].Split(ip + 1);
-                            blocks[nblock.Begin] = nblock;
+                            Assert.AreEqual(1, ins.Arguments.Count);
+                            Assert.AreEqual(PapyrusPrimitiveType.Integer, ins.Arguments[0].Type);
+
+                            var target = ip + int.Parse(ins.GetArg(0));
+
+                            // Unconditional jump
+                            // Split the block at the jump and set the next block to the target of the jump.
+
+                            var nextBlock = blocks.Find(ip + 1);
+                            if (nextBlock == null)
+                            {
+                                var nblock = blocks[block].Split(ip + 1);
+                                blocks[nblock.Begin] = nblock;
+                            }
+                            blocks[block].Next = target;
+                            var tarBlock = blocks.Find(target);
+                            if (tarBlock == null)
+                            {
+                                var cblock = blocks[FindBlockForInstruction(target)];
+                                var tblock = cblock.Split(target);
+                                blocks[tblock.Begin] = tblock;
+                            }
+                            break;
                         }
-                        blocks[block].Next = target;
-                        var tarBlock = blocks.Find(target);
-                        if (tarBlock == null)
-                        {
-                            var cblock = blocks[FindBlockForInstruction(target)];
-                            var tblock = cblock.Split(target);
-                            blocks[tblock.Begin] = tblock;
-                        }
-                        break;
-                    }
                     case PapyrusOpCodes.Jmpf:
                     case PapyrusOpCodes.Jmpt:
-                    {
-                        Assert.AreEqual(2, ins.Arguments.Count);
-                        Assert.IsTrue(ins.Arguments[0].Type == PapyrusPrimitiveType.Reference ||
-                                      ins.Arguments[0].Type == PapyrusPrimitiveType.Boolean);
-                        Assert.AreEqual(PapyrusPrimitiveType.Integer, ins.Arguments[1].Type);
-
-                        // Conditional jump
-                        // The block is split at the jump.
-                        // The block condition is set to the condition of the jump,
-                        // The true and false block are set to the target of the jump, and the instruction following the jump.
-                        // The true or false order is decided from the kind of jump (jmpf/jmpt).
-                        var target = ip + int.Parse(ins.GetArg(1));
-                        var nextBlock = blocks.Find(ip + 1);
-                        if (nextBlock == null)
                         {
-                            var nblock = blocks[block].Split(ip + 1);
-                            blocks[nblock.Begin] = nblock;
-                        }
+                            Assert.AreEqual(2, ins.Arguments.Count);
+                            Assert.IsTrue(ins.Arguments[0].Type == PapyrusPrimitiveType.Reference ||
+                                          ins.Arguments[0].Type == PapyrusPrimitiveType.Boolean);
+                            Assert.AreEqual(PapyrusPrimitiveType.Integer, ins.Arguments[1].Type);
 
-                        var tarBlock = blocks.Find(target);
-                        if (tarBlock == null)
-                        {
-                            var cblock = blocks[FindBlockForInstruction(target)];
-                            var tblock = cblock.Split(target);
-                            blocks[tblock.Begin] = tblock;
-                        }
-
-                        PapyrusStringTableIndex condition = null;
-
-                        if (ins.Arguments[0].Type == PapyrusPrimitiveType.Reference)
-                        {
-                            condition = ins.GetArgTableIndex(0);
-                        }
-                        else
-                        {
-                            if (ins.GetBoolArg(0))
+                            // Conditional jump
+                            // The block is split at the jump.
+                            // The block condition is set to the condition of the jump,
+                            // The true and false block are set to the target of the jump, and the instruction following the jump.
+                            // The true or false order is decided from the kind of jump (jmpf/jmpt).
+                            var target = ip + int.Parse(ins.GetArg(1));
+                            var nextBlock = blocks.Find(ip + 1);
+                            if (nextBlock == null)
                             {
-                                condition = tempTable["true"];
+                                var nblock = blocks[block].Split(ip + 1);
+                                blocks[nblock.Begin] = nblock;
+                            }
+
+                            var tarBlock = blocks.Find(target);
+                            if (tarBlock == null)
+                            {
+                                var cblock = blocks[FindBlockForInstruction(target)];
+                                var tblock = cblock.Split(target);
+                                blocks[tblock.Begin] = tblock;
+                            }
+
+                            PapyrusStringTableIndex condition = null;
+
+                            if (ins.Arguments[0].Type == PapyrusPrimitiveType.Reference)
+                            {
+                                condition = ins.GetArgTableIndex(0);
                             }
                             else
                             {
-                                condition = tempTable["false"];
+                                if (ins.GetBoolArg(0))
+                                {
+                                    condition = tempTable["true"];
+                                }
+                                else
+                                {
+                                    condition = tempTable["false"];
+                                }
                             }
+                            if (ins.OpCode == PapyrusOpCodes.Jmpf)
+                            {
+                                blocks[block].SetCondition(condition, ip + 1, target);
+                            }
+                            else
+                            {
+                                blocks[block].SetCondition(condition, target, ip + 1);
+                            }
+                            break;
                         }
-                        if (ins.OpCode == PapyrusOpCodes.Jmpf)
-                        {
-                            blocks[block].SetCondition(condition, ip + 1, target);
-                        }
-                        else
-                        {
-                            blocks[block].SetCondition(condition, target, ip + 1);
-                        }
-                        break;
-                    }
                 }
                 ++ip;
             }
@@ -446,302 +446,302 @@ namespace PapyrusDotNet.Decompiler
                         case PapyrusOpCodes.Fadd:
                         case PapyrusOpCodes.Iadd:
                         case PapyrusOpCodes.Strcat:
-                        {
-                            node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "+",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "+",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.Isub:
                         case PapyrusOpCodes.Fsub:
-                        {
-                            node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "-",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "-",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.Imul:
                         case PapyrusOpCodes.Fmul:
-                        {
-                            node = new BinaryOperatorNode(ip, 4, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "*",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 4, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "*",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.Idiv:
                         case PapyrusOpCodes.Fdiv:
-                        {
-                            node = new BinaryOperatorNode(ip, 4, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "/",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 4, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "/",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.Imod:
-                        {
-                            node = new BinaryOperatorNode(ip, 4, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "%",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 4, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "%",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.Not:
-                        {
-                            node = new UnaryOperatorNode(ip, 3, ins.GetArgTableIndex(0), "!", FromValue(ip, args[1]));
-                            break;
-                        }
+                            {
+                                node = new UnaryOperatorNode(ip, 3, ins.GetArgTableIndex(0), "!", FromValue(ip, args[1]));
+                                break;
+                            }
                         case PapyrusOpCodes.Fneg:
                         case PapyrusOpCodes.Ineg:
-                        {
-                            node = new UnaryOperatorNode(ip, 3, ins.GetArgTableIndex(0), "-", FromValue(ip, args[1]));
-                            break;
-                        }
+                            {
+                                node = new UnaryOperatorNode(ip, 3, ins.GetArgTableIndex(0), "-", FromValue(ip, args[1]));
+                                break;
+                            }
                         case PapyrusOpCodes.Assign:
-                        {
-                            var idx = ins.GetArgTableIndex(0);
-                            node = new CopyNode(ip, idx, FromValue(ip, args[1]));
-                            break;
-                        }
+                            {
+                                var idx = ins.GetArgTableIndex(0);
+                                node = new CopyNode(ip, idx, FromValue(ip, args[1]));
+                                break;
+                            }
                         case PapyrusOpCodes.Cast:
-                        {
-                            if (args[1].Type == PapyrusPrimitiveType.None)
                             {
-                                node = new CopyNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]));
-                            }
-                            else if (args[1].Type != PapyrusPrimitiveType.Reference ||
-                                     (TypeOfVar(ins.GetArgTableIndex(0)) != TypeOfVar(ins.GetArgTableIndex(1))
-                                      && ins.GetArgTableIndex(1).Identifier.ToLower() != "none"))
-                            {
-                                node = new CastNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]),
-                                    TypeOfVar(ins.GetArgTableIndex(0)));
-                            }
-                            else
-                            {
-                                node = new CopyNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]));
-                            }
+                                if (args[1].Type == PapyrusPrimitiveType.None)
+                                {
+                                    node = new CopyNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]));
+                                }
+                                else if (args[1].Type != PapyrusPrimitiveType.Reference ||
+                                         (TypeOfVar(ins.GetArgTableIndex(0)) != TypeOfVar(ins.GetArgTableIndex(1))
+                                          && ins.GetArgTableIndex(1).Identifier.ToLower() != "none"))
+                                {
+                                    node = new CastNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]),
+                                        TypeOfVar(ins.GetArgTableIndex(0)));
+                                }
+                                else
+                                {
+                                    node = new CopyNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]));
+                                }
 
-                            break;
-                        }
+                                break;
+                            }
                         case PapyrusOpCodes.CmpEq:
-                        {
-                            node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "==",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "==",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.CmpLt:
-                        {
-                            node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "<",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "<",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.CmpLte:
-                        {
-                            node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "<=",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "<=",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.CmpGt:
-                        {
-                            node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), ">",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), ">",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.CmpGte:
-                        {
-                            node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), ">=",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 5, ins.GetArgTableIndex(0), FromValue(ip, args[1]), ">=",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
 
                         case PapyrusOpCodes.Callmethod:
-                        {
-                            var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(2), FromValue(ip, args[1]),
-                                ins.GetArgTableIndex(0));
-                            var p = callNode.GetParameters();
-                            foreach (var varg in varargs)
                             {
-                                p.Adopt(FromValue(ip, varg));
+                                var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(2), FromValue(ip, args[1]),
+                                    ins.GetArgTableIndex(0));
+                                var p = callNode.GetParameters();
+                                foreach (var varg in varargs)
+                                {
+                                    p.Adopt(FromValue(ip, varg));
+                                }
+                                node = callNode;
+                                break;
                             }
-                            node = callNode;
-                            break;
-                        }
                         case PapyrusOpCodes.Callstatic:
-                        {
-                            var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(2), FromValue(ip, args[0]),
-                                ins.GetArgTableIndex(1));
-
-                            var p = callNode.GetParameters();
-                            foreach (var varg in varargs)
                             {
-                                p.Adopt(FromValue(ip, varg));
+                                var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(2), FromValue(ip, args[0]),
+                                    ins.GetArgTableIndex(1));
+
+                                var p = callNode.GetParameters();
+                                foreach (var varg in varargs)
+                                {
+                                    p.Adopt(FromValue(ip, varg));
+                                }
+                                node = callNode;
+                                break;
                             }
-                            node = callNode;
-                            break;
-                        }
                         case PapyrusOpCodes.Callparent:
-                        {
-                            var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1),
-                                new IdentifierStringNode(ip, "Parent"),
-                                ins.GetArgTableIndex(0));
+                            {
+                                var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1),
+                                    new IdentifierStringNode(ip, "Parent"),
+                                    ins.GetArgTableIndex(0));
 
-                            var p = callNode.GetParameters();
-                            foreach (var varg in varargs)
-                            {
-                                p.Adopt(FromValue(ip, varg));
+                                var p = callNode.GetParameters();
+                                foreach (var varg in varargs)
+                                {
+                                    p.Adopt(FromValue(ip, varg));
+                                }
+                                node = callNode;
+                                break;
                             }
-                            node = callNode;
-                            break;
-                        }
                         case PapyrusOpCodes.Return:
-                        {
-                            if (method.ReturnTypeName.Value.ToLower() == "none")
                             {
-                                node = new ReturnNode(ip, null);
+                                if (method.ReturnTypeName.Value.ToLower() == "none")
+                                {
+                                    node = new ReturnNode(ip, null);
+                                }
+                                else
+                                {
+                                    node = new ReturnNode(ip, FromValue(ip, args[0]));
+                                }
+                                break;
                             }
-                            else
-                            {
-                                node = new ReturnNode(ip, FromValue(ip, args[0]));
-                            }
-                            break;
-                        }
                         case PapyrusOpCodes.PropGet:
-                        {
-                            node = new PropertyAccessNode(ip, ins.GetArgTableIndex(2), FromValue(ip, args[1]),
-                                ins.GetArgTableIndex(0));
-                            break;
-                        }
+                            {
+                                node = new PropertyAccessNode(ip, ins.GetArgTableIndex(2), FromValue(ip, args[1]),
+                                    ins.GetArgTableIndex(0));
+                                break;
+                            }
                         case PapyrusOpCodes.PropSet:
-                        {
-                            node = new PropertyAccessNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[1]),
-                                ins.GetArgTableIndex(0));
-                            node = new AssignNode(ip, node, FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new PropertyAccessNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[1]),
+                                    ins.GetArgTableIndex(0));
+                                node = new AssignNode(ip, node, FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayCreate:
-                        {
-                            node = new ArrayCreateNode(ip, ins.GetArgTableIndex(0), TypeOfVar(ins.GetArgTableIndex(0)),
-                                FromValue(ip, args[1]));
-                            break;
-                        }
+                            {
+                                node = new ArrayCreateNode(ip, ins.GetArgTableIndex(0), TypeOfVar(ins.GetArgTableIndex(0)),
+                                    FromValue(ip, args[1]));
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayLength:
-                        {
-                            node = new ArrayLengthNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]));
-                            break;
-                        }
+                            {
+                                node = new ArrayLengthNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]));
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayGetElement:
-                        {
-                            node = new ArrayAccessNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]),
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new ArrayAccessNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]),
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.ArraySetElement:
-                        {
-                            node = new ArrayAccessNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
-                                FromValue(ip, args[1]));
-                            node = new AssignNode(ip, node, FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new ArrayAccessNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
+                                    FromValue(ip, args[1]));
+                                node = new AssignNode(ip, node, FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayFindElement:
-                        {
-                            var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1), FromValue(ip, args[0]),
-                                tempTable["find"]);
-                            var pNode = callNode.GetParameters();
-                            pNode.Adopt(FromValue(ip, args[2]));
-                            pNode.Adopt(FromValue(ip, args[3]));
-                            node = callNode;
-                            break;
-                        }
+                            {
+                                var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1), FromValue(ip, args[0]),
+                                    tempTable["find"]);
+                                var pNode = callNode.GetParameters();
+                                pNode.Adopt(FromValue(ip, args[2]));
+                                pNode.Adopt(FromValue(ip, args[3]));
+                                node = callNode;
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayFindLastElement:
-                        {
-                            var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1), FromValue(ip, args[0]),
-                                tempTable["rfind"]);
-                            var pNode = callNode.GetParameters();
-                            pNode.Adopt(FromValue(ip, args[2]));
-                            pNode.Adopt(FromValue(ip, args[3]));
-                            node = callNode;
-                            break;
-                        }
+                            {
+                                var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1), FromValue(ip, args[0]),
+                                    tempTable["rfind"]);
+                                var pNode = callNode.GetParameters();
+                                pNode.Adopt(FromValue(ip, args[2]));
+                                pNode.Adopt(FromValue(ip, args[3]));
+                                node = callNode;
+                                break;
+                            }
                         case PapyrusOpCodes.Is:
-                        {
-                            node = new BinaryOperatorNode(ip, 0, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "is",
-                                FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new BinaryOperatorNode(ip, 0, ins.GetArgTableIndex(0), FromValue(ip, args[1]), "is",
+                                    FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.StructCreate:
-                        {
-                            node = new StructCreateNode(ip, ins.GetArgTableIndex(0), TypeOfVar(ins.GetArgTableIndex(0)));
-                            break;
-                        }
+                            {
+                                node = new StructCreateNode(ip, ins.GetArgTableIndex(0), TypeOfVar(ins.GetArgTableIndex(0)));
+                                break;
+                            }
                         case PapyrusOpCodes.StructGet:
-                        {
-                            node = new PropertyAccessNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]),
-                                ins.GetArgTableIndex(2));
-                            break;
-                        }
+                            {
+                                node = new PropertyAccessNode(ip, ins.GetArgTableIndex(0), FromValue(ip, args[1]),
+                                    ins.GetArgTableIndex(2));
+                                break;
+                            }
                         case PapyrusOpCodes.StructSet:
-                        {
-                            node = new PropertyAccessNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
-                                ins.GetArgTableIndex(1));
-                            node = new AssignNode(ip, node, FromValue(ip, args[2]));
-                            break;
-                        }
+                            {
+                                node = new PropertyAccessNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
+                                    ins.GetArgTableIndex(1));
+                                node = new AssignNode(ip, node, FromValue(ip, args[2]));
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayFindStruct:
-                        {
-                            var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1), FromValue(ip, args[0]),
-                                tempTable["find"]);
-                            var pNode = callNode.GetParameters();
-                            pNode.Adopt(FromValue(ip, args[2]));
-                            pNode.Adopt(FromValue(ip, args[3]));
-                            pNode.Adopt(FromValue(ip, args[4]));
-                            node = callNode;
-                            break;
-                        }
+                            {
+                                var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1), FromValue(ip, args[0]),
+                                    tempTable["find"]);
+                                var pNode = callNode.GetParameters();
+                                pNode.Adopt(FromValue(ip, args[2]));
+                                pNode.Adopt(FromValue(ip, args[3]));
+                                pNode.Adopt(FromValue(ip, args[4]));
+                                node = callNode;
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayFindLastStruct:
-                        {
-                            var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1), FromValue(ip, args[0]),
-                                tempTable["rfind"]);
-                            var pNode = callNode.GetParameters();
-                            pNode.Adopt(FromValue(ip, args[2]));
-                            pNode.Adopt(FromValue(ip, args[3]));
-                            pNode.Adopt(FromValue(ip, args[4]));
-                            node = callNode;
-                            break;
-                        }
+                            {
+                                var callNode = new CallMethodNode(ip, ins.GetArgTableIndex(1), FromValue(ip, args[0]),
+                                    tempTable["rfind"]);
+                                var pNode = callNode.GetParameters();
+                                pNode.Adopt(FromValue(ip, args[2]));
+                                pNode.Adopt(FromValue(ip, args[3]));
+                                pNode.Adopt(FromValue(ip, args[4]));
+                                node = callNode;
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayAddElements:
-                        {
-                            var callNode = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
-                                tempTable["add"]);
-                            var pNode = callNode.GetParameters();
-                            pNode.Adopt(FromValue(ip, args[1]));
-                            pNode.Adopt(FromValue(ip, args[2]));
-                            node = callNode;
-                            break;
-                        }
+                            {
+                                var callNode = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
+                                    tempTable["add"]);
+                                var pNode = callNode.GetParameters();
+                                pNode.Adopt(FromValue(ip, args[1]));
+                                pNode.Adopt(FromValue(ip, args[2]));
+                                node = callNode;
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayInsertElement:
-                        {
-                            var callNode = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
-                                tempTable["insert"]);
-                            var pNode = callNode.GetParameters();
-                            pNode.Adopt(FromValue(ip, args[1]));
-                            pNode.Adopt(FromValue(ip, args[2]));
-                            node = callNode;
-                            break;
-                        }
+                            {
+                                var callNode = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
+                                    tempTable["insert"]);
+                                var pNode = callNode.GetParameters();
+                                pNode.Adopt(FromValue(ip, args[1]));
+                                pNode.Adopt(FromValue(ip, args[2]));
+                                node = callNode;
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayRemoveLastElement:
-                        {
-                            node = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
-                                tempTable["removelast"]);
-                            break;
-                        }
+                            {
+                                node = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
+                                    tempTable["removelast"]);
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayRemoveElements:
-                        {
-                            var callNode = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
-                                tempTable["remove"]);
-                            var pNode = callNode.GetParameters();
-                            pNode.Adopt(FromValue(ip, args[1]));
-                            pNode.Adopt(FromValue(ip, args[2]));
-                            node = callNode;
-                            break;
-                        }
+                            {
+                                var callNode = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
+                                    tempTable["remove"]);
+                                var pNode = callNode.GetParameters();
+                                pNode.Adopt(FromValue(ip, args[1]));
+                                pNode.Adopt(FromValue(ip, args[2]));
+                                node = callNode;
+                                break;
+                            }
                         case PapyrusOpCodes.ArrayClearElements:
-                        {
-                            node = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
-                                tempTable["clear"]);
-                            break;
-                        }
+                            {
+                                node = new CallMethodNode(ip, new PapyrusStringTableIndex(), FromValue(ip, args[0]),
+                                    tempTable["clear"]);
+                                break;
+                            }
                     }
                     if (node != null)
                     {
@@ -1047,16 +1047,6 @@ namespace PapyrusDotNet.Decompiler
                 })
                 .Transform(node =>
                 {
-                    var methodName = context.GetTargetMethod().Name.Value;
-                    if (methodName == "InitializeLoiterBuffer")
-                    {
-                        // The Else item will be removed when
-                        // SetElse on node is executed
-                        // this will result in one item less
-                        // and the wrong item will be replaced when the SetElse is 
-                        // on childIfNode is executed and leave a nullptr as the last child                       
-                    }
-
                     var childIfNode = node.GetElse()[0] as IfElseNode;
 
                     node.SetElse(childIfNode.GetElse());
@@ -1065,6 +1055,38 @@ namespace PapyrusDotNet.Decompiler
 
                     node.GetElseIf().Adopt(childIfNode);
                     node.GetElseIf().MergeChildren(childIfNode.GetElseIf());
+                    return node;
+                })
+                .On(tree);
+
+            // Make empty IfElse bodies that contains an "else" with a body have its condition changed
+            // by adding a unaryoperator: NOT.
+            // EX:
+            // if(something)
+            //  ; empty
+            // else
+            //  ; body here
+            // endif
+            new WithNode<IfElseNode>()
+                .Select(n =>
+                {
+
+                    var elseNode = n.GetElse();
+                    var elseIfNode = n.GetElseIf();
+                    var bodyNode = n.GetBody();
+                    return bodyNode.Size == 0 &&
+                           elseNode.Size > 0 &&
+                           elseIfNode.Size == 0; // First item should be the if/else. While parent is a scope.
+                })
+                .Transform(node =>
+                {
+                    var eN = node.GetElse(); // Else Body
+
+                    node.SetBody(eN);
+
+                    node.SetCondition(new UnaryOperatorNode(node.GetBegin(), 3, node.GetResult(), "!", node.GetCondition()));
+
+                    node.SetElse(new ScopeNode());
                     return node;
                 })
                 .On(tree);

@@ -80,6 +80,18 @@ namespace PapyrusDotNet.Decompiler.Node
         public void SetElse(BaseNode elseNode) => elseBody.SetSlave(elseNode);
 
         /// <summary>
+        /// Sets the body.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        public void SetBody(BaseNode node) => body.SetSlave(node);
+
+        /// <summary>
+        /// Sets the condition.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        public void SetCondition(BaseNode node) => condition.SetSlave(node);
+
+        /// <summary>
         ///     Computes the instruction bounds.
         /// </summary>
         public override void ComputeInstructionBounds()

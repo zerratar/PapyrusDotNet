@@ -16,7 +16,7 @@
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         d:DataContext="{x:Static viewModels:MainWindowViewModel.DesignInstance}"
         mc:Ignorable="d"
-        Title="PapyrusDotNet PexInspector - v0.2.0 Alpha by Zerratar" Height="780" Width="1024">
+        Title="PapyrusDotNet PexInspector - v0.2.1 Alpha by Zerratar" Height="780" Width="1024">
 
     <!---->
 
