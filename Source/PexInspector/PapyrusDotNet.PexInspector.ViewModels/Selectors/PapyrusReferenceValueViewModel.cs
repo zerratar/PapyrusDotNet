@@ -167,19 +167,19 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 }
                 ReferenceSelectionVisible = Visibility.Collapsed;
             }
-            else if (tar == "selfref")
-            {
-                if (currentType.Assembly != null)
-                {
-                    SelectedReference = new PapyrusVariableReference
-                    {
-                        Name = "SelfRef".Ref(currentType.Assembly),
-                        Value = "SelfRef",
-                        Type = PapyrusPrimitiveType.Reference
-                    };
-                }
-                ReferenceSelectionVisible = Visibility.Collapsed;
-            }
+            //else if (tar == "selfref")
+            //{
+            //    if (currentType.Assembly != null)
+            //    {
+            //        SelectedReference = new PapyrusVariableReference
+            //        {
+            //            Name = "SelfRef".Ref(currentType.Assembly),
+            //            Value = "SelfRef",
+            //            Type = PapyrusPrimitiveType.Reference
+            //        };
+            //    }
+            //    ReferenceSelectionVisible = Visibility.Collapsed;
+            //}
         }
 
 

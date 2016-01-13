@@ -179,23 +179,23 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                         else
                             SelectedItem = "Self";
                     }
-                    else if (tar == "selfref")
-                    {
-                        ConstantValueVisibility = Visibility.Collapsed;
-                        SelectedConstantValue = null;
-                        showNone = true;
-                        if (currentType.Assembly != null)
-                        {
-                            SelectedItem = new PapyrusVariableReference
-                            {
-                                Name= "SelfRef".Ref(currentType.Assembly),
-                                Value = "SelfRef",
-                                Type = PapyrusPrimitiveType.Reference
-                            };
-                        }
-                        else
-                            SelectedItem = "SelfRef";
-                    }
+                    //else if (tar == "selfref")
+                    //{
+                    //    ConstantValueVisibility = Visibility.Collapsed;
+                    //    SelectedConstantValue = null;
+                    //    showNone = true;
+                    //    if (currentType.Assembly != null)
+                    //    {
+                    //        SelectedItem = new PapyrusVariableReference
+                    //        {
+                    //            Name= "SelfRef".Ref(currentType.Assembly),
+                    //            Value = "SelfRef",
+                    //            Type = PapyrusPrimitiveType.Reference
+                    //        };
+                    //    }
+                    //    else
+                    //        SelectedItem = "SelfRef";
+                    //}
                     else if (tar == "none")
                     {
                         showNone = true;
@@ -359,7 +359,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
 
                 // if(desc.)
                 elements.Add(new ComboBoxItem { Content = "Self" });
-                elements.Add(new ComboBoxItem { Content = "SelfRef" });
+                //elements.Add(new ComboBoxItem { Content = "SelfRef" });
                 return elements;
             }
 
@@ -375,7 +375,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
             elements.Add(new ComboBoxItem { Content = "Field" });
 
             elements.Add(new ComboBoxItem { Content = "Self" });
-            elements.Add(new ComboBoxItem { Content = "SelfRef" });
+            //elements.Add(new ComboBoxItem { Content = "SelfRef" });
             return elements;
         }
 
@@ -391,7 +391,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
         {
             var val = selectedValueType as ComboBoxItem;
             var tar = val.Content.ToString().ToLower();
-            if (tar == "variable" || tar == "parameter" || tar == "field" || tar == "self" || tar == "selfref" || tar == "none")
+            if (tar == "variable" || tar == "parameter" || tar == "field" || tar == "self" || /*tar == "selfref" || */tar == "none")
                 return;
             if (tar == "string")
             {
