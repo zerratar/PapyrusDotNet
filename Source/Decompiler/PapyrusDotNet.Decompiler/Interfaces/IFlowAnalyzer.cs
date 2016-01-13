@@ -58,13 +58,26 @@ namespace PapyrusDotNet.Decompiler.Interfaces
         void RebuildExpressionsInBlocks();
 
         /// <summary>
-        ///     Rebuils the boolean operators.
+        /// Rebuils the boolean operators.
         /// </summary>
-        void RebuildBooleanOperators(int startBlock, int endBlock);
+        /// <param name="startBlock">The start block.</param>
+        /// <param name="endBlock">The end block.</param>
+        /// <param name="depth">The depth.</param>
+        void RebuildBooleanOperators(int startBlock, int endBlock, int depth = 0);
 
         /// <summary>
         ///     Builds the type index, mapping a table reference to its type.
         /// </summary>
         void FindVarTypes();
+
+        /// <summary>
+        /// Maps the long lived temporary variables.
+        /// </summary>
+        void MapLongLivedTempVariables();
+
+        /// <summary>
+        /// Assigns the long lived temporary variables.
+        /// </summary>
+        void AssignLongLivedTempVariables();
     }
 }

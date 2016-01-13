@@ -183,7 +183,7 @@ namespace PapyrusDotNet.Decompiler
         /// <returns></returns>
         public BaseNode RebuildControlFlow(int startBlock, int endBlock)
         {
-            if (endBlock < startBlock) throw new Exception("Decompilation failed");
+            //if (endBlock < startBlock) throw new Exception("Decompilation failed");
 
             var blocks = context.GetCodeBlocks();
             var begin = blocks.Find(startBlock);
@@ -285,8 +285,9 @@ namespace PapyrusDotNet.Decompiler
         /// <summary>
         ///     Rebuilds the boolean operators.
         /// </summary>
-        public void RebuildBooleanOperators(int startBlock, int endBlock)
+        public void RebuildBooleanOperators(int startBlock, int endBlock, int depth = 0)
         {
+            var longLivedVars = context.GetLongLivedTempVariables();
             var blocks = context.GetCodeBlocks();
             var begin = blocks.Find(startBlock);
             var end = blocks.Find(endBlock);
@@ -312,7 +313,7 @@ namespace PapyrusDotNet.Decompiler
 
                         if (maybeAnd)
                         {
-                            RebuildBooleanOperators(source.OnTrue, source.OnFalse);
+                            RebuildBooleanOperators(source.OnTrue, source.OnFalse, ++depth);
                             var onTrue = blocks[source.OnTrue];
                             var onFalse = blocks[source.OnFalse];
                             if (onTrue.Scope.Size == 1)
@@ -347,11 +348,17 @@ namespace PapyrusDotNet.Decompiler
                         }
                         else if (maybeOr)
                         {
-                            RebuildBooleanOperators(source.OnFalse, source.OnTrue);
+                            RebuildBooleanOperators(source.OnFalse, source.OnTrue, ++depth);
                             var onTrue = blocks[source.OnTrue];
                             var onFalse = blocks[source.OnFalse];
 
-                            if (onFalse.Scope.Size == 1 && onFalse.Scope.Back().GetResult() == source.Condition)
+                            // Long lived temp vars are really messing things up!
+                            if (onFalse.Scope.Size > 1 && onFalse.Scope.Back().GetResult() == source.Condition
+                                && longLivedVars.Contains(source.Condition.Identifier))
+                            {
+                                // gotta test this latah
+                            }
+                            else if (onFalse.Scope.Size == 1 && onFalse.Scope.Back().GetResult() == source.Condition)
                             {
                                 var left = source.Scope.Back();
                                 source.Scope.Children.Remove(left);
@@ -382,6 +389,7 @@ namespace PapyrusDotNet.Decompiler
                 {
                     it = blocks.GetNext(it);
                 }
+                if (depth >= 500) return; /*throw new StackOverflowException();*/
             }
         }
 
@@ -399,6 +407,72 @@ namespace PapyrusDotNet.Decompiler
                 varTypes[t.Name.Index] = t.TypeName.AsTableIndex();
             foreach (var t in method.GetVariables())
                 varTypes[t.Name.Index] = t.TypeName.AsTableIndex();
+        }
+
+        public void MapLongLivedTempVariables()
+        {
+            var tempVariableRefCount = new Dictionary<string, int>();
+            var blocks = context.GetCodeBlocks();
+            foreach (var block in blocks)
+            {
+                var bnode = block.Value;
+                var scope = bnode.Scope;
+
+                // Caprica introduces long-lived temp variables
+                // and are not normally in the pex files.
+                // So we have to check first, if there are more than one occurences of the same temp.
+                var tarScope = scope;
+                if (tarScope != null)
+                {
+                    var tempVars = new WithNode<ConstantNode>()
+                        .Select(n => n.Constant.Type == PapyrusPrimitiveType.Reference && IsTempVar(n.Constant.AsStringTableIndex()))
+                        .From(scope);
+
+                    foreach (var tv in tempVars.Cast<ConstantNode>())
+                    {
+                        var identifier = tv.Constant.AsStringTableIndex().Identifier;
+                        if (tempVariableRefCount.ContainsKey(identifier))
+                            tempVariableRefCount[identifier]++;
+                        else
+                            tempVariableRefCount.Add(identifier, 1);
+                    }
+                }
+            }
+
+            context.SetLongLivedTempVariables((from tv in tempVariableRefCount where tv.Value > 1 select tv.Key).ToList());
+        }
+
+        public void AssignLongLivedTempVariables()
+        {
+            foreach (var b in context.GetCodeBlocks())
+            {
+                int childIndex = 0;
+                var skipNext = false;
+                var children = b.Value.Scope.Children.ToArray();
+                foreach (var c in children)
+                {
+                    if (skipNext)
+                    {
+                        skipNext = false;
+                        continue;
+                    }
+
+                    if (IsTempVar(c.GetResult()))
+                    {
+                        var childToAdopt = CheckAssign(c);
+                        if (childToAdopt != c)
+                        {
+                            b.Value.Scope.AdoptAt(childIndex, childToAdopt);
+                        }
+                        var c2 = b.Value.Scope.Children;
+                        if (!c2.Contains(c2.Next(c)))
+                        {
+                            skipNext = true;
+                        }
+                    }
+                    childIndex++;
+                }
+            }
         }
 
         /// <summary>
@@ -766,9 +840,11 @@ namespace PapyrusDotNet.Decompiler
 
         private BaseNode CheckAssign(BaseNode expr)
         {
+            var longLivedTempVars = context.GetLongLivedTempVariables();
             Assert.IsNotNull(expr);
             var result = expr.GetResult();
-            if (result.IsValid() && !IsTempVar(result))
+            var isLongLived = longLivedTempVars.Contains(result.Identifier);
+            if (result.IsValid() && (!IsTempVar(result) || isLongLived))
             {
                 return new AssignNode(expr.GetBegin(),
                     new ConstantNode(expr.GetBegin(), new PapyrusVariableReference(result, true)), expr);
@@ -822,6 +898,7 @@ namespace PapyrusDotNet.Decompiler
         private void RebuildExpression(BaseNode scope)
         {
             var blocks = context.GetCodeBlocks();
+            var longLivedVars = context.GetLongLivedTempVariables();
             var it = scope.First();
             var lastInScope = scope.Last();
             while (it != lastInScope)
@@ -835,24 +912,38 @@ namespace PapyrusDotNet.Decompiler
                     // Check if an identifier in expressionUse references the result of expressionGeneration
                     // If so, perform a replacement
                     // At this steps of the decompilation, there should be only one replacement.
-                    var modified = new WithNode<ConstantNode>()
-                        .Select(n =>
-                            n.Constant.Type == PapyrusPrimitiveType.Reference &&
-                            n.Constant.AsStringTableIndex() == expressionGeneration.GetResult())
-                        .Transform(n => expressionGeneration)
-                        .On(expressionUse);
 
-                    if (modified == 0)
+
+                    //if (!skipNext)
                     {
-                        it = scope.Children.Next(it);
-                    }
-                    else if (modified == 1)
-                    {
-                        it = scope[0];
-                    }
-                    else
-                    {
-                        throw new Exception("Decompilation Failed.");
+                        bool jmpNext = false;
+                        var modified = new WithNode<ConstantNode>()
+                            .Select(n =>
+                                n.Constant.Type == PapyrusPrimitiveType.Reference &&
+                                n.Constant.AsStringTableIndex() == expressionGeneration.GetResult())
+                            .Transform(n =>
+                            {
+                                //if (longLivedVars.Contains(n.Constant.AsStringTableIndex().Identifier))
+                                //{
+                                //    jmpNext = true;
+                                //    return n;
+                                //}
+                                return expressionGeneration;
+                            })
+                            .On(expressionUse);
+
+                        if (modified == 0 || jmpNext)
+                        {
+                            it = scope.Children.Next(it);
+                        }
+                        else if (modified == 1)
+                        {
+                            it = scope[0];
+                        }
+                        else
+                        {
+                            throw new Exception("Decompilation Failed.");
+                        }
                     }
                 }
                 else
@@ -864,13 +955,16 @@ namespace PapyrusDotNet.Decompiler
 
         private void DeclareVariables(BaseNode tree)
         {
+            var longLivedVars = context.GetLongLivedTempVariables();
             var m = context.GetTargetMethod();
             foreach (var local in m.GetVariables())
             {
                 // do nothing on temp variables
-                if (!IsTempVar(local.AsStringTableIndex()))
+                var index = local.AsStringTableIndex();
+                var isLongLivedTemp = (IsTempVar(index) && longLivedVars.Contains(index.Identifier));
+                if (!IsTempVar(index) || isLongLivedTemp)
                 {
-                    var scope = FindScopeForVariable(local.AsStringTableIndex(), tree);
+                    var scope = FindScopeForVariable(index, tree);
 
                     Assert.IsNotNull(scope);
 
@@ -878,18 +972,20 @@ namespace PapyrusDotNet.Decompiler
                         new ConstantNode(-1, new PapyrusVariableReference(local.Name.AsTableIndex(), true)),
                         local.TypeName.AsTableIndex());
 
-                    var assignments = scope.Children.Where(n => n is AssignNode).Cast<AssignNode>()
-                        .From(n =>
+                    var assignments = new WithNode<AssignNode>()
+                        .Select(n =>
                         {
                             var dest = n.GetDestination() as ConstantNode;
                             if (dest != null)
-                            {
                                 return dest.Constant.Type == PapyrusPrimitiveType.Reference &&
-                                       dest.Constant.AsStringTableIndex() == local.AsStringTableIndex();
-                            }
+                                       dest.Constant.AsStringTableIndex() == index;
                             return false;
-                        }, scope).ToList();
+                        }).From(scope).ToList();
 
+                    if (isLongLivedTemp)
+                    {
+
+                    }
                     // The first assignment is in the upper level scope
                     if (assignments.Any() && assignments.First().Parent == scope)
                     {
@@ -911,9 +1007,7 @@ namespace PapyrusDotNet.Decompiler
             var result = scope;
 
             var references = new WithNode<ConstantNode>()
-                .Select(
-                    n =>
-                        n.Constant.Type == PapyrusPrimitiveType.Reference && n.Constant.AsStringTableIndex() == variable)
+                .Select(n => n.Constant.Type == PapyrusPrimitiveType.Reference && n.Constant.AsStringTableIndex() == variable)
                 .From(scope).ToList();
 
             if (references.Count > 0)
@@ -998,11 +1092,7 @@ namespace PapyrusDotNet.Decompiler
 
             // Remove casting none as Something as they are invalid.
             new WithNode<CastNode>()
-                .Select(n =>
-                {
-                    var value = (n.GetValue() as ConstantNode)?.Constant;
-                    return value?.Type == PapyrusPrimitiveType.None;
-                })
+                .Select(n => (n.GetValue() as ConstantNode)?.Constant?.Type == PapyrusPrimitiveType.None)
                 .Transform(n => n.GetValue())
                 .On(tree);
 
@@ -1031,8 +1121,7 @@ namespace PapyrusDotNet.Decompiler
                 .Transform(n =>
                 {
                     var op = n.GetValue() as BinaryOperatorNode;
-                    var result = new BinaryOperatorNode(op.GetBegin(), op.GetPrecedence(), op.GetResult(), op.GetLeft(),
-                        "!=", op.GetRight());
+                    var result = new BinaryOperatorNode(op.GetBegin(), op.GetPrecedence(), op.GetResult(), op.GetLeft(), "!=", op.GetRight());
                     result.IncludeInstruction(n.GetEnd());
                     return result;
                 })
@@ -1052,7 +1141,6 @@ namespace PapyrusDotNet.Decompiler
                     node.SetElse(childIfNode.GetElse());
                     childIfNode.SetElse(new ScopeNode());
 
-
                     node.GetElseIf().Adopt(childIfNode);
                     node.GetElseIf().MergeChildren(childIfNode.GetElseIf());
                     return node;
@@ -1068,28 +1156,67 @@ namespace PapyrusDotNet.Decompiler
             //  ; body here
             // endif
             new WithNode<IfElseNode>()
-                .Select(n =>
-                {
-
-                    var elseNode = n.GetElse();
-                    var elseIfNode = n.GetElseIf();
-                    var bodyNode = n.GetBody();
-                    return bodyNode.Size == 0 &&
-                           elseNode.Size > 0 &&
-                           elseIfNode.Size == 0; // First item should be the if/else. While parent is a scope.
-                })
+                .Select(n => n.GetBody().Size == 0 && n.GetElse().Size > 0 && n.GetElseIf().Size == 0)
                 .Transform(node =>
                 {
-                    var eN = node.GetElse(); // Else Body
-
-                    node.SetBody(eN);
-
+                    node.SetBody(node.GetElse());
                     node.SetCondition(new UnaryOperatorNode(node.GetBegin(), 3, node.GetResult(), "!", node.GetCondition()));
-
                     node.SetElse(new ScopeNode());
                     return node;
                 })
                 .On(tree);
+
+            // fix: from
+            //     if (!(something == somethingElse))
+            //     if (!(something == true))
+            //     if (!(something == false))
+            // to
+            //     if (something != somethingElse)
+            //     if (!something)
+            //     if (something)
+            new WithNode<IfElseNode>()
+                    .Select(n =>
+                    {
+                        var condition = n.GetCondition();
+                        var not = condition as UnaryOperatorNode;
+                        if (not == null || not.GetOperator() != "!")
+                            return false; // First item should be the if/else. While parent is a scope.
+
+                        return condition[0] is BinaryOperatorNode;
+                    })
+                    .Transform(node =>
+                    {
+                        var condition = node.GetCondition() as UnaryOperatorNode;
+                        var binop = condition[0] as BinaryOperatorNode;
+
+                        var right = binop.GetRight();
+                        if (right is ConstantNode)
+                        {
+                            var constant = (right as ConstantNode).Constant;
+                            var varRef = constant;
+                            if (varRef != null && varRef.Type == PapyrusPrimitiveType.Boolean)
+                            {
+                                switch (varRef.Value?.ToString())
+                                {
+                                    case "1":
+                                    case "true":
+                                        // if( !constant )
+                                        condition.SetValue(binop.GetLeft());
+                                        return node;
+                                    case "0":
+                                    case "false":
+                                        // if( constant )
+                                        node.SetCondition(binop.GetLeft());
+                                        return node;
+                                }
+                            }
+                        }
+                        // if( constant != constant )
+                        binop.SetOperator("!=");
+                        node.SetCondition(binop);
+                        return node;
+                    })
+                    .On(tree);
 
             // Extract assign operator ( x = x + 1 => x += 1)
             new WithNode<AssignNode>()
@@ -1122,21 +1249,10 @@ namespace PapyrusDotNet.Decompiler
         private string GetVarName(PapyrusStringTableIndex variable)
         {
             var name = variable.Identifier;
-            if (name.StartsWith("::mangled_"))
-                name = name.Substring(10);
-            if (name.StartsWith("::"))
-                name = name.Substring(2);
-            if (name.EndsWith("_var"))
-                name = name.Remove(name.Length - 4);
+            if (name.StartsWith("::mangled_")) name = name.Substring(10);
+            if (name.StartsWith("::")) name = name.Substring(2);
+            if (name.EndsWith("_var")) name = name.Remove(name.Length - 4);
             return name;
         }
-
-        //}
-        //        "'. The expected condition was not met and therefor the decompilation threw this exception.");
-
-        //    if (!condition) throw new InvalidProgramException("Assert Failed in: '" + methodName + 
-        //{
-
-        //public static void Assert(bool condition, [CallerMemberName] string methodName = null)
     }
 }

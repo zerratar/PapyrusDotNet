@@ -77,5 +77,7 @@ namespace PapyrusDotNet.Decompiler.Node
         {
             visitor.Visit(this);
         }
+
+        public void SetValue(BaseNode node) => value.SetSlave(node);
     }
 }

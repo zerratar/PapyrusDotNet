@@ -186,6 +186,31 @@ namespace PapyrusDotNet.Decompiler.Node
             return this;
         }
 
+
+        public BaseNode AdoptAt(int childDest, BaseNode childToAdopt)
+        {
+            var i = childDest;
+
+            var oldParent = childToAdopt.Parent;
+            if (oldParent != null)
+                oldParent.Children.Remove(childToAdopt);
+
+            Children.Insert(i, childToAdopt);
+            childToAdopt.Parent = this;
+            return this;
+        }
+
+        public BaseNode AdoptTop(BaseNode node)
+        {
+            var oldParent = node.Parent;
+            if (oldParent != null)
+                oldParent.Children.Remove(node);
+
+            Children.Insert(0, node);
+            node.Parent = this;
+            return this;
+        }
+
         /// <summary>
         ///     Replaces the old node with the new old.
         /// </summary>

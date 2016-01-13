@@ -39,7 +39,7 @@ namespace PapyrusDotNet.Decompiler.Node
     public class BinaryOperatorNode : BaseNode
     {
         private readonly NodePair left;
-        private readonly string op;
+        private string op;
         private readonly NodePair right;
 
         /// <summary>
@@ -90,6 +90,11 @@ namespace PapyrusDotNet.Decompiler.Node
         public override string ToString()
         {
             return "BinaryOpNode: (" + GetLeft() + ") " + GetOperator() + " (" + GetRight() + ")";
+        }
+
+        public void SetOperator(string op)
+        {
+            this.op = op;
         }
     }
 }

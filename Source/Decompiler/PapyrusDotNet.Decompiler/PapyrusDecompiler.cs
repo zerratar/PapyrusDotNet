@@ -97,6 +97,10 @@ namespace PapyrusDotNet.Decompiler
 
             flowAnalyzer.CreateFlowBlocks();
 
+            flowAnalyzer.MapLongLivedTempVariables();
+
+            flowAnalyzer.AssignLongLivedTempVariables();
+
             flowAnalyzer.RebuildExpressionsInBlocks();
 
             flowAnalyzer.RebuildBooleanOperators(0, method.Body.Instructions.Count);

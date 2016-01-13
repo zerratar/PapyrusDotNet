@@ -20,6 +20,7 @@
 
 #region
 
+using System.Collections.Generic;
 using PapyrusDotNet.Decompiler.HelperClasses;
 using PapyrusDotNet.PapyrusAssembly;
 
@@ -74,5 +75,17 @@ namespace PapyrusDotNet.Decompiler.Interfaces
         ///     Builds the temporary string table.
         /// </summary>
         void BuildTempStringTable();
+
+        /// <summary>
+        ///     Sets the long lived temporary variables.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        void SetLongLivedTempVariables(List<string> list);
+
+        /// <summary>
+        ///     Gets the long lived temporary variables.
+        /// </summary>
+        /// <returns></returns>
+        List<string> GetLongLivedTempVariables();
     }
 }

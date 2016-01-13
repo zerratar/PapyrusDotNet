@@ -20,6 +20,7 @@
 
 #region
 
+using System.Collections.Generic;
 using PapyrusDotNet.Decompiler.HelperClasses;
 using PapyrusDotNet.Decompiler.Interfaces;
 using PapyrusDotNet.PapyrusAssembly;
@@ -35,6 +36,7 @@ namespace PapyrusDotNet.Decompiler
         private readonly IFlowAnalyzer flowAnalyzer;
         private Map<int, PapyrusCodeBlock> codeBlocks;
         private PapyrusMethodDefinition targetMethod;
+        private List<string> longLivedTempVars;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="DecompilerContext" /> class.
@@ -122,12 +124,31 @@ namespace PapyrusDotNet.Decompiler
         }
 
         /// <summary>
+        /// Gets the long lived temporary variables.
+        /// </summary>
+        /// <returns></returns>
+        public List<string> GetLongLivedTempVariables()
+        {
+            return longLivedTempVars;
+        }
+
+        /// <summary>
+        /// Sets the long lived temporary variables.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        public void SetLongLivedTempVariables(List<string> list)
+        {
+            longLivedTempVars = list;
+        }
+
+        /// <summary>
         ///     Sets the target method.
         /// </summary>
         /// <param name="method">The method.</param>
         public void SetTargetMethod(PapyrusMethodDefinition method)
         {
             targetMethod = method;
+            longLivedTempVars = new List<string>();
             codeBlocks = new Map<int, PapyrusCodeBlock>();
         }
     }
