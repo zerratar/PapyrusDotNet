@@ -82,38 +82,38 @@ namespace PapyrusDotNet.PapyrusAssembly
                 case PapyrusPrimitiveType.Reference:
                     return Value?.ToString() ?? Name?.Value;
                 case PapyrusPrimitiveType.String:
-                {
-                    if (!Value.ToString().StartsWith("\""))
                     {
-                        return "\"" + Value + "\"";
+                        if (!Value.ToString().StartsWith("\""))
+                        {
+                            return "\"" + Value + "\"";
+                        }
+                        return Value.ToString();
                     }
-                    return Value.ToString();
-                }
                 case PapyrusPrimitiveType.Boolean:
-                {
-                    if (Value != null)
                     {
-                        return Value.Equals(1) ? "true" : "false";
+                        if (Value != null)
+                        {
+                            return Value.ToString() == "1" || value.ToString().ToLower() == "true" ? "true" : "false";
+                        }
                     }
-                }
                     break;
                 case PapyrusPrimitiveType.Integer:
                     if (Value != null)
                     {
-                        return ((int) Value).ToString();
+                        return ((int)Value).ToString();
                     }
                     break;
                 case PapyrusPrimitiveType.Float:
                     if (Value != null)
                     {
-                        return ((float) Value).ToString().Replace(",", ".") + "f";
+                        return ((float)Value).ToString().Replace(",", ".") + "f";
                     }
                     break;
             }
 
             if (Name != null)
             {
-                return (string) Name;
+                return (string)Name;
             }
             return null;
         }
@@ -147,7 +147,7 @@ namespace PapyrusDotNet.PapyrusAssembly
                     return Name.GetStringTable().Add(Value.ToString());
                 }
             }
-            return Name.AsTableIndex();
+            return Name?.AsTableIndex();
         }
     }
 }

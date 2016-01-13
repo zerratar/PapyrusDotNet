@@ -135,7 +135,10 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
             {
                 if (Set(ref selectedValueType, value))
                 {
+                    bool showNone = false;
                     var val = value as ComboBoxItem;
+                    if (val == null) return;
+
                     var tar = val.Content.ToString().ToLower();
                     SelectedTypeName = tar;
                     var isRef = false;
@@ -163,12 +166,13 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                     {
                         ConstantValueVisibility = Visibility.Collapsed;
                         SelectedConstantValue = null;
-                        isRef = true;
+                        showNone = true;
                         if (currentType.Assembly != null)
                         {
                             SelectedItem = new PapyrusVariableReference
                             {
-                                Value = "self".Ref(currentType.Assembly).Value,
+                                Name = "Self".Ref(currentType.Assembly),
+                                Value = "Self",
                                 Type = PapyrusPrimitiveType.Reference
                             };
                         }
@@ -179,12 +183,13 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                     {
                         ConstantValueVisibility = Visibility.Collapsed;
                         SelectedConstantValue = null;
-                        isRef = true;
+                        showNone = true;
                         if (currentType.Assembly != null)
                         {
                             SelectedItem = new PapyrusVariableReference
                             {
-                                Value = "SelfRef".Ref(currentType.Assembly).Value,
+                                Name= "SelfRef".Ref(currentType.Assembly),
+                                Value = "SelfRef",
                                 Type = PapyrusPrimitiveType.Reference
                             };
                         }
@@ -193,9 +198,18 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                     }
                     else if (tar == "none")
                     {
+                        showNone = true;
                         ConstantValueVisibility = Visibility.Collapsed;
                         SelectedConstantValue = null;
-                        SelectedItem = null;
+                        if (currentType?.Assembly != null)
+                        {
+                            SelectedItem = new PapyrusVariableReference
+                            {
+                                Name = "".Ref(currentType.Assembly),
+                                Value = null,
+                                Type = PapyrusPrimitiveType.None
+                            };
+                        }
                     }
 
 
@@ -208,6 +222,11 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                     {
                         ReferenceValueVisibility = Visibility.Collapsed;
                         ConstantValueVisibility = Visibility.Visible;
+                    }
+                    if (showNone)
+                    {
+                        ReferenceValueVisibility = Visibility.Collapsed;
+                        ConstantValueVisibility = Visibility.Collapsed;
                     }
                 }
             }
@@ -323,40 +342,40 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
             if (desc != null && desc.Constraints.Length > 0)
             {
                 if (desc.Constraints.Contains(OpCodeConstraint.None))
-                    elements.Add(new ComboBoxItem {Content = "None"});
+                    elements.Add(new ComboBoxItem { Content = "None" });
                 if (desc.Constraints.Contains(OpCodeConstraint.Integer))
-                    elements.Add(new ComboBoxItem {Content = "Integer"});
+                    elements.Add(new ComboBoxItem { Content = "Integer" });
                 if (desc.Constraints.Contains(OpCodeConstraint.Float))
-                    elements.Add(new ComboBoxItem {Content = "Float"});
+                    elements.Add(new ComboBoxItem { Content = "Float" });
                 if (desc.Constraints.Contains(OpCodeConstraint.Boolean))
-                    elements.Add(new ComboBoxItem {Content = "Boolean"});
+                    elements.Add(new ComboBoxItem { Content = "Boolean" });
                 if (desc.Constraints.Contains(OpCodeConstraint.String))
-                    elements.Add(new ComboBoxItem {Content = "String"});
+                    elements.Add(new ComboBoxItem { Content = "String" });
 
                 elements.Add(new Separator());
-                elements.Add(new ComboBoxItem {Content = "Parameter"});
-                elements.Add(new ComboBoxItem {Content = "Variable"});
-                elements.Add(new ComboBoxItem {Content = "Field"});
+                elements.Add(new ComboBoxItem { Content = "Variable" });
+                elements.Add(new ComboBoxItem { Content = "Parameter" });
+                elements.Add(new ComboBoxItem { Content = "Field" });
 
                 // if(desc.)
-                elements.Add(new ComboBoxItem {Content = "Self"});
-                elements.Add(new ComboBoxItem {Content = "SelfRef"});
+                elements.Add(new ComboBoxItem { Content = "Self" });
+                elements.Add(new ComboBoxItem { Content = "SelfRef" });
                 return elements;
             }
 
 
-            elements.Add(new ComboBoxItem {Content = "None"});
-            elements.Add(new ComboBoxItem {Content = "Integer"});
-            elements.Add(new ComboBoxItem {Content = "Float"});
-            elements.Add(new ComboBoxItem {Content = "Boolean"});
-            elements.Add(new ComboBoxItem {Content = "String"});
+            elements.Add(new ComboBoxItem { Content = "None" });
+            elements.Add(new ComboBoxItem { Content = "Integer" });
+            elements.Add(new ComboBoxItem { Content = "Float" });
+            elements.Add(new ComboBoxItem { Content = "Boolean" });
+            elements.Add(new ComboBoxItem { Content = "String" });
             elements.Add(new Separator());
-            elements.Add(new ComboBoxItem {Content = "Parameter"});
-            elements.Add(new ComboBoxItem {Content = "Variable"});
-            elements.Add(new ComboBoxItem {Content = "Field"});
+            elements.Add(new ComboBoxItem { Content = "Variable" });
+            elements.Add(new ComboBoxItem { Content = "Parameter" });
+            elements.Add(new ComboBoxItem { Content = "Field" });
 
-            elements.Add(new ComboBoxItem {Content = "Self"});
-            elements.Add(new ComboBoxItem {Content = "SelfRef"});
+            elements.Add(new ComboBoxItem { Content = "Self" });
+            elements.Add(new ComboBoxItem { Content = "SelfRef" });
             return elements;
         }
 
@@ -372,7 +391,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
         {
             var val = selectedValueType as ComboBoxItem;
             var tar = val.Content.ToString().ToLower();
-            if (tar == "variable" || tar == "parameter" || tar == "field" || tar == "self" || tar == "selfref")
+            if (tar == "variable" || tar == "parameter" || tar == "field" || tar == "self" || tar == "selfref" || tar == "none")
                 return;
             if (tar == "string")
             {

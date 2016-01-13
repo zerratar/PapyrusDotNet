@@ -7,7 +7,7 @@
 <!-- Updated 2011 by Siegfried Oleg Pammer for VB 11 CTP -->
 <SyntaxDefinition name="Papyrus" extensions=".psc" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
   <Color name="Comment" foreground="Green" exampleText="' comment" />
-  <Color name="String" exampleText="text = &quot;Hello, World!&quot;" />
+  <Color name="String" foreground="#ffae6b52" exampleText="text = &quot;Hello, World!&quot;" />
 
   <Color name="DateLiteral" foreground="Blue" exampleText="endOfWorld = #2012-12-21#" />
   <Color name="Preprocessor" foreground="Maroon" exampleText="#Region &quot;Title&quot;" />
@@ -17,17 +17,46 @@
   <Color name="Keywords" foreground="Blue" exampleText="If a OrElse b Then" />
   <Color name="FunctionKeywords" foreground="Blue" exampleText="CInt(a)" />
   <Color name="ContextKeywords" foreground="Blue" exampleText="Declare Unicode Sub SomeMethod" />
-
+  <Color name="MethodCall" foreground="MidnightBlue" fontWeight="bold" exampleText="o.ToString();"/>
+  <Color name="NumberLiteral" foreground="DarkBlue" exampleText="3.1415f"/>
+  <Color name="Types" foreground="#ff1e874b" exampleText="ABC j =" />
+  <Color name="Punctuation" exampleText="a(b.c);" />
   <Property name="DocCommentMarker" value="'''" />
 
   <RuleSet ignoreCase="true">
+
     <Span color="String">
       <Begin>"</Begin>
       <End>"</End>
       <RuleSet>
-        <Span begin="&quot;&quot;" end="" />
+        <!-- span for escape sequences -->
+        <Span begin="\\" end="."/>
       </RuleSet>
     </Span>
+
+
+    <Span color="String" multiline="true">
+      <Begin>@"</Begin>
+      <End>"</End>
+      <RuleSet>
+        <!-- span for escape sequences -->
+        <Span begin='""' end=""/>
+      </RuleSet>
+    </Span>
+    <!-- Digits -->
+    <Rule color="NumberLiteral">
+      \b0[xX][0-9a-fA-F]+  # hex number
+      |
+      (	\b\d+(\.[0-9]+)?   #number with optional floating point
+      |	\.[0-9]+           #or just starting with floating point
+      )
+      ([eE][+-]?[0-9]+)? # optional exponent
+    </Rule>
+
+    <Rule color="Punctuation">
+      [?,.;()\[\]{}+\-/%*&lt;&gt;^+~!|&amp;]+
+    </Rule>
+
     <!--<Span color="Preprocessor" ruleSet="PreprocessorSet">
       <Begin>(?&lt;=(^\s*))\#</Begin>
     </Span>-->
@@ -52,6 +81,38 @@
       <Word>Float</Word>
       <Word>Var</Word>
       <Word>GlobalVariable</Word>
+    </Keywords>
+    <Keywords color="Types">
+      <Word>Spell</Word>
+      <Word>ObjectReference</Word>
+      <Word>Actor</Word>
+      <Word>ScriptObject</Word>
+      <Word>Form</Word>
+      <Word>FormList</Word>
+      <Word>Game</Word>
+      <Word>Quest</Word>
+      <Word>Weapon</Word>
+      <Word>weather</Word>
+      <Word>Utility</Word>
+      <Word>Trigger</Word>
+      <Word>Topic</Word>
+      <Word>TopicInfo</Word>
+      <Word>Static</Word>
+      <Word>Sound</Word>
+      <Word>Projectile</Word>
+      <Word>Potion</Word>
+      <Word>Perk</Word>
+      <Word>Package</Word>
+      <Word>Math</Word>
+      <Word>Message</Word>
+      <Word>Keyword</Word>
+      <Word>Key</Word>
+      <Word>Light</Word>
+      <Word>MagicEffect</Word>
+      <Word>Race</Word>
+      <Word>Scroll</Word>
+      <Word>Scene</Word>
+      <Word>Faction</Word>
     </Keywords>
     <Keywords color="Operators">
       <Word>AddressOf</Word>

@@ -546,7 +546,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 var m = arg as PapyrusFieldDefinition;
                 ArgumentTypes[i] = Utility.GetPapyrusPrimitiveType(m.TypeName);
-                    // m.FieldVariable?.ValueType ?? PapyrusPrimitiveType.Reference;
+                // m.FieldVariable?.ValueType ?? PapyrusPrimitiveType.Reference;
                 return new PapyrusVariableReference
                 {
                     Value = m.Name.Value,
@@ -659,7 +659,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     var result = dialogService.ShowDialog(dialog);
                     if (result == DialogResult.OK)
                     {
-                        if (dialog.SelectedConstantValue == null && dialog.SelectedReferenceValue == null)
+                        if (dialog.SelectedConstantValue == null && dialog.SelectedReferenceValue == null && dialog.SelectedReferenceName != null)
                         {
                             var name = dialog.SelectedReferenceName;
                             Arguments[d.Index] = CreateReferenceFromName(name);

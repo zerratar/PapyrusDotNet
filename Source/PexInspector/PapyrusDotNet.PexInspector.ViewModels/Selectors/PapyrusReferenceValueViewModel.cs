@@ -108,13 +108,13 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
         private List<FrameworkElement> CreateComboBoxItems()
         {
             var elements = new List<FrameworkElement>();
-            elements.Add(new ComboBoxItem {Content = "Parameter"});
-            elements.Add(new ComboBoxItem {Content = "Variable"});
-            elements.Add(new ComboBoxItem {Content = "Field"});
+            elements.Add(new ComboBoxItem { Content = "Variable" });
+            elements.Add(new ComboBoxItem { Content = "Parameter" });
+            elements.Add(new ComboBoxItem { Content = "Field" });
             //if (desc == null || desc.Constraints.Length == 0)
             {
-                elements.Add(new ComboBoxItem {Content = "Self"});
-                elements.Add(new ComboBoxItem {Content = "SelfRef"});
+                elements.Add(new ComboBoxItem { Content = "Self" });
+                elements.Add(new ComboBoxItem { Content = "SelfRef" });
             }
             return elements;
         }
@@ -141,13 +141,27 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 var papyrusFieldDefinitions = currentType.Fields.ToList();
                 ReferenceCollection = new ObservableCollection<PapyrusMemberReference>(Filter(papyrusFieldDefinitions));
             }
+            else if (tar == "none")
+            {
+                if (currentType.Assembly != null)
+                {
+                    SelectedReference = new PapyrusVariableReference
+                    {
+                        Name = "".Ref(currentType.Assembly),
+                        Value = null,
+                        Type = PapyrusPrimitiveType.None
+                    };
+                }
+                ReferenceSelectionVisible = Visibility.Collapsed;
+            }
             else if (tar == "self")
             {
                 if (currentType.Assembly != null)
                 {
                     SelectedReference = new PapyrusVariableReference
                     {
-                        Value = "Self".Ref(currentType.Assembly).Value,
+                        Name= "Self".Ref(currentType.Assembly),
+                        Value = "Self",
                         Type = PapyrusPrimitiveType.Reference
                     };
                 }
@@ -159,7 +173,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Selectors
                 {
                     SelectedReference = new PapyrusVariableReference
                     {
-                        Value = "SelfRef".Ref(currentType.Assembly).Value,
+                        Name = "SelfRef".Ref(currentType.Assembly),
+                        Value = "SelfRef",
                         Type = PapyrusPrimitiveType.Reference
                     };
                 }

@@ -52,7 +52,7 @@ namespace PapyrusDotNet.PexInspector.Converters
                     if (variable != null)
                     {
                         if (variable.Value == null)
-                            inlines.Add(new Run("NONE"));
+                            inlines.Add(new Run("None"));
                         else if (variable.Type == PapyrusPrimitiveType.String)
                             inlines.Add(new Run("\"" + variable.Value + "\"") {Foreground = StringColor});
                         else if (variable.Type == PapyrusPrimitiveType.Reference)
@@ -64,7 +64,7 @@ namespace PapyrusDotNet.PexInspector.Converters
                         inlines.Add(new Run(obj.ToString()));
                 }
                 else
-                    inlines.Add(new Run("NONE"));
+                    inlines.Add(new Run("None"));
                 i++;
                 if (i < items.Length)
                     inlines.Add(new Run(", "));

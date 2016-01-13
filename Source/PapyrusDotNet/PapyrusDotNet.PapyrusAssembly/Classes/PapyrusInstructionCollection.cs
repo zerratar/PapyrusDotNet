@@ -20,6 +20,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 #endregion
 
@@ -27,7 +29,14 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusInstructionCollection : IEnumerable<PapyrusInstruction>
     {
+        public PapyrusInstructionCollection(PapyrusMethodDefinition method)
+        {
+            this.method = method;
+        }
+
         private readonly List<PapyrusInstruction> items = new List<PapyrusInstruction>();
+
+        private PapyrusMethodDefinition method;
 
         public int Count => items.Count;
 
@@ -45,17 +54,24 @@ namespace PapyrusDotNet.PapyrusAssembly
 
         public void Insert(int index, PapyrusInstruction item)
         {
+            if (item.Method == null) item.Method = method;
             items.Insert(index, item);
         }
 
         public void Add(PapyrusInstruction item)
         {
+            if (item.Method == null) item.Method = method;
             items.Add(item);
         }
 
         public void AddRange(IEnumerable<PapyrusInstruction> i)
         {
-            items.AddRange(i);
+            var inst = i.ToList();
+            inst.ForEach(item =>
+           {
+               if (item.Method == null) item.Method = method;
+           });
+            items.AddRange(inst);
         }
 
         public void Remove(PapyrusInstruction item)

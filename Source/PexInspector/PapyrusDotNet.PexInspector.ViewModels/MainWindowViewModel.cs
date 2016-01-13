@@ -758,6 +758,9 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         public void RaiseCommandsCanExecute()
         {
+
+            DecompileSelectedMethod();
+
             (FindAllReferencesCommand as RelayCommand<object>).RaiseCanExecuteChanged();
             FindAllUsagesCommand.RaiseCanExecuteChanged();
             ReloadPexCommand.RaiseCanExecuteChanged();
@@ -1104,6 +1107,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 //newInstruction.Operand = dialog.Operand;
                 newInstruction.Arguments = dialog.Arguments;
                 newInstruction.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
+
                 selectedMethod.Body.Instructions.Insert(index, newInstruction);
                 selectedMethod.Body.Instructions.RecalculateOffsets();
 
@@ -1701,17 +1705,25 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void DecompileSelectedMethod()
         {
-            var assembly = selectedMethod.DeclaringAssembly;
-            if (assembly != null)
+            if (selectedMethod == null) return;
+            try
             {
-                var decompiler = new PapyrusDecompiler(assembly);
-                var ctx = decompiler.CreateContext();
-                var result = decompiler.Decompile(ctx, selectedMethod);
-
-                if (!result.HasErrors)
+                var assembly = selectedMethod.DeclaringAssembly;
+                if (assembly != null)
                 {
-                    DecompiledMemberText = result.DecompiledSourceCode;
+                    var decompiler = new PapyrusDecompiler(assembly);
+                    var ctx = decompiler.CreateContext();
+                    var result = decompiler.Decompile(ctx, selectedMethod);
+
+                    if (!result.HasErrors)
+                    {
+                        DecompiledMemberText = result.DecompiledSourceCode;
+                    }
                 }
+            }
+            catch(Exception exc)
+            {
+                DecompiledMemberText = "Failed to decompile this method";
             }
         }
 

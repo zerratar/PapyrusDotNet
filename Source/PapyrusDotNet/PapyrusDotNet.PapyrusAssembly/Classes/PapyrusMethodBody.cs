@@ -31,7 +31,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         public PapyrusMethodBody(PapyrusMethodDefinition method)
         {
             this.method = method;
-            Instructions = new PapyrusInstructionCollection();
+            Instructions = new PapyrusInstructionCollection(method);
             Variables = new List<PapyrusVariableReference>();
             //TempVariables = new List<PapyrusVariableReference>();
         }
