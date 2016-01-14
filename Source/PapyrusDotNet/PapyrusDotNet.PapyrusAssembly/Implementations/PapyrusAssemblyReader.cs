@@ -34,17 +34,18 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private readonly PapyrusAssemblyDefinition assembly;
         private readonly PexReader pexReader;
 
+        public readonly PapyrusReaderSettings Settings;
+
         private bool isDisposed;
 
-        public PapyrusAssemblyReader(PapyrusAssemblyDefinition assembly, string pex, bool throwsException = false)
+        public PapyrusAssemblyReader(PapyrusAssemblyDefinition assembly, string pex, PapyrusReaderSettings settings/*bool throwsException = false*/)
         {
             this.assembly = assembly;
-            ThrowsExceptions = throwsException;
-            pexReader = new PexReader(assembly, pex, throwsException);
+            this.Settings = settings;
+            pexReader = new PexReader(assembly, pex, settings);
         }
 
         public bool IsCorrupted => pexReader.IsCorrupted;
-        public bool ThrowsExceptions { get; }
 
         public void Dispose()
         {
@@ -74,7 +75,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             catch (Exception exc)
             {
                 pexReader.IsCorrupted = true;
-                if (ThrowsExceptions)
+                if (Settings.ThrowsException)
                     throw exc;
             }
             return assembly;

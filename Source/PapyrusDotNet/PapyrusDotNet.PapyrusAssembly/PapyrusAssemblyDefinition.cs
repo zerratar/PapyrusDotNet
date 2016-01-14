@@ -52,9 +52,6 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// <summary>
         ///     Gets or sets the version target.
         /// </summary>
-        /// <value>
-        ///     The version target.
-        /// </value>
         public PapyrusVersionTargets VersionTarget { get; set; }
 
         /// <summary>
@@ -101,15 +98,10 @@ namespace PapyrusDotNet.PapyrusAssembly
         /// </value>
         public Collection<PapyrusTypeDefinition> Types { get; set; } = new Collection<PapyrusTypeDefinition>();
 
-        ///// <summary>
-        /////     Gets or sets the string table.
-        ///// </summary>
-        ///// <value>
-        /////     The string table.
-        ///// </value>
-        //public List<string> StringTable { get; set; } = new List<string>();
+        /// <summary>
+        /// Gets or sets the string table.
+        /// </summary>
         public PapyrusStringTable StringTable { get; set; } = new PapyrusStringTable();
-
 
         /// <summary>
         ///     Releases unmanaged and - optionally - managed resources.
@@ -139,6 +131,18 @@ namespace PapyrusDotNet.PapyrusAssembly
             return StringTable.Add(value);
         }
 
+#if MERGE_IMPLEMENTED
+        /// <summary>
+        /// Merges the other assembly with this one to form a new one.
+        /// </summary>
+        /// <param name="otherAssembly">The other assembly.</param>
+        /// <returns></returns>
+        public PapyrusAssemblyDefinition Merge(PapyrusAssemblyDefinition otherAssembly)
+        {
+            return new PapyrusAssemblyMerger(this, otherAssembly).Merge();
+        }
+#endif
+
         /// <summary>
         ///     Creates the assembly.
         /// </summary>
@@ -150,15 +154,15 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
         /// <summary>
-        ///     Reads the papyrus assembly.
+        /// Reads the papyrus assembly.
         /// </summary>
         /// <param name="pexFile">The pex file.</param>
-        /// <param name="throwsException">Whether or not to throw exceptions.</param>
+        /// <param name="settings">The settings.</param>
         /// <returns></returns>
-        public static PapyrusAssemblyDefinition ReadAssembly(string pexFile, bool throwsException)
+        public static PapyrusAssemblyDefinition ReadAssembly(string pexFile, PapyrusReaderSettings settings)
         {
-            using (var reader = new PapyrusAssemblyReader(new PapyrusAssemblyDefinition(),
-                pexFile, throwsException))
+            // bool throwsException
+            using (var reader = new PapyrusAssemblyReader(new PapyrusAssemblyDefinition(), pexFile, settings))
             {
                 var def = reader.Read();
                 def.filePath = pexFile;
@@ -176,7 +180,7 @@ namespace PapyrusDotNet.PapyrusAssembly
         {
             var asm = new PapyrusAssemblyDefinition();
             asm.filePath = pexFile;
-            using (var reader = new PapyrusAssemblyReader(asm, pexFile))
+            using (var reader = new PapyrusAssemblyReader(asm, pexFile, PapyrusReaderSettings.Default))
             {
                 var def = reader.Read();
                 def.IsCorrupted = reader.IsCorrupted;
@@ -225,6 +229,16 @@ namespace PapyrusDotNet.PapyrusAssembly
         }
 
         /// <summary>
+        ///     Reloads the papyrus assembly specified.
+        /// </summary>
+        /// <param name="definitionToReload">The definition to reload.</param>
+        /// <returns></returns>
+        public static PapyrusAssemblyDefinition ReloadAssembly(PapyrusAssemblyDefinition definitionToReload)
+        {
+            return ReadAssembly(definitionToReload.filePath, PapyrusReaderSettings.Default);
+        }
+
+        /// <summary>
         ///     Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing">
@@ -244,16 +258,6 @@ namespace PapyrusDotNet.PapyrusAssembly
         ~PapyrusAssemblyDefinition()
         {
             Dispose(false);
-        }
-
-        /// <summary>
-        ///     Reloads the papyrus assembly specified.
-        /// </summary>
-        /// <param name="definitionToReload">The definition to reload.</param>
-        /// <returns></returns>
-        public static PapyrusAssemblyDefinition ReloadAssembly(PapyrusAssemblyDefinition definitionToReload)
-        {
-            return ReadAssembly(definitionToReload.filePath, false);
         }
     }
 }

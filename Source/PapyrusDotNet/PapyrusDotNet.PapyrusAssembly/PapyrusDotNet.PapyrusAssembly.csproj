@@ -76,11 +76,21 @@
     <Compile Include="Interfaces\IPapyrusAssemblyWriter.cs" />
     <Compile Include="Implementations\PapyrusAssemblyReader.cs" />
     <Compile Include="Classes\PapyrusHeader.cs" />
+    <Compile Include="Interfaces\IPapyrusAssemblyMerger.cs" />
+    <Compile Include="Extensions\For.cs" />
+    <Compile Include="Parser\Interfaces\IPapyrusAssemblyInstructionParser.cs" />
     <Compile Include="PapyrusAssemblyDefinition.cs" />
     <Compile Include="Implementations\PapyrusAssemblyWriter.cs" />
     <Compile Include="Enums\PapyrusOpCodes.cs" />
     <Compile Include="Classes\PapyrusSourceHeader.cs" />
     <Compile Include="Enums\PapyrusVersionTargets.cs" />
+    <Compile Include="PapyrusAssemblyMerger.cs" />
+    <Compile Include="PapyrusMergerSettings.cs" />
+    <Compile Include="PapyrusReaderSettings.cs" />
+    <Compile Include="Parser\Interfaces\IPapyrusAsmInstruction.cs" />
+    <Compile Include="Parser\PapyrusAsmInstruction.cs" />
+    <Compile Include="Parser\PapyrusAsmValue.cs" />
+    <Compile Include="Parser\PapyrusAssemblyInstructionParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

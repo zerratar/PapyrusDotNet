@@ -18,6 +18,7 @@
 #region
 
 using System.Collections.Generic;
+using System.Linq;
 
 #endregion
 
@@ -45,11 +46,11 @@ namespace PapyrusDotNet.PapyrusAssembly
             Descriptions.Add(PapyrusOpCodes.Fneg, new PapyrusInstructionOpCodeDescription(2, false));
             Descriptions.Add(PapyrusOpCodes.Assign, new PapyrusInstructionOpCodeDescription(2, false));
             Descriptions.Add(PapyrusOpCodes.Cast, new PapyrusInstructionOpCodeDescription(2, false));
-            Descriptions.Add(PapyrusOpCodes.CmpEq, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusOpCodes.CmpLt, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusOpCodes.CmpLte, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusOpCodes.CmpGt, new PapyrusInstructionOpCodeDescription(3, false));
-            Descriptions.Add(PapyrusOpCodes.CmpGte, new PapyrusInstructionOpCodeDescription(3, false));
+            Descriptions.Add(PapyrusOpCodes.CmpEq, new PapyrusInstructionOpCodeDescription(3, false, "COMPAREEQ"));
+            Descriptions.Add(PapyrusOpCodes.CmpLt, new PapyrusInstructionOpCodeDescription(3, false, "COMPARELT"));
+            Descriptions.Add(PapyrusOpCodes.CmpLte, new PapyrusInstructionOpCodeDescription(3, false, "COMPARELTE"));
+            Descriptions.Add(PapyrusOpCodes.CmpGt, new PapyrusInstructionOpCodeDescription(3, false, "COMPAREGT"));
+            Descriptions.Add(PapyrusOpCodes.CmpGte, new PapyrusInstructionOpCodeDescription(3, false, "COMPAREGTE"));
             Descriptions.Add(PapyrusOpCodes.Jmp, new PapyrusInstructionOpCodeDescription(1, false));
             Descriptions.Add(PapyrusOpCodes.Jmpt, new PapyrusInstructionOpCodeDescription(2, false));
             Descriptions.Add(PapyrusOpCodes.Jmpf, new PapyrusInstructionOpCodeDescription(2, false));
@@ -65,14 +66,14 @@ namespace PapyrusDotNet.PapyrusAssembly
             Descriptions.Add(PapyrusOpCodes.ArrayGetElement, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArraySetElement, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArrayFindElement, new PapyrusInstructionOpCodeDescription(4, false));
-            Descriptions.Add(PapyrusOpCodes.ArrayFindLastElement, new PapyrusInstructionOpCodeDescription(4, false));
+            Descriptions.Add(PapyrusOpCodes.ArrayFindLastElement, new PapyrusInstructionOpCodeDescription(4, false, "ARRAYRFINDELEMENT"));
 
             Descriptions.Add(PapyrusOpCodes.Is, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.StructCreate, new PapyrusInstructionOpCodeDescription(1, false));
             Descriptions.Add(PapyrusOpCodes.StructGet, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.StructSet, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArrayFindStruct, new PapyrusInstructionOpCodeDescription(5, false));
-            Descriptions.Add(PapyrusOpCodes.ArrayFindLastStruct, new PapyrusInstructionOpCodeDescription(5, false));
+            Descriptions.Add(PapyrusOpCodes.ArrayFindLastStruct, new PapyrusInstructionOpCodeDescription(5, false, "ARRAYRFINDSTRUCT"));
             Descriptions.Add(PapyrusOpCodes.ArrayAddElements, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArrayInsertElement, new PapyrusInstructionOpCodeDescription(3, false));
             Descriptions.Add(PapyrusOpCodes.ArrayRemoveLastElement, new PapyrusInstructionOpCodeDescription(1, false));
@@ -80,15 +81,26 @@ namespace PapyrusDotNet.PapyrusAssembly
             Descriptions.Add(PapyrusOpCodes.ArrayClearElements, new PapyrusInstructionOpCodeDescription(1, false));
         }
 
-        public PapyrusInstructionOpCodeDescription(int argumentCount, bool hasOperandArguments)
-        {
-            ArgumentCount = argumentCount;
+        public string[] Aliases { get; }
+        public int ArgumentCount { get; }
+        public bool HasOperandArguments { get; }
 
+        public PapyrusInstructionOpCodeDescription(int argumentCount, bool hasOperandArguments, params string[] aliases)
+        {
+            Aliases = aliases;
+            ArgumentCount = argumentCount;
             HasOperandArguments = hasOperandArguments;
         }
 
-        public int ArgumentCount { get; }
-        public bool HasOperandArguments { get; }
+        public static KeyValuePair<PapyrusOpCodes, PapyrusInstructionOpCodeDescription> FromAlias(string alias)
+        {
+            return Descriptions.FirstOrDefault(k =>
+            {
+                var a = k.Value.Aliases;
+                if (a != null && a.Any(i => i.ToLower() == alias.ToLower())) return true;
+                return k.Key.ToString().ToLower() == alias.ToLower();
+            });
+        }
 
         public static PapyrusInstructionOpCodeDescription FromOpCode(PapyrusOpCodes opcode)
         {

@@ -19,7 +19,9 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PapyrusDotNet.PapyrusAssembly.Parser;
 
 #endregion
 
@@ -28,6 +30,78 @@ namespace PapyrusDotNet.PapyrusAssembly.Tests
     [TestClass]
     public class PapyrusAssemblyDefinitionTests
     {
+        [TestMethod]
+        public void PapyrusParser_GetOpCodeFromAlias()
+        {
+            var desc =
+            PapyrusInstructionOpCodeDescription.FromAlias("CALLMETHOD");
+            Assert.IsNotNull(desc);
+            Assert.AreEqual(PapyrusOpCodes.Callmethod, desc.Key);
+        }
+
+        [TestMethod]
+        public void PapyrusParser_GetAsmValues()
+        {
+            var parser = new PapyrusAssemblyInstructionParser();
+            var values = parser.GetAsmValues("CALLMETHOD OnEndState self ::nonevar 1 asNewState ;@line 8");
+            Assert.AreEqual(6, values.Count);
+
+            values = parser.GetAsmValues("CALLMETHOD OnEndState self ::nonevar 1 \"\" ;@line 8");
+            Assert.AreEqual(6, values.Count);
+            Assert.AreEqual(string.Empty, values[5].Value);
+            values = parser.GetAsmValues("CALLMETHOD OnEndState self ::nonevar 1 \"hello there! asNewState\" ;@line 8");
+            Assert.AreEqual(6, values.Count);
+            Assert.AreEqual("hello there! asNewState", values[5].Value);
+        }
+
+        [TestMethod]
+        public void PapyrusParser_ParseInstruction()
+        {
+            var parser = new PapyrusAssemblyInstructionParser();
+            var inst = parser.ParseInstruction("CALLMETHOD OnEndState self ::nonevar 1 asNewState ;@line 8");
+            Assert.AreEqual(PapyrusOpCodes.Callmethod, inst.GetOpCode());
+            Assert.AreEqual(2, inst.GetOperandArguments().Count);
+            Assert.AreEqual(3, inst.GetArguments().Count);
+        }
+
+        [TestMethod]
+        public void PapyrusParser_ParseInstruction_AdditionalSpaces()
+        {
+            var parser = new PapyrusAssemblyInstructionParser();
+            var inst = parser.ParseInstruction("CALLMETHOD      OnEndState self    ::nonevar 1   asNewState    ;@line 8");
+            Assert.AreEqual(PapyrusOpCodes.Callmethod, inst.GetOpCode());
+            Assert.AreEqual(2, inst.GetOperandArguments().Count);
+            Assert.IsTrue(inst.GetOperandArguments().All(j => !j.Value.Contains(" ")));
+            Assert.AreEqual(3, inst.GetArguments().Count);
+            Assert.IsTrue(inst.GetArguments().All(j => !j.Value.Contains(" ")));
+        }
+
+        [TestMethod]
+        public void PapyrusParser_ParseInstructions()
+        {
+            var parser = new PapyrusAssemblyInstructionParser();
+            var inst = parser.ParseInstructions("CALLMETHOD OnEndState self ::nonevar 1 asNewState" + Environment.NewLine + "CALLMETHOD OnEndState self ::nonevar 1 asNewState");
+            for (var i = 0; i < 2; i++)
+            {
+                Assert.AreEqual(PapyrusOpCodes.Callmethod, inst[i].GetOpCode());
+                Assert.AreEqual(2, inst[i].GetOperandArguments().Count);
+                Assert.IsTrue(!inst[i].GetOperandArguments().Last().Value.Contains("\r"));
+                Assert.AreEqual(3, inst[i].GetArguments().Count);
+            }
+        }
+        [TestMethod]
+        public void PapyrusParser_ParseInstructions_WithComments()
+        {
+            var parser = new PapyrusAssemblyInstructionParser();
+            var inst = parser.ParseInstructions("CALLMETHOD OnEndState self ::nonevar 1 asNewState ;@line 8" + Environment.NewLine + "CALLMETHOD OnEndState self ::nonevar 1 asNewState ;@line 8");
+            for (var i = 0; i < 2; i++)
+            {
+                Assert.AreEqual(PapyrusOpCodes.Callmethod, inst[i].GetOpCode());
+                Assert.AreEqual(2, inst[i].GetOperandArguments().Count);
+                Assert.AreEqual(3, inst[i].GetArguments().Count);
+            }
+        }
+
         [TestMethod]
         public void Fo4_ReadPex_SaveTheAssembly_ReadAgain_Compare_ReturnsEqual()
         {

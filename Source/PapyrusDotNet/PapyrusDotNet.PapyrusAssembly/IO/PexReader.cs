@@ -27,24 +27,25 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
 {
     internal class PexReader : BinaryReader
     {
+        public PapyrusReaderSettings Settings { get; }
         private readonly PapyrusAssemblyDefinition assembly;
         private readonly bool throwsExceptions;
 
         public bool DEBUGGING;
 
-        private PapyrusVersionTargets papyrusVersionTarget;
+        public PapyrusVersionTargets PapyrusVersionTarget { get; private set; }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="PexReader" /> class.
+        /// Initializes a new instance of the <see cref="PexReader" /> class.
         /// </summary>
-        /// <param name="assembly"></param>
+        /// <param name="assembly">The assembly.</param>
         /// <param name="inputPexFile">The input pex file.</param>
-        /// <param name="throwsExceptions">Whether or not to throw unhandled exceptions.</param>
-        public PexReader(PapyrusAssemblyDefinition assembly, string inputPexFile, bool throwsExceptions = false)
+        /// <param name="settings">The settings.</param>
+        public PexReader(PapyrusAssemblyDefinition assembly, string inputPexFile, PapyrusReaderSettings settings)
             : base(new MemoryStream(File.ReadAllBytes(inputPexFile)))
         {
+            Settings = settings;
             this.assembly = assembly;
-            this.throwsExceptions = throwsExceptions;
         }
 
         /// <summary>
@@ -91,22 +92,36 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
         /// <filterpriority>2</filterpriority>
         public override short ReadInt16()
         {
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (PapyrusVersionTarget == PapyrusVersionTargets.Fallout4)
                 return BitConverter.ToInt16(new[] { ReadByte(), ReadByte() }, 0);
             return BitConverter.ToInt16(ReadBytesReversed(2), 0);
             // return base.ReadInt16();
         }
 
+        /// <summary>
+        /// Reads a 4-byte signed integer from the current stream and advances the current position of the stream by four bytes.
+        /// </summary>
+        /// <returns>
+        /// A 4-byte signed integer read from the current stream.
+        /// </returns>
+        /// <exception cref="T:System.IO.EndOfStreamException">The end of the stream is reached. </exception><exception cref="T:System.ObjectDisposedException">The stream is closed. </exception><exception cref="T:System.IO.IOException">An I/O error occurs. </exception><filterpriority>2</filterpriority>
         public override int ReadInt32()
         {
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (PapyrusVersionTarget == PapyrusVersionTargets.Fallout4)
                 return base.ReadInt32();
             return BitConverter.ToInt32(ReadBytesReversed(4), 0);
         }
 
+        /// <summary>
+        /// Reads an 8-byte signed integer from the current stream and advances the current position of the stream by eight bytes.
+        /// </summary>
+        /// <returns>
+        /// An 8-byte signed integer read from the current stream.
+        /// </returns>
+        /// <exception cref="T:System.IO.EndOfStreamException">The end of the stream is reached. </exception><exception cref="T:System.ObjectDisposedException">The stream is closed. </exception><exception cref="T:System.IO.IOException">An I/O error occurs. </exception><filterpriority>2</filterpriority>
         public override long ReadInt64()
         {
-            if (papyrusVersionTarget == PapyrusVersionTargets.Fallout4)
+            if (PapyrusVersionTarget == PapyrusVersionTargets.Fallout4)
                 return base.ReadInt64();
             return BitConverter.ToInt64(ReadBytesReversed(8), 0);
         }
@@ -167,22 +182,10 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
             }
 
             var size = ReadInt16();
-            //papyrusVersionTarget == PapyrusVersionTargets.Fallout4
-            //? ReadInt16()
-            //: ReadByte();
 
             for (var i = 0; i < size; i++)
             {
                 outputString += ReadChar();
-                //if (papyrusVersionTarget == PapyrusVersionTargets.Skyrim)
-                //{
-                //    var next = PeekChar();
-                //    if (next == '\0')
-                //    {
-                //        ReadByte();
-                //        break;
-                //    }
-                //}
             }
             return outputString;
             // return base.ReadString();
@@ -203,7 +206,7 @@ namespace PapyrusDotNet.PapyrusAssembly.IO
         /// <param name="papyrusVersionTarget">The papyrus version target.</param>
         public void SetVersionTarget(PapyrusVersionTargets papyrusVersionTarget)
         {
-            this.papyrusVersionTarget = papyrusVersionTarget;
+            this.PapyrusVersionTarget = papyrusVersionTarget;
         }
     }
 }
