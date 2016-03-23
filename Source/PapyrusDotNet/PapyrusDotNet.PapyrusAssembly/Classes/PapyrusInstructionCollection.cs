@@ -55,7 +55,10 @@ namespace PapyrusDotNet.PapyrusAssembly
         public void Insert(int index, PapyrusInstruction item)
         {
             if (item.Method == null) item.Method = method;
-            items.Insert(index, item);
+            if (index >= items.Count)
+                items.Add(item);
+            else
+                items.Insert(index, item);
         }
 
         public void Add(PapyrusInstruction item)

@@ -108,7 +108,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
                     pexReader.SetVersionTarget(PapyrusVersionTargets.Skyrim);
                     break;
             }
-            ReadHeader(header);
+            header.SourceHeader = ReadHeader();
 
             ReadStringTable(asm);
 
@@ -511,7 +511,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             };
         }
 
-        private void ReadHeader(PapyrusHeader header)
+        private PapyrusSourceHeader ReadHeader()
         {
             var majorVersion = pexReader.ReadByte();
             var minorVersion = pexReader.ReadByte();
@@ -528,7 +528,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             var user = pexReader.ReadString();
             var computer = pexReader.ReadString();
 
-            header.SourceHeader = new PapyrusSourceHeader(
+            return new PapyrusSourceHeader(
                 majorVersion, minorVersion,
                 gameId, compileTime, source, user, computer
                 );

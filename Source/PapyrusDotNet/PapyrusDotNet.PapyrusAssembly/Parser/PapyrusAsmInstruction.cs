@@ -83,9 +83,16 @@ namespace PapyrusDotNet.PapyrusAssembly.Parser
             For.Do(count, () => opargs.Add(new PapyrusAsmValue()));
         }
 
+        /// <summary>
+        /// Gets the arguments.
+        /// </summary>
+        /// <returns></returns>
         public List<PapyrusAsmValue> GetArguments() => args;
 
+        /// <summary>
+        /// Gets the operand arguments.
+        /// </summary>
+        /// <returns></returns>
         public List<PapyrusAsmValue> GetOperandArguments() => opargs;
-
     }
 }

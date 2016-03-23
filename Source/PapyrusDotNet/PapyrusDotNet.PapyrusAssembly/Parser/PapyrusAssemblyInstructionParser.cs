@@ -35,10 +35,10 @@ namespace PapyrusDotNet.PapyrusAssembly.Parser
             PapyrusAsmValue activeVal = null;
             var insideString = false;
             var specialToken = false;
-            foreach (var c in input.TakeWhile(c => c != ';'))
+            foreach (var token in input.TakeWhile(c => c != ';'))
             {
                 if (activeVal == null) activeVal = new PapyrusAsmValue();
-                switch (c)
+                switch (token)
                 {
                     case '\\':
                         specialToken = true;
@@ -57,13 +57,13 @@ namespace PapyrusDotNet.PapyrusAssembly.Parser
                         activeVal = null;
                         break;
                     default:
-                        if ((c == ' ' || c == '\t') && !insideString)
+                        if ((token == ' ' || token == '\t') && !insideString)
                         {
                             if (!string.IsNullOrEmpty(activeVal.Value)) res.Add(activeVal);
                             activeVal = null;
                         }
                         else
-                            activeVal.Value += c;
+                            activeVal.Value += token;
                         break;
                 }
             }
@@ -86,7 +86,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Parser
         /// </summary>
         /// <param name="inputInstructions">The input instructions.</param>
         /// <returns></returns>
-        public IList<PapyrusAsmInstruction> ParseInstructions(string[] inputInstructions)
+        public IList<PapyrusAsmInstruction> ParseInstructions(IEnumerable<string> inputInstructions)
         {
             return new List<PapyrusAsmInstruction>(inputInstructions.Select(ParseInstruction));
         }

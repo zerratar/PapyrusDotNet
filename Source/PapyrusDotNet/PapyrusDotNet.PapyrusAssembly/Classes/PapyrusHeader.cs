@@ -25,20 +25,52 @@ namespace PapyrusDotNet.PapyrusAssembly
 {
     public class PapyrusHeader
     {
-        public const uint Fallout4PapyrusHeaderIdentifier = 0xFA57C0DE;
-        public const uint SkyrimPapyrusHeaderIdentifier = 0xDEC057FA;
-        public static readonly Version SkyrimPapyrusVersion = new Version(3, 2);
-        public static readonly Version Fallout4PapyrusVersion = new Version(3, 9);
         private readonly PapyrusAssemblyDefinition assembly;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PapyrusHeader"/> class.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
         public PapyrusHeader(PapyrusAssemblyDefinition assembly)
         {
             this.assembly = assembly;
             UserflagReferenceHeader = new PapyrusHeaderUserflagCollection(assembly);
+            SourceHeader = new PapyrusSourceHeader();
         }
 
-        public PapyrusSourceHeader SourceHeader { get; set; } = new PapyrusSourceHeader();
-        public PapyrusHeaderUserflagCollection UserflagReferenceHeader { get; set; }
+        /// <summary>
+        /// The fallout4 papyrus header identifier
+        /// </summary>
+        public const uint Fallout4PapyrusHeaderIdentifier = 0xFA57C0DE;
+
+        /// <summary>
+        /// The skyrim papyrus header identifier
+        /// </summary>
+        public const uint SkyrimPapyrusHeaderIdentifier = 0xDEC057FA;
+
+        /// <summary>
+        /// The skyrim papyrus version
+        /// </summary>
+        public static readonly Version SkyrimPapyrusVersion = new Version(3, 2);
+
+        /// <summary>
+        /// The fallout4 papyrus version
+        /// </summary>
+        public static readonly Version Fallout4PapyrusVersion = new Version(3, 9);
+
+        /// <summary>
+        /// Gets the source header.
+        /// </summary>
+        public PapyrusSourceHeader SourceHeader { get; internal set; }
+
+        /// <summary>
+        /// Gets the userflag reference header.
+        /// </summary>
+        public PapyrusHeaderUserflagCollection UserflagReferenceHeader { get; }
+
+        /// <summary>
+        /// Gets or sets the header identifier.
+        /// </summary>
         public uint HeaderIdentifier { get; set; }
     }
 }

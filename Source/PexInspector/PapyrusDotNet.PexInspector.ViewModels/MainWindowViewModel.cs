@@ -68,7 +68,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private ICommand findAllReferencesCommand;
         private RelayCommand<object> findAllUsagesCommand;
         private ObservableCollection<TreeViewItem> findResultTree;
-        private bool isFindResultSelected;
         public List<PapyrusAssemblyDefinition> LoadedAssemblies = new List<PapyrusAssemblyDefinition>();
         public List<string> LoadedAssemblyFolders = new List<string>();
         public Dictionary<string, string> LoadedAssemblyNames = new Dictionary<string, string>();
@@ -123,8 +122,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
                 DeleteMemberCommand = new RelayCommand<object>(DeleteMember, CanDeleteMember);
 
-                InsertAfterCommand = new RelayCommand(InsertAfter, CanInsert);
-                InsertBeforeCommand = new RelayCommand(InsertBefore, CanInsert);
+                InsertAfterCommand = new RelayCommand(InsertInstructionAfter, CanInsert);
+                InsertBeforeCommand = new RelayCommand(InsertInstructionBefore, CanInsert);
                 EditInstructionCommand = new RelayCommand(EditInstruction, CanInsert);
                 RemoveInstructionCommand = new RelayCommand(RemoveInstruction, CanInsert);
 
@@ -607,7 +606,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             var prop = field.DeclaringType.Properties.FirstOrDefault(
                 p =>
                     p.AutoName != null &&
-                    p.AutoName.Replace("::", "").ToLower() == field.Name.Value.Replace("::", "").ToLower());
+                    string.Equals(p.AutoName.Replace("::", ""), field.Name.Value.Replace("::", ""), StringComparison.CurrentCultureIgnoreCase));
             if (prop != null)
             {
                 MessageBox.Show("This field is being accessed from an Auto Property '" + prop.Name.Value +
@@ -652,14 +651,11 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     var state = method.DeclaringState;
                     var debugInfo = state.DeclaringType.Assembly.DebugInfo;
 
-                    if (debugInfo != null)
+                    var desc =
+                        debugInfo?.MethodDescriptions.FirstOrDefault(m => m.Name.Index == method.Name.Index);
+                    if (desc != null)
                     {
-                        var desc =
-                            debugInfo.MethodDescriptions.FirstOrDefault(m => m.Name.Index == method.Name.Index);
-                        if (desc != null)
-                        {
-                            debugInfo.MethodDescriptions.Remove(desc);
-                        }
+                        debugInfo.MethodDescriptions.Remove(desc);
                     }
 
                     state.Methods.Remove(method);
@@ -684,14 +680,17 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 var root = selectedNode.GetTopParent();
                 var asm = root.Item as PapyrusAssemblyDefinition;
+                if (asm == null) return;
+
                 var type = asm.Types.First();
 
-                var state = new PapyrusStateDefinition(type);
+                var state = new PapyrusStateDefinition(type) { Name = dialog.Name.Ref(asm) };
 
-                state.Name = dialog.Name.Ref(asm);
-                var node = new PapyrusViewModel(root.Children.First());
-                node.Item = state;
-                node.Text = !string.IsNullOrEmpty(state.Name.Value) ? state.Name.Value : "<default>";
+                var node = new PapyrusViewModel(root.Children.First())
+                {
+                    Item = state,
+                    Text = !string.IsNullOrEmpty(state.Name.Value) ? state.Name.Value : "<default>"
+                };
                 node.SetDirty(true);
                 RaiseCommandsCanExecute();
             }
@@ -761,7 +760,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
             DecompileSelectedMethod();
 
-            (FindAllReferencesCommand as RelayCommand<object>).RaiseCanExecuteChanged();
+            (FindAllReferencesCommand as RelayCommand<object>)?.RaiseCanExecuteChanged();
             FindAllUsagesCommand.RaiseCanExecuteChanged();
             ReloadPexCommand.RaiseCanExecuteChanged();
             SavePexAsCommand.RaiseCanExecuteChanged();
@@ -1043,25 +1042,12 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
             {
-                var newInstruction = new PapyrusInstruction();
-                newInstruction.OpCode = dialog.SelectedOpCode;
-                //newInstruction.Operand = dialog.Operand;
-                newInstruction.Arguments = dialog.Arguments;
-                newInstruction.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
-                selectedMethod.Body.Instructions.Add(newInstruction);
-                selectedMethod.Body.Instructions.RecalculateOffsets();
-                selectedMethod.UpdateInstructionOperands();
-                SelectedMethodInstructions =
-                    new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
-                selectedMethodNode.SetDirty(true);
-
-
+                CreateAndInsertInstructionAt(int.MaxValue, dialog);
                 RaiseCommandsCanExecute();
             }
         }
 
-
-        private void InsertBefore()
+        private void InsertInstructionBefore()
         {
             var dialog = new PapyrusInstructionEditorViewModel(dialogService,
                 LoadedAssemblies,
@@ -1074,24 +1060,13 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 var index = SelectedMethodInstructions.IndexOf(inst);
                 if (index < 0) index = 0;
 
-                var newInstruction = new PapyrusInstruction();
-                newInstruction.OpCode = dialog.SelectedOpCode;
-                //newInstruction.Operand = dialog.Operand;
-                newInstruction.Arguments = dialog.Arguments;
-                newInstruction.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
-                selectedMethod.Body.Instructions.Insert(index, newInstruction);
-                selectedMethod.Body.Instructions.RecalculateOffsets();
-                selectedMethod.UpdateInstructionOperands();
-                SelectedMethodInstructions =
-                    new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
-                selectedMethodNode.SetDirty(true);
-
-
+                CreateAndInsertInstructionAt(index, dialog);
                 RaiseCommandsCanExecute();
             }
         }
 
-        private void InsertAfter()
+
+        private void InsertInstructionAfter()
         {
             var dialog = new PapyrusInstructionEditorViewModel(dialogService, LoadedAssemblies,
                 selectedMethod.DeclaringState?.DeclaringType?.Assembly,
@@ -1102,24 +1077,24 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 var inst = SelectedMethodInstruction;
                 var index = SelectedMethodInstructions.IndexOf(inst) + 1;
 
-                var newInstruction = new PapyrusInstruction();
-                newInstruction.OpCode = dialog.SelectedOpCode;
-                //newInstruction.Operand = dialog.Operand;
-                newInstruction.Arguments = dialog.Arguments;
-                newInstruction.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
-
-                selectedMethod.Body.Instructions.Insert(index, newInstruction);
-                selectedMethod.Body.Instructions.RecalculateOffsets();
-
-                selectedMethod.UpdateInstructionOperands();
-                //selectedMethod.Body.Instructions.ForEach(i => selectedMethod.DeclaringState.DeclaringType.UpdateOperand(i, selectedMethod.Body.Instructions));
-
-                SelectedMethodInstructions =
-                    new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
-                selectedMethodNode.SetDirty(true);
-
+                CreateAndInsertInstructionAt(index, dialog);
                 RaiseCommandsCanExecute();
             }
+        }
+
+        private void CreateAndInsertInstructionAt(int index, PapyrusInstructionEditorViewModel dialog)
+        {
+            var newInstruction = new PapyrusInstruction();
+            newInstruction.OpCode = dialog.SelectedOpCode;
+            //newInstruction.Operand = dialog.Operand;
+            newInstruction.Arguments = dialog.Arguments;
+            newInstruction.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
+            selectedMethod.Body.Instructions.Insert(index, newInstruction);
+            selectedMethod.Body.Instructions.RecalculateOffsets();
+            selectedMethod.UpdateInstructionOperands();
+            SelectedMethodInstructions =
+                new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
+            selectedMethodNode.SetDirty(true);
         }
 
         private void EditVariable()
@@ -1268,7 +1243,10 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             var obj = SelectedMethodParameter;
             var name = obj.Name?.Value ?? "";
             if (MessageBox.Show(
-                "WARNING: It could be used by any existing instructions, and if this method is being called from somewhere else, that call needs to be updated or the scripts will stop working.\r\n----------------------\r\nDeleting this parameter will not modify any existing instructions.\r\nAre you sure you want to delete this parameter?",
+                "WARNING: It could be used by any existing instructions, and if this method is being called from somewhere else," +
+                "that call needs to be updated or the scripts will stop working.\r\n" +
+                "----------------------\r\n" +
+                "Deleting this parameter will not modify any existing instructions.\r\nAre you sure you want to delete this parameter?",
                 "Delete Parameter " + name, MessageBoxButton.OKCancel)
                 == MessageBoxResult.OK)
             {
@@ -1290,7 +1268,10 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             var obj = SelectedMethodVariable;
             var name = obj.Name?.Value ?? "";
             if (MessageBox.Show(
-                "WARNING: It could be used by any existing instructions.\r\n----------------------\r\nDeleting this variable will not modify any existing instructions.\r\nAre you sure you want to delete this variable?",
+                "WARNING: It could be used by any existing instructions.\r\n" +
+                "----------------------\r\n" +
+                "Deleting this variable will not modify any existing instructions.\r\n" +
+                "Are you sure you want to delete this variable?",
                 "Delete Variable " + name, MessageBoxButton.OKCancel)
                 == MessageBoxResult.OK)
             {
@@ -1721,7 +1702,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     }
                 }
             }
-            catch(Exception exc)
+            catch (Exception exc)
             {
                 DecompiledMemberText = "Failed to decompile this method";
             }

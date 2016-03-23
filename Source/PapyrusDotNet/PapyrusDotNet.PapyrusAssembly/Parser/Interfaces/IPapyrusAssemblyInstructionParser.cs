@@ -24,6 +24,6 @@ namespace PapyrusDotNet.PapyrusAssembly.Parser.Interfaces
         /// </summary>
         /// <param name="inputInstructions">The input instructions.</param>
         /// <returns></returns>
-        IList<PapyrusAsmInstruction> ParseInstructions(string[] inputInstructions);
+        IList<PapyrusAsmInstruction> ParseInstructions(IEnumerable<string> inputInstructions);
     }
 }

@@ -48,7 +48,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Tools
                     {
                         foreach (var m in s.Methods)
                         {
-                            if (m.Name != null && m.Name.Value != null && m.Name.Value.ToLower() == mn)
+                            if (m.Name?.Value != null && m.Name.Value.ToLower() == mn)
                             {
                                 result.AddResult(
                                     t, s, m, null, methodName,
@@ -76,7 +76,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Tools
                     {
                         foreach (var m in s.Methods)
                         {
-                            if (m.Name != null && m.Name.Value != null && m.Name.Value.ToLower() == mn)
+                            if (m.Name?.Value != null && m.Name.Value.ToLower() == mn)
                             {
                                 result.AddResult(
                                     t, s, m, null, propertyName,
