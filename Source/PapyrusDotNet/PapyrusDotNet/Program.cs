@@ -66,6 +66,7 @@ namespace PapyrusDotNet
                 return;
             }
 
+            ui.Clear();
             ui.DrawInterface("Magic is about to happen!");
 
             var clr2Papyrus = !Enumerable.Contains(args, "-clr");
