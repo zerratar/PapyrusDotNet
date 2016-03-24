@@ -115,8 +115,6 @@
     <Compile Include="Implementations\DialogService.cs" />
     <Compile Include="Implementations\User32.cs" />
     <Compile Include="TreeViewHelper.cs" />
-    <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="Windows\AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
