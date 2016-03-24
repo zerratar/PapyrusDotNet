@@ -46,6 +46,11 @@ namespace PapyrusDotNet.Common.Utilities
             Console.CursorTop = consoleY;
         }
 
+        public void Clear()
+        {
+            Console.Clear();
+        }
+
         public void ReleaseConsoleCursorPosition() => cursorLocked = false;
 
         public void DrawInterface(string message)
