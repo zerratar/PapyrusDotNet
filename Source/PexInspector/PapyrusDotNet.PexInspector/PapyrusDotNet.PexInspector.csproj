@@ -108,9 +108,15 @@
     <Compile Include="Converters\PapyrusArrayDisplayConverter.cs" />
     <Compile Include="Converters\PapyrusInstructionDisplayConverter.cs" />
     <Compile Include="Converters\PapyrusInstructionOperandConverter.cs" />
+    <Compile Include="DependencyLocator.cs" />
     <Compile Include="Implementations\DialogService.cs" />
     <Compile Include="Implementations\User32.cs" />
+    <Compile Include="InstructionEditorView.xaml.cs">
+      <DependentUpon>InstructionEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="IoCContainer.cs" />
     <Compile Include="TreeViewHelper.cs" />
+    <Compile Include="VisualTreeHelperEx.cs" />
     <Compile Include="Windows\AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
@@ -145,6 +151,10 @@
       <DependentUpon>PapyrusParameterAndVariableEditorWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\InstructionArgumentEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InstructionEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

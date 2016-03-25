@@ -20,17 +20,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Microsoft.Win32;
-using PapyrusDotNet.Common.Extensions;
 using PapyrusDotNet.Decompiler;
 using PapyrusDotNet.PapyrusAssembly;
 using PapyrusDotNet.PapyrusAssembly.Extensions;
@@ -44,14 +41,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private static MainWindowViewModel designInstance;
-
-        public static MainWindowViewModel DesignInstance = designInstance ??
-                                                           (designInstance = new MainWindowViewModel(null, null));
-
-        private static readonly SolidColorBrush AttributeColor = new SolidColorBrush(Color.FromRgb(30, 78, 135));
-        private static readonly SolidColorBrush TypeColor = new SolidColorBrush(Color.FromRgb(30, 135, 75));
-        private static readonly SolidColorBrush MethodColor = new SolidColorBrush(Color.FromRgb(44, 62, 80));
+        private static MainWindowViewModel vm;
+        public static MainWindowViewModel DesignInstance = vm ?? (vm = new MainWindowViewModel(null, null, null, null));
 
         private bool canSaveItem;
         private RelayCommand createFieldCommand;
@@ -62,15 +53,15 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private RelayCommand<object> deleteMemberCommand;
 
         private readonly IDialogService dialogService;
-        private Dictionary<string, string> discoveredScriptNames;
-        private List<string> discoveredScripts;
+        private readonly IPexLoader pexLoader;
+        private readonly IPexTreeBuilder pexTreeBuilder;
+        private readonly IMemberDisplayBuilder memberDisplayBuilder;
+
         private RelayCommand<object> editMemberCommand;
         private ICommand findAllReferencesCommand;
         private RelayCommand<object> findAllUsagesCommand;
         private ObservableCollection<TreeViewItem> findResultTree;
-        public List<PapyrusAssemblyDefinition> LoadedAssemblies = new List<PapyrusAssemblyDefinition>();
-        public List<string> LoadedAssemblyFolders = new List<string>();
-        public Dictionary<string, string> LoadedAssemblyNames = new Dictionary<string, string>();
+
         private ObservableCollection<PapyrusViewModel> pexTree;
         private RelayCommand<object> reloadPexCommand;
         private RelayCommand<object> savePexAsCommand;
@@ -78,10 +69,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private int selectedContentIndex;
         private object selectedMemberFlags;
         private ObservableCollection<Inline> selectedMemberName;
-        private PapyrusMethodDefinition selectedMethod;
-        private PapyrusInstruction selectedMethodInstruction;
-        private ObservableCollection<PapyrusInstruction> selectedMethodInstructions;
-        private PapyrusViewModel selectedMethodNode;
+        internal PapyrusMethodDefinition selectedMethod;
+        internal PapyrusViewModel selectedMethodNode;
         private PapyrusParameterDefinition selectedMethodParameter;
         private ObservableCollection<PapyrusParameterDefinition> selectedMethodParameters;
         private PapyrusVariableReference selectedMethodVariable;
@@ -90,9 +79,14 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         private string targetGameName;
         private ICommand injectCapricaInfoCommand;
 
-        public MainWindowViewModel(IDialogService dialogService, string fileToOpen)
+        public MainWindowViewModel(IDialogService dialogService, IPexLoader pexLoader, IPexTreeBuilder pexTreeBuilder, IMemberDisplayBuilder memberDisplayBuilder)
         {
             this.dialogService = dialogService;
+            this.pexLoader = pexLoader;
+            this.pexTreeBuilder = pexTreeBuilder;
+            this.memberDisplayBuilder = memberDisplayBuilder;
+
+            InstructionEditor = new InstructionEditorViewModel(this, pexLoader, dialogService);
 
             // if dialogService == null then this is a design instance :-P
             if (dialogService != null)
@@ -122,13 +116,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
                 DeleteMemberCommand = new RelayCommand<object>(DeleteMember, CanDeleteMember);
 
-                InsertAfterCommand = new RelayCommand(InsertInstructionAfter, CanInsert);
-                InsertBeforeCommand = new RelayCommand(InsertInstructionBefore, CanInsert);
-                EditInstructionCommand = new RelayCommand(EditInstruction, CanInsert);
-                RemoveInstructionCommand = new RelayCommand(RemoveInstruction, CanInsert);
-
-                CreateInstructionCommand = new RelayCommand(CreateInstruction, CanCreate);
-
 
                 CreateVariableCommand = new RelayCommand(CreateVariable, CanCreate);
                 EditVariableCommand = new RelayCommand(EditVariable, CanEditVar);
@@ -145,11 +132,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 OpenAboutCommand = new RelayCommand(OpenAboutWindow);
 
                 InjectCapricaInfoCommand = new RelayCommand(InjectCapricaInfo);
-
-                if (fileToOpen != null)
-                {
-                    LoadPex(fileToOpen);
-                }
             }
 
             DecompiledMemberText = "Select a method to view its source.";
@@ -157,6 +139,11 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             TargetGameName = "Unknown";
             SelectedMemberFlags = "<none>";
             SelectedMemberName = new ObservableCollection<Inline>(new[] { new Run("Nothing Selected") });
+        }
+
+        public void LoadPex(string fileName)
+        {
+            pexLoader.LoadPex(fileName);
         }
 
         private void InjectCapricaInfo()
@@ -213,11 +200,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
         }
 
-        public ObservableCollection<PapyrusInstruction> SelectedMethodInstructions
-        {
-            get { return selectedMethodInstructions; }
-            set { Set(ref selectedMethodInstructions, value); }
-        }
 
         public ObservableCollection<PapyrusParameterDefinition> SelectedMethodParameters
         {
@@ -231,11 +213,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             set { Set(ref selectedMethodVariables, value); }
         }
 
-        public PapyrusInstruction SelectedMethodInstruction
-        {
-            get { return selectedMethodInstruction; }
-            set { Set(ref selectedMethodInstruction, value); }
-        }
 
         public ObservableCollection<Inline> SelectedMemberName
         {
@@ -282,10 +259,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         }
 
         public ICommand ExitCommand { get; set; }
-        public RelayCommand InsertBeforeCommand { get; set; }
-        public RelayCommand InsertAfterCommand { get; set; }
-        public RelayCommand EditInstructionCommand { get; set; }
-        public RelayCommand RemoveInstructionCommand { get; set; }
+
         public RelayCommand<PapyrusViewModel> SelectedMemberCommand { get; set; }
         public RelayCommand CreateVariableCommand { get; set; }
         public RelayCommand EditVariableCommand { get; set; }
@@ -293,7 +267,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
         public RelayCommand CreateParameterCommand { get; set; }
         public RelayCommand EditParameterCommand { get; set; }
         public RelayCommand DeleteParameterCommand { get; set; }
-        public RelayCommand CreateInstructionCommand { get; set; }
+
 
         public ICommand ValidateSelectedScriptCommand { get; set; }
         public ICommand ValidateSelectedScriptAndReferencesCommand { get; set; }
@@ -368,6 +342,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             get { return injectCapricaInfoCommand; }
             set { Set(ref injectCapricaInfoCommand, value); }
         }
+
+        public InstructionEditorViewModel InstructionEditor { get; set; }
 
         public event EventHandler SelectedContentIndexChanged;
 
@@ -466,7 +442,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void EditField(PapyrusViewModel node, PapyrusFieldDefinition field)
         {
-            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var loadedAssemblies = pexLoader.GetLoadedAssemblies();
+            var loadedTypes = loadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
             var dialog = new PapyrusFieldEditorViewModel(loadedTypes, field);
             if (dialogService.ShowDialog(dialog) == DialogResult.OK)
             {
@@ -728,7 +705,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 return;
             }
 
-            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var loadedAssemblies = pexLoader.GetLoadedAssemblies();
+            var loadedTypes = loadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
             var dialog = new PapyrusFieldEditorViewModel(loadedTypes);
             if (dialogService.ShowDialog(dialog) == DialogResult.OK)
             {
@@ -770,7 +748,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             CreateMethodCommand.RaiseCanExecuteChanged();
             CreateStateCommand.RaiseCanExecuteChanged();
             EditMemberCommand.RaiseCanExecuteChanged();
-            CreateInstructionCommand.RaiseCanExecuteChanged();
+            InstructionEditor.CreateInstructionCommand.RaiseCanExecuteChanged();
             CreateParameterCommand.RaiseCanExecuteChanged();
             CreateVariableCommand.RaiseCanExecuteChanged();
             DeleteMemberCommand.RaiseCanExecuteChanged();
@@ -851,9 +829,9 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             //Directory.GetFiles(LoadedAssemblyFolders.FirstOrDefault(), "*.pex", SearchOption.AllDirectories)
             //    .Select(i => PapyrusAssemblyDefinition.ReadAssembly(i, false))
             //    .ToList();
-
+            var loadedAssemblies = pexLoader.GetLoadedAssemblies();
             var refFinder =
-                new PapyrusReferenceFinder(LoadedAssemblies);
+                new PapyrusReferenceFinder(loadedAssemblies);
 
 
             var pvm = obj as PapyrusViewModel;
@@ -882,8 +860,9 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void FindAllusages(object obj)
         {
+            var loadedAssemblies = pexLoader.GetLoadedAssemblies();
             var usageFinder =
-                new PapyrusUsageFinder(LoadedAssemblies);
+                new PapyrusUsageFinder(loadedAssemblies);
 
             var pvm = obj as PapyrusViewModel;
             if (pvm != null)
@@ -987,13 +966,14 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                 var asm = top.Item as PapyrusAssemblyDefinition;
                 if (asm != null)
                 {
-                    var index = LoadedAssemblies.IndexOf(asm);
+                    var loadedAssemblies = pexLoader.GetLoadedAssemblies().ToList();
+                    var index = loadedAssemblies.IndexOf(asm);
 
-                    LoadedAssemblies[index] = PapyrusAssemblyDefinition.ReloadAssembly(asm);
+                    loadedAssemblies[index] = PapyrusAssemblyDefinition.ReloadAssembly(asm);
 
-                    BuildPexTree(top);
+                    PexTree = pexTreeBuilder.BuildPexTree(PexTree, top);
 
-                    SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>();
+                    InstructionEditor.SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>();
 
                     SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>();
 
@@ -1008,98 +988,10 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             return selectedMethod != null;
         }
 
-
-        private void EditInstruction()
-        {
-            var dialog = new PapyrusInstructionEditorViewModel(dialogService, LoadedAssemblies,
-                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
-                selectedMethod.DeclaringState?.DeclaringType,
-                selectedMethod, SelectedMethodInstruction);
-            var result = dialogService.ShowDialog(dialog);
-            if (result == DialogResult.OK)
-            {
-                var inst = SelectedMethodInstruction;
-                //inst.Operand = dialog.Operand;
-                inst.OpCode = dialog.SelectedOpCode;
-                inst.Arguments = dialog.Arguments;
-                inst.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
-                selectedMethod.Body.Instructions.RecalculateOffsets();
-                selectedMethod.UpdateInstructionOperands();
-                SelectedMethodInstructions =
-                    new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
-                selectedMethodNode.SetDirty(true);
-
-                RaiseCommandsCanExecute();
-            }
-        }
-
-        private void CreateInstruction()
-        {
-            var dialog = new PapyrusInstructionEditorViewModel(dialogService,
-                LoadedAssemblies,
-                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
-                selectedMethod.DeclaringState?.DeclaringType, selectedMethod);
-            var result = dialogService.ShowDialog(dialog);
-            if (result == DialogResult.OK)
-            {
-                CreateAndInsertInstructionAt(int.MaxValue, dialog);
-                RaiseCommandsCanExecute();
-            }
-        }
-
-        private void InsertInstructionBefore()
-        {
-            var dialog = new PapyrusInstructionEditorViewModel(dialogService,
-                LoadedAssemblies,
-                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
-                selectedMethod.DeclaringState?.DeclaringType, selectedMethod);
-            var result = dialogService.ShowDialog(dialog);
-            if (result == DialogResult.OK)
-            {
-                var inst = SelectedMethodInstruction;
-                var index = SelectedMethodInstructions.IndexOf(inst);
-                if (index < 0) index = 0;
-
-                CreateAndInsertInstructionAt(index, dialog);
-                RaiseCommandsCanExecute();
-            }
-        }
-
-
-        private void InsertInstructionAfter()
-        {
-            var dialog = new PapyrusInstructionEditorViewModel(dialogService, LoadedAssemblies,
-                selectedMethod.DeclaringState?.DeclaringType?.Assembly,
-                selectedMethod.DeclaringState?.DeclaringType, selectedMethod);
-            var result = dialogService.ShowDialog(dialog);
-            if (result == DialogResult.OK)
-            {
-                var inst = SelectedMethodInstruction;
-                var index = SelectedMethodInstructions.IndexOf(inst) + 1;
-
-                CreateAndInsertInstructionAt(index, dialog);
-                RaiseCommandsCanExecute();
-            }
-        }
-
-        private void CreateAndInsertInstructionAt(int index, PapyrusInstructionEditorViewModel dialog)
-        {
-            var newInstruction = new PapyrusInstruction();
-            newInstruction.OpCode = dialog.SelectedOpCode;
-            //newInstruction.Operand = dialog.Operand;
-            newInstruction.Arguments = dialog.Arguments;
-            newInstruction.OperandArguments = new List<PapyrusVariableReference>(dialog.OperandArguments);
-            selectedMethod.Body.Instructions.Insert(index, newInstruction);
-            selectedMethod.Body.Instructions.RecalculateOffsets();
-            selectedMethod.UpdateInstructionOperands();
-            SelectedMethodInstructions =
-                new ObservableCollection<PapyrusInstruction>(selectedMethod.Body.Instructions);
-            selectedMethodNode.SetDirty(true);
-        }
-
         private void EditVariable()
         {
-            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var loadedAssemblies = pexLoader.GetLoadedAssemblies().ToList();
+            var loadedTypes = loadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
             var dialog = new PapyrusVariableEditorViewModel(loadedTypes, SelectedMethodVariable);
             var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
@@ -1122,7 +1014,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void CreateVariable()
         {
-            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var loadedAssemblies = pexLoader.GetLoadedAssemblies().ToList();
+            var loadedTypes = loadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
             var dialog = new PapyrusVariableEditorViewModel(loadedTypes);
             var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
@@ -1171,7 +1064,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void EditParameter()
         {
-            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var loadedAssemblies = pexLoader.GetLoadedAssemblies().ToList();
+            var loadedTypes = loadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
             var dialog = new PapyrusParameterEditorViewModel(loadedTypes, SelectedMethodParameter);
             var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
@@ -1195,7 +1089,8 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
         private void CreateParameter()
         {
-            var loadedTypes = LoadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
+            var loadedAssemblies = pexLoader.GetLoadedAssemblies().ToList();
+            var loadedTypes = loadedAssemblies.SelectMany(t => t.Types.Select(j => j.Name.Value));
             var dialog = new PapyrusParameterEditorViewModel(loadedTypes);
             var result = dialogService.ShowDialog(dialog);
             if (result == DialogResult.OK)
@@ -1289,34 +1184,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
         }
 
-        private void RemoveInstruction()
-        {
-            var obj = SelectedMethodInstruction;
-            if (MessageBox.Show("WARNING: Are you sure you want to delete this instruction?",
-                "Delete Instruction L_" + obj.Offset.ToString("000") + ": " + obj.OpCode, MessageBoxButton.OKCancel)
-                == MessageBoxResult.OK)
-            {
-                var method = selectedMethod;
-
-                method.Body.Instructions.Remove(obj);
-
-                SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(
-                    method.Body.Instructions
-                    );
-
-                SelectedMethodParameters = new ObservableCollection<PapyrusParameterDefinition>(
-                    method.Parameters
-                    );
-
-                SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(
-                    method.GetVariables()
-                    );
-                selectedMethodNode.SetDirty(true);
-
-                RaiseCommandsCanExecute();
-            }
-        }
-
         private void Exit() => Application.Current.Shutdown(-1);
 
         private void SavePexAs(object i)
@@ -1356,8 +1223,6 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             }
         }
 
-        private bool CanInsert() => SelectedMethodInstruction != null;
-
         private bool CanEditParameter() => SelectedMethodParameter != null;
 
         private bool CanEditVar() => SelectedMethodVariable != null;
@@ -1374,243 +1239,18 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             ofd.Filter = "Papyrus Script Binary (*.pex)|*.pex";
             if (ofd.ShowDialog().GetValueOrDefault())
             {
-                LoadPex(ofd.FileName);
+                pexLoader.LoadPex(ofd.FileName);
+
+                PexTree = pexTreeBuilder.BuildPexTree(PexTree);
             }
         }
 
-        public void LoadPex(string fileName)
-        {
-            var name = Path.GetFileName(fileName);
-            var directoryName = Path.GetDirectoryName(fileName);
 
-            if (name != null && LoadedAssemblyNames.ContainsKey(name.ToLower()))
-            {
-                if (MessageBox.Show("This file has already been loaded.\r\nDo you want to reload it?", "Reload?",
-                    MessageBoxButton.YesNo) != MessageBoxResult.Yes)
-                {
-                    return;
-                }
-            }
-
-            var loadedAssembly = PapyrusAssemblyDefinition.ReadAssembly(fileName);
-            var loadIndex = -1;
-            if (name != null && LoadedAssemblyNames.ContainsKey(name.ToLower()))
-            {
-                loadIndex = Array.IndexOf(LoadedAssemblyNames.Values.ToArray(), name.ToLower());
-            }
-
-            if (loadIndex == -1)
-            {
-                LoadedAssemblies.Add(loadedAssembly);
-
-                if (name != null) LoadedAssemblyNames.Add(name.ToLower(), name.ToLower());
-            }
-            else
-            {
-                LoadedAssemblies[loadIndex] = loadedAssembly;
-            }
-
-            if (!LoadedAssemblyFolders.Contains(directoryName))
-                LoadedAssemblyFolders.Add(directoryName);
-
-            BuildPexTree();
-
-            RaiseCommandsCanExecute();
-        }
-
-        private void BuildPexTree(PapyrusViewModel target = null)
-        {
-            if (target != null)
-            {
-                var itemIndex = PexTree.IndexOf(target);
-                var asm = target.Item as PapyrusAssemblyDefinition;
-                if (asm != null)
-                {
-                    var asmnames = LoadedAssemblyNames.Values.ToArray();
-                    var asmIndex =
-                        LoadedAssemblies.IndexOf(i => i.Types.First().Name.Value == asm.Types.First().Name.Value);
-                    PapyrusViewModel newNode;
-                    if (BuildPexTree(asmIndex, asmnames, out newNode)) return;
-
-                    PexTree.RemoveAt(itemIndex);
-                    PexTree.Insert(itemIndex, newNode);
-                }
-            }
-            else
-            {
-                var asmnames = LoadedAssemblyNames.Values.ToArray();
-                var rootNodes = new List<PapyrusViewModel>();
-                for (var index = 0; index < LoadedAssemblies.Count; index++)
-                {
-                    PapyrusViewModel newNode;
-                    if (BuildPexTree(index, asmnames, out newNode))
-                        return; // the tree will be reloaded, so we don't wanna finish it here.
-                    if (newNode != null)
-                    {
-                        rootNodes.Add(newNode);
-                    }
-                }
-                PexTree = new ObservableCollection<PapyrusViewModel>(rootNodes.OrderBy(i => i.Text));
-            }
-        }
-
-        private bool BuildPexTree(int assemblyIndex, string[] asmnames, out PapyrusViewModel root)
-        {
-            var asm = LoadedAssemblies[assemblyIndex];
-            root = new PapyrusViewModel();
-            root.Item = asm;
-            root.Text = asmnames[assemblyIndex];
-            foreach (var type in asm.Types)
-            {
-                var typeNode = new PapyrusViewModel(root);
-                typeNode.Item = type;
-                typeNode.Text = type.Name.Value +
-                                (type.BaseTypeName != null && !string.IsNullOrEmpty(type.BaseTypeName.Value)
-                                    ? " : " + type.BaseTypeName.Value
-                                    : "");
-
-                if (type.BaseTypeName != null && !string.IsNullOrEmpty(type.BaseTypeName.Value))
-                {
-                    if (EnsureAssemblyLoaded(type.BaseTypeName.Value)) return true;
-                }
-
-                foreach (var structType in type.NestedTypes.OrderBy(i => i.Name.Value))
-                {
-                    var structTypeNode = new PapyrusViewModel(typeNode);
-                    structTypeNode.Item = structType;
-                    structTypeNode.Text = structType.Name.Value;
-                    foreach (var field in structType.Fields)
-                    {
-                        var fieldNode = new PapyrusViewModel(structTypeNode);
-                        fieldNode.Item = field;
-                        fieldNode.Text = field.Name.Value + " : " + field.TypeName;
-
-                        if (!string.IsNullOrEmpty(field.TypeName))
-                        {
-                            if (type.BaseTypeName != null && EnsureAssemblyLoaded(type.BaseTypeName.Value)) return true;
-                        }
-                    }
-                }
-
-                //var statesNode = new PapyrusViewModel(typeNode);
-                //statesNode.Item = "states";
-                //statesNode.Text = "States";
-                foreach (var item in type.States.OrderBy(i => i.Name.Value))
-                {
-                    var stateNode = new PapyrusViewModel(typeNode);
-                    stateNode.Item = item;
-                    stateNode.Text = !string.IsNullOrEmpty(item.Name.Value) ? item.Name.Value : "<default>";
-                    foreach (var method in item.Methods.OrderBy(i => i.Name.Value))
-                    {
-                        var m = new PapyrusViewModel(stateNode);
-                        m.Item = method;
-                        m.Text = method.Name.Value + GetParameterString(method.Parameters) + " : " +
-                                 method.ReturnTypeName.Value;
-
-                        if (!string.IsNullOrEmpty(method.ReturnTypeName.Value))
-                        {
-                            if (EnsureAssemblyLoaded(method.ReturnTypeName.Value)) return true;
-                        }
-                    }
-                }
-
-                foreach (var field in type.Fields.OrderBy(i => i.Name.Value))
-                {
-                    var fieldNode = new PapyrusViewModel(typeNode);
-                    fieldNode.Item = field;
-                    fieldNode.Text = field.Name.Value + " : " + field.TypeName;
-
-                    if (!string.IsNullOrEmpty(field.TypeName))
-                    {
-                        if (EnsureAssemblyLoaded(field.TypeName)) return true;
-                    }
-                }
-
-                foreach (var item in type.Properties.OrderBy(i => i.Name.Value))
-                {
-                    var fieldNode = new PapyrusViewModel(typeNode);
-                    fieldNode.Item = item;
-                    fieldNode.Text = item.Name.Value + " : " + item.TypeName.Value;
-
-                    if (!string.IsNullOrEmpty(item.TypeName.Value))
-                    {
-                        if (EnsureAssemblyLoaded(item.TypeName.Value)) return true;
-                    }
-
-                    if (item.HasGetter && item.GetMethod != null)
-                    {
-                        var method = item.GetMethod;
-                        var m = new PapyrusViewModel(fieldNode);
-                        m.Item = method;
-                        m.Text = "Getter" + GetParameterString(method.Parameters) + " : " +
-                                 method.ReturnTypeName.Value;
-                    }
-
-                    if (item.HasSetter && item.SetMethod != null)
-                    {
-                        var method = item.SetMethod;
-                        var m = new PapyrusViewModel(fieldNode);
-                        m.Item = method;
-                        m.Text = "Setter" + GetParameterString(method.Parameters) + " : " +
-                                 method.ReturnTypeName.Value;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private bool EnsureAssemblyLoaded(string value)
-        {
-            if (value == null) return false;
-
-            var lower = value.ToLower();
-            lower = lower.Replace("[]", "");
-            // do not try and load any value types
-            if (lower == "int" || lower == "string" || lower == "bool" || lower == "none" || lower == "float")
-                return false;
-
-            if (discoveredScriptNames == null)
-                discoveredScriptNames =
-                    new Dictionary<string, string>();
-
-            if (!LoadedAssemblyNames.ContainsKey(lower + ".pex"))
-            {
-                if (discoveredScripts == null)
-                {
-                    discoveredScripts = LoadedAssemblyFolders.SelectMany(
-                        i => Directory.GetFiles(i, "*.pex", SearchOption.AllDirectories)).ToList();
-
-                    var items = discoveredScripts.Select(
-                        i => new { Name = Path.GetFileNameWithoutExtension(i)?.ToLower(), FullPath = i });
-
-                    items.ForEach(
-                        i =>
-                        {
-                            if (!discoveredScriptNames.ContainsKey(i.Name)) discoveredScriptNames.Add(i.Name, i.FullPath);
-                        });
-                }
-                if (discoveredScriptNames.ContainsKey(lower))
-                {
-                    var targetScriptFile = discoveredScriptNames[lower];
-                    if (targetScriptFile != null)
-                    {
-                        // Load the script and enforce to reload the tree.
-                        LoadPex(targetScriptFile);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        private string GetParameterString(List<PapyrusParameterDefinition> parameters,
+        private string GetParameterString(IEnumerable<PapyrusParameterDefinition> parameters,
             bool includeParameterNames = false)
         {
-            var paramDefs = string.Join(", ", parameters.Select(p => p.TypeName.Value +
-                                                                     (includeParameterNames ? " " + p.Name.Value : "")));
-
-            return "(" + paramDefs + ")";
+            return "(" + string.Join(", ", parameters.Select(p => p.TypeName.Value +
+                                                                  (includeParameterNames ? " " + p.Name.Value : ""))) + ")";
         }
 
         private void SelectMember(PapyrusViewModel item)
@@ -1620,7 +1260,7 @@ namespace PapyrusDotNet.PexInspector.ViewModels
 
             canSaveItem = item.IsDirty || item.IsHierarchyDirty;
 
-            BuildMemberDisplay(item.Item);
+            SelectedMemberName = memberDisplayBuilder.BuildMemberDisplay(item.Item);
             var type = item.Item as PapyrusTypeDefinition;
             if (type != null)
             {
@@ -1656,17 +1296,15 @@ namespace PapyrusDotNet.PexInspector.ViewModels
             {
                 selectedMethodNode = item;
                 selectedMethod = method;
-                SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(
-                    method.Body.Instructions
-                    );
+
+                InstructionEditor.SelectedMethodInstructions = new ObservableCollection<PapyrusInstruction>(
+                    method.Body.Instructions);
 
                 SelectedMethodParameters = new ObservableCollection<PapyrusParameterDefinition>(
-                    method.Parameters
-                    );
+                    method.Parameters);
 
                 SelectedMethodVariables = new ObservableCollection<PapyrusVariableReference>(
-                    method.GetVariables()
-                    );
+                    method.GetVariables());
 
                 SelectedMemberFlags = "0x" + method.Flags.ToString("X");
 
@@ -1702,115 +1340,12 @@ namespace PapyrusDotNet.PexInspector.ViewModels
                     }
                 }
             }
-            catch (Exception exc)
+            catch (Exception)
             {
                 DecompiledMemberText = "Failed to decompile this method";
             }
         }
 
-        public void BuildMemberDisplay(object item)
-        {
-            var displayItems = new List<Run>();
-            var type = item as PapyrusTypeDefinition;
-            if (type != null)
-            {
-                displayItems.Add(new Run(type.Name.Value) { Foreground = MethodColor, FontWeight = FontWeights.DemiBold });
-                if (type.BaseTypeName != null && !string.IsNullOrEmpty(type.BaseTypeName.Value))
-                {
-                    displayItems.Add(new Run(" : "));
-                    displayItems.Add(new Run(type.BaseTypeName.Value) { Foreground = TypeColor });
-                }
-            }
-            var state = item as PapyrusStateDefinition;
-            if (state != null)
-            {
-                displayItems.Add(new Run(string.IsNullOrEmpty(state.Name.Value) ? "<Default>" : state.Name.Value));
-                displayItems.Add(new Run(" State"));
-            }
-            var assembly = item as PapyrusAssemblyDefinition;
-            if (assembly != null)
-            {
-                displayItems.Add(new Run(assembly.Types.First().Name.Value + ".pex"));
-            }
-            var prop = item as PapyrusPropertyDefinition;
-            if (prop != null)
-            {
-                if (prop.IsAuto)
-                {
-                    displayItems.Add(new Run("Auto") { Foreground = AttributeColor });
-                    displayItems.Add(new Run(" "));
-                }
 
-                displayItems.Add(new Run("Property") { Foreground = AttributeColor });
-                displayItems.Add(new Run(" "));
-
-                displayItems.Add(new Run(prop.TypeName.Value) { Foreground = TypeColor });
-                displayItems.Add(new Run(" "));
-                displayItems.Add(new Run(prop.Name.Value));
-            }
-            var field = item as PapyrusFieldDefinition;
-            if (field != null)
-            {
-                displayItems.Add(new Run(field.TypeName) { Foreground = TypeColor });
-                displayItems.Add(new Run(" "));
-                displayItems.Add(new Run(field.Name.Value));
-            }
-            var method = item as PapyrusMethodDefinition;
-            if (method != null)
-            {
-                if (method.IsNative)
-                {
-                    displayItems.Add(new Run("Native") { Foreground = AttributeColor });
-                    displayItems.Add(new Run(" "));
-                }
-                if (method.IsGlobal)
-                {
-                    displayItems.Add(new Run("Global") { Foreground = AttributeColor });
-                    displayItems.Add(new Run(" "));
-                }
-
-                if (method.IsEvent)
-                {
-                    displayItems.Add(new Run("Event") { Foreground = AttributeColor });
-                    displayItems.Add(new Run(" "));
-                }
-                else
-                {
-                    displayItems.Add(new Run(method.ReturnTypeName.Value) { Foreground = TypeColor });
-                    displayItems.Add(new Run(" "));
-                }
-                var nameRef = method.Name;
-                var name = nameRef?.Value ??
-                           (method.IsSetter
-                               ? method.PropName + ".Setter"
-                               : method.IsGetter ? method.PropName + ".Getter" : "?????");
-                displayItems.Add(new Run(name) { Foreground = MethodColor, FontWeight = FontWeights.DemiBold });
-                displayItems.AddRange(GetParameterRuns(method.Parameters));
-                displayItems.Add(new Run(";"));
-            }
-            SelectedMemberName = new ObservableCollection<Inline>(displayItems.ToArray());
-        }
-
-
-        private List<Run> GetParameterRuns(List<PapyrusParameterDefinition> parameters)
-        {
-            var output = new List<Run>();
-            output.Add(new Run("("));
-            for (var index = 0; index < parameters.Count; index++)
-            {
-                var p = parameters[index];
-                output.Add(new Run(p.TypeName.Value) { Foreground = TypeColor });
-                output.Add(new Run(" "));
-                output.Add(new Run(p.Name.Value));
-
-                if (index != parameters.Count - 1)
-                {
-                    output.Add(new Run(", "));
-                }
-            }
-
-            output.Add(new Run(")"));
-            return output;
-        }
     }
 }

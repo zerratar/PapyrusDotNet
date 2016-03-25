@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector", "PexInspector\PapyrusDotNet.PexInspector\PapyrusDotNet.PexInspector.csproj", "{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector.ViewModels", "PexInspector\PapyrusDotNet.PexInspector.ViewModels\PapyrusDotNet.PexInspector.ViewModels.csproj", "{194AA6AE-668E-4633-BA12-5DB6D4DC0622}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.PexInspector.ViewModels.Tests", "PexInspector\PapyrusDotNet.PexInspector.ViewModels.Tests\PapyrusDotNet.PexInspector.ViewModels.Tests.csproj", "{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2A0DD2D-CFCC-4AB3-A1FA-B542E7AC35D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{194AA6AE-668E-4633-BA12-5DB6D4DC0622}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{194AA6AE-668E-4633-BA12-5DB6D4DC0622}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{194AA6AE-668E-4633-BA12-5DB6D4DC0622}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{194AA6AE-668E-4633-BA12-5DB6D4DC0622}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A81E183-AA39-4DAA-AB35-8A0D89BB7896}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

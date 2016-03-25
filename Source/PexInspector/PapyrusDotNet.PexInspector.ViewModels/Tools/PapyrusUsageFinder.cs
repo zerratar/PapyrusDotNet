@@ -27,13 +27,13 @@ namespace PapyrusDotNet.PexInspector.ViewModels.Tools
 {
     public class PapyrusUsageFinder : IPapyrusUsageFinder
     {
-        private readonly IList<PapyrusAssemblyDefinition> haystack;
+        private readonly IEnumerable<PapyrusAssemblyDefinition> haystack;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="PapyrusUsageFinder" /> class.
         /// </summary>
         /// <param name="haystack">The haystack.</param>
-        public PapyrusUsageFinder(IList<PapyrusAssemblyDefinition> haystack)
+        public PapyrusUsageFinder(IEnumerable<PapyrusAssemblyDefinition> haystack)
         {
             this.haystack = haystack;
         }

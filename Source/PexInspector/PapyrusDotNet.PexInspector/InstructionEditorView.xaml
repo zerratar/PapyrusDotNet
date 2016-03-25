@@ -1,0 +1,119 @@
+﻿<UserControl x:Class="PapyrusDotNet.PexInspector.InstructionEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PapyrusDotNet.PexInspector"
+             xmlns:behaviours="clr-namespace:PapyrusDotNet.PexInspector.Behaviours"
+             xmlns:papyrusAssembly="clr-namespace:PapyrusDotNet.PapyrusAssembly;assembly=PapyrusDotNet.PapyrusAssembly"
+             xmlns:controls="clr-namespace:PapyrusDotNet.PexInspector.Controls"
+             xmlns:viewModels="clr-namespace:PapyrusDotNet.PexInspector.ViewModels;assembly=PapyrusDotNet.PexInspector.ViewModels"
+             xmlns:converters="clr-namespace:PapyrusDotNet.PexInspector.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+             d:DataContext="{x:Static viewModels:InstructionEditorViewModel.DesignInstance}">
+    <UserControl.Resources>
+        <converters:PapyrusInstructionDisplayConverter x:Key="PapyrusInstructionDisplayConverter" />
+        <converters:PapyrusInstructionOperandConverter x:Key="PapyrusInstructionOperandConverter" />
+        <converters:PapyrusArrayDisplayConverter x:Key="PapyrusArrayDisplayConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+    <Grid>
+        <DataGrid ItemsSource="{Binding SelectedMethodInstructions}"
+                                                          SelectedItem="{Binding SelectedMethodInstruction, Mode=TwoWay}"
+                                                          MinRowHeight="22"
+                                                          VerticalGridLinesBrush="LightGray"
+                                                          HorizontalGridLinesBrush="LightGray"
+                                                          AutoGenerateColumns="False" CanUserSortColumns="False"
+                                                          CanUserAddRows="False" CanUserReorderColumns="False"
+                                                          SelectionMode="Single" SelectionUnit="FullRow"
+                                                          behaviours:DataGridBehaviour.DisplayRowNumber="True">
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="BorderThickness" Value="0" />
+                </Style>
+            </DataGrid.CellStyle>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="New..."
+                                                                      Command="{Binding CreateInstructionCommand}" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Resources>
+                <ContextMenu x:Key="ItemContextMenu">
+                    <MenuItem Header="Insert Before..."
+                                                                      Command="{Binding DataContext.InsertBeforeCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:InstructionEditorView}}}" />
+                    <MenuItem Header="Insert After..."
+                                                                      Command="{Binding DataContext.InsertAfterCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:InstructionEditorView}}}" />
+                    <MenuItem Header="Edit..."
+                                                                      Command="{Binding DataContext.EditInstructionCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:InstructionEditorView}}}" />
+                    <Separator />
+                    <MenuItem Header="Delete"
+                                                                      Command="{Binding DataContext.RemoveInstructionCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:InstructionEditorView}}}" />
+                    <!--<MenuItem Header="More Info" Command="{Binding Path=DataContext.MoreInfo, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" Background="WhiteSmoke" />-->
+                </ContextMenu>
+            </DataGrid.Resources>
+            <DataGrid.RowStyle>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Setter Property="ContextMenu"
+                                                                    Value="{StaticResource ItemContextMenu}" />
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+
+                <DataGridTemplateColumn Header="Offset">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate
+                                                                    DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                            <TextBlock Text="{Binding Offset}"
+                                                                               VerticalAlignment="Center"
+                                                                               HorizontalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="OpCode">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate
+                                                                    DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                            <TextBlock Text="{Binding OpCode}"
+                                                                               VerticalAlignment="Center" Margin="5,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Operand">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate
+                                                                    DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                            <TextBlock
+                                                                        Text="{Binding Operand, Converter={StaticResource PapyrusInstructionOperandConverter}}"
+                                                                        VerticalAlignment="Center" Margin="5,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Arguments">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate
+                                                                    DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                            <controls:BindableTextBlock
+                                                                        InlineList="{Binding Arguments, Converter={StaticResource PapyrusArrayDisplayConverter}}"
+                                                                        VerticalAlignment="Center" Margin="5,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Operand Arguments">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate
+                                                                    DataType="{x:Type papyrusAssembly:PapyrusInstruction}">
+                            <controls:BindableTextBlock
+                                                                        InlineList="{Binding OperandArguments, Converter={StaticResource PapyrusArrayDisplayConverter}}"
+                                                                        VerticalAlignment="Center" Margin="5,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
