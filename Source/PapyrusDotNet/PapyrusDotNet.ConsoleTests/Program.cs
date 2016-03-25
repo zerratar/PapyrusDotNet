@@ -48,7 +48,6 @@ namespace PapyrusDotNet.ConsoleTests
             //ReadAndWritePex();
         }
 
-
         public static void Decompile_FollowersScript()
         {
             var asm = PapyrusAssemblyDefinition.ReadAssembly(
@@ -77,7 +76,6 @@ namespace PapyrusDotNet.ConsoleTests
                 }
             }
         }
-
 
         private static void DecompileAllFallout4Scripts()
         {
