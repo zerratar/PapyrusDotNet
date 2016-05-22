@@ -38,7 +38,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Test
             var testModule = CreateInternal<ModuleDefinition>();
 
 
-            var concat = new StringConcatInstructionProcessor(new MockClr2PapyrusInstructionProcessor());
+            var concat = new StringConcatProcessor();
             var stringType = testModule.Import(typeof (string));
             var methodReference = new MethodReference("System.String.Concat", stringType);
 

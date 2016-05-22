@@ -33,29 +33,24 @@ using PapyrusDotNet.PapyrusAssembly;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 {
-    public class LoadInstructionProcessor : IInstructionProcessor
+    public interface ILoadProcessor : ISubInstructionProcessor { }
+    public class LoadProcessor : ILoadProcessor
     {
-        private readonly IClr2PapyrusInstructionProcessor mainInstructionProcessor;
-
         /// <summary>
-        ///     Initializes a new instance of the <see cref="LoadInstructionProcessor" /> class.
+        /// Parses the instruction.
         /// </summary>
-        /// <param name="mainInstructionProcessor">The main instruction processor.</param>
-        public LoadInstructionProcessor(IClr2PapyrusInstructionProcessor mainInstructionProcessor)
-        {
-            this.mainInstructionProcessor = mainInstructionProcessor;
-        }
-
-        /// <summary>
-        ///     Parses the instruction.
-        /// </summary>
+        /// <param name="mainProcessor">The processor.</param>
+        /// <param name="asmCollection">The papyrus assembly collection.</param>
         /// <param name="instruction">The instruction.</param>
         /// <param name="targetMethod">The target method.</param>
         /// <param name="type">The type.</param>
         /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         /// <exception cref="MissingVariableException"></exception>
         public IEnumerable<PapyrusInstruction> Process(
-            IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, Instruction instruction,
+            IClrInstructionProcessor mainProcessor,
+            IReadOnlyCollection<PapyrusAssemblyDefinition> asmCollection, 
+            Instruction instruction,
             MethodDefinition targetMethod, TypeDefinition type)
         {
             bool isStructAccess;
@@ -64,20 +59,20 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             if (InstructionHelper.NextInstructionIs(instruction, Code.Ldnull) &&
                 InstructionHelper.NextInstructionIs(instruction.Next, Code.Cgt_Un))
             {
-                var stack = mainInstructionProcessor.EvaluationStack;
+                var stack = mainProcessor.EvaluationStack;
                 //var itemToCheck = stack.Pop().Value;
                 var itemToCheck = instruction.Operand as FieldReference;
 
                 if (itemToCheck != null)
                 {
-                    mainInstructionProcessor.EvaluationStack.Push(
+                    mainProcessor.EvaluationStack.Push(
                         new EvaluationStackItem
                         {
                             Value = itemToCheck,
                             TypeName = ""
                         }
                         );
-                    mainInstructionProcessor.EvaluationStack.Push(
+                    mainProcessor.EvaluationStack.Push(
                         new EvaluationStackItem
                         {
                             Value = null,
@@ -85,7 +80,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         }
                         );
 
-                    mainInstructionProcessor.SkipToOffset =
+                    mainProcessor.SkipToOffset =
                         InstructionHelper.NextInstructionIsOffset(instruction.Next, Code.Cgt_Un) - 1;
 
                     //bool structAccess;
@@ -113,9 +108,9 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             if (InstructionHelper.IsLoadLength(instruction.OpCode.Code))
             {
                 var popCount = Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop);
-                if (mainInstructionProcessor.EvaluationStack.Count >= popCount)
+                if (mainProcessor.EvaluationStack.Count >= popCount)
                 {
-                    var val = mainInstructionProcessor.EvaluationStack.Pop();
+                    var val = mainProcessor.EvaluationStack.Pop();
                     if (val.TypeName.EndsWith("[]"))
                     {
                         if (val.Value is PapyrusPropertyDefinition)
@@ -130,7 +125,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             int variableIndex;
 
                             var storeInstruction =
-                                mainInstructionProcessor.GetNextStoreLocalVariableInstruction(instruction,
+                                mainProcessor.GetNextStoreLocalVariableInstruction(instruction,
                                     out variableIndex);
 
                             if (storeInstruction != null ||
@@ -138,47 +133,47 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             {
                                 if (InstructionHelper.IsConverToNumber(instruction.Next.OpCode.Code))
                                 {
-                                    mainInstructionProcessor.SkipNextInstruction = false;
-                                    mainInstructionProcessor.SkipToOffset = 0;
+                                    mainProcessor.SkipNextInstruction = false;
+                                    mainProcessor.SkipToOffset = 0;
 
-                                    var targetVariableName = mainInstructionProcessor.GetTargetVariable(instruction,
+                                    var targetVariableName = mainProcessor.GetTargetVariable(instruction,
                                         null, out isStructAccess, "Int", true);
 
-                                    var allVars = mainInstructionProcessor.PapyrusMethod.GetVariables();
+                                    var allVars = mainProcessor.PapyrusMethod.GetVariables();
                                     var targetVariable = allVars.FirstOrDefault(v => v.Name.Value == targetVariableName);
 
                                     if (targetVariable == null &&
-                                        mainInstructionProcessor.PapyrusCompilerOptions == PapyrusCompilerOptions.Strict)
+                                        mainProcessor.PapyrusCompilerOptions == PapyrusCompilerOptions.Strict)
                                     {
                                         throw new MissingVariableException(targetVariableName);
                                     }
                                     if (targetVariable != null)
                                     {
-                                        mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                                        mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                                         {
                                             TypeName = targetVariable.TypeName.Value,
                                             Value = targetVariable
                                         });
 
                                         outputInstructions.Add(
-                                            mainInstructionProcessor.CreatePapyrusInstruction(
+                                            mainProcessor.CreatePapyrusInstruction(
                                                 PapyrusOpCodes.ArrayLength,
-                                                mainInstructionProcessor.CreateVariableReference(
+                                                mainProcessor.CreateVariableReference(
                                                     PapyrusPrimitiveType.Reference, targetVariableName), val.Value));
                                     }
                                 }
                                 else
                                 {
-                                    var allVars = mainInstructionProcessor.PapyrusMethod.GetVariables();
+                                    var allVars = mainProcessor.PapyrusMethod.GetVariables();
 
-                                    mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                                    mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                                     {
                                         TypeName = allVars[variableIndex].TypeName.Value,
                                         Value = allVars[variableIndex]
                                     });
 
                                     outputInstructions.Add(
-                                        mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayLength,
+                                        mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayLength,
                                             allVars[variableIndex], val.Value));
 
                                     //return "ArrayLength " + allVars[variableIndex].Name + " " +
@@ -194,10 +189,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
             if (InstructionHelper.IsLoadArgs(instruction.OpCode.Code))
             {
-                var index = (int) mainInstructionProcessor.GetNumericValue(instruction);
+                var index = (int) mainProcessor.GetNumericValue(instruction);
                 if (targetMethod.IsStatic && index == 0 && targetMethod.Parameters.Count == 0)
                 {
-                    mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                    mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                     {
                         IsThis = true,
                         Value = type,
@@ -212,25 +207,25 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     }
 
                     if (!targetMethod.IsStatic && index > 0) index--;
-                    if (index < mainInstructionProcessor.PapyrusMethod.Parameters.Count)
+                    if (index < mainProcessor.PapyrusMethod.Parameters.Count)
                     {
-                        mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                        mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                         {
-                            Value = mainInstructionProcessor.PapyrusMethod.Parameters[index],
-                            TypeName = mainInstructionProcessor.PapyrusMethod.Parameters[index].TypeName.Value
+                            Value = mainProcessor.PapyrusMethod.Parameters[index],
+                            TypeName = mainProcessor.PapyrusMethod.Parameters[index].TypeName.Value
                         });
                     }
                 }
             }
             if (InstructionHelper.IsLoadInteger(instruction.OpCode.Code))
             {
-                var index = mainInstructionProcessor.GetNumericValue(instruction);
-                mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem {Value = index, TypeName = "Int"});
+                var index = mainProcessor.GetNumericValue(instruction);
+                mainProcessor.EvaluationStack.Push(new EvaluationStackItem {Value = index, TypeName = "Int"});
             }
 
             if (InstructionHelper.IsLoadNull(instruction.OpCode.Code))
             {
-                mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                 {
                     Value = "None",
                     TypeName = "None"
@@ -239,11 +234,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
             if (InstructionHelper.IsLoadLocalVariable(instruction.OpCode.Code))
             {
-                var index = (int) mainInstructionProcessor.GetNumericValue(instruction);
-                var allVariables = mainInstructionProcessor.PapyrusMethod.GetVariables();
+                var index = (int) mainProcessor.GetNumericValue(instruction);
+                var allVariables = mainProcessor.PapyrusMethod.GetVariables();
                 if (index < allVariables.Count)
                 {
-                    mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                    mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                     {
                         Value = allVariables[index],
                         TypeName = allVariables[index].TypeName.Value
@@ -255,7 +250,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             {
                 var value = StringUtility.AsString(instruction.Operand);
 
-                mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                 {
                     Value = value,
                     TypeName = "String"
@@ -271,16 +266,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
                     PapyrusFieldDefinition targetField = null;
 
-                    targetField = mainInstructionProcessor.PapyrusType.Fields.FirstOrDefault(
+                    targetField = mainProcessor.PapyrusType.Fields.FirstOrDefault(
                         f => f.Name.Value == "::" + fieldRef.Name.Replace('<', '_').Replace('>', '_'));
 
                     if (targetField == null)
-                        targetField = mainInstructionProcessor.GetDelegateField(fieldRef);
+                        targetField = mainProcessor.GetDelegateField(fieldRef);
 
 
                     if (targetField != null)
                     {
-                        mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                        mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                         {
                             Value = targetField,
                             TypeName = targetField.TypeName
@@ -290,15 +285,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     if (InstructionHelper.PreviousInstructionWas(instruction, Code.Ldflda) &&
                         fieldRef.FullName.Contains("/"))
                     {
-                        var targetStructVariable = mainInstructionProcessor.EvaluationStack.Pop().Value;
+                        var targetStructVariable = mainProcessor.EvaluationStack.Pop().Value;
 
-                        var structRef = new PapyrusStructFieldReference(mainInstructionProcessor.PapyrusAssembly, null)
+                        var structRef = new PapyrusStructFieldReference(mainProcessor.PapyrusAssembly, null)
                         {
                             StructSource = targetStructVariable,
-                            StructVariable = mainInstructionProcessor.CreateVariableReferenceFromName(fieldRef.Name)
+                            StructVariable = mainProcessor.CreateVariableReferenceFromName(fieldRef.Name)
                         };
 
-                        mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                        mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                         {
                             Value = structRef,
                             TypeName = "$StructAccess$"
@@ -338,10 +333,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             {
                 // TODO: Load Element (Arrays, and what not)
                 var popCount = Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop);
-                if (mainInstructionProcessor.EvaluationStack.Count >= popCount)
+                if (mainProcessor.EvaluationStack.Count >= popCount)
                 {
-                    var itemIndex = mainInstructionProcessor.EvaluationStack.Pop();
-                    var itemArray = mainInstructionProcessor.EvaluationStack.Pop();
+                    var itemIndex = mainProcessor.EvaluationStack.Pop();
+                    var itemArray = mainProcessor.EvaluationStack.Pop();
 
                     object targetItemIndex = null;
 
@@ -353,7 +348,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     }
 
                     // 128 is the array size limit for Skyrim
-                    if (mainInstructionProcessor.PapyrusAssembly.VersionTarget == PapyrusVersionTargets.Skyrim)
+                    if (mainProcessor.PapyrusAssembly.VersionTarget == PapyrusVersionTargets.Skyrim)
                     {
                         if ((targetItemIndex as int?) > 128)
                             targetItemIndex = 128;
@@ -370,21 +365,21 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                             {
                                 // Since we apply our logic necessary for this "boxing" right here
                                 // we can skip the next instruction to avoid unexpected behaviour.
-                                mainInstructionProcessor.SkipNextInstruction = true;
+                                mainProcessor.SkipNextInstruction = true;
 
                                 // Create a new Temp Variable
                                 // Assign our value to this temp variable and push it to the stack
                                 // so that the next instruction can take care of it.
                                 var tempVariableType = sourceArray.TypeName.Value.Replace("[]", "");
 
-                                var destinationTempVar = mainInstructionProcessor.GetTargetVariable(instruction, null,
+                                var destinationTempVar = mainProcessor.GetTargetVariable(instruction, null,
                                     out isStructAccess, tempVariableType, true);
 
                                 var varRef =
-                                    mainInstructionProcessor.PapyrusMethod.GetVariables()
+                                    mainProcessor.PapyrusMethod.GetVariables()
                                         .FirstOrDefault(n => n.Name.Value == destinationTempVar);
 
-                                mainInstructionProcessor.EvaluationStack.Push(new EvaluationStackItem
+                                mainProcessor.EvaluationStack.Push(new EvaluationStackItem
                                 {
                                     Value = varRef ?? (object) destinationTempVar,
                                     // Should be the actual variable reference
@@ -392,8 +387,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                 });
 
                                 outputInstructions.Add(
-                                    mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayGetElement,
-                                        mainInstructionProcessor.CreateVariableReference(
+                                    mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayGetElement,
+                                        mainProcessor.CreateVariableReference(
                                             PapyrusPrimitiveType.Reference, destinationTempVar),
                                         targetItemArray,
                                         targetItemIndex));
@@ -410,15 +405,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                                 if (sourceArray != null)
                                 {
                                     var tempVariableType = sourceArray.TypeName.Value.Replace("[]", "");
-                                    var destinationTempVar = mainInstructionProcessor.GetTargetVariable(instruction,
+                                    var destinationTempVar = mainProcessor.GetTargetVariable(instruction,
                                         methodRef, out isStructAccess,
                                         tempVariableType);
 
                                     // "ArrayGetElement " + destinationTempVar + " " + targetItemArray + " " + targetItemIndex;
                                     outputInstructions.Add(
-                                        mainInstructionProcessor.CreatePapyrusInstruction(
+                                        mainProcessor.CreatePapyrusInstruction(
                                             PapyrusOpCodes.ArrayGetElement,
-                                            mainInstructionProcessor.CreateVariableReference(
+                                            mainProcessor.CreateVariableReference(
                                                 PapyrusPrimitiveType.Reference, destinationTempVar),
                                             targetItemArray,
                                             targetItemIndex));
@@ -431,14 +426,14 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                         // Otherwise we just want to store it somewhere.
                         int destinationVariableIndex;
                         // Get the target variable by finding the next store instruction and returning the variable index.
-                        mainInstructionProcessor.GetNextStoreLocalVariableInstruction(instruction,
+                        mainProcessor.GetNextStoreLocalVariableInstruction(instruction,
                             out destinationVariableIndex);
                         var destinationVar =
-                            mainInstructionProcessor.PapyrusMethod.GetVariables()[destinationVariableIndex];
+                            mainProcessor.PapyrusMethod.GetVariables()[destinationVariableIndex];
 
                         // ArrayGetElement targetVariable targetItemArray targetItemIndex
                         outputInstructions.Add(
-                            mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayGetElement,
+                            mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.ArrayGetElement,
                                 destinationVar,
                                 targetItemArray,
                                 targetItemIndex)

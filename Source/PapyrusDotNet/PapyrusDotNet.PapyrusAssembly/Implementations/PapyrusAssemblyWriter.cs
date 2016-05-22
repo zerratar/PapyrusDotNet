@@ -68,6 +68,9 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
             WriteTypeDefinitions();
 
+            var dir = Path.GetDirectoryName(outputFile);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
             File.WriteAllBytes(outputFile, outputStream.ToArray());
         }
 
@@ -75,7 +78,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         {
             var asm = Assembly;
             var types = asm.Types;
-            pexWriter.Write((short) types.Count);
+            pexWriter.Write((short)types.Count);
             foreach (var t in types)
             {
                 WriteTypeInfo(t);
@@ -96,7 +99,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private void WriteStates(PapyrusTypeDefinition papyrusTypeDefinition)
         {
             var states = papyrusTypeDefinition.States;
-            pexWriter.Write((short) states.Count);
+            pexWriter.Write((short)states.Count);
             foreach (var state in states)
                 WriteState(state);
         }
@@ -104,7 +107,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private void WriteState(PapyrusStateDefinition state)
         {
             pexWriter.Write(state.Name);
-            pexWriter.Write((short) state.Methods.Count);
+            pexWriter.Write((short)state.Methods.Count);
             foreach (var method in state.Methods)
             {
                 pexWriter.Write(method.Name);
@@ -119,15 +122,15 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
             pexWriter.Write(method.UserFlags);
             pexWriter.Write(method.Flags);
 
-            pexWriter.Write((short) method.Parameters.Count);
+            pexWriter.Write((short)method.Parameters.Count);
             foreach (var param in method.Parameters)
                 WriteParameter(param);
 
-            pexWriter.Write((short) method.Body.Variables.Count);
+            pexWriter.Write((short)method.Body.Variables.Count);
             foreach (var variable in method.Body.Variables)
                 WriteVariable(variable);
 
-            pexWriter.Write((short) method.Body.Instructions.ToArray().Count(i => !i.TemporarilyInstruction));
+            pexWriter.Write((short)method.Body.Instructions.ToArray().Count(i => !i.TemporarilyInstruction));
             foreach (var instruction in method.Body.Instructions)
             {
                 if (!instruction.TemporarilyInstruction)
@@ -137,7 +140,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
         private void WriteInstruction(PapyrusInstruction instruction)
         {
-            pexWriter.Write((byte) instruction.OpCode);
+            pexWriter.Write((byte)instruction.OpCode);
             var desc = PapyrusInstructionOpCodeDescription.FromOpCode(instruction.OpCode);
             foreach (var arg in instruction.Arguments)
                 WriteValueReference(arg);
@@ -168,7 +171,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private void WriteProperties(PapyrusTypeDefinition papyrusTypeDefinition)
         {
             var props = papyrusTypeDefinition.Properties;
-            pexWriter.Write((short) props.Count);
+            pexWriter.Write((short)props.Count);
             foreach (var prop in props)
                 WritePropertyDefinition(prop);
         }
@@ -194,7 +197,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private void WriteFields(PapyrusTypeDefinition papyrusTypeDefinition)
         {
             var fields = papyrusTypeDefinition.Fields;
-            pexWriter.Write((short) fields.Count);
+            pexWriter.Write((short)fields.Count);
             foreach (var field in fields)
                 WriteFieldDefinition(field);
         }
@@ -202,11 +205,11 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private void WriteStructs(PapyrusTypeDefinition papyrusTypeDefinition)
         {
             var structs = papyrusTypeDefinition.NestedTypes;
-            pexWriter.Write((short) structs.Count);
+            pexWriter.Write((short)structs.Count);
             foreach (var structDef in structs)
             {
                 pexWriter.Write(structDef.Name);
-                pexWriter.Write((short) structDef.Fields.Count);
+                pexWriter.Write((short)structDef.Fields.Count);
                 foreach (var field in structDef.Fields)
                     WriteDocumentedField(field);
             }
@@ -231,34 +234,34 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
 
         private void WriteValueReference(PapyrusVariableReference fieldVariable)
         {
-            pexWriter.Write((byte) fieldVariable.Type);
+            pexWriter.Write((byte)fieldVariable.Type);
             switch (fieldVariable.Type)
             {
                 case PapyrusPrimitiveType.Reference:
-                    pexWriter.Write((string) fieldVariable.Value);
+                    pexWriter.Write((string)fieldVariable.Value);
                     break;
                 case PapyrusPrimitiveType.String:
-                    pexWriter.Write((string) fieldVariable.Value);
+                    pexWriter.Write((string)fieldVariable.Value);
                     break;
                 case PapyrusPrimitiveType.Boolean:
-                {
-                    if (fieldVariable.Value is bool)
                     {
-                        // I think this is Acceptable :p
-                        var value = (byte) ((bool) fieldVariable.Value ? 1 : 0);
-                        pexWriter.Write(value);
-                    }
-                    else
-                    {
-                        var val = fieldVariable.Value.ToString().ToLower();
-                        pexWriter.Write((byte) (val == "true" || val == "1" ? 1 : 0));
-                    }
+                        if (fieldVariable.Value is bool)
+                        {
+                            // I think this is Acceptable :p
+                            var value = (byte)((bool)fieldVariable.Value ? 1 : 0);
+                            pexWriter.Write(value);
+                        }
+                        else
+                        {
+                            var val = fieldVariable.Value.ToString().ToLower();
+                            pexWriter.Write((byte)(val == "true" || val == "1" ? 1 : 0));
+                        }
                     ;
-                }
+                    }
                     break;
                 case PapyrusPrimitiveType.Float:
                     if (fieldVariable.Value is double)
-                        pexWriter.Write((float) (double) fieldVariable.Value);
+                        pexWriter.Write((float)(double)fieldVariable.Value);
                     else
                         pexWriter.Write(float.Parse(fieldVariable.Value.ToString()));
                     break;
@@ -291,7 +294,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         {
             var asm = Assembly;
             var count = asm.Header.UserflagReferenceHeader.Count;
-            pexWriter.Write((short) count);
+            pexWriter.Write((short)count);
             foreach (var i in asm.Header.UserflagReferenceHeader)
             {
                 pexWriter.Write(i.Key);
@@ -320,12 +323,12 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private void WriteDebugStructDescriptions(PapyrusTypeDebugInfo debug)
         {
             var ms = debug.StructDescriptions;
-            pexWriter.Write((short) ms.Count);
+            pexWriter.Write((short)ms.Count);
             foreach (var strct in ms)
             {
                 pexWriter.Write(strct.DeclaringTypeName);
                 pexWriter.Write(strct.Name);
-                pexWriter.Write((short) strct.FieldNames.Count);
+                pexWriter.Write((short)strct.FieldNames.Count);
                 foreach (var l in strct.FieldNames)
                     pexWriter.Write(l);
             }
@@ -334,14 +337,14 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private void WriteDebugPropertyGroupDescriptions(PapyrusTypeDebugInfo debug)
         {
             var ms = debug.PropertyDescriptions;
-            pexWriter.Write((short) ms.Count);
+            pexWriter.Write((short)ms.Count);
             foreach (var prop in ms)
             {
                 pexWriter.Write(prop.ObjectName);
                 pexWriter.Write(prop.GroupName);
                 pexWriter.Write(prop.GroupDocumentation);
                 pexWriter.Write(prop.Userflags);
-                pexWriter.Write((short) prop.PropertyNames.Count);
+                pexWriter.Write((short)prop.PropertyNames.Count);
                 foreach (var l in prop.PropertyNames)
                     pexWriter.Write(l);
             }
@@ -350,14 +353,14 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private void WriteDebugMethodDescriptions(PapyrusTypeDebugInfo debug)
         {
             var ms = debug.MethodDescriptions;
-            pexWriter.Write((short) ms.Count);
+            pexWriter.Write((short)ms.Count);
             foreach (var method in ms)
             {
                 pexWriter.Write(method.DeclaringTypeName);
                 pexWriter.Write(method.StateName);
                 pexWriter.Write(method.Name);
-                pexWriter.Write((byte) method.MethodType);
-                pexWriter.Write((short) method.BodyLineNumbers.Count);
+                pexWriter.Write((byte)method.MethodType);
+                pexWriter.Write((short)method.BodyLineNumbers.Count);
                 foreach (var l in method.BodyLineNumbers)
                     pexWriter.Write(l);
             }
@@ -366,7 +369,7 @@ namespace PapyrusDotNet.PapyrusAssembly.Implementations
         private void WriteStringTable()
         {
             var count = Assembly.StringTable.Size;
-            pexWriter.Write((short) count);
+            pexWriter.Write((short)count);
             foreach (var s in Assembly.StringTable)
             {
                 pexWriter.Write(s.Identifier);

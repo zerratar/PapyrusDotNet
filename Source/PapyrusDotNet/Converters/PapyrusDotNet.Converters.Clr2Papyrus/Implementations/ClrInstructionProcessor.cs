@@ -37,33 +37,46 @@ using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 {
-    public class Clr2PapyrusInstructionProcessor : IClr2PapyrusInstructionProcessor
+    public class ClrInstructionProcessor : IClrInstructionProcessor
     {
-        internal readonly BranchInstructionProcessor BranchInstructionProcessor;
-        internal readonly CallInstructionProcessor CallInstructionProcessor;
-        internal readonly ConditionalInstructionProcessor ConditionalInstructionProcessor;
+        internal readonly IBranchProcessor BranchProcessor;
+        internal readonly ICallProcessor CallProcessor;
+        internal readonly IConditionalProcessor ConditionalProcessor;
+
+        internal readonly ILoadProcessor LoadProcessor;
+        internal readonly IReturnProcessor ReturnProcessor;
+        internal readonly IStoreProcessor StoreProcessor;
+        internal readonly IStringConcatProcessor StringConcatProcessor;
 
         private readonly Dictionary<Instruction, List<PapyrusInstruction>> instructionReferences
             = new Dictionary<Instruction, List<PapyrusInstruction>>();
 
-        internal readonly LoadInstructionProcessor LoadInstructionProcessor;
-        internal readonly ReturnInstructionProcessor ReturnInstructionProcessor;
-        internal readonly StoreInstructionProcessor StoreInstructionProcessor;
-        internal readonly StringConcatInstructionProcessor StringConcatInstructionProcessor;
 
         private bool isInsideSwitch;
         private int switchTargetIndex;
         private Instruction[] switchTargetInstructions = new Instruction[0];
 
-        public Clr2PapyrusInstructionProcessor()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClrInstructionProcessor"/> class.
+        /// </summary>
+        /// <param name="loadProcessor">The load processor.</param>
+        /// <param name="storeProcessor">The store processor.</param>
+        /// <param name="branchProcessor">The branch processor.</param>
+        /// <param name="callProcessor">The call processor.</param>
+        /// <param name="conditionalProcessor">The conditional processor.</param>
+        /// <param name="returnProcessor">The return processor.</param>
+        /// <param name="stringConcatProcessor">The string concat processor.</param>
+        public ClrInstructionProcessor(ILoadProcessor loadProcessor, IStoreProcessor storeProcessor, IBranchProcessor branchProcessor,
+            ICallProcessor callProcessor, IConditionalProcessor conditionalProcessor, IReturnProcessor returnProcessor,
+            IStringConcatProcessor stringConcatProcessor)
         {
-            LoadInstructionProcessor = new LoadInstructionProcessor(this);
-            StoreInstructionProcessor = new StoreInstructionProcessor(this);
-            BranchInstructionProcessor = new BranchInstructionProcessor(this);
-            CallInstructionProcessor = new CallInstructionProcessor(this);
-            ConditionalInstructionProcessor = new ConditionalInstructionProcessor(this);
-            ReturnInstructionProcessor = new ReturnInstructionProcessor(this);
-            StringConcatInstructionProcessor = new StringConcatInstructionProcessor(this);
+            LoadProcessor = loadProcessor;
+            StoreProcessor = storeProcessor;
+            BranchProcessor = branchProcessor;
+            CallProcessor = callProcessor;
+            ConditionalProcessor = conditionalProcessor;
+            ReturnProcessor = returnProcessor;
+            StringConcatProcessor = stringConcatProcessor;
         }
 
         public IDelegatePairDefinition ClrDelegatePairDefinition { get; set; }
@@ -211,7 +224,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         public List<PapyrusInstruction> ProcessStringConcat(Instruction instruction, MethodReference methodRef,
             List<object> parameters)
         {
-            return StringConcatInstructionProcessor.Process(instruction, methodRef, parameters);
+            return StringConcatProcessor.Process(this, instruction, methodRef, parameters);
         }
 
         /// <summary>
@@ -224,7 +237,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
         public IEnumerable<PapyrusInstruction> ProcessConditionalInstruction(Instruction instruction,
             Code overrideOpCode = Code.Nop, string tempVariable = null)
         {
-            return ConditionalInstructionProcessor.Process(instruction, overrideOpCode, tempVariable);
+            return ConditionalProcessor.Process(this, instruction, overrideOpCode, tempVariable);
         }
 
 
@@ -377,7 +390,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 }
                 else
                 {
-                    var index = (int) GetNumericValue(whereToPlace);
+                    var index = (int)GetNumericValue(whereToPlace);
 
                     if (index < allVariables.Count)
                     {
@@ -406,7 +419,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                         !string.IsNullOrEmpty(fallbackType) ? fallbackType : methodRef.ReturnType.FullName,
                         methodRef);
                 targetVar = tVar.Name.Value;
-                EvaluationStack.Push(new EvaluationStackItem {Value = tVar, TypeName = tVar.TypeName.Value});
+                EvaluationStack.Push(new EvaluationStackItem { Value = tVar, TypeName = tVar.TypeName.Value });
                 // LastSaughtTypeName = tVar.TypeName;
             }
             else
@@ -533,7 +546,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                 var val = sourceVal;
                 if (val is EvaluationStackItem)
                 {
-                    val = ((EvaluationStackItem) val).Value;
+                    val = ((EvaluationStackItem)val).Value;
                 }
                 var varRef = val as PapyrusVariableReference;
                 var fieldDef = val as PapyrusFieldDefinition;
@@ -638,7 +651,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (next != null)
             {
-                varIndex = (int) GetNumericValue(next);
+                varIndex = (int)GetNumericValue(next);
+
                 SkipToOffset = next.Offset;
             }
             return next;
@@ -647,6 +661,14 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
         public object GetNumericValue(Instruction instruction)
         {
+            if (instruction.OpCode == OpCodes.Stelem_Ref)
+            {
+                // not implemented.
+                // Most likely, next one will be a "dup"
+                // let it crash for now
+                throw new NotImplementedException("The 'storeelm.ref' opcode has not been implemented.");
+            }
+
             var index = InstructionHelper.GetCodeIndex(instruction.OpCode.Code);
 
             if (index != -1)
@@ -710,7 +732,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
                         TypeName = SwitchConditionalComparer.TypeName.Value,
                         Value = SwitchConditionalComparer
                     });
-                    EvaluationStack.Push(new EvaluationStackItem {TypeName = "Int", Value = switchTargetIndex++});
+                    EvaluationStack.Push(new EvaluationStackItem { TypeName = "Int", Value = switchTargetIndex++ });
 
                     // Create the equality comparison
                     var conditional = ProcessConditionalInstruction(instruction, Code.Ceq, tmpBool);
@@ -916,13 +938,13 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (InstructionHelper.IsLoad(code))
             {
-                output.AddRange(LoadInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod,
+                output.AddRange(LoadProcessor.Process(this, PapyrusAssemblyCollection, instruction, targetMethod,
                     type));
             }
 
             if (InstructionHelper.IsStore(code))
             {
-                output.AddRange(StoreInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod,
+                output.AddRange(StoreProcessor.Process(this, PapyrusAssemblyCollection, instruction, targetMethod,
                     type));
 
                 return output;
@@ -992,7 +1014,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
             if (InstructionHelper.IsBranch(instruction.OpCode.Code) ||
                 InstructionHelper.IsBranchConditional(instruction.OpCode.Code))
             {
-                output.AddRange(BranchInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod,
+                output.AddRange(BranchProcessor.Process(this, PapyrusAssemblyCollection, instruction, targetMethod,
                     type));
 
                 return output;
@@ -1020,12 +1042,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations
 
             if (InstructionHelper.IsCallMethod(instruction.OpCode.Code))
             {
-                output.AddRange(CallInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod,
+                output.AddRange(CallProcessor.Process(this, PapyrusAssemblyCollection, instruction, targetMethod,
                     type));
             }
             if (instruction.OpCode.Code == Code.Ret)
             {
-                output.AddRange(ReturnInstructionProcessor.Process(PapyrusAssemblyCollection, instruction, targetMethod,
+                output.AddRange(ReturnProcessor.Process(this, PapyrusAssemblyCollection, instruction, targetMethod,
                     type));
             }
             return output;

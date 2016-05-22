@@ -1,5 +1,0 @@
-To build a Core.dll you will need to use the "Build SDK.bat" this bat file expects a input folder. A folder containing all .pex files you want to
-use for building the sdk. 
-
-You can grab all the pex files by downloading the pexlibrary.zip from
-http://www.nexusmods.com/fallout4/mods/7360/?tab=2&navtag=http%3A%2F%2Fwww.nexusmods.com%2Ffallout4%2Fajax%2Fmodfiles%2F%3Fid%3D7360&pUp=1

@@ -1,2 +1,0 @@
-bin\PapyrusDotNet.exe
-pause

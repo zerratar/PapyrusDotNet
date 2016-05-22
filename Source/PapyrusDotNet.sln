@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet", "PapyrusDotNet\PapyrusDotNet\PapyrusDotNet.csproj", "{328A4BC6-9157-4581-B695-C7A51C3D965F}"
 EndProject
@@ -214,6 +214,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Decompiler", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapyrusDotNet.Decompiler.Tests", "Decompiler\PapyrusDotNet.Decompiler.Tests\PapyrusDotNet.Decompiler.Tests.csproj", "{94991FF5-7D68-415E-A884-7D346DE3BF3D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bad", "Bad", "{F6A87BFD-0BDB-48ED-A4E8-628D1F1905EE}"
+	ProjectSection(SolutionItems) = preProject
+		Test Scripts\Bad\test.pex = Test Scripts\Bad\test.pex
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -301,5 +306,6 @@ Global
 		{4A81E183-AA39-4DAA-AB35-8A0D89BB7896} = {8F01FC55-0D09-42F5-B04D-93463B86E105}
 		{60B17C45-ED1F-409B-A782-A3C264BEA061} = {9E91BF35-5560-433D-85E6-4469E34B6570}
 		{94991FF5-7D68-415E-A884-7D346DE3BF3D} = {9E91BF35-5560-433D-85E6-4469E34B6570}
+		{F6A87BFD-0BDB-48ED-A4E8-628D1F1905EE} = {2CEB2AA5-48F8-4231-B33A-2BEED27D9E59}
 	EndGlobalSection
 EndGlobal

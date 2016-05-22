@@ -30,28 +30,23 @@ using PapyrusDotNet.PapyrusAssembly;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 {
-    public class BranchInstructionProcessor : IInstructionProcessor
+    public interface IBranchProcessor : ISubInstructionProcessor { }
+
+    public class BranchProcessor : IBranchProcessor
     {
-        private readonly IClr2PapyrusInstructionProcessor mainInstructionProcessor;
-
         /// <summary>
-        ///     Initializes a new instance of the <see cref="BranchInstructionProcessor" /> class.
+        /// Parses the instruction.
         /// </summary>
-        /// <param name="mainInstructionProcessor">The main instruction processor.</param>
-        public BranchInstructionProcessor(IClr2PapyrusInstructionProcessor mainInstructionProcessor)
-        {
-            this.mainInstructionProcessor = mainInstructionProcessor;
-        }
-
-        /// <summary>
-        ///     Parses the instruction.
-        /// </summary>
+        /// <param name="mainProcessor">The main instruction processor.</param>
+        /// <param name="asmCollection">The papyrus assembly collection.</param>
         /// <param name="instruction">The instruction.</param>
         /// <param name="targetMethod">The target method.</param>
         /// <param name="type">The type.</param>
         /// <returns></returns>
         public IEnumerable<PapyrusInstruction> Process(
-            IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, Instruction instruction,
+            IClrInstructionProcessor mainProcessor,
+            IReadOnlyCollection<PapyrusAssemblyDefinition> asmCollection, 
+            Instruction instruction,
             MethodDefinition targetMethod, TypeDefinition type)
         {
             bool isStructAccess;
@@ -59,36 +54,36 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
             if (InstructionHelper.IsBranchConditional(instruction.OpCode.Code))
             {
                 var popCount = Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop);
-                if (mainInstructionProcessor.EvaluationStack.Count >= popCount)
+                if (mainProcessor.EvaluationStack.Count >= popCount)
                 {
-                    var obj1 = mainInstructionProcessor.EvaluationStack.Pop();
-                    var obj2 = mainInstructionProcessor.EvaluationStack.Pop();
+                    var obj1 = mainProcessor.EvaluationStack.Pop();
+                    var obj2 = mainProcessor.EvaluationStack.Pop();
                     // gets or create a temp boolean variable we can use to store the conditional check on.
-                    var temp = mainInstructionProcessor.GetTargetVariable(instruction, null, out isStructAccess, "Bool");
+                    var temp = mainProcessor.GetTargetVariable(instruction, null, out isStructAccess, "Bool");
 
-                    var allVars = mainInstructionProcessor.PapyrusMethod.GetVariables();
+                    var allVars = mainProcessor.PapyrusMethod.GetVariables();
 
                     var tempVar = allVars.FirstOrDefault(v => v.Name.Value == temp);
 
                     var destinationInstruction = instruction.Operand;
 
                     if (InstructionHelper.IsBranchConditionalEq(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpEq, tempVar,
+                        instructions.Add(mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpEq, tempVar,
                             obj1, obj2));
                     else if (InstructionHelper.IsBranchConditionalLt(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpLt, tempVar,
+                        instructions.Add(mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpLt, tempVar,
                             obj1, obj2));
                     else if (InstructionHelper.IsBranchConditionalGt(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpGt, tempVar,
+                        instructions.Add(mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpGt, tempVar,
                             obj1, obj2));
                     else if (InstructionHelper.IsBranchConditionalGe(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpGte,
+                        instructions.Add(mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpGte,
                             tempVar, obj1, obj2));
                     else if (InstructionHelper.IsBranchConditionalGe(instruction.OpCode.Code))
-                        instructions.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpLte,
+                        instructions.Add(mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.CmpLte,
                             tempVar, obj1, obj2));
 
-                    instructions.Add(mainInstructionProcessor.ConditionalJump(PapyrusOpCodes.Jmpt, tempVar,
+                    instructions.Add(mainProcessor.ConditionalJump(PapyrusOpCodes.Jmpt, tempVar,
                         destinationInstruction));
                     return instructions;
                 }
@@ -96,7 +91,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 
             if (InstructionHelper.IsBranch(instruction.OpCode.Code))
             {
-                var stack = mainInstructionProcessor.EvaluationStack;
+                var stack = mainProcessor.EvaluationStack;
                 var targetInstruction = instruction.Operand;
 
                 if (stack.Count > 0)
@@ -104,8 +99,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     var conditionalVariable = stack.Pop();
                     if (InstructionHelper.IsBranchTrue(instruction.OpCode.Code))
                     {
-                        var jmpOp = mainInstructionProcessor.TryInvertJump(PapyrusOpCodes.Jmpt);
-                        var jmp = mainInstructionProcessor.CreatePapyrusInstruction(jmpOp, conditionalVariable,
+                        var jmpOp = mainProcessor.TryInvertJump(PapyrusOpCodes.Jmpt);
+                        var jmp = mainProcessor.CreatePapyrusInstruction(jmpOp, conditionalVariable,
                             targetInstruction);
                         jmp.Operand = targetInstruction;
                         instructions.Add(jmp);
@@ -113,8 +108,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     }
                     if (InstructionHelper.IsBranchFalse(instruction.OpCode.Code))
                     {
-                        var jmpOp = mainInstructionProcessor.TryInvertJump(PapyrusOpCodes.Jmpf);
-                        var jmp = mainInstructionProcessor.CreatePapyrusInstruction(jmpOp, conditionalVariable,
+                        var jmpOp = mainProcessor.TryInvertJump(PapyrusOpCodes.Jmpf);
+                        var jmp = mainProcessor.CreatePapyrusInstruction(jmpOp, conditionalVariable,
                             targetInstruction);
                         jmp.Operand = targetInstruction;
                         instructions.Add(jmp);
@@ -122,7 +117,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     }
                 }
 
-                var jmpInst = mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Jmp, targetInstruction);
+                var jmpInst = mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Jmp, targetInstruction);
                 jmpInst.Operand = targetInstruction;
                 instructions.Add(jmpInst);
             }

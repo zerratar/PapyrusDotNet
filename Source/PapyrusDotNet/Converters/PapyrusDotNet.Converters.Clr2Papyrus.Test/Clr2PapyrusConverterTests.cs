@@ -19,8 +19,10 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
+using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
+using PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors;
 using PapyrusDotNet.PapyrusAssembly;
 
 #endregion
@@ -55,7 +57,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Test
         [TestMethod]
         public void Clr2PapyrusConverter_Convert()
         {
-            var papyrusCompiler = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(),
+            var papyrusCompiler = new Clr2PapyrusConverter(new NoopUserInterface(), new ClrInstructionProcessor(
+                    new LoadProcessor(),
+                    new StoreProcessor(new PapyrusValueTypeConverter()),
+                    new BranchProcessor(),
+                    new CallProcessor(new PapyrusValueTypeConverter()),
+                    new ConditionalProcessor(),
+                    new ReturnProcessor(new PapyrusValueTypeConverter()),
+                    new StringConcatProcessor()
+                ),
                 PapyrusCompilerOptions.Strict);
             var value = papyrusCompiler.Convert(new ClrAssemblyInput(
                 AssemblyDefinition.ReadAssembly(

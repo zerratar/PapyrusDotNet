@@ -19,38 +19,36 @@ using PapyrusDotNet.Common.Interfaces;
 
 namespace PapyrusDotNet.Common.Utilities
 {
-    public class NoopUserInterface : IUserInterface
+    public class OutputUserInterface : IUserInterface
     {
-        public void Clear()
-        {
-        }
+        private readonly ConsoleUserInterface ui = new ConsoleUserInterface();
+
+        public void Clear() { }
 
         public void DrawInterface(string message)
         {
+            ui.DrawInterface(message);
         }
 
         public void DrawResult(string message)
         {
+            ui.DrawResult(message);
         }
 
-        public void DrawHotkeys(params Hotkeys[] hotkeys)
-        {
-        }
+        public void DrawHotkeys(params Hotkeys[] hotkeys) { }
 
-        public void DrawProgressBarWithInfo(int value, int max)
-        {
-        }
+        public void DrawProgressBarWithInfo(int value, int max) { }
 
-        public void DrawProgressBar(int value, int maxValue)
-        {
-        }
+        public void DrawProgressBar(int value, int maxValue) { }
 
         public void DrawHelp()
         {
+            ui.DrawHelp();
         }
 
         public void DrawError(string error)
         {
+            ui.DrawError(error);
         }
     }
 }

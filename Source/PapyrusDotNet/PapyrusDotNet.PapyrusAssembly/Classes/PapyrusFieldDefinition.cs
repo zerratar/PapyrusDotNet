@@ -50,7 +50,7 @@ namespace PapyrusDotNet.PapyrusAssembly
             name = "::" + name.Replace('<', '_').Replace('>', '_');
             name = name.Replace("::::", "::");
 
-            if (declaringType.IsStruct)
+            if (declaringType != null && declaringType.IsStruct)
                 name = name.Replace(":", "");
             Name = name.Ref(declaringAssembly);
             TypeName = typeName;

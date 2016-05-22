@@ -29,7 +29,7 @@ using PapyrusDotNet.PapyrusAssembly;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
 {
-    public interface IClr2PapyrusInstructionProcessor
+    public interface IClrInstructionProcessor
     {
         /// <summary>
         ///     Gets or sets the evaluation stack.

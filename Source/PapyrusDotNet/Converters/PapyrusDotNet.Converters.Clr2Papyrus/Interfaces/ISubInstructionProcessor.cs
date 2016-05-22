@@ -26,10 +26,11 @@ using PapyrusDotNet.PapyrusAssembly;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Interfaces
 {
-    public interface IInstructionProcessor
+    public interface ISubInstructionProcessor
     {
         IEnumerable<PapyrusInstruction> Process(
-            IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection,
+            IClrInstructionProcessor mainProcessor,
+            IReadOnlyCollection<PapyrusAssemblyDefinition> asmCollection,
             Instruction instruction, MethodDefinition targetMethod, TypeDefinition targetType);
     }
 }

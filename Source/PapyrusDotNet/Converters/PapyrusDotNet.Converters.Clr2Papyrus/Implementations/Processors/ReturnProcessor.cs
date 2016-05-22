@@ -30,30 +30,33 @@ using PapyrusDotNet.PapyrusAssembly.Extensions;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
 {
-    public class ReturnInstructionProcessor : IInstructionProcessor
+    public interface IReturnProcessor : ISubInstructionProcessor { }
+
+    public class ReturnProcessor : IReturnProcessor
     {
-        private readonly IClr2PapyrusInstructionProcessor mainInstructionProcessor;
         private readonly IValueTypeConverter valueTypeConverter;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ReturnInstructionProcessor" /> class.
+        /// Initializes a new instance of the <see cref="ReturnProcessor" /> class.
         /// </summary>
-        /// <param name="clr2PapyrusInstructionProcessor">The CLR2 papyrus instruction processor.</param>
-        public ReturnInstructionProcessor(IClr2PapyrusInstructionProcessor clr2PapyrusInstructionProcessor)
+        public ReturnProcessor(IValueTypeConverter valueTypeConverter)
         {
-            valueTypeConverter = new PapyrusValueTypeConverter();
-            mainInstructionProcessor = clr2PapyrusInstructionProcessor;
+            this.valueTypeConverter = valueTypeConverter ?? new PapyrusValueTypeConverter();
         }
 
         /// <summary>
-        ///     Processes the specified instruction.
+        /// Processes the specified instruction.
         /// </summary>
+        /// <param name="mainProcessor">The main instruction processor.</param>
+        /// <param name="asmCollection">The papyrus assembly collection.</param>
         /// <param name="instruction">The instruction.</param>
         /// <param name="targetMethod">The target method.</param>
         /// <param name="type">The type.</param>
         /// <returns></returns>
         public IEnumerable<PapyrusInstruction> Process(
-            IReadOnlyCollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, Instruction instruction,
+            IClrInstructionProcessor mainProcessor,
+            IReadOnlyCollection<PapyrusAssemblyDefinition> asmCollection,
+            Instruction instruction,
             MethodDefinition targetMethod, TypeDefinition type)
         {
             var output = new List<PapyrusInstruction>();
@@ -63,16 +66,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 return output;
             }
 
-            if (mainInstructionProcessor.EvaluationStack.Count >=
+            if (mainProcessor.EvaluationStack.Count >=
                 Utility.GetStackPopCount(instruction.OpCode.StackBehaviourPop))
             {
-                var topValue = mainInstructionProcessor.EvaluationStack.Pop();
+                var topValue = mainProcessor.EvaluationStack.Pop();
                 if (topValue.Value is PapyrusVariableReference)
                 {
                     var variable = topValue.Value as PapyrusVariableReference;
                     // return "Return " + variable.Name;
 
-                    output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return, variable));
+                    output.Add(mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return, variable));
                     // PapyrusReturnVariable(variable.Name)
 
                     return output;
@@ -81,7 +84,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                 {
                     var variable = topValue.Value as PapyrusFieldDefinition;
                     // return "Return " + variable.Name;
-                    output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return, variable));
+                    output.Add(mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return, variable));
                     return output;
                 }
                 if (Utility.IsConstantValue(topValue.Value))
@@ -92,12 +95,12 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors
                     var newValue = valueTypeConverter.Convert(typeName, val);
                     var papyrusVariableReference = new PapyrusVariableReference
                     {
-                        TypeName = StringExtensions.Ref(typeName, mainInstructionProcessor.PapyrusAssembly),
+                        TypeName = StringExtensions.Ref(typeName, mainProcessor.PapyrusAssembly),
                         Value = newValue,
                         Type = Utility.GetPapyrusPrimitiveType(typeName)
                     };
                     {
-                        output.Add(mainInstructionProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return,
+                        output.Add(mainProcessor.CreatePapyrusInstruction(PapyrusOpCodes.Return,
                             papyrusVariableReference));
                         return output;
                     }

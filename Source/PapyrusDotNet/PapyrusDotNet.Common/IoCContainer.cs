@@ -38,14 +38,6 @@ namespace PapyrusDotNet.Common
 
         public T Resolve<T>()
         {
-            var type = typeof(T);
-            if (customTypeRegister.ContainsKey(type))
-            {
-                var func = (Func<T>)customTypeRegister[type];
-                var instance = func();
-                instances.Add(type, instance);
-                return instance;
-            }
             return (T)Resolve(typeof(T));
         }
 
@@ -65,6 +57,13 @@ namespace PapyrusDotNet.Common
 
         private object CreateInstanceOf(Type type)
         {
+            if (customTypeRegister.ContainsKey(type))
+            {
+                var func = (Delegate)customTypeRegister[type];
+                if (func != null)
+                    return func.DynamicInvoke();
+            }
+
             var i = typeLookup[type];
             var ctors = i.GetConstructors();
             var lessStrict = ctors.OrderBy(j => j.GetParameters().Length).FirstOrDefault();

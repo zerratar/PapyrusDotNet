@@ -50,6 +50,9 @@
       <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PapyrusDotNet.Core">
+      <HintPath>..\..\..\Binaries\PapyrusDotNet.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -91,6 +94,10 @@
     <ProjectReference Include="..\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">
       <Project>{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}</Project>
       <Name>PapyrusDotNet.PapyrusAssembly</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PapyrusDotNet\PapyrusDotNet.csproj">
+      <Project>{328a4bc6-9157-4581-b695-c7a51c3d965f}</Project>
+      <Name>PapyrusDotNet</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

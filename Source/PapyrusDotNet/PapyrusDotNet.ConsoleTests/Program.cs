@@ -21,11 +21,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Mono.Cecil;
 using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus;
 using PapyrusDotNet.Converters.Clr2Papyrus.Enums;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
+using PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 using PapyrusDotNet.Converters.Papyrus2CSharp;
 using PapyrusDotNet.Decompiler;
@@ -39,6 +41,11 @@ namespace PapyrusDotNet.ConsoleTests
     {
         private static void Main(string[] args)
         {
+            var result = PapyrusDotNet.Program.Main(ProcessArgStrings(new[]
+            {
+                "-i", "$(TargetPath)", "-o", "$(TargetDir)Output\\fallout 4", "-x", "-noui"
+            }));
+
             Decompile_FollowersScript();
 
             //ReadDelegatesPex();
@@ -48,10 +55,36 @@ namespace PapyrusDotNet.ConsoleTests
             //ReadAndWritePex();
         }
 
+        private static string[] ProcessArgStrings(string[] strings)
+        {
+            for (var i = 0; i < strings.Length; i++)
+            {
+                strings[i] = strings[i].Replace("$(SolutionDir)", GetSolutionDir());
+                strings[i] = strings[i].Replace("$(TargetPath)", GetBinaryInput());
+                strings[i] = strings[i].Replace("$(TargetDir)", GetTargetDir());
+            }
+            return strings;
+        }
+
+        private static string GetBinaryInput()
+        {
+            return GetSolutionDir() + "..\\Examples\\Fallout4Example\\bin\\debug\\Fallout4Example.dll";
+        }
+
+        private static string GetTargetDir()
+        {
+            return "..\\..\\..\\..\\..\\"; // should be: ...\PapyrusDotNet\...
+        }
+
+        private static string GetSolutionDir()
+        {
+            return "..\\..\\..\\..\\"; // should be: ...\PapyrusDotNet\Source...
+        }
+
         public static void Decompile_FollowersScript()
         {
             var asm = PapyrusAssemblyDefinition.ReadAssembly(
-                @"C:\Users\Karl\Downloads\exampleBad\test.pex");
+                GetSolutionDir() + @"\Source\Test Scripts\Bad\test.pex");
 
             var decompiler =
                 new PapyrusDecompiler(asm);
@@ -79,14 +112,14 @@ namespace PapyrusDotNet.ConsoleTests
 
         private static void DecompileAllFallout4Scripts()
         {
-            var folder = @"D:\Spel\Fallout 4 Scripts\scripts\";
+            var folder = GetSolutionDir() + @"\Source\Test Scripts\Fallout 4\";
 
             var allScripts = Directory.GetFiles(folder, "*.pex", SearchOption.AllDirectories);
 
             var clrNamespaceResolver = new NamespaceResolver();
             var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
                 new TypeReferenceResolver(clrNamespaceResolver,
-                    new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUserInterface(), new PascalCaseNameResolverSettings(null)))));
+                    new TypeNameResolver(new PascalCaseNameResolver(new AdvancedConsoleUserInterface(), new PascalCaseNameResolverSettings(null)))));
 
             var index = 1;
             foreach (var s in allScripts)
@@ -145,7 +178,15 @@ namespace PapyrusDotNet.ConsoleTests
 
             var readerParameters = new ReaderParameters { ReadSymbols = true };
 
-            var converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(),
+            var converter = new Clr2PapyrusConverter(new NoopUserInterface(), new ClrInstructionProcessor(
+                    new LoadProcessor(), 
+                    new StoreProcessor(new PapyrusValueTypeConverter()), 
+                    new BranchProcessor(),
+                    new CallProcessor(new PapyrusValueTypeConverter()), 
+                    new ConditionalProcessor(),
+                    new ReturnProcessor(new PapyrusValueTypeConverter()), 
+                    new StringConcatProcessor()
+                ),
                 PapyrusCompilerOptions.Strict);
             var assemblyDefinition = AssemblyDefinition.ReadAssembly(
                 targetFolder + "fallout4example.dll", readerParameters);
@@ -199,7 +240,7 @@ namespace PapyrusDotNet.ConsoleTests
             var clrNamespaceResolver = new NamespaceResolver();
             var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
                 new TypeReferenceResolver(clrNamespaceResolver,
-                    new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUserInterface(), new PascalCaseNameResolverSettings(null)))));
+                    new TypeNameResolver(new PascalCaseNameResolver(new AdvancedConsoleUserInterface(), new PascalCaseNameResolverSettings(null)))));
 
             var output = csharpConverter.Convert(new PapyrusAssemblyInput(defs.ToArray())) as MultiCSharpOutput;
 

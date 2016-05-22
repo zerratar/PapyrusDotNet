@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Binaries\</OutputPath>
+    <OutputPath>..\..\..\Binaries\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -64,7 +64,7 @@
     <Compile Include="Interfaces\ILabelDefinition.cs" />
     <Compile Include="Interfaces\ILabelReference.cs" />
     <Compile Include="Utilities\ArrayUtility.cs" />
-    <Compile Include="Utilities\ConsoleUserInterface.cs" />
+    <Compile Include="Utilities\AdvancedConsoleUserInterface.cs" />
     <Compile Include="DebugStatusCallbackService.cs" />
     <Compile Include="EvaluationStackItem.cs" />
     <Compile Include="Extensions\AssemblyExtensions.cs" />
@@ -95,9 +95,11 @@
     <Compile Include="Interfaces\IPapyrusCodeBlockParser.cs" />
     <Compile Include="Interfaces\IPapyrusAttributeReader.cs" />
     <Compile Include="Utilities\NoopUserInterface.cs" />
+    <Compile Include="Utilities\OutputUserInterface.cs" />
     <Compile Include="Utilities\PapyrusAssemblyOptimizer.cs" />
     <Compile Include="Utilities\PapyrusAttributeReader.cs" />
     <Compile Include="Utilities\PapyrusCodeBlockParser.cs" />
+    <Compile Include="Utilities\ConsoleUserInterface.cs" />
     <Compile Include="Utilities\StringUtility.cs" />
     <Compile Include="Utilities\UnixTimeConverterUtility.cs" />
     <Compile Include="Utilities\Utility.cs" />

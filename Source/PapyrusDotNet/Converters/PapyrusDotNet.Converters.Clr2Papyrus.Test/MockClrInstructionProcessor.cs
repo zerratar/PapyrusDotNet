@@ -32,7 +32,7 @@ using PapyrusDotNet.PapyrusAssembly;
 
 namespace PapyrusDotNet.Converters.Clr2Papyrus.Test
 {
-    public class MockClr2PapyrusInstructionProcessor : IClr2PapyrusInstructionProcessor
+    public class MockClrInstructionProcessor : IClrInstructionProcessor
     {
         public Stack<EvaluationStackItem> EvaluationStack { get; set; }
         public PapyrusMethodDefinition PapyrusMethod { get; set; }

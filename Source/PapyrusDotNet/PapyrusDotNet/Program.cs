@@ -37,13 +37,13 @@ namespace PapyrusDotNet
 {
     public class Program
     {
-        private static int Main(string[] args)
+        public static int Main(string[] args)
         {
             var noUi = args.Contains("-noui");
             var conf = new ContainerConfiguration(noUi);
             var app = new PapyrusDotNetApp(args,
                     conf.Resolve<IUserInterface>(),
-                    conf.Resolve<IClr2PapyrusInstructionProcessor>(),
+                    conf.Resolve<IClrInstructionProcessor>(),
                     conf.Resolve<INameConventionResolver>()
                 );
             return app.Run();

@@ -37,16 +37,16 @@ namespace PapyrusDotNet
         public AssemblyDefinition CurrentAssembly;
 
         private readonly IUserInterface ui;
-        private readonly IClr2PapyrusInstructionProcessor instructorProcessor;
+        private readonly IClrInstructionProcessor instructorProcessor;
         private readonly INameConventionResolver nameResolver;
         private readonly string[] args;
 
         private int assembliesReadTick;
         private int assembliesRead;
 
-        public PapyrusDotNetApp(string[] args, 
-            IUserInterface ui, 
-            IClr2PapyrusInstructionProcessor instructorProcessor, 
+        public PapyrusDotNetApp(string[] args,
+            IUserInterface ui,
+            IClrInstructionProcessor instructorProcessor,
             INameConventionResolver nameResolver)
         {
             this.args = args;
@@ -64,7 +64,7 @@ namespace PapyrusDotNet
             {
                 // ui.WriteLine("  Missing Important Arguments.");
                 ui.DrawHelp();
-                return -1;
+                return 128;
             }
 
             ui.Clear();
@@ -72,7 +72,15 @@ namespace PapyrusDotNet
 
             var clr2Papyrus = !Enumerable.Contains(args, "-clr");
             var input = args[0];
+            if (args.Contains("-i"))
+            {
+                input = args[Array.IndexOf(args, "-i") + 1];
+            }
             var output = args[1];
+            if (args.Contains("-o"))
+            {
+                output = args[Array.IndexOf(args, "-o") + 1];
+            }
             var autoClose = args.Contains("x") || args.Contains("X") || args.Contains("-x") || args.Contains("-X");
             if (clr2Papyrus)
             {
@@ -85,7 +93,7 @@ namespace PapyrusDotNet
                     : PapyrusCompilerOptions.Easy;
                 var readerParameters = new ReaderParameters { ReadSymbols = true };
 
-                converter = new Clr2PapyrusConverter(instructorProcessor, compilerOptions);
+                converter = new Clr2PapyrusConverter(ui, instructorProcessor, compilerOptions);
 
                 var assemblyDefinition = AssemblyDefinition.ReadAssembly(input, readerParameters);
 
@@ -124,7 +132,7 @@ namespace PapyrusDotNet
 
             if (autoClose)
             {
-                return -1;
+                return 0;
             }
 
             while (true)
@@ -143,7 +151,7 @@ namespace PapyrusDotNet
                 Console.Write(" ");
 
                 if (k.Key == exit.Key)
-                    return -1;
+                    return 0;
 
                 if (k.Key == openTargetDir.Key)
                 {

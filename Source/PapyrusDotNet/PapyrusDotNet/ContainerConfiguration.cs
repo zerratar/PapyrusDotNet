@@ -19,6 +19,7 @@ using PapyrusDotNet.Common;
 using PapyrusDotNet.Common.Interfaces;
 using PapyrusDotNet.Common.Utilities;
 using PapyrusDotNet.Converters.Clr2Papyrus.Implementations;
+using PapyrusDotNet.Converters.Clr2Papyrus.Implementations.Processors;
 using PapyrusDotNet.Converters.Clr2Papyrus.Interfaces;
 using PapyrusDotNet.Converters.Papyrus2Clr.Implementations;
 
@@ -39,11 +40,20 @@ namespace PapyrusDotNet
         private void RegisterProcessors()
         {
             if (noUserInterface)
-                ioc.Register<IUserInterface, NoopUserInterface>();
+                ioc.Register<IUserInterface, OutputUserInterface>(); // NoopUserInterface
             else
-                ioc.Register<IUserInterface, ConsoleUserInterface>();
+                ioc.Register<IUserInterface, AdvancedConsoleUserInterface>();
+            
+            ioc.Register<IValueTypeConverter, PapyrusValueTypeConverter>();
+            ioc.Register<ILoadProcessor, LoadProcessor>();
+            ioc.Register<IStoreProcessor, StoreProcessor>();
+            ioc.Register<IBranchProcessor, BranchProcessor>();
+            ioc.Register<ICallProcessor, CallProcessor>();
+            ioc.Register<IConditionalProcessor, ConditionalProcessor>();
+            ioc.Register<IReturnProcessor, ReturnProcessor>();
+            ioc.Register<IStringConcatProcessor, StringConcatProcessor>();
 
-            ioc.Register<IClr2PapyrusInstructionProcessor, Clr2PapyrusInstructionProcessor>();
+            ioc.Register<IClrInstructionProcessor, ClrInstructionProcessor>();
             ioc.RegisterCustom<PascalCaseNameResolverSettings>(() => new PascalCaseNameResolverSettings("wordlist-fo4.txt"));
             ioc.Register<INameConventionResolver, PascalCaseNameResolver>();
         }

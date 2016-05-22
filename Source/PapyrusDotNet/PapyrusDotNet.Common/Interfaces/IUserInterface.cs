@@ -26,5 +26,6 @@ namespace PapyrusDotNet.Common.Interfaces
         void DrawProgressBarWithInfo(int value, int max);
         void DrawProgressBar(int value, int maxValue);
         void DrawHelp();
+        void DrawError(string error);
     }
 }

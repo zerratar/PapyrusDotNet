@@ -38,7 +38,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
     public class Clr2PapyrusConverter : Clr2PapyrusConverterBase
     {
         private readonly DelegateFinder delegateFinder;
-        private readonly IClr2PapyrusInstructionProcessor instructionProcessor;
+        private readonly IUserInterface userInterface;
+        private readonly IClrInstructionProcessor instructionProcessor;
         private readonly PapyrusCompilerOptions processorOptions;
         private readonly IPropertyAnalyzer propertyAnalyzer = new PropertyAnalyzer();
         private TypeDefinition activeClrType;
@@ -52,12 +53,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         /// <summary>
         ///     Initializes a new instance of the <see cref="Clr2PapyrusConverter" /> class.
         /// </summary>
+        /// <param name="userInterface"></param>
         /// <param name="instructionProcessor">The instruction processor.</param>
         /// <param name="processorOptions"></param>
-        public Clr2PapyrusConverter(IClr2PapyrusInstructionProcessor instructionProcessor,
+        public Clr2PapyrusConverter(
+            IUserInterface userInterface,
+            IClrInstructionProcessor instructionProcessor,
             PapyrusCompilerOptions processorOptions)
         {
             attributeReader = new PapyrusAttributeReader(new PapyrusValueTypeConverter());
+            this.userInterface = userInterface;
             this.instructionProcessor = instructionProcessor;
             this.processorOptions = processorOptions;
             delegateFinder = new DelegateFinder();
@@ -77,15 +82,15 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
             propertyMethods = new List<MethodDefinition>();
 
-            try
+            var papyrusAssemblyToTypeDefinition = new Dictionary<PapyrusAssemblyDefinition, TypeDefinition>();
+
+
+            // Keep track on the enum types so we can verify any parameter, variables, etc, and change the type into integers.
+            ResolveEnumDefinitions(mainModule);
+
+            foreach (var type in mainModule.Types)
             {
-                var papyrusAssemblyToTypeDefinition = new Dictionary<PapyrusAssemblyDefinition, TypeDefinition>();
-
-
-                // Keep track on the enum types so we can verify any parameter, variables, etc, and change the type into integers.
-                ResolveEnumDefinitions(mainModule);
-
-                foreach (var type in mainModule.Types)
+                try
                 {
                     // We will skip this one for now
                     // as it will not really provide us with any necessary information at this early stage.
@@ -112,25 +117,26 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
                     foreach (var t in pex.Types)
                     {
+                        var firstState = t.States.FirstOrDefault();
+                        if (firstState == null) continue; // no state was found??
+
                         CreateMethods(papyrusAssemblies, type, t, pex, processorOptions)
-                            .ForEach(t.States.FirstOrDefault().Methods.Add);
+                            .ForEach(firstState.Methods.Add);
 
                         CreateDebugInfo(pex, t, type);
                     }
                 }
+                catch (ProhibitedCodingBehaviourException exc)
+                {
+                    userInterface.DrawError($"Error processing '{type.FullName}': Prohibited use of " + exc.OpCode.GetValueOrDefault().Code + " in " +
+                                            exc.Method.FullName + " at " + exc.Offset);
+                }
+                catch (Exception exc)
+                {
+                    userInterface.DrawError($"Error processing '{type.FullName}': Unhandled Exception - " + exc);
+                }
             }
-            catch (ProhibitedCodingBehaviourException exc)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Error: Prohibited use of " + exc.OpCode.GetValueOrDefault().Code + " in " +
-                                  exc.Method.FullName + " at " + exc.Offset);
-            }
-            catch (Exception exc)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Error: Unhandled Exception - " + exc);
-            }
-            Console.ResetColor();
+
             return new PapyrusAssemblyOutput(papyrusAssemblies.ToArray());
         }
 
@@ -255,11 +261,11 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                         if (i.SequencePoint != null)
                         {
                             lastStart = i.SequencePoint.StartLine;
-                            m.BodyLineNumbers.Add((short) i.SequencePoint.StartLine);
+                            m.BodyLineNumbers.Add((short)i.SequencePoint.StartLine);
                         }
                         else
                         {
-                            m.BodyLineNumbers.Add((short) lastStart);
+                            m.BodyLineNumbers.Add((short)lastStart);
                         }
                     });
 
@@ -283,21 +289,16 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
         private void UpdateUserFlags(TypeDefinition type, PapyrusAssemblyDefinition pex)
         {
             var props = attributeReader.ReadPapyrusAttributes(type);
-            pex.Header.UserflagReferenceHeader.Add("hidden", (byte) (props.IsHidden ? 1 : 0));
-            pex.Header.UserflagReferenceHeader.Add("conditional", (byte) (props.IsConditional ? 1 : 0));
+            pex.Header.UserflagReferenceHeader.Add("hidden", (byte)(props.IsHidden ? 1 : 0));
+            pex.Header.UserflagReferenceHeader.Add("conditional", (byte)(props.IsConditional ? 1 : 0));
         }
 
         private List<PapyrusMethodDefinition> CreateMethods(
-            IEnumerable<PapyrusAssemblyDefinition> papyrusAssemblyCollection, TypeDefinition type,
+            ICollection<PapyrusAssemblyDefinition> papyrusAssemblyCollection, TypeDefinition type,
             PapyrusTypeDefinition papyrusType, PapyrusAssemblyDefinition pex, PapyrusCompilerOptions options)
         {
-            var methods = new List<PapyrusMethodDefinition>();
-
-            foreach (var method in delegatePairDefinition.DelegateMethodDefinitions)
-            {
-                methods.Add(CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, method,
-                    delegatePairDefinition, options));
-            }
+            var methods = delegatePairDefinition.DelegateMethodDefinitions.Select(method
+                => CreatePapyrusMethodDefinition(papyrusAssemblyCollection, pex, papyrusType, method, delegatePairDefinition, options)).ToList();
 
             foreach (var method in type.Methods.OrderByDescending(m => m.IsConstructor))
             {
@@ -389,7 +390,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             foreach (var field in typeFields)
             {
                 var papyrusFriendlyName = "::" + field.Name.Replace("::", "").Replace('<', '_').Replace('>', '_');
-                    // Only for the VariableReference
+                // Only for the VariableReference
                 var fieldName = field.Name;
                 if (delegateFields.Contains(field))
                 {
@@ -480,8 +481,8 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
                     // in this case, we are changing it into a Int
 
                     if (!clrVar.Name.Contains("$<>"))
-                        // if we are reading symbols, delegate variables contains unwanted characters in their names. 
-                        // And since those are not going to be used. We can just skip these.
+                    // if we are reading symbols, delegate variables contains unwanted characters in their names. 
+                    // And since those are not going to be used. We can just skip these.
                     {
                         var varName = (!string.IsNullOrEmpty(clrVar.Name) ? clrVar.Name : clrVar.ToString()).Ref(asm);
 
@@ -547,10 +548,10 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
             if (method.Name.ToLower() == "oninit")
             {
                 List<PapyrusInstruction> structGets;
-                var ip = instructionProcessor as Clr2PapyrusInstructionProcessor;
-                    // TODO: Going against solid here just because im to damn tired, which I ended up breaking in lots of places.
+                var ip = instructionProcessor as ClrInstructionProcessor;
+                // TODO: Going against solid here just because im to damn tired, which I ended up breaking in lots of places.
                 m.Body.Instructions.Insert(0,
-                    ip.CallInstructionProcessor.CreatePapyrusCallInstruction(PapyrusOpCodes.Callmethod, constructor,
+                    ip.CallProcessor.CreatePapyrusCallInstruction(instructionProcessor, PapyrusOpCodes.Callmethod, constructor,
                         "self",
                         "::nonevar", new List<object>(), out structGets));
             }
@@ -571,7 +572,7 @@ namespace PapyrusDotNet.Converters.Clr2Papyrus
 
             pex.Header.SourceHeader.User = Environment.UserName;
             pex.Header.SourceHeader.Computer = Environment.MachineName;
-            pex.Header.SourceHeader.GameId = (short) input.TargetPapyrusVersion;
+            pex.Header.SourceHeader.GameId = (short)input.TargetPapyrusVersion;
             pex.Header.SourceHeader.CompileTime = UnixTimeConverterUtility.Convert(DateTime.Now);
             pex.Header.SourceHeader.ModifyTime = UnixTimeConverterUtility.Convert(DateTime.Now);
         }
