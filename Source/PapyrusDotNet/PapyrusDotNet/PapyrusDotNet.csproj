@@ -61,17 +61,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Old\AssemblyHelper.cs" />
-    <Compile Include="Old\GenericTypeReference.cs" />
-    <Compile Include="Old\MethodCallPair.cs" />
-    <Compile Include="Old\Papyrus\Assembly.cs" />
-    <Compile Include="Old\Papyrus\Function.cs" />
-    <Compile Include="Old\Papyrus\Header.cs" />
-    <Compile Include="Old\Papyrus\SourceInfo.cs" />
-    <Compile Include="Old\Papyrus\ObjectState.cs" />
-    <Compile Include="Old\Papyrus\ObjectTable.cs" />
-    <Compile Include="Old\Papyrus\UserFlagsReference.cs" />
-    <Compile Include="Old\PapyrusAsmWriter.cs" />
+    <Compile Include="ContainerConfiguration.cs" />
+    <Compile Include="IApplication.cs" />
+    <Compile Include="PapyrusDotNetApp.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

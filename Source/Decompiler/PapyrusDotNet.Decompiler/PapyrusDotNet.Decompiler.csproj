@@ -46,6 +46,7 @@
     <Compile Include="DecompilerContext.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\TransformExtensions.cs" />
+    <Compile Include="Extensions\WithNode.cs" />
     <Compile Include="HelperClasses\DynamicVisitor.cs" />
     <Compile Include="HelperClasses\Visitor.cs" />
     <Compile Include="NodeComparer.cs" />

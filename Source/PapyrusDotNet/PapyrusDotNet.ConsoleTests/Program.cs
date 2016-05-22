@@ -86,7 +86,7 @@ namespace PapyrusDotNet.ConsoleTests
             var clrNamespaceResolver = new NamespaceResolver();
             var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
                 new TypeReferenceResolver(clrNamespaceResolver,
-                    new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUiRenderer()))));
+                    new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUserInterface(), new PascalCaseNameResolverSettings(null)))));
 
             var index = 1;
             foreach (var s in allScripts)
@@ -143,7 +143,7 @@ namespace PapyrusDotNet.ConsoleTests
             //            ISymbolReader reader =
             //factory.CreateReader(assdef.MainModule, ass_file);
 
-            var readerParameters = new ReaderParameters {ReadSymbols = true};
+            var readerParameters = new ReaderParameters { ReadSymbols = true };
 
             var converter = new Clr2PapyrusConverter(new Clr2PapyrusInstructionProcessor(),
                 PapyrusCompilerOptions.Strict);
@@ -199,7 +199,7 @@ namespace PapyrusDotNet.ConsoleTests
             var clrNamespaceResolver = new NamespaceResolver();
             var csharpConverter = new Papyrus2CSharpConverter(clrNamespaceResolver,
                 new TypeReferenceResolver(clrNamespaceResolver,
-                    new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUiRenderer()))));
+                    new TypeNameResolver(new PascalCaseNameResolver(new ConsoleUserInterface(), new PascalCaseNameResolverSettings(null)))));
 
             var output = csharpConverter.Convert(new PapyrusAssemblyInput(defs.ToArray())) as MultiCSharpOutput;
 

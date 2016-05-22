@@ -1,4 +1,4 @@
-﻿//     This file is part of PapyrusDotNet.
+//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -17,9 +17,14 @@
 
 namespace PapyrusDotNet.Common.Interfaces
 {
-    public interface ILabelDefinition
+    public interface IUserInterface : IUtility
     {
-        string Name { get; set; }
-        int Row { get; set; }
+        void Clear();
+        void DrawInterface(string message);
+        void DrawResult(string message);
+        void DrawHotkeys(params Hotkeys[] hotkeys);
+        void DrawProgressBarWithInfo(int value, int max);
+        void DrawProgressBar(int value, int maxValue);
+        void DrawHelp();
     }
 }

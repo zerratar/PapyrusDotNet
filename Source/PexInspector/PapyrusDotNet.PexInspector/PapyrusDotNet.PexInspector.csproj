@@ -118,7 +118,6 @@
     <Compile Include="InstructionEditorView.xaml.cs">
       <DependentUpon>InstructionEditorView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="IoCContainer.cs" />
     <Compile Include="TreeViewHelper.cs" />
     <Compile Include="VisualTreeHelperEx.cs" />
     <Compile Include="Windows\AboutWindow.xaml.cs">
@@ -252,6 +251,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\PapyrusDotNet\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
+      <Project>{6b35b6ab-ea3b-42b0-b40f-66e490e59a15}</Project>
+      <Name>PapyrusDotNet.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\PapyrusDotNet\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">
       <Project>{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}</Project>
       <Name>PapyrusDotNet.PapyrusAssembly</Name>

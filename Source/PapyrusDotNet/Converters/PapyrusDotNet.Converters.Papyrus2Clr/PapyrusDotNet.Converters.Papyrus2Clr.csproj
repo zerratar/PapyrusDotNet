@@ -75,6 +75,7 @@
     <Compile Include="Core\Attributes\PropertyAttribute.cs" />
     <Compile Include="Implementations\CecilAssemblyOutput.cs" />
     <Compile Include="Implementations\NamespaceResolver.cs" />
+    <Compile Include="Implementations\PascalCaseNameResolverSettings.cs" />
     <Compile Include="Implementations\TypeReferenceResolver.cs" />
     <Compile Include="Implementations\PascalCaseNameResolver.cs" />
     <Compile Include="Implementations\PapyrusAssemblyInput.cs" />

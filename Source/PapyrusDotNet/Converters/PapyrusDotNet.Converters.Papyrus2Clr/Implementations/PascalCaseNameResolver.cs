@@ -27,27 +27,29 @@ using PapyrusDotNet.Common.Interfaces;
 
 namespace PapyrusDotNet.Converters.Papyrus2Clr.Implementations
 {
-    public class PascalCaseNameResolver : INameConvetionResolver
+    public class PascalCaseNameResolver : INameConventionResolver
     {
         private readonly string[] orderedWordList;
-
-        private readonly Dictionary<string, string> resolvedNames = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> resolvedNames;
         internal string[] WordList;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PascalCaseNameResolver"/> class.
         /// </summary>
-        /// <param name="uiRenderer"></param>
-        /// <param name="wordDictionaryFile"></param>
-        public PascalCaseNameResolver(IUiRenderer uiRenderer, string wordDictionaryFile = null)
+        /// <param name="userInterface">The user interface.</param>
+        /// <param name="settings">The settings.</param>
+        public PascalCaseNameResolver(IUserInterface userInterface, PascalCaseNameResolverSettings settings)
         {
-            var ui = uiRenderer;
+            resolvedNames = new Dictionary<string, string>();
+            var ui = userInterface;
             // "wordlist.txt"
-            if (string.IsNullOrEmpty(wordDictionaryFile))
+            if (string.IsNullOrEmpty(settings.WordDictionaryFile))
                 return;
-            if (File.Exists(wordDictionaryFile))
+
+            if (File.Exists(settings.WordDictionaryFile))
             {
                 ui.DrawInterface("Loading wordlist... This may take a few seconds.");
-                WordList = File.ReadAllLines(wordDictionaryFile);
+                WordList = File.ReadAllLines(settings.WordDictionaryFile);
                 Array.Sort(WordList);
             }
             else
@@ -56,11 +58,8 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr.Implementations
                 WordList = new string[0];
             }
 
-            if (orderedWordList == null)
-            {
-                orderedWordList = WordList.Select(w => w.ToLower()).ToArray();
-                Array.Sort(orderedWordList);
-            }
+            orderedWordList = WordList.Select(w => w.ToLower()).ToArray();
+            Array.Sort(orderedWordList);
         }
 
         /// <summary>

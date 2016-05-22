@@ -15,6 +15,8 @@
 //  
 //     Copyright 2016, Karl Patrik Johansson, zerratar@gmail.com
 
+using PapyrusDotNet.Common.Interfaces;
+
 namespace PapyrusDotNet.Common.Papyrus
 {
     public class LabelDefinition : ILabelDefinition

@@ -56,14 +56,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleExLib\ConsoleEx.cs" />
-    <Compile Include="Interfaces\INameConvetionResolver.cs" />
+    <Compile Include="Interfaces\INameConventionResolver.cs" />
     <Compile Include="Interfaces\IPapyrusCodeBlock.cs" />
+    <Compile Include="IoCContainer.cs" />
     <Compile Include="Papyrus\PapyrusCodeBlock.cs" />
     <Compile Include="ConsoleStatusCallbackService.cs" />
     <Compile Include="Interfaces\ILabelDefinition.cs" />
     <Compile Include="Interfaces\ILabelReference.cs" />
     <Compile Include="Utilities\ArrayUtility.cs" />
-    <Compile Include="Utilities\ConsoleUiRenderer.cs" />
+    <Compile Include="Utilities\ConsoleUserInterface.cs" />
     <Compile Include="DebugStatusCallbackService.cs" />
     <Compile Include="EvaluationStackItem.cs" />
     <Compile Include="Extensions\AssemblyExtensions.cs" />
@@ -88,11 +89,12 @@
     <Compile Include="Utilities\GameInstallationPathUtility.cs" />
     <Compile Include="Enums\Games.cs" />
     <Compile Include="Interfaces\IValueTypeConverter.cs" />
-    <Compile Include="Interfaces\IUiRenderer.cs" />
+    <Compile Include="Interfaces\IUserInterface.cs" />
     <Compile Include="Hotkeys.cs" />
     <Compile Include="Interfaces\IPapyrusAssemblyOptimizer.cs" />
     <Compile Include="Interfaces\IPapyrusCodeBlockParser.cs" />
     <Compile Include="Interfaces\IPapyrusAttributeReader.cs" />
+    <Compile Include="Utilities\NoopUserInterface.cs" />
     <Compile Include="Utilities\PapyrusAssemblyOptimizer.cs" />
     <Compile Include="Utilities\PapyrusAttributeReader.cs" />
     <Compile Include="Utilities\PapyrusCodeBlockParser.cs" />

@@ -2,14 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PapyrusDotNet.PexInspector
+namespace PapyrusDotNet.Common
 {
     public class IoCContainer
     {
         private readonly Dictionary<Type, object> instances = new Dictionary<Type, object>();
 
         private readonly Dictionary<Type, Type> typeLookup = new Dictionary<Type, Type>();
-        
+
+        private readonly Dictionary<Type, object> customTypeRegister = new Dictionary<Type, object>();
+
         public IoCContainer Register<TInterface, TImpl>()
         {
             var i = typeof(TInterface);
@@ -21,8 +23,29 @@ namespace PapyrusDotNet.PexInspector
             return this;
         }
 
+        public void RegisterCustom<TInterface>(Func<TInterface> func)
+        {
+            var t = typeof(TInterface);
+            if (customTypeRegister.ContainsKey(t))
+            {
+                customTypeRegister[t] = func;
+            }
+            else
+            {
+                customTypeRegister.Add(t, func);
+            }
+        }
+
         public T Resolve<T>()
         {
+            var type = typeof(T);
+            if (customTypeRegister.ContainsKey(type))
+            {
+                var func = (Func<T>)customTypeRegister[type];
+                var instance = func();
+                instances.Add(type, instance);
+                return instance;
+            }
             return (T)Resolve(typeof(T));
         }
 
@@ -31,7 +54,7 @@ namespace PapyrusDotNet.PexInspector
             return (T)CreateInstanceOf(typeof(T));
         }
 
-        public object Resolve(Type type)
+        private object Resolve(Type type)
         {
             if (instances.ContainsKey(type))
                 return instances[type];
@@ -42,8 +65,7 @@ namespace PapyrusDotNet.PexInspector
 
         private object CreateInstanceOf(Type type)
         {
-            var f = type;
-            var i = typeLookup[f];
+            var i = typeLookup[type];
             var ctors = i.GetConstructors();
             var lessStrict = ctors.OrderBy(j => j.GetParameters().Length).FirstOrDefault();
             if (lessStrict == null)
@@ -53,5 +75,7 @@ namespace PapyrusDotNet.PexInspector
             var paramObjects = param.Select(t => Resolve(t.ParameterType)).ToArray();
             return lessStrict.Invoke(paramObjects);
         }
+
+
     }
 }

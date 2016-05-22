@@ -43,7 +43,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
     public class Papyrus2ClrCecilConverter : Papyrus2ClrCecilConverterBase
     {
         private readonly ITypeNameResolver nameConventionResolver;
-        private readonly IUiRenderer uiRenderer;
+        private readonly IUserInterface userInterface;
         public IList<TypeReference> AddedTypeReferences = new List<TypeReference>();
         private AssemblyDefinition clrAssembly;
         // private PapyrusAssemblyDefinition papyrusAssembly;
@@ -73,11 +73,11 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
         private TypeReference objectType;
         public IList<string> ReservedTypeNames = new List<string>();
 
-        public Papyrus2ClrCecilConverter(IUiRenderer uiRenderer, INameConvetionResolver nameConventionResolver,
+        public Papyrus2ClrCecilConverter(IUserInterface userInterface, INameConventionResolver nameConventionResolver,
             INamespaceResolver namespaceResolver, ITypeReferenceResolver typeReferenceResolver)
             : base(namespaceResolver, typeReferenceResolver)
         {
-            this.uiRenderer = uiRenderer;
+            this.userInterface = userInterface;
             this.nameConventionResolver = nameConventionResolver;
         }
 
@@ -94,7 +94,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
 
             int i = 1, ij = 0;
 
-            uiRenderer.DrawInterface("(2/3) Adding assembly references.");
+            userInterface.DrawInterface("(2/3) Adding assembly references.");
             foreach (var inputAssembly in input.Assemblies)
             {
                 var redrawProgress = ij >= 100 || i == input.Assemblies.Length || input.Assemblies.Length < 500;
@@ -103,7 +103,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                     //Console.SetCursorPosition(x, y);
                     //Console.WriteLine("Adding assembly references... " + i + "/" + input.Assemblies.Length);
 
-                    uiRenderer.DrawProgressBarWithInfo(i, input.Assemblies.Length);
+                    userInterface.DrawProgressBarWithInfo(i, input.Assemblies.Length);
                     ij = 0;
                 }
                 ij++;
@@ -114,7 +114,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             ij = 0;
 
             //Console.SetCursorPosition(0, y + 1);
-            uiRenderer.DrawInterface("(3/3) Creating CLR types.");
+            userInterface.DrawInterface("(3/3) Creating CLR types.");
 
             foreach (var papyrusAssembly in input.Assemblies)
             {
@@ -125,7 +125,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
                     {
                         //Console.SetCursorPosition(0, y + 1);
                         //Console.WriteLine("Building Classes... " + i + "/" + input.Assemblies.Length);
-                        uiRenderer.DrawProgressBarWithInfo(i, input.Assemblies.Length);
+                        userInterface.DrawProgressBarWithInfo(i, input.Assemblies.Length);
                         ij = 0;
                     }
                     ij++;
@@ -137,7 +137,7 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr
             exeAsm.FindTypes("attribute")
                 .ForEach(attr => ImportType(mainModule, attr));
 
-            uiRenderer.DrawResult("Building Core Library Completed.");
+            userInterface.DrawResult("Building Core Library Completed.");
 
 
             return new CecilAssemblyOutput(clrAssembly);

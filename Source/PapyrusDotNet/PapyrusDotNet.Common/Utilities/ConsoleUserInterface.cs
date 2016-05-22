@@ -25,7 +25,7 @@ using PapyrusDotNet.Common.Interfaces;
 
 namespace PapyrusDotNet.Common.Utilities
 {
-    public class ConsoleUiRenderer : IUiRenderer
+    public class ConsoleUserInterface : IUserInterface
     {
         private static bool cursorLocked;
         private static int consoleX;
@@ -107,7 +107,7 @@ namespace PapyrusDotNet.Common.Utilities
             Console.Write("  ");
             for (var i = 0; i < size; i++)
             {
-                var proc = value/(float) maxValue*size;
+                var proc = value / (float)maxValue * size;
                 Console.BackgroundColor =
                     i <= proc
                         ? ConsoleColor.Green

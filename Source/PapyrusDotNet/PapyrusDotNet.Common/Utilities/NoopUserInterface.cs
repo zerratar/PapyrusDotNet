@@ -15,17 +15,38 @@
 //  
 //     Copyright 2016, Karl Patrik Johansson, zerratar@gmail.com
 
-namespace PapyrusDotNet.Common.Interfaces
+using PapyrusDotNet.Common.Interfaces;
+
+namespace PapyrusDotNet.Common.Utilities
 {
-    public interface IUiRenderer : IUtility
+    public class NoopUserInterface : IUserInterface
     {
-        void EnsureConsoleCursorPosition();
-        void ReleaseConsoleCursorPosition();
-        void DrawInterface(string message);
-        void DrawResult(string message);
-        void DrawHotkeys(params Hotkeys[] hotkeys);
-        void DrawProgressBarWithInfo(int value, int max);
-        void DrawProgressBar(int value, int maxValue);
-        void DrawHelp();
+        public void Clear()
+        {
+        }
+
+        public void DrawInterface(string message)
+        {
+        }
+
+        public void DrawResult(string message)
+        {
+        }
+
+        public void DrawHotkeys(params Hotkeys[] hotkeys)
+        {
+        }
+
+        public void DrawProgressBarWithInfo(int value, int max)
+        {
+        }
+
+        public void DrawProgressBar(int value, int maxValue)
+        {
+        }
+
+        public void DrawHelp()
+        {
+        }
     }
 }

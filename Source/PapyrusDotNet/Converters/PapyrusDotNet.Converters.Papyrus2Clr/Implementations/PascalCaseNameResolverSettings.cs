@@ -1,4 +1,4 @@
-﻿//     This file is part of PapyrusDotNet.
+//     This file is part of PapyrusDotNet.
 // 
 //     PapyrusDotNet is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -15,11 +15,15 @@
 //  
 //     Copyright 2016, Karl Patrik Johansson, zerratar@gmail.com
 
-namespace PapyrusDotNet.Common.Interfaces
+namespace PapyrusDotNet.Converters.Papyrus2Clr.Implementations
 {
-    public interface ILabelDefinition
+    public class PascalCaseNameResolverSettings
     {
-        string Name { get; set; }
-        int Row { get; set; }
+        public PascalCaseNameResolverSettings(string wordDictionaryFile)
+        {
+            WordDictionaryFile = wordDictionaryFile;
+        }
+
+        public string WordDictionaryFile { get; }
     }
 }

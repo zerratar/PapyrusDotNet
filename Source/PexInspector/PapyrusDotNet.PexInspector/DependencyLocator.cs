@@ -1,3 +1,4 @@
+using PapyrusDotNet.Common;
 using PapyrusDotNet.PexInspector.Implementations;
 using PapyrusDotNet.PexInspector.ViewModels;
 using PapyrusDotNet.PexInspector.ViewModels.Interfaces;

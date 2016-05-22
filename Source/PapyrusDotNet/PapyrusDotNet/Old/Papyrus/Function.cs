@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 using PapyrusDotNet.Common;
+using PapyrusDotNet.Common.Extensions;
 using PapyrusDotNet.Common.Papyrus;
 using PapyrusDotNet.Common.Utilities;
 

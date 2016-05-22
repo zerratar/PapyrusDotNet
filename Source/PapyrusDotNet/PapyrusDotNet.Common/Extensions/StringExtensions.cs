@@ -22,7 +22,7 @@ using System.Linq;
 
 #endregion
 
-namespace PapyrusDotNet.Common
+namespace PapyrusDotNet.Common.Extensions
 {
     public static class StringExtensions
     {

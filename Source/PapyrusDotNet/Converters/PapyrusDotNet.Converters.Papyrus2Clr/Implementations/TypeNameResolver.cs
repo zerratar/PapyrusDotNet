@@ -27,11 +27,11 @@ namespace PapyrusDotNet.Converters.Papyrus2Clr.Implementations
 {
     public class TypeNameResolver : ITypeNameResolver
     {
-        private readonly INameConvetionResolver nameConventionResolver;
+        private readonly INameConventionResolver nameConventionResolver;
 
         private readonly Dictionary<string, string> reservedTypeNames = new Dictionary<string, string>();
 
-        public TypeNameResolver(INameConvetionResolver nameConventionResolver)
+        public TypeNameResolver(INameConventionResolver nameConventionResolver)
         {
             this.nameConventionResolver = nameConventionResolver;
         }

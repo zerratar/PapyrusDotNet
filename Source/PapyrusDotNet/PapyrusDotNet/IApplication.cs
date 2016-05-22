@@ -13,17 +13,12 @@
 //     You should have received a copy of the GNU General Public License
 //     along with PapyrusDotNet.  If not, see <http://www.gnu.org/licenses/>.
 //  
-//     Copyright 2016, Karl Patrik Johansson, zerratar@gmail.com
+//     Copyright 2016, Karl Patrik Johansson, zerratar@gmail.com'
 
-#region
-
-using PapyrusDotNet.Common.Interfaces;
-
-#endregion
-
-namespace PapyrusDotNet.Converters.Papyrus2Clr.Implementations
+namespace PapyrusDotNet
 {
-    public interface INameConvetionResolver : ITypeNameResolver
+    public interface IApplication
     {
+        int Run();
     }
 }
