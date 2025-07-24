@@ -1,3 +1,10 @@
+Source\PapyrusDotNet\PapyrusDotNet.ConsoleTests\PapyrusDotNet.ConsoleTests.csproj
+Source\PapyrusDotNet\Converters\PapyrusDotNet.Converters.Clr2Papyrus.Test\PapyrusDotNet.Converters.Clr2Papyrus.Test.csproj
+Source\PexInspector\PapyrusDotNet.PexInspector\PapyrusDotNet.PexInspector.csproj
+
+..."contains an App.config file. App.config is replaced by appsettings.json in .NET Core. You will need to delete App.config and migrate to appsettings.json if it's applicable to your project."
+
+
 ==================================
     Papyrus2Clr (1/1 completed)
 ==================================
