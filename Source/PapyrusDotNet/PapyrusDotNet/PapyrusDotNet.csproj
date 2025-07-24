@@ -1,39 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{328A4BC6-9157-4581-B695-C7A51C3D965F}</ProjectGuid>
+    <TargetFramework>net9.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PapyrusDotNet</RootNamespace>
-    <AssemblyName>PapyrusDotNet</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
     <OutputPath>..\..\..\Binaries\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
@@ -52,54 +24,35 @@
       <HintPath>..\..\..\Binaries\Mono.Cecil.Rocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContainerConfiguration.cs" />
-    <Compile Include="IApplication.cs" />
-    <Compile Include="PapyrusDotNetApp.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <ProjectReference Include="..\Converters\PapyrusDotNet.Converters.Clr2Papyrus\PapyrusDotNet.Converters.Clr2Papyrus.csproj" />
+    <ProjectReference Include="..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj" />
+    <ProjectReference Include="..\Converters\PapyrusDotNet.Converters.Papyrus2Clr\PapyrusDotNet.Converters.Papyrus2Clr.csproj" />
+    <ProjectReference Include="..\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Converters\PapyrusDotNet.Converters.Clr2Papyrus\PapyrusDotNet.Converters.Clr2Papyrus.csproj">
-      <Project>{8547F068-C90E-4245-A9F8-20A98797E92B}</Project>
-      <Name>PapyrusDotNet.Converters.Clr2Papyrus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PapyrusDotNet.Common\PapyrusDotNet.Common.csproj">
-      <Project>{6b35b6ab-ea3b-42b0-b40f-66e490e59a15}</Project>
-      <Name>PapyrusDotNet.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Converters\PapyrusDotNet.Converters.Papyrus2Clr\PapyrusDotNet.Converters.Papyrus2Clr.csproj">
-      <Project>{AC6FB9B6-F9DC-4AE2-AD72-520B178A8C7E}</Project>
-      <Name>PapyrusDotNet.Converters.Papyrus2Clr</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PapyrusDotNet.PapyrusAssembly\PapyrusDotNet.PapyrusAssembly.csproj">
-      <Project>{C5F9B5DA-F44A-4129-98D1-2EFDADF09B52}</Project>
-      <Name>PapyrusDotNet.PapyrusAssembly</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="wordlist-fo4.txt">
+    <None Update="wordlist-fo4.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Mono.Cecil" Version="0.9.6.1" />
+    <PackageReference Include="PowerArgs" Version="2.0.3.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Old\AssemblyHelper.cs" />
+    <Compile Remove="Old\GenericTypeReference.cs" />
+    <Compile Remove="Old\MethodCallPair.cs" />
+    <Compile Remove="Old\PapyrusAsmWriter.cs" />
+    <Compile Remove="Old\Papyrus\Assembly.cs" />
+    <Compile Remove="Old\Papyrus\Function.cs" />
+    <Compile Remove="Old\Papyrus\Header.cs" />
+    <Compile Remove="Old\Papyrus\ObjectState.cs" />
+    <Compile Remove="Old\Papyrus\ObjectTable.cs" />
+    <Compile Remove="Old\Papyrus\SourceInfo.cs" />
+    <Compile Remove="Old\Papyrus\UserFlagsReference.cs" />
+  </ItemGroup>
 </Project>
